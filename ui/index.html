@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Arnhem — Claude Plays VASSAL (POC)</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#1a1c20; font-family:Segoe UI,sans-serif; }
+  #topbar { position:fixed; top:0; left:0; right:0; height:44px; background:#23262c; color:#ddd;
+            display:flex; align-items:center; gap:14px; padding:0 14px; z-index:50; font-size:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  #topbar b { color:#fff; }
+  .sidebtn { padding:4px 12px; border-radius:5px; border:1px solid #555; background:#2c2f36;
+             color:#ccc; cursor:pointer; }
+  .sidebtn.on { background:#3a6ea5; color:#fff; border-color:#6aa0d8; }
+  #progress { margin-left:auto; color:#9fc27f; }
+  #note { color:#8a8f98; font-size:12px; }
+  #viewport { position:absolute; top:44px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; }
+  #world { position:absolute; transform-origin:0 0; }
+  #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
+  svg#overlay { position:absolute; top:0; left:0; pointer-events:none; }
+  .counter { position:absolute; width:75px; height:75px; margin:-37px 0 0 -37px; cursor:pointer;
+             user-select:none; -webkit-user-drag:none; border-radius:4px; }
+  .counter.done { filter:grayscale(.9) brightness(.65); }
+  .counter.sel { outline:3px solid #ffd75e; outline-offset:1px; z-index:30!important; }
+  .counter.dragging { z-index:40!important; pointer-events:none; opacity:.85; }
+  .badge { position:absolute; margin:-48px 0 0 14px; background:#c33; color:#fff; font-size:11px;
+           border-radius:8px; padding:0 5px; z-index:31; pointer-events:none; }
+  #picker { position:fixed; display:none; background:#23262c; border:1px solid #556; border-radius:8px;
+            z-index:60; color:#ddd; min-width:210px; box-shadow:0 6px 24px rgba(0,0,0,.6); font-size:13px; }
+  #picker div.item { padding:7px 12px; cursor:pointer; display:flex; gap:8px; align-items:center; }
+  #picker div.item:hover { background:#3a3f48; }
+  #picker img { width:26px; height:26px; }
+  #picker .hdr { padding:6px 12px; color:#8a8f98; border-bottom:1px solid #444; font-size:11px; }
+  #actions { position:fixed; display:none; z-index:60; background:#23262c; border:1px solid #556;
+             border-radius:8px; padding:8px 10px; color:#ddd; font-size:13px; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #actions button { margin-left:8px; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <b>ARNHEM</b>
+  <span>play as:</span>
+  <button class="sidebtn on" id="side-All">Allied</button>
+  <button class="sidebtn" id="side-Ger">German</button>
+  <span id="progress"></span>
+  <span id="note"></span>
+  <button class="sidebtn" id="resetbtn">Reset game</button>
+</div>
+<div id="viewport">
+  <div id="world">
+    <img class="map" src="assets/map.png">
+    <svg id="overlay"></svg>
+  </div>
+</div>
+<div id="picker"></div>
+<div id="actions"></div>
+
+<script>
+const W = document.getElementById('world'), VP = document.getElementById('viewport');
+const OV = document.getElementById('overlay');
+const MAPW = 4825, MAPH = 4821;
+let scale = 0.25, panX = 0, panY = 0;
+let units = [], mySide = 'All', selected = null, legal = null, dragging = null;
+
+function apply() { W.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`; }
+function fitMap() {   // open with the whole map visible, centered
+  scale = Math.min(VP.clientWidth / MAPW, VP.clientHeight / MAPH);
+  panX = (VP.clientWidth - MAPW * scale) / 2;
+  panY = (VP.clientHeight - MAPH * scale) / 2;
+  apply();
+}
+fitMap();
+
+// ---------- pan & zoom ----------
+let panDrag = null;
+VP.addEventListener('pointerdown', e => {
+  if (e.target.closest('.counter')) return;
+  panDrag = {x:e.clientX-panX, y:e.clientY-panY}; VP.setPointerCapture(e.pointerId);
+});
+VP.addEventListener('pointermove', e => {
+  if (dragging) return dragMove(e);
+  if (panDrag) { panX = e.clientX-panDrag.x; panY = e.clientY-panDrag.y; apply(); }
+});
+VP.addEventListener('pointerup', e => { if (dragging) dragEnd(e); panDrag = null; });
+VP.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.15 : 1/1.15, ns = Math.min(1.6, Math.max(0.10, scale*f));
+  panX = e.clientX - (e.clientX-panX)*(ns/scale);
+  panY = e.clientY - (e.clientY-panY)*(ns/scale);
+  scale = ns; apply();
+}, {passive:false});
+const toMap = e => { const r = W.getBoundingClientRect();
+                     return {x:(e.clientX-r.left)/scale, y:(e.clientY-r.top)/scale}; };
+
+// ---------- state ----------
+async function refresh() {
+  const s = await (await fetch('/api/state')).json();
+  units = s.units;
+  document.getElementById('note').textContent = s.notes;
+  const img = document.querySelector('img.map');
+  OV.setAttribute('width', img.naturalWidth || 4825); OV.setAttribute('height', img.naturalHeight || 4821);
+  render();
+}
+
+function render() {
+  document.querySelectorAll('.counter,.badge').forEach(n => n.remove());
+  const byhex = {};
+  units.forEach(u => (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u));
+  for (const h in byhex) byhex[h].forEach((u, i) => {
+    const el = document.createElement('img');
+    el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '');
+    el.src = 'assets/counters/' + encodeURIComponent(u.name) + '.png';
+    el.style.left = (u.x + i*14) + 'px'; el.style.top = (u.y - i*14) + 'px';
+    el.style.zIndex = 10 + i;
+    el.dataset.id = u.id;
+    el.title = `${u.name}  [${u.att}-${u.dfn}-${u.ma}]  hex ${u.hexnum}` + (u.status ? `  (${u.status})` : '');
+    el.addEventListener('pointerdown', ev => onCounterDown(ev, u, byhex[h]));
+    W.appendChild(el);
+    if (i === byhex[h].length-1 && byhex[h].length > 1) {
+      const b = document.createElement('div');
+      b.className = 'badge'; b.textContent = 'x' + byhex[h].length;
+      b.style.left = u.x + 'px'; b.style.top = (u.y + 14) + 'px';
+      W.appendChild(b);
+    }
+  });
+  const mine = units.filter(u => u.side===mySide && u.onmap && u.ma > 0);
+  const doneN = mine.filter(u => u.status).length;
+  document.getElementById('progress').textContent =
+    `${mySide==='All'?'Allied':'German'} movement: ${doneN} / ${mine.length} units done`;
+  drawOverlay();
+}
+
+// ---------- hex highlight overlay ----------
+const hexPts = (x,y) => [[x-64,y],[x-32,y-59.5],[x+32,y-59.5],[x+64,y],[x+32,y+59.5],[x-32,y+59.5]]
+                        .map(p => p.join(',')).join(' ');
+function drawOverlay() {
+  OV.innerHTML = '';
+  if (!legal) return;
+  // dim everything except legal hexes + origin: evenodd path with hex holes
+  let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
+  const hole = (x,y) => { const p = [[x-64,y],[x-32,y-59.5],[x+32,y-59.5],[x+64,y],[x+32,y+59.5],[x-32,y+59.5]];
+                          return 'M' + p.map(q=>q.join(' ')).join(' L ') + ' Z '; };
+  legal.dests.forEach(h => d += hole(h.x, h.y));
+  d += hole(selected.x, selected.y);
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d', d); path.setAttribute('fill','rgba(0,0,0,0.62)'); path.setAttribute('fill-rule','evenodd');
+  OV.appendChild(path);
+  legal.dests.forEach(h => {
+    const pg = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    pg.setAttribute('points', hexPts(h.x, h.y));
+    pg.setAttribute('fill','rgba(120,220,120,0.18)'); pg.setAttribute('stroke','#7ce07c');
+    pg.setAttribute('stroke-width','4');
+    OV.appendChild(pg);
+    if (h.cost !== undefined) {   // MP spent to reach this hex
+      const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+      tx.setAttribute('x', h.x); tx.setAttribute('y', h.y + 46);
+      tx.setAttribute('text-anchor','middle'); tx.setAttribute('font-size','24');
+      tx.setAttribute('fill','#1d5c1d'); tx.setAttribute('font-weight','bold');
+      tx.textContent = h.cost;
+      OV.appendChild(tx);
+    }
+  });
+}
+
+// ---------- selection / picker ----------
+function onCounterDown(ev, u, stackUnits) {
+  ev.stopPropagation();
+  if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
+  if (u.side !== mySide || u.status || !u.onmap || u.ma === 0) return;
+  const eligible = stackUnits.filter(s => s.side===mySide && !s.status && s.ma>0);
+  if (eligible.length > 1) showPicker(ev, eligible);
+  else select(u, false, ev);
+}
+function showPicker(ev, stackUnits) {
+  const P = document.getElementById('picker');
+  P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexnum} — pick one, or move together</div>`;
+  stackUnits.forEach(u => {
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<img src="assets/counters/${encodeURIComponent(u.name)}.png"> ${u.name} <span style="color:#8a8f98">[${u.att}-${u.dfn}-${u.ma}]</span>`;
+    d.onclick = e => { P.style.display='none'; select(u, false, e); };
+    P.appendChild(d);
+  });
+  const w = document.createElement('div'); w.className = 'item';
+  w.innerHTML = `<b>▣ Whole stack (${stackUnits.length} units, slowest MA)</b>`;
+  w.onclick = e => { P.style.display='none'; select(stackUnits[0], true, e); };
+  P.appendChild(w);
+  P.style.left = Math.min(ev.clientX+8, innerWidth-240) + 'px'; P.style.top = ev.clientY+8 + 'px';
+  P.style.display = 'block';
+}
+async function select(u, whole, ev) {
+  selected = u; selected.whole = whole;
+  legal = await (await fetch(`/api/legal?id=${u.id}&whole=${whole?1:0}`)).json();
+  render();
+  const A = document.getElementById('actions');
+  A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — MA ${legal.ma}, ${legal.dests.length} legal hexes.
+                 Drag to a green hex. <button class="sidebtn" onclick="passSel()">Pass</button>
+                 <button class="sidebtn" onclick="deselect()">Cancel</button>`;
+  A.style.left = '14px'; A.style.bottom = '14px'; A.style.top = ''; A.style.display = 'block';
+}
+function deselect() { selected = null; legal = null;
+  document.getElementById('actions').style.display = 'none'; render(); }
+async function passSel() {
+  await fetch('/api/pass', {method:'POST', body:JSON.stringify({id:selected.id, whole:selected.whole})});
+  deselect(); refresh();
+}
+document.addEventListener('pointerdown', e => {
+  if (!e.target.closest('#picker')) document.getElementById('picker').style.display='none';
+});
+
+// ---------- drag restricted to legal hexes ----------
+function dragStart(ev, u) {
+  const el = document.querySelector(`.counter[data-id="${u.id}"]`);
+  dragging = {u, el}; el.classList.add('dragging');
+  ev.stopPropagation();
+}
+function dragMove(e) {
+  const m = toMap(e);
+  dragging.el.style.left = m.x+'px'; dragging.el.style.top = m.y+'px';
+  // live snap preview: brighten nearest legal hex
+  let best = nearestLegal(m);
+  OV.querySelectorAll('polygon').forEach(p => p.setAttribute('stroke-width','4'));
+  if (best) {
+    const i = legal.dests.indexOf(best);
+    const pg = OV.querySelectorAll('polygon')[i];
+    if (pg) pg.setAttribute('stroke-width','12');
+  }
+}
+function nearestLegal(m) {
+  let best = null, bd = 70*70;   // must drop within ~70px of a legal hex center
+  legal.dests.forEach(h => { const d=(h.x-m.x)**2+(h.y-m.y)**2; if (d<bd){bd=d;best=h;} });
+  return best;
+}
+async function dragEnd(e) {
+  const m = toMap(e), u = dragging.u;
+  dragging.el.classList.remove('dragging'); dragging = null;
+  const best = nearestLegal(m);
+  if (!best) { render(); return; }   // illegal drop -> snap back, nothing written
+  const r = await (await fetch('/api/move', {method:'POST',
+      body:JSON.stringify({id:u.id, dest:best.hexnum, whole:selected.whole})})).json();
+  if (r.error) alert(r.error);
+  deselect(); refresh();
+}
+
+// ---------- top bar ----------
+['All','Ger'].forEach(s => document.getElementById('side-'+s).onclick = () => {
+  mySide = s; deselect();
+  document.querySelectorAll('.sidebtn').forEach(b => b.classList.remove('on'));
+  document.getElementById('side-'+s).classList.add('on');
+  render();
+});
+document.getElementById('resetbtn').onclick = async () => {
+  await fetch('/api/reset', {method:'POST'}); deselect(); refresh();
+};
+
+refresh();
+</script>
+</body>
+</html>

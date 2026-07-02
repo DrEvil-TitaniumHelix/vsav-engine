@@ -1,0 +1,20 @@
+# Third-party game assets — NEVER commit (Decision Games / SPI property)
+*.vmod
+*.vsav
+*.pdf
+*.png
+*.jpg
+*.bmp
+literature/
+live/
+ref/
+
+# Derived data (regenerate with engine/extract_terrain.py from your own module copy)
+terrain.json
+
+# Local working notes
+INTERNAL_NOTES.md
+
+# Python
+__pycache__/
+*.pyc
