@@ -23,7 +23,7 @@ import vsav
 import gamespec
 
 PIECE_RE = re.compile(r"^\+/(\d+)/(\w+);")
-IMG_RE = re.compile(r"piece;;;([^;]+?)\.png;")
+IMG_RE = re.compile(r"piece;[^;]*;[^;]*;([^;]+?)\.(png|gif|svg);")
 ESC = "\x1b"
 
 
@@ -57,6 +57,7 @@ class Board:
                     st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
                 x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
                 self.pieces[m.group(1)] = dict(name=img.group(1).strip(), kind=m.group(2),
+                                               img=f"{img.group(1).strip()}.{img.group(2)}",
                                                idx=i, x=x, y=y)
         self.member_of = {}  # piece id -> stack id
         for sid, s in self.stacks.items():
@@ -89,6 +90,7 @@ class Board:
                 continue
             col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
             out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
+                            img=p["img"],
                             x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn))
         return out
 

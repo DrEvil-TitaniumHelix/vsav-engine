@@ -27,6 +27,7 @@ class Grid:
         self.x0 = float(cfg["x0"]); self.y0 = float(cfg["y0"])
         self.orient = cfg.get("orient", "flat")
         self.stagger = bool(cfg.get("stagger", True))
+        self.stagger_sign = int(cfg.get("stagger_sign", 1))    # flat: +1 odd cols shift DOWN, -1 UP
         self.odd_row_carry = int(cfg.get("odd_row_carry", 1))
         self.offset_parity = int(cfg.get("offset_parity", 1))  # pointy: rows with row%2==this shift +dx/2
         self.digits = int(cfg.get("hexnum_digits", 2))
@@ -39,7 +40,7 @@ class Grid:
             return col, row, self.hexnum(col, row)
         col = round((x - self.x0) / self.dx)
         odd = (col % 2 == 1)
-        yoff = (self.dy / 2.0) if (self.stagger and odd) else 0.0
+        yoff = (self.stagger_sign * self.dy / 2.0) if (self.stagger and odd) else 0.0
         row = round((y - self.y0 - yoff) / self.dy) + (self.odd_row_carry if odd else 0)
         return col, row, self.hexnum(col, row)
 
@@ -48,7 +49,7 @@ class Grid:
             xoff = (self.dx / 2.0) if (self.stagger and row % 2 == self.offset_parity) else 0.0
             return round(self.x0 + col * self.dx + xoff), round(self.y0 + row * self.dy)
         odd = (col % 2 == 1)
-        yoff = (self.dy / 2.0) if (self.stagger and odd) else 0.0
+        yoff = (self.stagger_sign * self.dy / 2.0) if (self.stagger and odd) else 0.0
         base = row - (self.odd_row_carry if odd else 0)
         return round(self.x0 + col * self.dx), round(self.y0 + base * self.dy + yoff)
 
@@ -67,13 +68,18 @@ class Grid:
         self.name_row0 = int(cfg.get("row0", 1))
         self.name_num0 = int(cfg.get("num0", -1))
 
+    @staticmethod
+    def _letters(i):
+        return chr(65 + i) if i < 26 else chr(65 + i - 26) * 2
+
     def display_name(self, col, row):
-        if getattr(self, "name_style", None) == "letter_diag":
+        style = getattr(self, "name_style", None)
+        if style == "letter_diag":      # Tobruk: letter ROWS, numbers on down-left diagonals
             li = row - self.name_row0
             if li >= 0:
-                letter = chr(65 + li) if li < 26 else chr(65 + li - 26) * 2
-                n = col + li // 2 + self.name_num0 + 1
-                return f"{letter}{n}"
+                return f"{self._letters(li)}{col + li // 2 + self.name_num0 + 1}"
+        if style == "colletter":        # ASL geoboards: letter COLUMNS (A..Z,AA..GG) + row
+            return f"{self._letters(col)}{row}"
         return self.hexnum(col, row)
 
 

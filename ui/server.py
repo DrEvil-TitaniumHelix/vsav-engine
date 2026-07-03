@@ -180,8 +180,11 @@ class H(http.server.SimpleHTTPRequestHandler):
             return self.send_error(404)
         with open(path, "rb") as f:
             data = f.read()
+        ext = os.path.splitext(path)[1].lower()
+        ctype = {"gif": "image/gif", ".gif": "image/gif",
+                 ".svg": "image/svg+xml", ".png": "image/png"}.get(ext, "image/png")
         self.send_response(200)
-        self.send_header("Content-Type", "image/png")
+        self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "max-age=3600")
         self.end_headers()
