@@ -56,8 +56,10 @@ class Board:
                 if not st:
                     st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
                 x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
-                self.pieces[m.group(1)] = dict(name=img.group(1).strip(), kind=m.group(2),
-                                               img=f"{img.group(1).strip()}.{img.group(2)}",
+                # VASL escapes '/' in image paths as '\/' inside piece types
+                nm = img.group(1).strip().replace("\\", "")
+                self.pieces[m.group(1)] = dict(name=nm, kind=m.group(2),
+                                               img=f"{nm}.{img.group(2)}",
                                                idx=i, x=x, y=y)
         self.member_of = {}  # piece id -> stack id
         for sid, s in self.stacks.items():
