@@ -49,6 +49,8 @@ def save_facing():
 def png_size(path):
     with open(path, "rb") as f:
         head = f.read(24)
+    if head[:6] in (b"GIF87a", b"GIF89a"):
+        return struct.unpack("<HH", head[6:10])
     return struct.unpack(">II", head[16:24])
 
 
