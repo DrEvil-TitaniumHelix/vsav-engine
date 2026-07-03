@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Arnhem — Claude Plays VASSAL (POC)</title>
+<title>Claude Plays VASSAL</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#1a1c20; font-family:Segoe UI,sans-serif; }
   #topbar { position:fixed; top:0; left:0; right:0; height:44px; background:#23262c; color:#ddd;
@@ -18,7 +18,7 @@
   #world { position:absolute; transform-origin:0 0; }
   #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
   svg#overlay { position:absolute; top:0; left:0; pointer-events:none; }
-  .counter { position:absolute; width:75px; height:75px; margin:-37px 0 0 -37px; cursor:pointer;
+  .counter { position:absolute; cursor:pointer;
              user-select:none; -webkit-user-drag:none; border-radius:4px; }
   .counter.done { filter:grayscale(.9) brightness(.65); }
   .counter.sel { outline:3px solid #ffd75e; outline-offset:1px; z-index:30!important; }
@@ -38,17 +38,16 @@
 </head>
 <body>
 <div id="topbar">
-  <b>ARNHEM</b>
+  <b id="gamename">…</b>
   <span>play as:</span>
-  <button class="sidebtn on" id="side-All">Allied</button>
-  <button class="sidebtn" id="side-Ger">German</button>
+  <span id="sidebtns"></span>
   <span id="progress"></span>
   <span id="note"></span>
   <button class="sidebtn" id="resetbtn">Reset game</button>
 </div>
 <div id="viewport">
   <div id="world">
-    <img class="map" src="assets/map.png">
+    <img class="map">
     <svg id="overlay"></svg>
   </div>
 </div>
@@ -58,9 +57,11 @@
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay');
-const MAPW = 4825, MAPH = 4821;
+let GAME = null;                 // game descriptor from /api/state (map, grid, sides…)
+let MAPW = 0, MAPH = 0, CPX = 75;
+let HX = 64, HXC = 32, HYH = 59.5;   // hex polygon geometry, derived from the grid
 let scale = 0.25, panX = 0, panY = 0;
-let units = [], mySide = 'All', selected = null, legal = null, dragging = null;
+let units = [], mySide = null, selected = null, legal = null, dragging = null;
 
 function apply() { W.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`; }
 function fitMap() {   // open with the whole map visible, centered
@@ -69,7 +70,6 @@ function fitMap() {   // open with the whole map visible, centered
   panY = (VP.clientHeight - MAPH * scale) / 2;
   apply();
 }
-fitMap();
 
 // ---------- pan & zoom ----------
 let panDrag = null;
@@ -92,15 +92,44 @@ VP.addEventListener('wheel', e => {
 const toMap = e => { const r = W.getBoundingClientRect();
                      return {x:(e.clientX-r.left)/scale, y:(e.clientY-r.top)/scale}; };
 
+// ---------- game boot (everything game-specific arrives with the state) ----------
+function bootGame(g) {
+  GAME = g;
+  MAPW = g.map_w; MAPH = g.map_h; CPX = g.counter_px;
+  // flat-top hex from grid geometry: size = dx/1.5; corners at (±size,0),(±size/2,±dy/2)
+  HX = g.grid.dx / 1.5; HXC = HX / 2; HYH = g.grid.dy / 2;
+  document.getElementById('gamename').textContent = g.name.toUpperCase();
+  document.title = g.name + ' — Claude Plays VASSAL';
+  document.querySelector('img.map').src = g.map_url;
+  const SB = document.getElementById('sidebtns');
+  SB.innerHTML = '';
+  g.sides.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'sidebtn'; b.id = 'side-' + s.id; b.textContent = s.label;
+    b.onclick = () => {
+      mySide = s.id; deselect();
+      SB.querySelectorAll('.sidebtn').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      render();
+    };
+    SB.appendChild(b);
+  });
+  if (!mySide) { mySide = g.sides[0].id; }
+  document.getElementById('side-' + mySide).classList.add('on');
+  fitMap();
+}
+
 // ---------- state ----------
 async function refresh() {
   const s = await (await fetch('/api/state')).json();
+  if (!GAME) bootGame(s.game);
   units = s.units;
   document.getElementById('note').textContent = s.notes;
-  const img = document.querySelector('img.map');
-  OV.setAttribute('width', img.naturalWidth || 4825); OV.setAttribute('height', img.naturalHeight || 4821);
+  OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   render();
 }
+
+function sideLabel(id) { const s = GAME.sides.find(s => s.id === id); return s ? s.label : id; }
 
 function render() {
   document.querySelectorAll('.counter,.badge').forEach(n => n.remove());
@@ -109,7 +138,9 @@ function render() {
   for (const h in byhex) byhex[h].forEach((u, i) => {
     const el = document.createElement('img');
     el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '');
-    el.src = 'assets/counters/' + encodeURIComponent(u.name) + '.png';
+    el.src = GAME.counters_url + encodeURIComponent(u.name) + '.png';
+    el.style.width = CPX + 'px'; el.style.height = CPX + 'px';
+    el.style.margin = `-${CPX/2}px 0 0 -${CPX/2}px`;
     el.style.left = (u.x + i*14) + 'px'; el.style.top = (u.y - i*14) + 'px';
     el.style.zIndex = 10 + i;
     el.dataset.id = u.id;
@@ -126,19 +157,19 @@ function render() {
   const mine = units.filter(u => u.side===mySide && u.onmap && u.ma > 0);
   const doneN = mine.filter(u => u.status).length;
   document.getElementById('progress').textContent =
-    `${mySide==='All'?'Allied':'German'} movement: ${doneN} / ${mine.length} units done`;
+    `${sideLabel(mySide)} movement: ${doneN} / ${mine.length} units done`;
   drawOverlay();
 }
 
 // ---------- hex highlight overlay ----------
-const hexPts = (x,y) => [[x-64,y],[x-32,y-59.5],[x+32,y-59.5],[x+64,y],[x+32,y+59.5],[x-32,y+59.5]]
+const hexPts = (x,y) => [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]]
                         .map(p => p.join(',')).join(' ');
 function drawOverlay() {
   OV.innerHTML = '';
   if (!legal) return;
   // dim everything except legal hexes + origin: evenodd path with hex holes
   let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
-  const hole = (x,y) => { const p = [[x-64,y],[x-32,y-59.5],[x+32,y-59.5],[x+64,y],[x+32,y+59.5],[x-32,y+59.5]];
+  const hole = (x,y) => { const p = [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]];
                           return 'M' + p.map(q=>q.join(' ')).join(' L ') + ' Z '; };
   legal.dests.forEach(h => d += hole(h.x, h.y));
   d += hole(selected.x, selected.y);
@@ -176,7 +207,7 @@ function showPicker(ev, stackUnits) {
   P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexnum} — pick one, or move together</div>`;
   stackUnits.forEach(u => {
     const d = document.createElement('div'); d.className = 'item';
-    d.innerHTML = `<img src="assets/counters/${encodeURIComponent(u.name)}.png"> ${u.name} <span style="color:#8a8f98">[${u.att}-${u.dfn}-${u.ma}]</span>`;
+    d.innerHTML = `<img src="${GAME.counters_url}${encodeURIComponent(u.name)}.png"> ${u.name} <span style="color:#8a8f98">[${u.att}-${u.dfn}-${u.ma}]</span>`;
     d.onclick = e => { P.style.display='none'; select(u, false, e); };
     P.appendChild(d);
   });
@@ -242,12 +273,6 @@ async function dragEnd(e) {
 }
 
 // ---------- top bar ----------
-['All','Ger'].forEach(s => document.getElementById('side-'+s).onclick = () => {
-  mySide = s; deselect();
-  document.querySelectorAll('.sidebtn').forEach(b => b.classList.remove('on'));
-  document.getElementById('side-'+s).classList.add('on');
-  render();
-});
 document.getElementById('resetbtn').onclick = async () => {
   await fetch('/api/reset', {method:'POST'}); deselect(); refresh();
 };

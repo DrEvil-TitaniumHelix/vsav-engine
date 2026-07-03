@@ -1,40 +1,44 @@
 """
-board.py - Full-fidelity VASSAL save model for Arnhem (v2 of the mover in arnhem.py).
+board.py - Full-fidelity VASSAL save model (v2 mover). Game-agnostic:
+grid, side detection and the stack-command map name come from the Game spec.
 
 Understands the real save structure (cracked 2026-07-01):
-  - piece commands:  +/<pieceId>/mark|immob;...piece;;;<img>.png;...;Map0;1;<x>,<y>...[Main Map;<x>;<y>;<n>]
-  - stack commands:  +/<stackId>/stack/Main Map;<x>;<y>;<memberId>[;<memberId>...]
-  - 66 empty stack shells + 42 immob markers (DZ/turn track) exist; left untouched.
+  - piece commands:  +/<pieceId>/mark|immob;...piece;;;<img>.png;...;Map0;1;<x>,<y>...[<map>;<x>;<y>;<n>]
+  - stack commands:  +/<stackId>/stack/<map>;<x>;<y>;<memberId>[;<memberId>...]
+  - empty stack shells + immob markers (DZ/turn track) exist; left untouched.
 
-Capabilities the old mover lacked:
+Capabilities:
   - move ANY number of counters in one batch
   - move a piece that shares a stack (auto-split), or a whole stack at once
   - auto-join: moving onto an occupied hex appends to that hex's stack
-  - identity-based editing (piece IDs), no blind string replacement across the file
+  - identity-based editing (piece IDs), no blind string replacement
 
 Usage:
-  python board.py dump  <save.vsav>
-  python board.py move  <save.vsav> <out.vsav> "<unit>=<hex>" ["<unit>=<hex>" ...]
-  python board.py movestack <save.vsav> <out.vsav> <hex_from> <hex_to>
+  python board.py [--game <dir>] dump  <save.vsav>
+  python board.py [--game <dir>] move  <save.vsav> <out.vsav> "<unit>=<hex>" ...
+  python board.py [--game <dir>] movestack <save.vsav> <out.vsav> <from> <to>
 """
 import re, sys
-import arnhem  # codec + hex math (proven, unchanged)
+import vsav
+import gamespec
 
 PIECE_RE = re.compile(r"^\+/(\d+)/(mark|immob);")
-STACK_RE = re.compile(r"^\+/(\d+)/stack/Main Map;(\d+);(\d+)((?:;\d+)*)\\*$")
-IMG_RE   = re.compile(r"piece;;;([^;]+?)\.png;")
+IMG_RE = re.compile(r"piece;;;([^;]+?)\.png;")
 ESC = "\x1b"
 
 
 class Board:
-    def __init__(self, path):
+    def __init__(self, path, game):
+        self.game = game
         self.path = path
-        plain, self.moduledata, self.savedata = arnhem.read_vsav(path)
+        self.stack_re = re.compile(
+            rf"^\+/(\d+)/stack/{re.escape(game.map_name)};(\d+);(\d+)((?:;\d+)*)\\*$")
+        plain, self.moduledata, self.savedata = vsav.read_vsav(path)
         self.cmds = plain.split(ESC)
-        self.pieces = {}   # id -> dict(name, idx, x, y)
+        self.pieces = {}   # id -> dict(name, kind, idx, x, y)
         self.stacks = {}   # id -> dict(idx, x, y, members[list of piece ids])
         for i, c in enumerate(self.cmds):
-            m = STACK_RE.match(c.rstrip())
+            m = self.stack_re.match(c.rstrip())
             if m:
                 members = [s for s in m.group(4).split(";") if s]
                 self.stacks[m.group(1)] = dict(idx=i, x=int(m.group(2)), y=int(m.group(3)),
@@ -43,8 +47,8 @@ class Board:
             m = PIECE_RE.match(c)
             if m:
                 img = IMG_RE.search(c)
-                # BasicPiece state = ".../Pieces\tfalse;<map>;1;x,y" — map is "Map0" for
-                # units placed via stacks, EMPTY for singletons (Grsn, DZs, etc.)
+                # BasicPiece state = ".../Pieces\tfalse;<map>;1;x,y" — map name may be
+                # EMPTY for singletons placed outside stacks (Grsn, DZs, etc.)
                 st = re.search(r"/Pieces\tfalse;[^;]*;1;(\d+),(\d+)", c)
                 if img and st:
                     self.pieces[m.group(1)] = dict(name=img.group(1).strip(), kind=m.group(2),
@@ -72,8 +76,8 @@ class Board:
         for pid, p in self.pieces.items():
             if p["kind"] != "mark":
                 continue
-            col, row, hexn = arnhem.pixel_to_hex(p["x"], p["y"])
-            out.append(dict(id=pid, name=p["name"], side=arnhem.side(p["name"]),
+            col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
+            out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
                             x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn))
         return out
 
@@ -95,14 +99,16 @@ class Board:
         c = self.cmds[p["idx"]]
         # exact old coord pair, both encodings, digit-boundary guarded
         c = re.sub(rf"(?<!\d){ox},{oy}(?!\d)", f"{nx},{ny}", c)
-        c = re.sub(rf"(?<!\d)Main Map;{ox};{oy};", f"Main Map;{nx};{ny};", c)
+        c = re.sub(rf"(?<!\d){re.escape(self.game.map_name)};{ox};{oy};",
+                   f"{self.game.map_name};{nx};{ny};", c)
         self.cmds[p["idx"]] = c
         p["x"], p["y"] = nx, ny
 
     def _rewrite_stack(self, sid):
         s = self.stacks[sid]
         tail = "".join(f";{m}" for m in s["members"])
-        self.cmds[s["idx"]] = f"+/{sid}/stack/Main Map;{s['x']};{s['y']}{tail}\\"
+        self.cmds[s["idx"]] = (f"+/{sid}/stack/{self.game.map_name};"
+                               f"{s['x']};{s['y']}{tail}\\")
 
     def _detach(self, pid):
         sid = self.member_of.pop(pid, None)
@@ -114,7 +120,6 @@ class Board:
         sid = self.stack_at(nx, ny)
         if sid is None:
             sid = self._fresh_id()
-            src = self.stacks[self.member_of.get(pid, next(iter(self.stacks)))]
             self.stacks[sid] = dict(idx=None, x=nx, y=ny, members=[])
             # insert the new stack command right before end_save
             insert_at = len(self.cmds) - 1
@@ -134,20 +139,20 @@ class Board:
     def move_piece(self, name_fragment, dest):
         """Move ONE piece (splitting its stack if shared) to dest hex ('2010') or (x,y)."""
         pid, p = self.find(name_fragment)
-        nx, ny = dest if isinstance(dest, tuple) else arnhem.hexnum_to_pixel(dest)
-        old = arnhem.pixel_to_hex(p["x"], p["y"])[2]
+        nx, ny = dest if isinstance(dest, tuple) else self.game.grid.hexnum_to_pixel(dest)
+        old = self.game.grid.pixel_to_hex(p["x"], p["y"])[2]
         self._detach(pid)
         self._set_piece_xy(pid, nx, ny)
         self._attach(pid, nx, ny)
-        return f"{p['name']}: {old} -> {arnhem.pixel_to_hex(nx, ny)[2]}"
+        return f"{p['name']}: {old} -> {self.game.grid.pixel_to_hex(nx, ny)[2]}"
 
     def move_stack(self, hex_from, hex_to):
         """Move an entire stack (all members) between hexes."""
-        fx, fy = arnhem.hexnum_to_pixel(hex_from)
+        fx, fy = self.game.grid.hexnum_to_pixel(hex_from)
         sid = self.stack_at(fx, fy)
         if sid is None:
             raise ValueError(f"no stack at hex {hex_from}")
-        nx, ny = arnhem.hexnum_to_pixel(hex_to)
+        nx, ny = self.game.grid.hexnum_to_pixel(hex_to)
         s = self.stacks[sid]
         for pid in list(s["members"]):
             self._set_piece_xy(pid, nx, ny)
@@ -157,7 +162,8 @@ class Board:
         return f"stack {hex_from} -> {hex_to}: {names}"
 
     def write(self, out_path):
-        arnhem.write_vsav(out_path, ESC.join(self.cmds), self.moduledata, self.savedata)
+        vsav.write_vsav(out_path, ESC.join(self.cmds), self.moduledata, self.savedata,
+                        key=self.game.save_key)
 
 
 # ---------------------------------------------------------------- CLI
@@ -175,19 +181,24 @@ def _dump(b):
 
 
 if __name__ == "__main__":
-    cmd, save = sys.argv[1], sys.argv[2]
-    b = Board(save)
+    args = sys.argv[1:]
+    game_dir = gamespec.default_game_dir()
+    if args and args[0] == "--game":
+        game_dir = args[1]; args = args[2:]
+    game = gamespec.Game(game_dir)
+    cmd, save = args[0], args[1]
+    b = Board(save, game)
     if cmd == "dump":
         _dump(b)
     elif cmd == "move":
-        out = sys.argv[3]
-        for spec in sys.argv[4:]:
+        out = args[2]
+        for spec in args[3:]:
             unit, dest = spec.rsplit("=", 1)
             print(" ", b.move_piece(unit, dest))
         b.write(out)
         print(f"wrote {out}")
     elif cmd == "movestack":
-        out, hf, ht = sys.argv[3], sys.argv[4], sys.argv[5]
+        out, hf, ht = args[2], args[3], args[4]
         print(" ", b.move_stack(hf, ht))
         b.write(out)
         print(f"wrote {out}")
