@@ -1,0 +1,66 @@
+{
+  "name": "Arnhem (SPI Westwall quad, 1976)",
+  "map_name": "Main Map",
+  "save_key": "a3",
+  "grid": {
+    "dx": 96.0, "dy": 119.0, "x0": 60.0, "y0": 60.0,
+    "stagger": true, "odd_row_carry": 1, "hexnum_digits": 2
+  },
+  "setup_save": "../../ref/Arnhem Historical.vsav",
+  "terrain_file": "../../ref/terrain.json",
+  "assets": {
+    "map": "../../ui/assets/map.png",
+    "map_thumb": "../../ui/assets/map_thumb.png",
+    "counters_dir": "../../ui/assets/counters"
+  },
+  "ui": {"counter_px": 75},
+  "sides": {
+    "order": ["All", "Ger"],
+    "labels": {"All": "Allied", "Ger": "German"},
+    "default": "All",
+    "detect_tokens": {
+      "Ger": ["SS", "Kraft", "Krft", "Grsn", "BrDf", "Hnke", "Wlt", "Hbr", "Hber",
+              "vT", "2107", "180", "406", "6P", "1P", "Jng", "-59"]
+    }
+  },
+  "stats": {
+    "patterns": [
+      ["9SS Recon", [2, 2, 12]], ["9SS Arty", [0, 3, 7]], ["Kraft", [3, 3, 7]],
+      ["Grsn", [2, 2, 12]], ["BrDf", [2, 2, 7]], ["Hnke", [4, 3, 10]], ["Wlt", [0, 2, 7]],
+      ["Hber", [0, 2, 7]], ["Hbr", [5, 5, 10]], ["Jng", [2, 3, 7]], ["2107", [4, 4, 10]],
+      ["180", [2, 3, 7]], ["vT", [3, 3, 7]], ["-59", [3, 3, 7]], ["406", [2, 2, 7]],
+      ["6P", [2, 3, 7]], ["1PT", [2, 2, 7]], ["1P", [2, 2, 7]],
+      ["9SS", [4, 4, 7]], ["10SS Arty", [0, 3, 7]], ["10SS", [3, 4, 7]],
+      ["DZ", [0, 0, 0]], ["Game Turn", [0, 0, 0]],
+      ["Arty", [0, 2, 7]], ["Fire", [0, 2, 7]], ["Engineers", [3, 3, 10]],
+      ["Pol", [2, 2, 7]], ["82-", [2, 2, 7]], ["101-", [2, 2, 7]],
+      ["325", [2, 3, 7]], ["327", [2, 3, 7]],
+      ["130", [5, 5, 7]], ["214", [5, 5, 7]], ["129", [5, 5, 7]], ["32", [4, 3, 10]],
+      ["231", [4, 3, 10]], ["5-1C", [4, 3, 10]], ["5-2", [4, 3, 10]], ["55", [3, 3, 10]],
+      ["1-1", [2, 2, 7]], ["1-2", [2, 2, 7]], ["1-4", [2, 2, 7]]
+    ],
+    "default": [2, 2, 7],
+    "provenance": "player-aid cards, pattern-matched; REAL per-counter transcription pending (combat phase task)"
+  },
+  "movement": {
+    "impassable_terrain": ["offmap", "water"],
+    "terrain_mp": {
+      "mixed": 2.0, "woods": 2.0, "broken": 3.0, "rough": 4.0, "town": 1.0, "city": 1.0
+    },
+    "hexside_rules": [
+      {"feature": "water", "value": "river", "unless": "bridge", "effect": "prohibit",
+       "rule": "[5.2] river hexsides prohibited unless bridged"},
+      {"feature": "water", "value": "stream", "unless": "bridge", "effect": "add", "mp": 3.0,
+       "rule": "[5.2] stream +3 MP unless bridged"},
+      {"feature": "road", "value": "road", "effect": "override", "mp": 0.5,
+       "rule": "[5.22] road movement 1/2 MP regardless of terrain"},
+      {"feature": "road", "value": "trail", "effect": "override", "mp": 1.0,
+       "rule": "[5.23] trail movement 1 MP"}
+    ],
+    "zoc": {"exerts": true, "stop_on_enter": true, "locked_at_start": true,
+            "rule": "[6.0] rigid ZOC: stop on entry; [5.14] leave only via combat"},
+    "enter_enemy_hex": false,
+    "pass_through_friendly": true,
+    "holding_row_max": 2
+  }
+}
