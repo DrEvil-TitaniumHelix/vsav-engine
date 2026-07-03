@@ -150,7 +150,7 @@ function render() {
     el.style.zIndex = 10 + i;
     el.dataset.id = u.id;
     if (u.facing !== null && u.facing !== undefined && GAME.facing)
-      el.style.transform = `rotate(${u.facing * GAME.facing.step_deg}deg)`;
+      el.style.transform = `rotate(${(GAME.facing.offset_deg||0) + u.facing * GAME.facing.step_deg}deg)`;
     el.title = `${u.name}  [${u.att}-${u.dfn}-${u.ma}]  hex ${u.hexnum}` + (u.status ? `  (${u.status})` : '');
     el.addEventListener('pointerdown', ev => onCounterDown(ev, u, byhex[h]));
     el.addEventListener('contextmenu', ev => onCounterMenu(ev, u));
@@ -252,8 +252,8 @@ function onCounterMenu(ev, u) {
   ev.preventDefault(); ev.stopPropagation();
   if (!GAME.facing || u.side !== mySide) return;
   const P = document.getElementById('picker');
-  const deg = GAME.facing.step_deg;
-  P.innerHTML = `<div class="hdr">${u.name} — facing ${(u.facing||0)*deg}&deg;</div>`;
+  const deg = GAME.facing.step_deg, off = GAME.facing.offset_deg || 0;
+  P.innerHTML = `<div class="hdr">${u.name} — facing ${off + (u.facing||0)*deg}&deg; (hexside ${(u.facing||0)+1} of ${GAME.facing.count})</div>`;
   [['&#8635; Rotate CW', 1], ['&#8634; Rotate CCW', -1]].forEach(([label, step]) => {
     const d = document.createElement('div'); d.className = 'item';
     d.innerHTML = label;

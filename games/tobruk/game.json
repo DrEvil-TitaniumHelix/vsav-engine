@@ -20,8 +20,8 @@
   },
   "ui": {"counter_px": 120},
   "facing": {
-    "count": 12, "step_deg": 30,
-    "provenance": "module vehicle prototypes carry rotate;12 (CW/CCW, 30-degree steps). Turn MP cost + which unit classes face: pending rulebook. VASSAL state write-through pending one rotate-save-diff experiment."
+    "count": 6, "step_deg": 60, "offset_deg": 30,
+    "provenance": "6 legal facings = the 6 hexsides. Pointy-top map: neighbor directions are at 30/90/150/210/270/330 deg while counter art rests pointing at a VERTEX (0 deg) — hence offset_deg 30 and hence the module's rotate;12 trait (legal facings are its odd steps). Turn MP cost: pending rulebook. VASSAL state write-through pending one rotate-save-diff experiment."
   },
   "unit_kinds": ["prototype"],
   "sides": {
