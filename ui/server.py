@@ -57,7 +57,7 @@ def game_descriptor():
         map_url="/gasset/map", map_w=w, map_h=h,
         counters_url="/gasset/counters/",
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
-        grid=dict(dx=g.grid.dx, dy=g.grid.dy),
+        grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient),
         sides=[dict(id=s, label=g.spec["sides"].get("labels", {}).get(s, s))
                for s in g.side_order],
     )
@@ -105,7 +105,7 @@ def api_move(body):
         for mid in b.stacks[b.member_of[pid]]["members"]:
             done[mid] = "moved"
     else:
-        msg = b.move_piece(me["name"], dest)
+        msg = b.move_piece_by_id(pid, dest)
         done[pid] = "moved"
     b.write(WORK)
     return dict(ok=True, msg=msg)

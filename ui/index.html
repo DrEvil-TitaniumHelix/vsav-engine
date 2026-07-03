@@ -96,8 +96,13 @@ const toMap = e => { const r = W.getBoundingClientRect();
 function bootGame(g) {
   GAME = g;
   MAPW = g.map_w; MAPH = g.map_h; CPX = g.counter_px;
-  // flat-top hex from grid geometry: size = dx/1.5; corners at (±size,0),(±size/2,±dy/2)
-  HX = g.grid.dx / 1.5; HXC = HX / 2; HYH = g.grid.dy / 2;
+  if (g.grid.orient === 'pointy') {
+    // pointy-top: size = dy/1.5; corners at (0,±size),(±dx/2,±size/2)
+    HX = g.grid.dy / 1.5; HXC = HX / 2; HYH = g.grid.dx / 2;
+  } else {
+    // flat-top: size = dx/1.5; corners at (±size,0),(±size/2,±dy/2)
+    HX = g.grid.dx / 1.5; HXC = HX / 2; HYH = g.grid.dy / 2;
+  }
   document.getElementById('gamename').textContent = g.name.toUpperCase();
   document.title = g.name + ' — Claude Plays VASSAL';
   document.querySelector('img.map').src = g.map_url;
@@ -162,15 +167,16 @@ function render() {
 }
 
 // ---------- hex highlight overlay ----------
-const hexPts = (x,y) => [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]]
-                        .map(p => p.join(',')).join(' ');
+const hexCorners = (x,y) => GAME.grid.orient === 'pointy'
+  ? [[x,y-HX],[x+HYH,y-HXC],[x+HYH,y+HXC],[x,y+HX],[x-HYH,y+HXC],[x-HYH,y-HXC]]
+  : [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]];
+const hexPts = (x,y) => hexCorners(x,y).map(p => p.join(',')).join(' ');
 function drawOverlay() {
   OV.innerHTML = '';
   if (!legal) return;
   // dim everything except legal hexes + origin: evenodd path with hex holes
   let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
-  const hole = (x,y) => { const p = [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]];
-                          return 'M' + p.map(q=>q.join(' ')).join(' L ') + ' Z '; };
+  const hole = (x,y) => 'M' + hexCorners(x,y).map(q=>q.join(' ')).join(' L ') + ' Z ';
   legal.dests.forEach(h => d += hole(h.x, h.y));
   d += hole(selected.x, selected.y);
   const path = document.createElementNS('http://www.w3.org/2000/svg','path');

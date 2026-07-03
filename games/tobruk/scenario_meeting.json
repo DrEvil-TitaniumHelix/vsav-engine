@@ -1,0 +1,14 @@
+{
+  "name": "Meeting engagement (engine POC — not a published scenario)",
+  "description": "3 Panzer III H + a German rifle squad meet 2 Crusaders + 2 British rifle squads in the open desert. Small on purpose: proves grid/movement/save-construction for Tobruk.",
+  "units": [
+    {"slot": "Panzer-III H", "hex": [5, 19]},
+    {"slot": "Panzer-III H", "hex": [6, 20]},
+    {"slot": "Panzer-III H", "hex": [5, 21]},
+    {"gpid": "412", "hex": [7, 20], "comment": "German rifle squad 1/1"},
+    {"slot": "Crusader Mk.II", "hex": [30, 19]},
+    {"slot": "Crusader Mk.II", "hex": [30, 21]},
+    {"gpid": "580", "hex": [29, 20], "comment": "British rifle squad 1/1"},
+    {"gpid": "580", "hex": [31, 20], "comment": "British rifle squad 1/1 (second)"}
+  ]
+}

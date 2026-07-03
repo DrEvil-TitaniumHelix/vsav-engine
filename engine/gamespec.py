@@ -16,16 +16,27 @@ from collections import deque
 
 
 class Grid:
-    """Staggered hex grid: pixel <-> (col,row) <-> printed hex number."""
+    """Staggered hex grid: pixel <-> (col,row) <-> printed hex number.
+
+    orient "flat"  : flat-top hexes, staggered COLUMNS (odd cols shift +dy/2) — Arnhem.
+    orient "pointy": pointy-top hexes, staggered ROWS (offset rows shift +dx/2) — Tobruk.
+    """
 
     def __init__(self, cfg):
         self.dx = float(cfg["dx"]); self.dy = float(cfg["dy"])
         self.x0 = float(cfg["x0"]); self.y0 = float(cfg["y0"])
+        self.orient = cfg.get("orient", "flat")
         self.stagger = bool(cfg.get("stagger", True))
         self.odd_row_carry = int(cfg.get("odd_row_carry", 1))
+        self.offset_parity = int(cfg.get("offset_parity", 1))  # pointy: rows with row%2==this shift +dx/2
         self.digits = int(cfg.get("hexnum_digits", 2))
 
     def pixel_to_hex(self, x, y):
+        if self.orient == "pointy":
+            row = round((y - self.y0) / self.dy)
+            xoff = (self.dx / 2.0) if (self.stagger and row % 2 == self.offset_parity) else 0.0
+            col = round((x - self.x0 - xoff) / self.dx)
+            return col, row, self.hexnum(col, row)
         col = round((x - self.x0) / self.dx)
         odd = (col % 2 == 1)
         yoff = (self.dy / 2.0) if (self.stagger and odd) else 0.0
@@ -33,6 +44,9 @@ class Grid:
         return col, row, self.hexnum(col, row)
 
     def hex_to_pixel(self, col, row):
+        if self.orient == "pointy":
+            xoff = (self.dx / 2.0) if (self.stagger and row % 2 == self.offset_parity) else 0.0
+            return round(self.x0 + col * self.dx + xoff), round(self.y0 + row * self.dy)
         odd = (col % 2 == 1)
         yoff = (self.dy / 2.0) if (self.stagger and odd) else 0.0
         base = row - (self.odd_row_carry if odd else 0)
@@ -44,6 +58,23 @@ class Grid:
     def hexnum_to_pixel(self, hexnum):
         s = f"{int(hexnum):0{self.digits * 2}d}"
         return self.hex_to_pixel(int(s[:self.digits]), int(s[self.digits:]))
+
+    def set_naming(self, cfg):
+        """Optional printed-map hex naming (display only; engine math stays col/row).
+        style "letter_diag": letter rows (A..Z, then AA..ZZ doubled) starting at
+        name_row0, numbers constant along down-left diagonals (AH Tobruk style)."""
+        self.name_style = cfg.get("style")
+        self.name_row0 = int(cfg.get("row0", 1))
+        self.name_num0 = int(cfg.get("num0", -1))
+
+    def display_name(self, col, row):
+        if getattr(self, "name_style", None) == "letter_diag":
+            li = row - self.name_row0
+            if li >= 0:
+                letter = chr(65 + li) if li < 26 else chr(65 + li - 26) * 2
+                n = col + li // 2 + self.name_num0 + 1
+                return f"{letter}{n}"
+        return self.hexnum(col, row)
 
 
 class Game:
@@ -64,16 +95,23 @@ class Game:
         self.default_side = s["default"]
         self.detect_tokens = s.get("detect_tokens", {})
 
+        g = spec["grid"]
+        if "naming" in g:
+            self.grid.set_naming(g["naming"])
+
         st = spec.get("stats", {})
         self.stat_patterns = [(frag, tuple(v)) for frag, v in st.get("patterns", [])]
         self.default_stat = tuple(st.get("default", (0, 0, 0)))
 
         m = spec["movement"]
         self.terrain_mp = m["terrain_mp"]
+        self.default_mp = float(m.get("default_mp", 1.0))
         self.hexside_rules = m.get("hexside_rules", [])
         self.zoc_cfg = m.get("zoc", {})
         self.impassable = set(m.get("impassable_terrain", ["offmap", "water"]))
         self.holding_row_max = m.get("holding_row_max")
+        self.bounds = m.get("bounds")          # {"cols":[min,max],"rows":[min,max]}
+        self.unit_kinds = set(spec.get("unit_kinds", ["mark"]))
 
         tf = spec.get("terrain_file")
         tp = self._path(tf)
@@ -106,9 +144,14 @@ class Game:
     def neighbors(self, col, row):
         g = self.grid
         x, y = g.hex_to_pixel(col, row)
-        offs = [(0, -g.dy), (0, g.dy),
-                (g.dx, -g.dy / 2), (g.dx, g.dy / 2),
-                (-g.dx, -g.dy / 2), (-g.dx, g.dy / 2)]
+        if g.orient == "pointy":
+            offs = [(-g.dx, 0), (g.dx, 0),
+                    (-g.dx / 2, -g.dy), (g.dx / 2, -g.dy),
+                    (-g.dx / 2, g.dy), (g.dx / 2, g.dy)]
+        else:
+            offs = [(0, -g.dy), (0, g.dy),
+                    (g.dx, -g.dy / 2), (g.dx, g.dy / 2),
+                    (-g.dx, -g.dy / 2), (-g.dx, g.dy / 2)]
         out = []
         for dx, dy in offs:
             c, r, _ = g.pixel_to_hex(round(x + dx), round(y + dy))
@@ -138,7 +181,12 @@ class Game:
 
     def on_map(self, c, r):
         t = self.hex_terrain(c, r)
-        return t is not None and t not in self.impassable
+        if t is not None:
+            return t not in self.impassable
+        if self.bounds:   # no terrain data: rectangular col/row bounds
+            (c0, c1), (r0, r1) = self.bounds["cols"], self.bounds["rows"]
+            return c0 <= c <= c1 and r0 <= r <= r1
+        return False
 
     def side_features(self, a, b):
         if not self.terrain:
@@ -168,7 +216,8 @@ class Game:
             elif effect == "add":
                 add += float(rule["mp"])
         if base is None:
-            base = float(self.terrain_mp[self.hex_terrain(*b)])
+            t = self.hex_terrain(*b)
+            base = float(self.terrain_mp[t]) if t in self.terrain_mp else self.default_mp
         return base + add
 
     # ------------------------------------------------------------- ZOC & movement
