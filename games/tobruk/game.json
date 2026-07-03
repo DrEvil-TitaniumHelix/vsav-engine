@@ -19,6 +19,10 @@
     "counters_dir": "../../../VassalTobruk/extracted/images"
   },
   "ui": {"counter_px": 120},
+  "facing": {
+    "count": 12, "step_deg": 30,
+    "provenance": "module vehicle prototypes carry rotate;12 (CW/CCW, 30-degree steps). Turn MP cost + which unit classes face: pending rulebook. VASSAL state write-through pending one rotate-save-diff experiment."
+  },
   "unit_kinds": ["prototype"],
   "sides": {
     "order": ["Axis", "British"],

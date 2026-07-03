@@ -149,8 +149,11 @@ function render() {
     el.style.left = (u.x + i*14) + 'px'; el.style.top = (u.y - i*14) + 'px';
     el.style.zIndex = 10 + i;
     el.dataset.id = u.id;
+    if (u.facing !== null && u.facing !== undefined && GAME.facing)
+      el.style.transform = `rotate(${u.facing * GAME.facing.step_deg}deg)`;
     el.title = `${u.name}  [${u.att}-${u.dfn}-${u.ma}]  hex ${u.hexnum}` + (u.status ? `  (${u.status})` : '');
     el.addEventListener('pointerdown', ev => onCounterDown(ev, u, byhex[h]));
+    el.addEventListener('contextmenu', ev => onCounterMenu(ev, u));
     W.appendChild(el);
     if (i === byhex[h].length-1 && byhex[h].length > 1) {
       const b = document.createElement('div');
@@ -242,6 +245,34 @@ async function passSel() {
 }
 document.addEventListener('pointerdown', e => {
   if (!e.target.closest('#picker')) document.getElementById('picker').style.display='none';
+});
+
+// ---------- facing (right-click menu; tactical games only) ----------
+function onCounterMenu(ev, u) {
+  ev.preventDefault(); ev.stopPropagation();
+  if (!GAME.facing || u.side !== mySide) return;
+  const P = document.getElementById('picker');
+  const deg = GAME.facing.step_deg;
+  P.innerHTML = `<div class="hdr">${u.name} — facing ${(u.facing||0)*deg}&deg;</div>`;
+  [['&#8635; Rotate CW', 1], ['&#8634; Rotate CCW', -1]].forEach(([label, step]) => {
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = label;
+    d.onclick = async () => {
+      P.style.display = 'none';
+      await fetch('/api/face', {method:'POST', body:JSON.stringify({id:u.id, step})});
+      refresh();
+    };
+    P.appendChild(d);
+  });
+  const c = document.createElement('div'); c.className = 'item';
+  c.innerHTML = 'Cancel';
+  c.onclick = () => { P.style.display = 'none'; };
+  P.appendChild(c);
+  P.style.left = Math.min(ev.clientX+8, innerWidth-240) + 'px'; P.style.top = ev.clientY+8 + 'px';
+  P.style.display = 'block';
+}
+document.addEventListener('contextmenu', e => {
+  if (e.target.closest('.counter')) e.preventDefault();
 });
 
 // ---------- drag restricted to legal hexes ----------

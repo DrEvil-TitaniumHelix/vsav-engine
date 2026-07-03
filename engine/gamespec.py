@@ -113,6 +113,8 @@ class Game:
         self.bounds = m.get("bounds")          # {"cols":[min,max],"rows":[min,max]}
         self.unit_kinds = set(spec.get("unit_kinds", ["mark"]))
 
+        self.facing = spec.get("facing")   # {"count": N, "step_deg": d} or None
+
         tf = spec.get("terrain_file")
         tp = self._path(tf)
         self.terrain = json.load(open(tp)) if tp and os.path.exists(tp) else None
