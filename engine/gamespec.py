@@ -88,7 +88,7 @@ class Game:
 
     def __init__(self, game_dir):
         self.dir = os.path.abspath(game_dir)
-        with open(os.path.join(self.dir, "game.json")) as f:
+        with open(os.path.join(self.dir, "game.json"), encoding="utf-8") as f:
             spec = json.load(f)
         self.spec = spec
         self.name = spec["name"]
