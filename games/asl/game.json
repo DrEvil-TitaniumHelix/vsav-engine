@@ -1,0 +1,54 @@
+{
+  "name": "ASL — board 1 infantry POC (VASL 6.7.3)",
+  "map_name": "Main Map",
+  "board_name": "1",
+  "save_key": "a3",
+  "grid": {
+    "orient": "flat",
+    "dx": 56.25, "dy": 64.5, "x0": 0.0, "y0": -32.25,
+    "stagger": true, "stagger_sign": -1, "odd_row_carry": 0, "hexnum_digits": 2,
+    "naming": {"style": "colletter"},
+    "provenance": "standard VASL geoboard: 1800x645 px, 33 letter-columns A..GG x 10 rows; odd columns shift UP half a hex (B1 centered on the top edge)"
+  },
+  "buildfile": "../../../VassalASL/extracted/buildFile",
+  "moduledata": "../../../VassalASL/extracted/moduledata",
+  "setup_save": "scenario_village.vsav",
+  "terrain_file": "terrain.json",
+  "assets": {
+    "map": "../../../VassalASL/boards/bd01_x/bd01.gif",
+    "counters_dir": "../../../VassalASL/extracted/images"
+  },
+  "ui": {"counter_px": 48},
+  "unit_kinds": ["piece", "prototype", "mark"],
+  "sides": {
+    "order": ["German", "Russian"],
+    "labels": {"German": "German", "Russian": "Russian"},
+    "default": "Russian",
+    "detect_tokens": {"German": ["ge/"]},
+    "note": "unit name = counter image path (ge/4-6-7, ru/4-4-7)"
+  },
+  "stats": {
+    "patterns": [
+      ["ge/9-1", [0, 0, 6]],
+      ["ru/8-0", [0, 0, 6]],
+      ["4-6-7", [0, 0, 4]],
+      ["4-4-7", [0, 0, 4]]
+    ],
+    "default": [0, 0, 4],
+    "provenance": "PROVISIONAL infantry subset: squads 4 MF, leaders 6 MF (ASLRB A4.5 base rates; leader-bonus MF, double time, road-column effects not modeled yet). Verify against Bruce's ASLRB."
+  },
+  "movement": {
+    "impassable_terrain": ["water", "offmap"],
+    "terrain_mp": {
+      "open": 1.0, "road": 1.0, "orchard": 1.0, "grain": 1.5,
+      "brush": 2.0, "woods": 2.0, "building": 2.0, "marsh": 2.5
+    },
+    "default_mp": 1.0,
+    "hexside_rules": [],
+    "zoc": {"exerts": false},
+    "enter_enemy_hex": false,
+    "pass_through_friendly": true,
+    "bounds": {"cols": [0, 32], "rows": [1, 10]},
+    "note": "PROVISIONAL ASLRB chapter B infantry COT subset. Walls/hedges (+1 crossing) not yet extracted as hexside features — TODO. Roads approximated as hex terrain (real rule: road rate along road depiction)."
+  }
+}
