@@ -26,6 +26,24 @@ import gamespec  # noqa: E402
 GAME_OBJ = None   # gamespec.Game
 WORK = None       # working .vsav path
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
+facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
+                  # VASSAL rotate-state write-through pending a save-diff experiment)
+
+
+def facing_path():
+    return WORK + ".facing.json"
+
+
+def load_facing():
+    global facing
+    facing = {}
+    if os.path.exists(facing_path()):
+        facing = json.load(open(facing_path()))
+
+
+def save_facing():
+    with open(facing_path(), "w") as f:
+        json.dump(facing, f)
 
 
 def png_size(path):
@@ -46,7 +64,8 @@ def unit_view(u):
     a, d, m = g.stats(u["name"])
     return dict(u, att=a, dfn=d, ma=m, onmap=g.on_map(u["col"], u["row"]),
                 terrain=g.hex_terrain(u["col"], u["row"]),
-                status=done.get(u["id"]))
+                status=done.get(u["id"]),
+                facing=facing.get(u["id"], 0) if g.facing else None)
 
 
 def game_descriptor():
@@ -60,6 +79,7 @@ def game_descriptor():
         grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient),
         sides=[dict(id=s, label=g.spec["sides"].get("labels", {}).get(s, s))
                for s in g.side_order],
+        facing=g.facing,
     )
 
 
@@ -120,9 +140,22 @@ def api_pass(body):
     return dict(ok=True)
 
 
+def api_face(body):
+    if not GAME_OBJ.facing:
+        return dict(error="this game has no facing")
+    pid, step = body["id"], int(body.get("step", 1))
+    n = GAME_OBJ.facing["count"]
+    facing[pid] = (facing.get(pid, 0) + step) % n
+    save_facing()
+    return dict(ok=True, facing=facing[pid])
+
+
 def api_reset():
     if os.path.exists(WORK):
         os.remove(WORK)
+    if os.path.exists(facing_path()):
+        os.remove(facing_path())
+    facing.clear()
     fresh_board()
     return dict(ok=True)
 
@@ -185,6 +218,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_move(body))
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
+            if self.path == "/api/face":
+                return self._json(api_face(body))
             if self.path == "/api/reset":
                 return self._json(api_reset())
         except Exception as e:
@@ -204,6 +239,7 @@ if __name__ == "__main__":
     legacy = os.path.join(ROOT, "live", "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
         shutil.copy(legacy, WORK)
+    load_facing()
     fresh_board()
     print(f"{GAME_OBJ.name} board UI ->  http://localhost:{a.port}   (Ctrl+C to stop)")
     http.server.ThreadingHTTPServer(("127.0.0.1", a.port), H).serve_forever()
