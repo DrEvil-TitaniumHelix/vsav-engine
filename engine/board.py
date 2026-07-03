@@ -22,7 +22,7 @@ import re, sys
 import vsav
 import gamespec
 
-PIECE_RE = re.compile(r"^\+/(\d+)/(mark|immob);")
+PIECE_RE = re.compile(r"^\+/(\d+)/(\w+);")
 IMG_RE = re.compile(r"piece;;;([^;]+?)\.png;")
 ESC = "\x1b"
 
@@ -47,16 +47,27 @@ class Board:
             m = PIECE_RE.match(c)
             if m:
                 img = IMG_RE.search(c)
-                # BasicPiece state = ".../Pieces\tfalse;<map>;1;x,y" — map name may be
-                # EMPTY for singletons placed outside stacks (Grsn, DZs, etc.)
+                if not img:
+                    continue
+                # BasicPiece state, two formats seen in the wild:
+                #   3.2-era (Westwall): ".../Pieces\tfalse;<map>;1;x,y" (map EMPTY for singletons)
+                #   slot-style (Tobruk): "<map>;x;y;<gpid>"
                 st = re.search(r"/Pieces\tfalse;[^;]*;1;(\d+),(\d+)", c)
-                if img and st:
-                    self.pieces[m.group(1)] = dict(name=img.group(1).strip(), kind=m.group(2),
-                                                   idx=i, x=int(st.group(1)), y=int(st.group(2)))
+                if not st:
+                    st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
+                x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
+                self.pieces[m.group(1)] = dict(name=img.group(1).strip(), kind=m.group(2),
+                                               idx=i, x=x, y=y)
         self.member_of = {}  # piece id -> stack id
         for sid, s in self.stacks.items():
             for pid in s["members"]:
                 self.member_of[pid] = sid
+                # position pieces whose own state didn't parse from their stack
+                p = self.pieces.get(pid)
+                if p and p["x"] is None:
+                    p["x"], p["y"] = s["x"], s["y"]
+        # pieces with no resolvable position can't be played with
+        self.pieces = {pid: p for pid, p in self.pieces.items() if p["x"] is not None}
 
     # ------------------------------------------------------------ queries
     def find(self, name_fragment):
@@ -74,7 +85,7 @@ class Board:
         """All stacked (mark) pieces as the familiar unit dicts, one per piece."""
         out = []
         for pid, p in self.pieces.items():
-            if p["kind"] != "mark":
+            if p["kind"] not in self.game.unit_kinds:
                 continue
             col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
             out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
@@ -135,6 +146,16 @@ class Board:
         self.stacks[sid]["members"].append(pid)
         self.member_of[pid] = sid
         self._rewrite_stack(sid)
+
+    def move_piece_by_id(self, pid, dest):
+        """Move ONE piece by its id (names may collide across sides — Tobruk '1/1')."""
+        p = self.pieces[pid]
+        nx, ny = dest if isinstance(dest, tuple) else self.game.grid.hexnum_to_pixel(dest)
+        old = self.game.grid.pixel_to_hex(p["x"], p["y"])[2]
+        self._detach(pid)
+        self._set_piece_xy(pid, nx, ny)
+        self._attach(pid, nx, ny)
+        return f"{p['name']}: {old} -> {self.game.grid.pixel_to_hex(nx, ny)[2]}"
 
     def move_piece(self, name_fragment, dest):
         """Move ONE piece (splitting its stack if shared) to dest hex ('2010') or (x,y)."""
