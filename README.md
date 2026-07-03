@@ -8,7 +8,14 @@ clients sharing one file.
 
 Reference implementation: **SPI's *Arnhem*** (from the *Westwall* quad, 1976), played on the
 sanctioned [Westwall: Four Battles to Germany VASSAL module](https://vassalengine.org/wiki/Module:Westwall:_Four_Battles_to_Germany).
-The method — save codec, hex math, terrain extraction — generalizes to other modules.
+The engine is spec-driven — a game is a `games/<name>/game.json` data directory, not code —
+and currently drives three very different games: **Arnhem**, **AH Tobruk** (1975, pointy-top
+grid + vehicle facing), and **ASL** (VASL board 3, walls/hedges).
+
+**Browser demo:** *Dr Evil's Move Legality Engine for VASSAL* — the three games playable
+serverless in the browser (`web/build_web.py` bakes them; `web/shared/local.js` is a JS
+port of the legality engine). Distributed as a zip on the VASSAL forum/Discord. All of
+this is step one toward the real goal: **an AI opponent for VASSAL games.**
 
 By **DrEvil / Titanium Helix**. MIT licensed.
 
