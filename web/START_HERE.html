@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dr Evil's Move Legality Engine for VASSAL</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: Segoe UI, system-ui, sans-serif; max-width: 880px;
+         margin: 2.5rem auto; padding: 0 1rem; line-height: 1.45; }
+  h1 { margin-bottom: .2rem; }
+  .sub { color: #888; margin-top: 0; }
+  .cards { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  a.card { flex: 1 1 240px; border: 1px solid #8884; border-radius: 10px;
+           padding: 1rem 1.2rem; text-decoration: none; color: inherit; }
+  a.card:hover { border-color: #4a90d9; box-shadow: 0 2px 10px #4a90d933; }
+  .card h2 { margin: 0 0 .3rem; font-size: 1.15rem; }
+  .card p { margin: .2rem 0; font-size: .9rem; color: #999; }
+  .badge { font-size: .75rem; color: #4a90d9; }
+  ol li, ul li { margin: .3rem 0; }
+  .note { border-left: 3px solid #4a90d9; padding: .5rem .8rem; background: #4a90d911;
+          border-radius: 0 6px 6px 0; margin: 1rem 0; }
+  code { background: #8882; padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Dr Evil's Move Legality Engine for VASSAL</h1>
+<p class="sub">Three classic hex wargames, movement rules fully enforced, running
+entirely in your browser. No install, no server — the engine is ~200 lines of
+JavaScript ported from the Python original.</p>
+
+<div class="cards">
+  <a class="card" href="arnhem/index.html">
+    <h2>Arnhem</h2>
+    <p>SPI, <em>Westwall</em> quad (1976) — Operation Market-Garden.</p>
+    <p class="badge">99 counters &middot; roads &frac12; MP &middot; rivers &amp; bridges &middot; rigid ZOC</p>
+  </a>
+  <a class="card" href="tobruk/index.html">
+    <h2>Tobruk</h2>
+    <p>Avalon Hill (1975) — tank combat in the Western Desert, 1942.</p>
+    <p class="badge">8-unit meeting engagement &middot; vehicle facing</p>
+  </a>
+  <a class="card" href="asl/index.html">
+    <h2>Advanced Squad Leader</h2>
+    <p>VASL board 3 — infantry clash at the crossroads.</p>
+    <p class="badge">walls &amp; hedges +1 MF &middot; buildings &middot; squads 4 MF / leaders 6</p>
+  </a>
+</div>
+
+<h2>How to move</h2>
+<ol>
+  <li><b>Pick your side</b> in the top bar, then <b>click a counter or stack</b>
+      (stacks give you a picker: one unit, or the whole stack at the slowest MA).</li>
+  <li>The map dims and the <b>legal destination hexes light up</b>, each labeled with
+      its movement-point cost — terrain, roads, rivers/bridges, walls/hedges, and
+      zones of control are enforced by the engine, not the honor system.</li>
+  <li><b>Drag to a lit hex</b> and drop. Illegal drops snap back.</li>
+  <li><b>Pass</b> skips a unit; the tracker counts your side's moves. <b>Reset game</b>
+      restores the setup.</li>
+</ol>
+
+<h2>Game notes</h2>
+<ul>
+  <li><b>Tobruk:</b> <b>right-click a unit</b> for the facing menu — rotate it onto any
+      of the six hexsides. (Unit movement values are provisional pending the original
+      data cards.)</li>
+  <li><b>Arnhem:</b> river hexsides are impassable except over bridges — select a unit
+      near the Waal and watch the engine route the long way around. Roads cost &frac12; MP.</li>
+  <li><b>ASL:</b> +1 MF to cross walls and hedges (B9.4) — find the gap in the hedge
+      ring at Q4. Squads have 4 MF, leaders 6 (per the official ASLSK rules).</li>
+</ul>
+
+<h2>What this is</h2>
+<p>A demo of a general, spec-driven move-legality engine for VASSAL games. Each game
+here is pure data — a <code>game.json</code> (grid geometry, sides, movement rules with
+rulebook cites) plus terrain extracted from the board art itself. The full engine reads
+and <em>writes</em> real VASSAL 3.x <code>.vsav</code> saves, so VASSAL, this browser UI,
+and an AI opponent are three interchangeable clients of the same file. This browser
+demo keeps moves in memory; the save-file layer lives in the source:
+<a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine">github.com/DrEvil-TitaniumHelix/vsav-engine</a> (MIT).</p>
+<p class="sub">Game art belongs to its publishers (Decision Games/SPI, Avalon Hill,
+MMP/VASL) — demo use for the development community.</p>
+</body>
+</html>
