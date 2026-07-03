@@ -4,7 +4,7 @@
   {
    "gpid": "2431",
    "layer": 4,
-   "img": "ge/geL91.svg",
+   "img": "ge/svg/geL91.png",
    "name": "9-1",
    "hex": [
     2,
@@ -14,7 +14,7 @@
   {
    "gpid": "2363",
    "layer": 2,
-   "img": "ge/ge467S.svg",
+   "img": "ge/svg/ge467S.png",
    "name": "4-6-7 1sq",
    "hex": [
     2,
@@ -24,7 +24,7 @@
   {
    "gpid": "2363",
    "layer": 2,
-   "img": "ge/ge467S.svg",
+   "img": "ge/svg/ge467S.png",
    "name": "4-6-7 1sq",
    "hex": [
     2,
@@ -34,7 +34,7 @@
   {
    "gpid": "2363",
    "layer": 2,
-   "img": "ge/ge467S.svg",
+   "img": "ge/svg/ge467S.png",
    "name": "4-6-7 1sq",
    "hex": [
     3,
@@ -44,7 +44,7 @@
   {
    "gpid": "2363",
    "layer": 2,
-   "img": "ge/ge467S.svg",
+   "img": "ge/svg/ge467S.png",
    "name": "4-6-7 1sq",
    "hex": [
     3,
@@ -54,7 +54,7 @@
   {
    "gpid": "456",
    "layer": 6,
-   "img": "ru/ruL80.svg",
+   "img": "ru/svg/ruL80.png",
    "name": "8-0",
    "hex": [
     19,
@@ -64,7 +64,7 @@
   {
    "gpid": "432",
    "layer": 2,
-   "img": "ru/ru447S.svg",
+   "img": "ru/svg/ru447S.png",
    "name": "4-4-7 1sq",
    "hex": [
     19,
@@ -74,7 +74,7 @@
   {
    "gpid": "432",
    "layer": 2,
-   "img": "ru/ru447S.svg",
+   "img": "ru/svg/ru447S.png",
    "name": "4-4-7 1sq",
    "hex": [
     20,
@@ -84,7 +84,7 @@
   {
    "gpid": "432",
    "layer": 2,
-   "img": "ru/ru447S.svg",
+   "img": "ru/svg/ru447S.png",
    "name": "4-4-7 1sq",
    "hex": [
     22,
@@ -94,7 +94,7 @@
   {
    "gpid": "432",
    "layer": 2,
-   "img": "ru/ru447S.svg",
+   "img": "ru/svg/ru447S.png",
    "name": "4-4-7 1sq",
    "hex": [
     23,
