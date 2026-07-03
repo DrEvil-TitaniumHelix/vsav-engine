@@ -1,13 +1,21 @@
 {
-  "name": "ASL — board 1 infantry POC (VASL 6.7.3)",
+  "name": "ASL — board 3 infantry POC (VASL 6.7.3)",
   "map_name": "Main Map",
-  "board_name": "1",
+  "board_name": "3",
   "save_key": "a3",
   "grid": {
     "orient": "flat",
-    "dx": 56.25, "dy": 64.5, "x0": 0.0, "y0": -32.25,
-    "stagger": true, "stagger_sign": -1, "odd_row_carry": 0, "hexnum_digits": 2,
-    "naming": {"style": "colletter"},
+    "dx": 56.25,
+    "dy": 64.5,
+    "x0": 0.0,
+    "y0": -32.25,
+    "stagger": true,
+    "stagger_sign": -1,
+    "odd_row_carry": 0,
+    "hexnum_digits": 2,
+    "naming": {
+      "style": "colletter"
+    },
     "provenance": "standard VASL geoboard: 1800x645 px, 33 letter-columns A..GG x 10 rows; odd columns shift UP half a hex (B1 centered on the top edge)"
   },
   "buildfile": "../../../VassalASL/extracted/buildFile",
@@ -15,40 +23,124 @@
   "setup_save": "scenario_village.vsav",
   "terrain_file": "terrain.json",
   "assets": {
-    "map": "../../../VassalASL/boards/bd01_x/bd01.gif",
+    "map": "../../../VassalASL/boards/bd03_x/bd03.gif",
     "counters_dir": "../../../VassalASL/extracted/images"
   },
-  "ui": {"counter_px": 48},
-  "unit_kinds": ["piece", "prototype", "mark", "hideCmd"],
+  "ui": {
+    "counter_px": 48
+  },
+  "unit_kinds": [
+    "piece",
+    "prototype",
+    "mark",
+    "hideCmd"
+  ],
   "sides": {
-    "order": ["German", "Russian"],
-    "labels": {"German": "German", "Russian": "Russian"},
+    "order": [
+      "German",
+      "Russian"
+    ],
+    "labels": {
+      "German": "German",
+      "Russian": "Russian"
+    },
     "default": "Russian",
-    "detect_tokens": {"German": ["ge/"]},
+    "detect_tokens": {
+      "German": [
+        "ge/"
+      ]
+    },
     "note": "unit name = counter image path; VASL squads are ELR-ladder layer counters, make_save stamps the resolved layer image (ge/ge467S = German 4-6-7 1sq) into the BasicPiece"
   },
   "stats": {
     "patterns": [
-      ["geL91", [0, 0, 6]],
-      ["ruL80", [0, 0, 6]],
-      ["ge467S", [0, 0, 4]],
-      ["ru447S", [0, 0, 4]]
+      [
+        "geL91",
+        [
+          0,
+          0,
+          6
+        ]
+      ],
+      [
+        "ruL80",
+        [
+          0,
+          0,
+          6
+        ]
+      ],
+      [
+        "ge467S",
+        [
+          0,
+          0,
+          4
+        ]
+      ],
+      [
+        "ru447S",
+        [
+          0,
+          0,
+          4
+        ]
+      ]
     ],
-    "default": [0, 0, 4],
-    "provenance": "PROVISIONAL infantry subset: squads 4 MF, leaders 6 MF (ASLRB A4.5 base rates; leader-bonus MF, double time, road-column effects not modeled yet). Verify against Bruce's ASLRB."
+    "default": [
+      0,
+      0,
+      4
+    ],
+    "provenance": "VERIFIED vs official MMP ASLSK rules 3.3.1 (mmpgamers.com, 2026-07-03): MMC 4 MF, SMC 6 MF. Not yet modeled: leader-stack bonus +2 MF, road-throughout bonus +1 MF, double time +2 (CX)."
   },
   "movement": {
-    "impassable_terrain": ["water", "offmap"],
+    "impassable_terrain": [
+      "water",
+      "offmap"
+    ],
     "terrain_mp": {
-      "open": 1.0, "road": 1.0, "orchard": 1.0, "grain": 1.5,
-      "brush": 2.0, "woods": 2.0, "building": 2.0, "marsh": 2.5
+      "open": 1.0,
+      "road": 1.0,
+      "orchard": 1.0,
+      "grain": 1.5,
+      "brush": 2.0,
+      "woods": 2.0,
+      "building": 2.0,
+      "marsh": 2.5
     },
     "default_mp": 1.0,
-    "hexside_rules": [],
-    "zoc": {"exerts": false},
+    "hexside_rules": [
+      {
+        "feature": "barrier",
+        "value": "wall",
+        "effect": "add",
+        "mp": 1,
+        "cite": "B9.4: +1 MF to cross a wall hexside"
+      },
+      {
+        "feature": "barrier",
+        "value": "hedge",
+        "effect": "add",
+        "mp": 1,
+        "cite": "B9.4: +1 MF to cross a hedge hexside"
+      }
+    ],
+    "zoc": {
+      "exerts": false
+    },
     "enter_enemy_hex": false,
     "pass_through_friendly": true,
-    "bounds": {"cols": [0, 32], "rows": [1, 10]},
-    "note": "PROVISIONAL ASLRB chapter B infantry COT subset. Walls/hedges (+1 crossing) not yet extracted as hexside features — TODO. Roads approximated as hex terrain (real rule: road rate along road depiction)."
+    "bounds": {
+      "cols": [
+        0,
+        32
+      ],
+      "rows": [
+        1,
+        10
+      ]
+    },
+    "note": "ASLRB chapter B infantry COT subset, hex costs verified vs MMP ASLSK narrative rules. Walls/hedges extracted from board art via SharedBoardMetadata palette colors. Roads still approximated as hex terrain (real rule: road rate along road depiction; +1 MF road bonus not modeled)."
   }
 }

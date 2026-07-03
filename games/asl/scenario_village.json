@@ -1,5 +1,5 @@
 {
- "name": "Village clash POC (bd01) \u2014 not a published scenario",
+ "name": "Crossroads clash POC (bd03) \u2014 not a published scenario",
  "units": [
   {
    "gpid": "2431",
@@ -7,7 +7,7 @@
    "img": "ge/geL91.gif",
    "name": "9-1",
    "hex": [
-    2,
+    12,
     5
    ]
   },
@@ -17,7 +17,7 @@
    "img": "ge/ge467S.gif",
    "name": "4-6-7 1sq",
    "hex": [
-    2,
+    12,
     5
    ]
   },
@@ -27,8 +27,8 @@
    "img": "ge/ge467S.gif",
    "name": "4-6-7 1sq",
    "hex": [
-    2,
-    6
+    11,
+    4
    ]
   },
   {
@@ -37,8 +37,8 @@
    "img": "ge/ge467S.gif",
    "name": "4-6-7 1sq",
    "hex": [
-    3,
-    6
+    12,
+    4
    ]
   },
   {
@@ -47,8 +47,8 @@
    "img": "ge/ge467S.gif",
    "name": "4-6-7 1sq",
    "hex": [
-    3,
-    7
+    13,
+    5
    ]
   },
   {
@@ -57,27 +57,7 @@
    "img": "ru/ruL80.gif",
    "name": "8-0",
    "hex": [
-    19,
-    2
-   ]
-  },
-  {
-   "gpid": "432",
-   "layer": 2,
-   "img": "ru/ru447S.gif",
-   "name": "4-4-7 1sq",
-   "hex": [
-    19,
-    2
-   ]
-  },
-  {
-   "gpid": "432",
-   "layer": 2,
-   "img": "ru/ru447S.gif",
-   "name": "4-4-7 1sq",
-   "hex": [
-    20,
+    18,
     3
    ]
   },
@@ -87,8 +67,8 @@
    "img": "ru/ru447S.gif",
    "name": "4-4-7 1sq",
    "hex": [
-    22,
-    4
+    18,
+    3
    ]
   },
   {
@@ -97,8 +77,28 @@
    "img": "ru/ru447S.gif",
    "name": "4-4-7 1sq",
    "hex": [
-    23,
-    4
+    17,
+    5
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.gif",
+   "name": "4-4-7 1sq",
+   "hex": [
+    18,
+    5
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.gif",
+   "name": "4-4-7 1sq",
+   "hex": [
+    19,
+    6
    ]
   }
  ]
