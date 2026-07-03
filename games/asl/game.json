@@ -19,20 +19,20 @@
     "counters_dir": "../../../VassalASL/extracted/images"
   },
   "ui": {"counter_px": 48},
-  "unit_kinds": ["piece", "prototype", "mark"],
+  "unit_kinds": ["piece", "prototype", "mark", "hideCmd"],
   "sides": {
     "order": ["German", "Russian"],
     "labels": {"German": "German", "Russian": "Russian"},
     "default": "Russian",
     "detect_tokens": {"German": ["ge/"]},
-    "note": "unit name = counter image path (ge/4-6-7, ru/4-4-7)"
+    "note": "unit name = counter image path; VASL squads are ELR-ladder layer counters, make_save stamps the resolved layer image (ge/ge467S = German 4-6-7 1sq) into the BasicPiece"
   },
   "stats": {
     "patterns": [
-      ["ge/9-1", [0, 0, 6]],
-      ["ru/8-0", [0, 0, 6]],
-      ["4-6-7", [0, 0, 4]],
-      ["4-4-7", [0, 0, 4]]
+      ["geL91", [0, 0, 6]],
+      ["ruL80", [0, 0, 6]],
+      ["ge467S", [0, 0, 4]],
+      ["ru447S", [0, 0, 4]]
     ],
     "default": [0, 0, 4],
     "provenance": "PROVISIONAL infantry subset: squads 4 MF, leaders 6 MF (ASLRB A4.5 base rates; leader-bonus MF, double time, road-column effects not modeled yet). Verify against Bruce's ASLRB."

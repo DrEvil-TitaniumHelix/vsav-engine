@@ -1,0 +1,105 @@
+{
+ "name": "Village clash POC (bd01) \u2014 not a published scenario",
+ "units": [
+  {
+   "gpid": "2431",
+   "layer": 4,
+   "img": "ge/geL91.svg",
+   "name": "9-1",
+   "hex": [
+    2,
+    5
+   ]
+  },
+  {
+   "gpid": "2363",
+   "layer": 2,
+   "img": "ge/ge467S.svg",
+   "name": "4-6-7 1sq",
+   "hex": [
+    2,
+    5
+   ]
+  },
+  {
+   "gpid": "2363",
+   "layer": 2,
+   "img": "ge/ge467S.svg",
+   "name": "4-6-7 1sq",
+   "hex": [
+    2,
+    6
+   ]
+  },
+  {
+   "gpid": "2363",
+   "layer": 2,
+   "img": "ge/ge467S.svg",
+   "name": "4-6-7 1sq",
+   "hex": [
+    3,
+    6
+   ]
+  },
+  {
+   "gpid": "2363",
+   "layer": 2,
+   "img": "ge/ge467S.svg",
+   "name": "4-6-7 1sq",
+   "hex": [
+    3,
+    7
+   ]
+  },
+  {
+   "gpid": "456",
+   "layer": 6,
+   "img": "ru/ruL80.svg",
+   "name": "8-0",
+   "hex": [
+    19,
+    2
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.svg",
+   "name": "4-4-7 1sq",
+   "hex": [
+    19,
+    2
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.svg",
+   "name": "4-4-7 1sq",
+   "hex": [
+    20,
+    3
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.svg",
+   "name": "4-4-7 1sq",
+   "hex": [
+    22,
+    4
+   ]
+  },
+  {
+   "gpid": "432",
+   "layer": 2,
+   "img": "ru/ru447S.svg",
+   "name": "4-4-7 1sq",
+   "hex": [
+    23,
+    4
+   ]
+  }
+ ]
+}
