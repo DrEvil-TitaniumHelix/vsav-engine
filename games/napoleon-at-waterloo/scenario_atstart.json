@@ -1,0 +1,19 @@
+{
+ "name": "Napoleon at Waterloo at-start setup (from module SetupStacks)",
+ "units": [
+  {
+   "gpid": "314",
+   "xy": [
+    0,
+    0
+   ]
+  },
+  {
+   "gpid": "579",
+   "xy": [
+    0,
+    0
+   ]
+  }
+ ]
+}

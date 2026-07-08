@@ -1,0 +1,46 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\PGG-TAHGC-v1.2.vmod",
+ "steps": [
+  "extracted 426 entries -> C:\\VassalIngest\\panzergruppe-guderian-avalon-hill\\extracted",
+  "module: 'Panzergruppe Guderian {Avalon Hill}' vv1.2; 339 images staged",
+  "194 piece/card slots (0 with BasicPiece art, 61 blank-image layer pieces VASL-style); 14 prototypes",
+  "declared sides: ['Solitaire', 'German', 'Soviet']",
+  "19 card deck(s) / 169 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Main Map' on map 'Main Map'; 2 other board(s) not converted: Graveyard (map 'Graveyard'), Reinforcements (map 'Reinforcements')",
+  "hex grid from buildFile: flat dx=77.62562584220342 dy=89.59999999999854 origin=(12.0,39.0)",
+  "map asset: PGG-map-ver1.png (4679x2902 px)",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\panzergruppe-guderian-avalon-hill\\game.ingest.json"
+ ],
+ "problems": [
+  "no setups of any kind: no bundled saves, no at-start stacks \u2014 board starts empty",
+  "game.json already exists in C:\\VassalArnhem\\games\\panzergruppe-guderian-avalon-hill \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Panzergruppe Guderian {Avalon Hill}",
+ "version": "v1.2",
+ "slug": "panzergruppe-guderian-avalon-hill",
+ "staging": "C:\\VassalIngest\\panzergruppe-guderian-avalon-hill",
+ "out": "C:\\VassalArnhem\\games\\panzergruppe-guderian-avalon-hill",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Main Map",
+ "grid": {
+  "orient": "flat",
+  "dx": 77.62562584220342,
+  "dy": 89.59999999999854,
+  "x0": 12.0,
+  "y0": 39.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=0 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\panzergruppe-guderian-avalon-hill\\extracted\\images\\PGG-map-ver1.png",
+ "setups": [],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\panzergruppe-guderian-avalon-hill\\game.ingest.json"
+}

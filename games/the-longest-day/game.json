@@ -1,0 +1,85 @@
+{
+ "name": "The Longest Day \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "Normandy Area",
+ "save_key": "0d",
+ "grid": {
+  "orient": "flat",
+  "dx": 55.42562584220407,
+  "dy": 64.0,
+  "x0": -18.0,
+  "y0": 29.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/the-longest-day/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/the-longest-day/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/the-longest-day/extracted/images/Map_Full a.png",
+  "counters_dir": "../../../VassalIngest/the-longest-day/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "AreaOfEffect",
+  "emb2",
+  "immob",
+  "mark",
+  "report",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "SHAEF",
+   "OKW"
+  ],
+  "labels": {
+   "SHAEF": "SHAEF",
+   "OKW": "OKW"
+  },
+  "default": "OKW",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    96
+   ],
+   "rows": [
+    0,
+    78
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "1.0.22"
+ },
+ "setup_save": "../../../VassalIngest/the-longest-day/setups/Mortain v22.vsav"
+}

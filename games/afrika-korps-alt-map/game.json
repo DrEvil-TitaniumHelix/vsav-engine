@@ -1,0 +1,83 @@
+{
+ "name": "Afrika Korps ALT MAP \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "Revised AK Map",
+ "save_key": "bf",
+ "grid": {
+  "orient": "pointy",
+  "dx": 104.8999999999999,
+  "dy": 91.0,
+  "x0": 96.0,
+  "y0": 69.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); no grid numbering in module",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/afrika-korps-alt-map/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/afrika-korps-alt-map/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/afrika-korps-alt-map/assets/map.png",
+  "counters_dir": "../../../VassalIngest/afrika-korps-alt-map/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "clone",
+  "delete",
+  "emb2",
+  "rotate",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "Axis",
+   "Commonwealth"
+  ],
+  "labels": {
+   "Axis": "Axis",
+   "Commonwealth": "Commonwealth"
+  },
+  "default": "Commonwealth",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    69
+   ],
+   "rows": [
+    0,
+    27
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "1.01"
+ },
+ "setup_save": "../../../VassalIngest/afrika-korps-alt-map/setups/AK_Setup.vsav"
+}

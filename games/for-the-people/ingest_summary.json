@@ -1,0 +1,141 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\For_the_People_3.5.vmod",
+ "steps": [
+  "extracted 497 entries -> C:\\VassalIngest\\for-the-people\\extracted",
+  "module: 'For the People' v3.5; 472 images staged",
+  "1 PDF(s) bundled (rules material?): help/FTP-rules-2014.pdf",
+  "641 piece/card slots (133 with BasicPiece art, 12 blank-image layer pieces VASL-style); 287 prototypes",
+  "declared sides: ['Union', 'Confederate', 'Referee']",
+  "8 card deck(s) / 144 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Main Map' on map 'Map'; 5 other board(s) not converted: Permanently Eliminated (map 'Permanently Removed'), Combat Tables (map 'Combat Tables'), Strategic Will (map 'Strategic Will'), Player Aids (map 'Player Aids'), Preferences (map 'Preferences')",
+  "map asset: FTP map-2014C BR.png (6800x5296 px)",
+  "setup 'Campaign Game / 1861': 607 pieces (585 self-positioned, 0 in stacks), key 0x1e",
+  "setup '1862 Scenario': 640 pieces (543 self-positioned, 0 in stacks), key 0x40",
+  "setup '1863 Scenario': 679 pieces (560 self-positioned, 0 in stacks), key 0x6c",
+  "setup '1864 Scenario': 711 pieces (548 self-positioned, 0 in stacks), key 0x06",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\for-the-people\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses 16 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\for-the-people \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "For the People",
+ "version": "3.5",
+ "slug": "for-the-people",
+ "staging": "C:\\VassalIngest\\for-the-people",
+ "out": "C:\\VassalArnhem\\games\\for-the-people",
+ "pdfs": [
+  "help/FTP-rules-2014.pdf"
+ ],
+ "main_map": "Map",
+ "main_board": "Main Map",
+ "region_names": 16,
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\for-the-people\\extracted\\images\\FTP map-2014C BR.png",
+ "setups": [
+  {
+   "name": "Campaign Game / 1861",
+   "path": "C:\\VassalIngest\\for-the-people\\setups\\1861-3-5.vsav",
+   "pieces": 607,
+   "positioned": 585,
+   "in_stacks": 0,
+   "kinds": {
+    "sendto": 75,
+    "calcProp": 20,
+    "PROP": 93,
+    "globalkey": 13,
+    "macro": 36,
+    "return": 17,
+    "replace": 6,
+    "report": 19,
+    "setprop": 2,
+    "placemark": 255,
+    "hideCmd": 15,
+    "emb2": 8,
+    "deck": 8,
+    "label": 7,
+    "mark": 33
+   },
+   "key": "1e"
+  },
+  {
+   "name": "1862 Scenario",
+   "path": "C:\\VassalIngest\\for-the-people\\setups\\1862-3-5.vsav",
+   "pieces": 640,
+   "positioned": 543,
+   "in_stacks": 0,
+   "kinds": {
+    "PROP": 125,
+    "sendto": 77,
+    "macro": 36,
+    "return": 17,
+    "calcProp": 20,
+    "setprop": 2,
+    "globalkey": 13,
+    "placemark": 255,
+    "replace": 5,
+    "hideCmd": 15,
+    "report": 19,
+    "emb2": 8,
+    "deck": 8,
+    "label": 7,
+    "mark": 33
+   },
+   "key": "40"
+  },
+  {
+   "name": "1863 Scenario",
+   "path": "C:\\VassalIngest\\for-the-people\\setups\\1863-3-5.vsav",
+   "pieces": 679,
+   "positioned": 560,
+   "in_stacks": 0,
+   "kinds": {
+    "PROP": 148,
+    "sendto": 98,
+    "macro": 36,
+    "globalkey": 13,
+    "return": 17,
+    "hideCmd": 15,
+    "calcProp": 20,
+    "setprop": 2,
+    "placemark": 255,
+    "report": 19,
+    "emb2": 8,
+    "deck": 8,
+    "label": 7,
+    "mark": 33
+   },
+   "key": "6c"
+  },
+  {
+   "name": "1864 Scenario",
+   "path": "C:\\VassalIngest\\for-the-people\\setups\\1864-3-5.vsav",
+   "pieces": 711,
+   "positioned": 548,
+   "in_stacks": 0,
+   "kinds": {
+    "return": 17,
+    "sendto": 108,
+    "PROP": 170,
+    "globalkey": 13,
+    "macro": 36,
+    "placemark": 255,
+    "hideCmd": 15,
+    "calcProp": 20,
+    "setprop": 2,
+    "report": 19,
+    "emb2": 8,
+    "deck": 8,
+    "label": 7,
+    "mark": 33
+   },
+   "key": "06"
+  }
+ ],
+ "at_start_count": 408,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\for-the-people\\game.ingest.json"
+}

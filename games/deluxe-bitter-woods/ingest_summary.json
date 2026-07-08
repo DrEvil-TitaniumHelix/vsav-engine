@@ -1,0 +1,94 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\DBWv15b09.vmod",
+ "steps": [
+  "extracted 1013 entries -> C:\\VassalIngest\\deluxe-bitter-woods\\extracted",
+  "module: 'Deluxe Bitter Woods' v15b09; 852 images staged",
+  "308 piece/card slots (12 with BasicPiece art, 263 blank-image layer pieces VASL-style); 13 prototypes",
+  "main board: 'DBW map' on map 'DBW Map'; 4 other board(s) not converted: Graveyard (map 'Graveyard'), Flugplatz (map 'Airfield'), Allied OOB (map 'Am OOB'), German OOB (map 'Ge OOB')",
+  "hex grid from buildFile: flat dx=72.88203230275488 dy=89.89999999999944 origin=(54.0,-1.0)",
+  "map asset: dbw-Full-map-080720-24.gif (4680x3376 px)",
+  "setup 'Campaign': 261 pieces (261 self-positioned, 254 in stacks), key 0x13",
+  "setup 'Pattons Relief of Bastonge': 343 pieces (343 self-positioned, 268 in stacks), key 0x88",
+  "setup 'New': 255 pieces (255 self-positioned, 243 in stacks), key 0x10",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.ingest.json"
+ ],
+ "problems": [
+  "game.json already exists in C:\\VassalArnhem\\games\\deluxe-bitter-woods \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "Deluxe Bitter Woods",
+ "version": "15b09",
+ "slug": "deluxe-bitter-woods",
+ "staging": "C:\\VassalIngest\\deluxe-bitter-woods",
+ "out": "C:\\VassalArnhem\\games\\deluxe-bitter-woods",
+ "pdfs": [],
+ "main_map": "DBW Map",
+ "main_board": "DBW map",
+ "grid": {
+  "orient": "flat",
+  "dx": 72.88203230275488,
+  "dy": 89.89999999999944,
+  "x0": 54.0,
+  "y0": -1.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=10 vOff=-1 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\deluxe-bitter-woods\\extracted\\images\\dbw-Full-map-080720-24.gif",
+ "setups": [
+  {
+   "name": "Campaign",
+   "path": "C:\\VassalIngest\\deluxe-bitter-woods\\setups\\Campaign-180808.vsav",
+   "pieces": 261,
+   "positioned": 261,
+   "in_stacks": 254,
+   "kinds": {
+    "emb2": 14,
+    "label": 209,
+    "placemark": 27,
+    "rotate": 3,
+    "clone": 3,
+    "immob": 5
+   },
+   "key": "13"
+  },
+  {
+   "name": "Pattons Relief of Bastonge",
+   "path": "C:\\VassalIngest\\deluxe-bitter-woods\\setups\\Pattons-Relief-of-Bastogne-180808.vsav",
+   "pieces": 343,
+   "positioned": 343,
+   "in_stacks": 268,
+   "kinds": {
+    "emb2": 166,
+    "immob": 6,
+    "clone": 3,
+    "label": 144,
+    "rotate": 5,
+    "placemark": 19
+   },
+   "key": "88"
+  },
+  {
+   "name": "New",
+   "path": "C:\\VassalIngest\\deluxe-bitter-woods\\setups\\New-180808.vsav",
+   "pieces": 255,
+   "positioned": 255,
+   "in_stacks": 243,
+   "kinds": {
+    "emb2": 6,
+    "immob": 10,
+    "placemark": 27,
+    "label": 209,
+    "clone": 3
+   },
+   "key": "10"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.ingest.json"
+}

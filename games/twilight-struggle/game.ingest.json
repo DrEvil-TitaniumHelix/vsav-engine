@@ -1,0 +1,85 @@
+{
+ "name": "Twilight Struggle \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "World Map",
+ "board_name": "World Map",
+ "save_key": "1c",
+ "grid": {
+  "orient": "flat",
+  "dx": 100.0,
+  "dy": 100.0,
+  "x0": 50.0,
+  "y0": 50.0,
+  "stagger": false,
+  "hexnum_digits": 2,
+  "provenance": "PLACEHOLDER \u2014 no grid detected; snapping is arbitrary, replace before use"
+ },
+ "buildfile": "../../../VassalIngest/twilight-struggle/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/twilight-struggle/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/twilight-struggle/extracted/images/Map.gif",
+  "counters_dir": "../../../VassalIngest/twilight-struggle/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "deck",
+  "emb2",
+  "globalkey",
+  "hideCmd",
+  "macro",
+  "report",
+  "sendto",
+  "submenu"
+ ],
+ "sides": {
+  "order": [
+   "USA",
+   "USSR"
+  ],
+  "labels": {
+   "USA": "USA",
+   "USSR": "USSR"
+  },
+  "default": "USSR",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    36
+   ],
+   "rows": [
+    0,
+    29
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "placeholder",
+  "module_version": "2.5  View the User guide for important operating information at   http://wiki.vassalengine.org/doku.php?id=Twilight%20Struggle"
+ },
+ "setup_save": "../../../VassalIngest/twilight-struggle/setups/ts start.vsav"
+}

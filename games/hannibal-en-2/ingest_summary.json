@@ -1,0 +1,53 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\hannibal_en_2.vmod",
+ "steps": [
+  "extracted 262 entries -> C:\\VassalIngest\\hannibal-en-2\\extracted",
+  "module: 'hannibal_en_2' vNone; 252 images staged",
+  "0 piece/card slots (0 with BasicPiece art, 0 blank-image layer pieces VASL-style); 2 prototypes",
+  "declared sides: ['Rome', 'Carthage']",
+  "3 card deck(s) / 112 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Main Board' on map 'Hannibal'; 1 other board(s) not converted: Board 1 (map 'Battle Board')",
+  "map asset: plateau_principal.gif (2302x1601 px)",
+  "setup 'Standard Setup': 211 pieces (0 self-positioned, 20 in stacks), key 0x90, LEGACY save normalized to modern .vsav",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\hannibal-en-2\\game.ingest.json"
+ ],
+ "problems": [
+  "no grid of any kind on the main board",
+  "game.json already exists in C:\\VassalArnhem\\games\\hannibal-en-2 \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FAIL",
+ "module": "hannibal_en_2",
+ "version": null,
+ "slug": "hannibal-en-2",
+ "staging": "C:\\VassalIngest\\hannibal-en-2",
+ "out": "C:\\VassalArnhem\\games\\hannibal-en-2",
+ "pdfs": [],
+ "main_map": "Hannibal",
+ "main_board": "Main Board",
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\hannibal-en-2\\extracted\\images\\plateau_principal.gif",
+ "setups": [
+  {
+   "name": "Standard Setup",
+   "path": "C:\\VassalIngest\\hannibal-en-2\\setups\\setup.vsav",
+   "pieces": 211,
+   "positioned": 0,
+   "in_stacks": 20,
+   "kinds": {
+    "obs": 64,
+    "return": 48,
+    "emb2": 23,
+    "sendto": 5,
+    "clone": 1,
+    "immob": 67,
+    "deck": 3
+   },
+   "key": "90"
+  }
+ ],
+ "at_start_count": 14,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\hannibal-en-2\\game.ingest.json"
+}

@@ -1,0 +1,114 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Wilderness War_3.0.vmod",
+ "steps": [
+  "extracted 382 entries -> C:\\VassalIngest\\wilderness-war\\extracted",
+  "module: 'Wilderness War' v3.0; 377 images staged",
+  "285 piece/card slots (115 with BasicPiece art, 166 blank-image layer pieces VASL-style); 22 prototypes",
+  "declared sides: ['British', 'French']",
+  "6 card deck(s) / 70 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Map' on map 'Main Map'; 2 other board(s) not converted: Forces (map 'Forces'), Removed (map 'Removed From Game')",
+  "map asset: map.png (5100x3300 px)",
+  "setup 'Annus Mirabilis (1757-1759)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4",
+  "setup 'Early War Campaign (1755-1759)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04",
+  "setup 'Late War Campaign (1757-1762)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4",
+  "setup 'Full Campaign (1755-1762)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\wilderness-war\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses 3 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\wilderness-war \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Wilderness War",
+ "version": "3.0",
+ "slug": "wilderness-war",
+ "staging": "C:\\VassalIngest\\wilderness-war",
+ "out": "C:\\VassalArnhem\\games\\wilderness-war",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Map",
+ "region_names": 3,
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\wilderness-war\\assets\\map.png",
+ "setups": [
+  {
+   "name": "Annus Mirabilis (1757-1759)",
+   "path": "C:\\VassalIngest\\wilderness-war\\setups\\AnnusMirabilis.vsav",
+   "pieces": 271,
+   "positioned": 265,
+   "in_stacks": 185,
+   "kinds": {
+    "mark": 231,
+    "markmoved": 8,
+    "delete": 2,
+    "hideCmd": 20,
+    "deck": 6,
+    "label": 1,
+    "PROP": 1,
+    "immob": 1,
+    "macro": 1
+   },
+   "key": "c4"
+  },
+  {
+   "name": "Early War Campaign (1755-1759)",
+   "path": "C:\\VassalIngest\\wilderness-war\\setups\\EarlyWar.vsav",
+   "pieces": 260,
+   "positioned": 254,
+   "in_stacks": 174,
+   "kinds": {
+    "mark": 222,
+    "hideCmd": 20,
+    "markmoved": 8,
+    "deck": 6,
+    "immob": 1,
+    "PROP": 1,
+    "macro": 1,
+    "label": 1
+   },
+   "key": "04"
+  },
+  {
+   "name": "Late War Campaign (1757-1762)",
+   "path": "C:\\VassalIngest\\wilderness-war\\setups\\AnnusMirabilis.vsav",
+   "pieces": 271,
+   "positioned": 265,
+   "in_stacks": 185,
+   "kinds": {
+    "mark": 231,
+    "markmoved": 8,
+    "delete": 2,
+    "hideCmd": 20,
+    "deck": 6,
+    "label": 1,
+    "PROP": 1,
+    "immob": 1,
+    "macro": 1
+   },
+   "key": "c4"
+  },
+  {
+   "name": "Full Campaign (1755-1762)",
+   "path": "C:\\VassalIngest\\wilderness-war\\setups\\EarlyWar.vsav",
+   "pieces": 260,
+   "positioned": 254,
+   "in_stacks": 174,
+   "kinds": {
+    "mark": 222,
+    "hideCmd": 20,
+    "markmoved": 8,
+    "deck": 6,
+    "immob": 1,
+    "PROP": 1,
+    "macro": 1,
+    "label": 1
+   },
+   "key": "04"
+  }
+ ],
+ "at_start_count": 95,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\wilderness-war\\game.ingest.json"
+}

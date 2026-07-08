@@ -1,0 +1,79 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\VIP_4_2_2.vmod",
+ "steps": [
+  "extracted 429 entries -> C:\\VassalIngest\\victory-in-the-pacific\\extracted",
+  "module: 'Victory in the Pacific' v4.2.2; 414 images staged",
+  "1 PDF(s) bundled (rules material?): VIP_Supplement.pdf",
+  "182 piece/card slots (182 with BasicPiece art, 0 blank-image layer pieces VASL-style); 17 prototypes",
+  "declared sides: ['Japan', 'Allies']",
+  "main board: 'Black&White' on map 'Main Map'; 6 other board(s) not converted: Nautical (map 'Main Map'), Original (map 'Main Map'), Allied OOA (map 'Allied OOA'), Japan OOA (map 'Japan OOA'), BattleBoard (map 'Battle'), Sunk (map 'Sunk')",
+  "map asset: map.png (2800x2217 px)",
+  "setup 'Nautical_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0x58",
+  "setup 'B&W_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0xb5",
+  "setup 'Original_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0x2a",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\victory-in-the-pacific\\game.ingest.json"
+ ],
+ "problems": [
+  "no grid of any kind on the main board",
+  "game.json already exists in C:\\VassalArnhem\\games\\victory-in-the-pacific \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Victory in the Pacific",
+ "version": "4.2.2",
+ "slug": "victory-in-the-pacific",
+ "staging": "C:\\VassalIngest\\victory-in-the-pacific",
+ "out": "C:\\VassalArnhem\\games\\victory-in-the-pacific",
+ "pdfs": [
+  "VIP_Supplement.pdf"
+ ],
+ "main_map": "Main Map",
+ "main_board": "Black&White",
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\victory-in-the-pacific\\assets\\map.png",
+ "setups": [
+  {
+   "name": "Nautical_Map",
+   "path": "C:\\VassalIngest\\victory-in-the-pacific\\setups\\Nautical_Map4.vsav",
+   "pieces": 214,
+   "positioned": 0,
+   "in_stacks": 0,
+   "kinds": {
+    "emb2": 202,
+    "piece": 2,
+    "label": 10
+   },
+   "key": "58"
+  },
+  {
+   "name": "B&W_Map",
+   "path": "C:\\VassalIngest\\victory-in-the-pacific\\setups\\BW_Map4.vsav",
+   "pieces": 214,
+   "positioned": 0,
+   "in_stacks": 0,
+   "kinds": {
+    "emb2": 202,
+    "piece": 2,
+    "label": 10
+   },
+   "key": "b5"
+  },
+  {
+   "name": "Original_Map",
+   "path": "C:\\VassalIngest\\victory-in-the-pacific\\setups\\Orignial_Map4.vsav",
+   "pieces": 214,
+   "positioned": 0,
+   "in_stacks": 0,
+   "kinds": {
+    "piece": 2,
+    "emb2": 202,
+    "label": 10
+   },
+   "key": "2a"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\victory-in-the-pacific\\game.ingest.json"
+}

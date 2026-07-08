@@ -1,0 +1,522 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Pzb-Pzl37.vmod",
+ "steps": [
+  "extracted 796 entries -> C:\\VassalIngest\\panzerblitz-panzer-leader\\extracted",
+  "module: 'PanzerBlitz/Panzer Leader' v3.7; 686 images staged",
+  "310 piece/card slots (289 with BasicPiece art, 1 blank-image layer pieces VASL-style); 4 prototypes",
+  "declared sides: ['German', 'Russian', 'Allied', 'Moderator']",
+  "main board: 'PZL Board C' on map 'Mapboard'; 8 other board(s) not converted: PZL Board A (map 'Mapboard'), PZL Board B (map 'Mapboard'), PZL Board D (map 'Mapboard'), PZB Board 1 (map 'Mapboard'), PZB Board 2 (map 'Mapboard'), PZB Board 3 (map 'Mapboard')",
+  "hex grid from buildFile: flat dx=52.0 dy=60.0 origin=(-2.0,30.0)",
+  "map asset: PL_board_C.gif (1667x600 px)",
+  "setup 'PZB #1 White Russia': 47 pieces (47 self-positioned, 47 in stacks), key 0x6a",
+  "setup 'PZB #2 Nikopol': 60 pieces (60 self-positioned, 60 in stacks), key 0xae",
+  "setup 'PZB #3 Vyazma': 51 pieces (51 self-positioned, 51 in stacks), key 0x53",
+  "setup 'PZB #4 Minsk': 69 pieces (69 self-positioned, 69 in stacks), key 0x97",
+  "setup 'PZB #5 Lutezh Bridgehead.': 68 pieces (68 self-positioned, 68 in stacks), key 0x4c",
+  "setup 'PZB #6 Dnieper River Crossing.': 68 pieces (68 self-positioned, 68 in stacks), key 0x35",
+  "setup 'PZB #7 Kiev': 88 pieces (88 self-positioned, 88 in stacks), key 0xdd",
+  "setup 'PZB #8 Korsun Pocket': 125 pieces (125 self-positioned, 125 in stacks), key 0xd0",
+  "setup 'PZB #9 Stalino': 105 pieces (105 self-positioned, 105 in stacks), key 0x34",
+  "setup 'PZB #10 Prochorovka': 113 pieces (113 self-positioned, 113 in stacks), key 0xe4",
+  "setup 'PZB #11 Unorganized Russian Position (Buchach)': 115 pieces (115 self-positioned, 115 in stacks), key 0x9c",
+  "setup 'PZB #12 Nikopol Bridgehead': 160 pieces (160 self-positioned, 160 in stacks), key 0xb1",
+  "setup 'PZL #1 Utah Beach': 42 pieces (42 self-positioned, 42 in stacks), key 0xdb",
+  "setup 'PZL #2 Omaha Beach': 115 pieces (115 self-positioned, 115 in stacks), key 0xd3",
+  "setup 'PZL #3 Gold Beach': 88 pieces (88 self-positioned, 88 in stacks), key 0xaa",
+  "setup 'PZL #4 St. Lo': 78 pieces (78 self-positioned, 78 in stacks), key 0x8f",
+  "setup 'PZL #5 Operation Goodwood': 127 pieces (127 self-positioned, 127 in stacks), key 0xfe",
+  "setup 'PZL #6 The Reichswald': 78 pieces (78 self-positioned, 78 in stacks), key 0xfd",
+  "setup 'PZL #7 Encirclement of Nancy': 67 pieces (67 self-positioned, 67 in stacks), key 0xeb",
+  "setup 'PZL #8 Marieulles': 49 pieces (49 self-positioned, 49 in stacks), key 0xfe",
+  "setup 'PZL #9 Operation Market: Nijmegen': 73 pieces (73 self-positioned, 73 in stacks), key 0x94",
+  "setup 'PZL #10 Operation Market: Arnhem': 52 pieces (52 self-positioned, 52 in stacks), key 0x73",
+  "setup 'PZL #11 Operation Garden: Anticlimax': 122 pieces (122 self-positioned, 122 in stacks), key 0xc9",
+  "setup 'PZL #12 Prelude: The Saar': 93 pieces (93 self-positioned, 93 in stacks), key 0x90",
+  "setup 'PZL #13 Fortified Goose Egg': 180 pieces (180 self-positioned, 180 in stacks), key 0x2b",
+  "setup 'PZL #14 Bulge: Thrust': 75 pieces (75 self-positioned, 75 in stacks), key 0x32",
+  "setup 'PZL #15 Elsenborn Ridge': 120 pieces (120 self-positioned, 120 in stacks), key 0xbb",
+  "setup 'PZL #16 Bastonge: Prelude': 54 pieces (54 self-positioned, 54 in stacks), key 0xd0",
+  "setup 'PZL #17 Turning Point: Celles': 153 pieces (153 self-positioned, 153 in stacks), key 0x29",
+  "setup 'PZL #18 Bastonge: Siege': 118 pieces (118 self-positioned, 118 in stacks), key 0x75",
+  "setup \"PZL #19 Patton's Counter Offensive\": 190 pieces (190 self-positioned, 190 in stacks), key 0x8c",
+  "setup 'PZL #20 Remagen Bridge': 28 pieces (28 self-positioned, 28 in stacks), key 0x4d",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\panzerblitz-panzer-leader\\game.ingest.json"
+ ],
+ "problems": [
+  "game.json already exists in C:\\VassalArnhem\\games\\panzerblitz-panzer-leader \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "PanzerBlitz/Panzer Leader",
+ "version": "3.7",
+ "slug": "panzerblitz-panzer-leader",
+ "staging": "C:\\VassalIngest\\panzerblitz-panzer-leader",
+ "out": "C:\\VassalArnhem\\games\\panzerblitz-panzer-leader",
+ "pdfs": [],
+ "main_map": "Mapboard",
+ "main_board": "PZL Board C",
+ "grid": {
+  "orient": "flat",
+  "dx": 52.0,
+  "dy": 60.0,
+  "x0": -2.0,
+  "y0": 30.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=A vType=N hOff=0 vOff=-2 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\panzerblitz-panzer-leader\\extracted\\images\\PL_board_C.gif",
+ "setups": [
+  {
+   "name": "PZB #1 White Russia",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_1_qs.vsav",
+   "pieces": 47,
+   "positioned": 47,
+   "in_stacks": 47,
+   "kinds": {
+    "report": 35,
+    "label": 11,
+    "rotate": 1
+   },
+   "key": "6a"
+  },
+  {
+   "name": "PZB #2 Nikopol",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_2_qs.vsav",
+   "pieces": 60,
+   "positioned": 60,
+   "in_stacks": 60,
+   "kinds": {
+    "report": 59,
+    "rotate": 1
+   },
+   "key": "ae"
+  },
+  {
+   "name": "PZB #3 Vyazma",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_3_qs.vsav",
+   "pieces": 51,
+   "positioned": 51,
+   "in_stacks": 51,
+   "kinds": {
+    "report": 50,
+    "rotate": 1
+   },
+   "key": "53"
+  },
+  {
+   "name": "PZB #4 Minsk",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_4_qs.vsav",
+   "pieces": 69,
+   "positioned": 69,
+   "in_stacks": 69,
+   "kinds": {
+    "report": 68,
+    "rotate": 1
+   },
+   "key": "97"
+  },
+  {
+   "name": "PZB #5 Lutezh Bridgehead.",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_5_qs.vsav",
+   "pieces": 68,
+   "positioned": 68,
+   "in_stacks": 68,
+   "kinds": {
+    "label": 11,
+    "report": 53,
+    "piece": 2,
+    "rotate": 1,
+    "emb2": 1
+   },
+   "key": "4c"
+  },
+  {
+   "name": "PZB #6 Dnieper River Crossing.",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_6_qs.vsav",
+   "pieces": 68,
+   "positioned": 68,
+   "in_stacks": 68,
+   "kinds": {
+    "report": 63,
+    "piece": 2,
+    "label": 1,
+    "emb2": 1,
+    "rotate": 1
+   },
+   "key": "35"
+  },
+  {
+   "name": "PZB #7 Kiev",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_7_qs.vsav",
+   "pieces": 88,
+   "positioned": 88,
+   "in_stacks": 88,
+   "kinds": {
+    "report": 83,
+    "piece": 2,
+    "rotate": 1,
+    "emb2": 1,
+    "label": 1
+   },
+   "key": "dd"
+  },
+  {
+   "name": "PZB #8 Korsun Pocket",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_8_qs.vsav",
+   "pieces": 125,
+   "positioned": 125,
+   "in_stacks": 125,
+   "kinds": {
+    "label": 25,
+    "report": 96,
+    "emb2": 1,
+    "piece": 2,
+    "rotate": 1
+   },
+   "key": "d0"
+  },
+  {
+   "name": "PZB #9 Stalino",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_9_qs.vsav",
+   "pieces": 105,
+   "positioned": 105,
+   "in_stacks": 105,
+   "kinds": {
+    "report": 91,
+    "label": 10,
+    "piece": 2,
+    "emb2": 1,
+    "rotate": 1
+   },
+   "key": "34"
+  },
+  {
+   "name": "PZB #10 Prochorovka",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_10_qs.vsav",
+   "pieces": 113,
+   "positioned": 113,
+   "in_stacks": 113,
+   "kinds": {
+    "report": 107,
+    "piece": 2,
+    "label": 1,
+    "rotate": 2,
+    "emb2": 1
+   },
+   "key": "e4"
+  },
+  {
+   "name": "PZB #11 Unorganized Russian Position (Buchach)",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_11_qs.vsav",
+   "pieces": 115,
+   "positioned": 115,
+   "in_stacks": 115,
+   "kinds": {
+    "report": 109,
+    "rotate": 2,
+    "label": 1,
+    "piece": 2,
+    "emb2": 1
+   },
+   "key": "9c"
+  },
+  {
+   "name": "PZB #12 Nikopol Bridgehead",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzb_sit_12_qs.vsav",
+   "pieces": 160,
+   "positioned": 160,
+   "in_stacks": 160,
+   "kinds": {
+    "report": 128,
+    "label": 28,
+    "piece": 2,
+    "rotate": 1,
+    "emb2": 1
+   },
+   "key": "b1"
+  },
+  {
+   "name": "PZL #1 Utah Beach",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_1_qs.vsav",
+   "pieces": 42,
+   "positioned": 42,
+   "in_stacks": 42,
+   "kinds": {
+    "report": 35,
+    "rotate": 3,
+    "label": 3,
+    "piece": 1
+   },
+   "key": "db"
+  },
+  {
+   "name": "PZL #2 Omaha Beach",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_2_qs.vsav",
+   "pieces": 115,
+   "positioned": 115,
+   "in_stacks": 115,
+   "kinds": {
+    "report": 80,
+    "label": 24,
+    "rotate": 10,
+    "piece": 1
+   },
+   "key": "d3"
+  },
+  {
+   "name": "PZL #3 Gold Beach",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_3_qs.vsav",
+   "pieces": 88,
+   "positioned": 88,
+   "in_stacks": 88,
+   "kinds": {
+    "report": 57,
+    "label": 22,
+    "rotate": 8,
+    "piece": 1
+   },
+   "key": "aa"
+  },
+  {
+   "name": "PZL #4 St. Lo",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_4_qs.vsav",
+   "pieces": 78,
+   "positioned": 78,
+   "in_stacks": 78,
+   "kinds": {
+    "report": 73,
+    "piece": 1,
+    "label": 3,
+    "rotate": 1
+   },
+   "key": "8f"
+  },
+  {
+   "name": "PZL #5 Operation Goodwood",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_5_qs.vsav",
+   "pieces": 127,
+   "positioned": 127,
+   "in_stacks": 127,
+   "kinds": {
+    "report": 122,
+    "label": 2,
+    "piece": 1,
+    "rotate": 2
+   },
+   "key": "fe"
+  },
+  {
+   "name": "PZL #6 The Reichswald",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_6_qs.vsav",
+   "pieces": 78,
+   "positioned": 78,
+   "in_stacks": 78,
+   "kinds": {
+    "report": 73,
+    "piece": 1,
+    "rotate": 1,
+    "label": 3
+   },
+   "key": "fd"
+  },
+  {
+   "name": "PZL #7 Encirclement of Nancy",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_7_qs.vsav",
+   "pieces": 67,
+   "positioned": 67,
+   "in_stacks": 67,
+   "kinds": {
+    "report": 63,
+    "label": 2,
+    "piece": 1,
+    "rotate": 1
+   },
+   "key": "eb"
+  },
+  {
+   "name": "PZL #8 Marieulles",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_8_qs.vsav",
+   "pieces": 49,
+   "positioned": 49,
+   "in_stacks": 49,
+   "kinds": {
+    "report": 45,
+    "label": 2,
+    "rotate": 1,
+    "piece": 1
+   },
+   "key": "fe"
+  },
+  {
+   "name": "PZL #9 Operation Market: Nijmegen",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_9_qs.vsav",
+   "pieces": 73,
+   "positioned": 73,
+   "in_stacks": 73,
+   "kinds": {
+    "report": 69,
+    "piece": 1,
+    "label": 2,
+    "rotate": 1
+   },
+   "key": "94"
+  },
+  {
+   "name": "PZL #10 Operation Market: Arnhem",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_10_qs.vsav",
+   "pieces": 52,
+   "positioned": 52,
+   "in_stacks": 52,
+   "kinds": {
+    "report": 48,
+    "rotate": 1,
+    "piece": 1,
+    "label": 2
+   },
+   "key": "73"
+  },
+  {
+   "name": "PZL #11 Operation Garden: Anticlimax",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_11_qs.vsav",
+   "pieces": 122,
+   "positioned": 122,
+   "in_stacks": 122,
+   "kinds": {
+    "report": 118,
+    "label": 2,
+    "piece": 1,
+    "rotate": 1
+   },
+   "key": "c9"
+  },
+  {
+   "name": "PZL #12 Prelude: The Saar",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_12_qs.vsav",
+   "pieces": 93,
+   "positioned": 93,
+   "in_stacks": 93,
+   "kinds": {
+    "report": 89,
+    "label": 2,
+    "piece": 1,
+    "rotate": 1
+   },
+   "key": "90"
+  },
+  {
+   "name": "PZL #13 Fortified Goose Egg",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_13_qs.vsav",
+   "pieces": 180,
+   "positioned": 180,
+   "in_stacks": 180,
+   "kinds": {
+    "report": 175,
+    "label": 3,
+    "rotate": 1,
+    "piece": 1
+   },
+   "key": "2b"
+  },
+  {
+   "name": "PZL #14 Bulge: Thrust",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_14_qs.vsav",
+   "pieces": 75,
+   "positioned": 75,
+   "in_stacks": 75,
+   "kinds": {
+    "report": 70,
+    "piece": 1,
+    "label": 2,
+    "rotate": 2
+   },
+   "key": "32"
+  },
+  {
+   "name": "PZL #15 Elsenborn Ridge",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_15_qs.vsav",
+   "pieces": 120,
+   "positioned": 120,
+   "in_stacks": 120,
+   "kinds": {
+    "report": 114,
+    "rotate": 2,
+    "piece": 1,
+    "label": 3
+   },
+   "key": "bb"
+  },
+  {
+   "name": "PZL #16 Bastonge: Prelude",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_16_qs.vsav",
+   "pieces": 54,
+   "positioned": 54,
+   "in_stacks": 54,
+   "kinds": {
+    "report": 51,
+    "rotate": 1,
+    "piece": 2
+   },
+   "key": "d0"
+  },
+  {
+   "name": "PZL #17 Turning Point: Celles",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_17_qs.vsav",
+   "pieces": 153,
+   "positioned": 153,
+   "in_stacks": 153,
+   "kinds": {
+    "report": 150,
+    "rotate": 1,
+    "piece": 2
+   },
+   "key": "29"
+  },
+  {
+   "name": "PZL #18 Bastonge: Siege",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_18_qs.vsav",
+   "pieces": 118,
+   "positioned": 118,
+   "in_stacks": 118,
+   "kinds": {
+    "report": 115,
+    "piece": 2,
+    "rotate": 1
+   },
+   "key": "75"
+  },
+  {
+   "name": "PZL #19 Patton's Counter Offensive",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_19_qs.vsav",
+   "pieces": 190,
+   "positioned": 190,
+   "in_stacks": 190,
+   "kinds": {
+    "report": 187,
+    "piece": 2,
+    "rotate": 1
+   },
+   "key": "8c"
+  },
+  {
+   "name": "PZL #20 Remagen Bridge",
+   "path": "C:\\VassalIngest\\panzerblitz-panzer-leader\\setups\\pzl_sit_20_qs.vsav",
+   "pieces": 28,
+   "positioned": 28,
+   "in_stacks": 28,
+   "kinds": {
+    "report": 24,
+    "label": 1,
+    "piece": 2,
+    "rotate": 1
+   },
+   "key": "4d"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\panzerblitz-panzer-leader\\game.ingest.json"
+}

@@ -341,9 +341,23 @@ def hexgrid_to_engine(g):
 
 
 # ---------------------------------------------------------------- saves
+def read_any_save(path):
+    """Decode any VASSAL save generation: modern 3-entry zip, zip missing
+    moduledata/savedata (some modules strip them), or the pre-3.x form — a
+    bare obfuscated '!VCSK' stream, no zip at all. Returns (plain, key)."""
+    try:
+        with zipfile.ZipFile(path) as z:
+            raw = z.read("savedGame").decode("latin-1")
+    except zipfile.BadZipFile:
+        raw = open(path, "rb").read().decode("latin-1")
+    if not raw.startswith("!VCSK"):
+        raise ValueError("not an obfuscated VASSAL save (no !VCSK header)")
+    return vsav.decode_saved(raw), int(raw[5:7], 16)
+
+
 def inspect_save(path, key_hint=None):
-    """Decode a .vsav and count what our parsers can resolve."""
-    plain, _, _ = vsav.read_vsav(path)
+    """Decode a save (any generation) and count what our parsers can resolve."""
+    plain, key = read_any_save(path)
     cmds = plain.split(ESC)
     kinds = Counter()
     pieces, positioned, in_stacks = 0, 0, 0
@@ -364,7 +378,7 @@ def inspect_save(path, key_hint=None):
         if m and m.group(1) in stack_members:
             in_stacks += 1
     return dict(pieces=pieces, positioned=positioned, in_stacks=in_stacks,
-                kinds=dict(kinds), key=f"{vsav.save_key(path):02x}")
+                kinds=dict(kinds), key=f"{key:02x}")
 
 
 # ---------------------------------------------------------------- images
@@ -602,13 +616,31 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         try:
             info = inspect_save(src)
             os.makedirs(setup_dir, exist_ok=True)
-            dst = os.path.join(setup_dir, os.path.basename(ps["file"]))
+            base = os.path.basename(ps["file"])
+            dst = os.path.join(setup_dir, base if base.lower().endswith(".vsav") else base + ".vsav")
             if not os.path.exists(dst):
-                import shutil
-                shutil.copy(src, dst)
+                try:
+                    vsav.read_vsav(src)          # already a modern 3-entry zip?
+                    import shutil
+                    shutil.copy(src, dst)
+                    legacy = ""
+                except Exception:
+                    # legacy form: normalize to a modern .vsav (same key, module's
+                    # own moduledata) so board.py / the UI load it unchanged
+                    plain, key = read_any_save(src)
+                    moduledata = open(os.path.join(extracted, "moduledata"), "rb").read() \
+                        if os.path.exists(os.path.join(extracted, "moduledata")) else b"<data/>"
+                    savedata = (b'<?xml version="1.0" encoding="UTF-8"?>\n<data version="1">\n'
+                                b'  <version></version>\n  <VassalVersion>3.2.17</VassalVersion>\n'
+                                b'  <dateSaved>0</dateSaved>\n</data>')
+                    vsav.write_vsav(dst, plain, moduledata, savedata, key=key)
+                    legacy = ", LEGACY save normalized to modern .vsav"
+            else:
+                legacy = ""
             setups.append(dict(name=ps["name"], path=dst, **info))
             ok(f"setup {ps['name']!r}: {info['pieces']} pieces "
-               f"({info['positioned']} self-positioned, {info['in_stacks']} in stacks), key 0x{info['key']}")
+               f"({info['positioned']} self-positioned, {info['in_stacks']} in stacks), "
+               f"key 0x{info['key']}{legacy}")
         except Exception as e:
             bad(f"setup {ps['name']!r} ({ps['file']}): undecodable — {e}")
     at_start = [u for m in mod["maps"] if m is main_map for u in m["at_start"]]
