@@ -19,6 +19,9 @@ categorization; the rest comes from running ingest over the downloads.
 """
 import argparse, hashlib, json, os, sys, time, urllib.parse, urllib.request
 
+if hasattr(sys.stdout, "reconfigure"):     # Windows console: don't die on unicode filenames
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 BASE = "https://vassalengine.org/api/gls/v1/projects"
 UA = {"User-Agent": "vsav-engine-census/1.0 (library conversion-coverage study; "
                     "contact: DrEvil-TitaniumHelix on github)"}
