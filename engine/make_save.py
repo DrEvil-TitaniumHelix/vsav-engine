@@ -91,8 +91,11 @@ def build(game, scenario, out_path):
             if len(recs) > 1:
                 raise ValueError(f"slot '{u['slot']}' ambiguous ({len(recs)} defs) — use gpid")
             rec = recs[0]
-        col, row = u["hex"]
-        x, y = game.grid.hex_to_pixel(col, row)
+        if "xy" in u:                       # raw pixel placement (at-start ingest)
+            x, y = int(u["xy"][0]), int(u["xy"][1])
+        else:
+            col, row = u["hex"]
+            x, y = game.grid.hex_to_pixel(col, row)
         body = rec["body"]
         if not body.startswith("+/null/"):
             raise ValueError(f"unexpected slot body for {rec['name']}: {body[:60]}")
