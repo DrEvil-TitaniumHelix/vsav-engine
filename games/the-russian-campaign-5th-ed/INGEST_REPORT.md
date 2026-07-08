@@ -17,17 +17,14 @@ Play it:  `python ui/server.py --game games\the-russian-campaign-5th-ed`
 - main board: 'TRC5' on map 'Main Map'; 8 other board(s) not converted: Axis OOB Standard (map 'Axis OOB'), Axis OOB Optionals (map 'Axis OOB'), Russian OOB Standard (map 'Russian OOB'), Russian OOB Optionals (map 'Russian OOB'), Board (map 'Weather'), Fall Blau (map 'Fall Blau')
 - hex grid from buildFile: pointy dx=147.8 dy=128.00000000000006 origin=(38.0,25.0) [SIDEWAYS — unverified mapping]
 - map asset: map.png (5100x6167 px)
-- setup 'Campaign (Standard)': 236 pieces (136 self-positioned, 0 in stacks), key 0x17, LEGACY save normalized to modern .vsav
-- setup 'Campaign (Optional)': 300 pieces (199 self-positioned, 0 in stacks), key 0x5a, LEGACY save normalized to modern .vsav
-- setup 'Fall Blau': 498 pieces (374 self-positioned, 0 in stacks), key 0x3e, LEGACY save normalized to modern .vsav
-- setup 'Zitadelle': 498 pieces (371 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav
-- setup 'Bagration': 498 pieces (300 self-positioned, 0 in stacks), key 0x69, LEGACY save normalized to modern .vsav
+- setup 'Campaign (Standard)': 236 pieces, 97 ON the main map (136 self-positioned, 0 in stacks), key 0x17
+- setup 'Campaign (Optional)': 300 pieces, 98 ON the main map (199 self-positioned, 0 in stacks), key 0x5a
+- setup 'Fall Blau': 498 pieces, 5 ON the main map (374 self-positioned, 0 in stacks), key 0x3e
+- setup 'Zitadelle': 498 pieces, 5 ON the main map (371 self-positioned, 0 in stacks), key 0xe7
+- setup 'Bagration': 498 pieces, 76 ON the main map (300 self-positioned, 0 in stacks), key 0x69
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\the-russian-campaign-5th-ed\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\the-russian-campaign-5th-ed — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\the-russian-campaign-5th-ed\game.json
+- runtime self-check: engine loads the setup and sees 97 units
 
 ## Grid
 

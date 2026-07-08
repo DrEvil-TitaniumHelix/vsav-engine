@@ -24,7 +24,11 @@
  },
  "unit_kinds": [
   "clone",
-  "report"
+  "delete",
+  "immob",
+  "mark",
+  "report",
+  "sendto"
  ],
  "sides": {
   "order": [
@@ -75,5 +79,5 @@
   "grid_how": "placeholder",
   "module_version": "0.5e"
  },
- "setup_save": "../../../VassalIngest/a-house-divided/setups/New Game Blank.vsav"
+ "setup_save": "../../../VassalIngest/a-house-divided/setups/1864 Scenario.vsav"
 }

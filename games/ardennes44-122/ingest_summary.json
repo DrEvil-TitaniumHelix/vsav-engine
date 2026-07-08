@@ -8,14 +8,15 @@
   "main board: 'A44 NE' on map 'Ardennes'; 4 other board(s) not converted: Reductions (map 'Reduction Units'), A44 NW (map 'Ardennes'), A44 SW (map 'Ardennes'), A44 SE (map 'Ardennes')",
   "hex grid from buildFile: flat dx=81.40638795573723 dy=94.0 origin=(1.0,-17.0)",
   "map asset: map.png (2450x2010 px)",
-  "setup 'Campaign Quick Start': 196 pieces (181 self-positioned, 195 in stacks), key 0x5c, LEGACY save normalized to modern .vsav",
+  "setup 'Campaign Quick Start': 196 pieces, 0 ON the main map (181 self-positioned, 195 in stacks), key 0x5c",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\ardennes44-122\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\ardennes44-122\\game.json",
+  "runtime self-check: engine loads the setup and sees 131 units"
  ],
  "problems": [
-  "game.json already exists in C:\\VassalArnhem\\games\\ardennes44-122 \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "best setup puts only 0 piece(s) on the main map \u2014 likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)"
  ],
- "verdict": "FULL",
+ "verdict": "PARTIAL",
  "module": "Ardennes44-122",
  "version": null,
  "slug": "ardennes44-122",
@@ -45,6 +46,7 @@
    "pieces": 196,
    "positioned": 181,
    "in_stacks": 195,
+   "on_map": 0,
    "kinds": {
     "sendto": 83,
     "emb2": 86,
@@ -56,5 +58,6 @@
  ],
  "at_start_count": 1,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\ardennes44-122\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\ardennes44-122\\game.json",
+ "runtime_units": 131
 }

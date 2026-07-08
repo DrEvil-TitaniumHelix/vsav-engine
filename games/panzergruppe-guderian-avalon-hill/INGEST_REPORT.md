@@ -16,12 +16,11 @@
 - hex grid from buildFile: flat dx=77.62562584220342 dy=89.59999999999854 origin=(12.0,39.0)
 - map asset: PGG-map-ver1.png (4679x2902 px)
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\panzergruppe-guderian-avalon-hill\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\panzergruppe-guderian-avalon-hill\game.json
 
 ## What didn't (and why)
 
 - no setups of any kind: no bundled saves, no at-start stacks — board starts empty
-- game.json already exists in C:\VassalArnhem\games\panzergruppe-guderian-avalon-hill — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Grid
 

@@ -15,16 +15,16 @@
 - 13 card deck(s) / 145 card slot(s) — cards NOT converted (engine future)
 - main board: 'Classic Map' on map 'Map'; 6 other board(s) not converted: Deluxe Historical Map (map 'Map'), CP Forces (map 'CP Forces'), AP Forces (map 'AP Forces'), Permanently Eliminated (map 'Permanently Eliminated'), Expansion Decks (map 'Expansion Cards'), Preferences (map 'Preferences')
 - map asset: map.png (5100x4200 px)
-- setup 'Deluxe Map - Historical Scenario': 843 pieces (131 self-positioned, 0 in stacks), key 0x3b, LEGACY save normalized to modern .vsav
-- setup 'Classic Map - Historical Scenario': 857 pieces (131 self-positioned, 0 in stacks), key 0x47, LEGACY save normalized to modern .vsav
-- setup 'Classic Map - Campaign Scenario': 849 pieces (114 self-positioned, 0 in stacks), key 0xf3, LEGACY save normalized to modern .vsav
+- setup 'Deluxe Map - Historical Scenario': 843 pieces, 640 ON the main map (131 self-positioned, 0 in stacks), key 0x3b
+- setup 'Classic Map - Historical Scenario': 857 pieces, 654 ON the main map (131 self-positioned, 0 in stacks), key 0x47
+- setup 'Classic Map - Campaign Scenario': 849 pieces, 645 ON the main map (114 self-positioned, 0 in stacks), key 0xf3
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\paths-of-glory\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\paths-of-glory\game.json
+- runtime self-check: engine loads the setup and sees 113 units
 
 ## What didn't (and why)
 
 - board uses 41 NAMED regions (point-to-point/area map) — engine has no region-space support yet
-- game.json already exists in C:\VassalArnhem\games\paths-of-glory — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Setups
 

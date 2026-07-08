@@ -13,16 +13,17 @@
 - declared sides: ['Referee', 'Austria', 'England', 'France', 'Germany', 'Italy', 'Russia', 'Turkey']
 - main board: 'Diplomacy' on map 'Main Map'; 2 other board(s) not converted: Left Stock (map 'Main Map'), Right Stock (map 'Main Map')
 - map asset: map.png (2000x1700 px)
-- setup 'New Game': 0 pieces (0 self-positioned, 0 in stacks), key 0xa3, LEGACY save normalized to modern .vsav
-- setup 'Centers and Pools': 165 pieces (0 self-positioned, 125 in stacks), key 0xd8, LEGACY save normalized to modern .vsav
-- setup 'Spring 1900': 165 pieces (0 self-positioned, 105 in stacks), key 0x1d, LEGACY save normalized to modern .vsav
+- setup 'New Game': 0 pieces, 0 ON the main map (0 self-positioned, 0 in stacks), key 0xa3
+- setup 'Centers and Pools': 165 pieces, 0 ON the main map (0 self-positioned, 125 in stacks), key 0xd8
+- setup 'Spring 1900': 165 pieces, 0 ON the main map (0 self-positioned, 105 in stacks), key 0x1d
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\diplomacy\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\diplomacy\game.json
+- runtime self-check: engine loads the setup and sees 125 units
 
 ## What didn't (and why)
 
 - board uses 80 NAMED regions (point-to-point/area map) — engine has no region-space support yet
-- game.json already exists in C:\VassalArnhem\games\diplomacy — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
 
 ## Setups
 

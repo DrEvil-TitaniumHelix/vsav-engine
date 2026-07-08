@@ -16,16 +16,13 @@ Play it:  `python ui/server.py --game games\world-in-flames-final-edition`
 - main board: 'Eastern Europe' on map 'WIFMain'; 100 other board(s) not converted: North America (map 'NASA'), South America (map 'NASA'), Scandanavia (map 'Scandinavia'), Africa Board (map 'Africa'), Production Circle (map 'Production Circle (Allies)'), Production Circle (map 'Production Circle (Axis)')
 - hex grid from buildFile: pointy dx=100.44999999999999 dy=86.91904672938996 origin=(51.0,-2.0) [SIDEWAYS — unverified mapping]
 - map asset: map.png (3278x4689 px)
-- setup '01 - Any 4 Map Scenario, PatiF, AiF, (DoD)': 11331 pieces (8865 self-positioned, 832 in stacks), key 0xd2
-- setup "02 - Fascist Tide (DoD), Duce's Dream": 8963 pieces (6504 self-positioned, 608 in stacks), key 0x74
-- setup '03 - Guadalcanal, Day of Infamy': 7493 pieces (5042 self-positioned, 296 in stacks), key 0x6a
-- setup '04 - Barbarossa, Russian Campaign': 6044 pieces (3596 self-positioned, 256 in stacks), key 0xbd
+- setup '01 - Any 4 Map Scenario, PatiF, AiF, (DoD)': 11331 pieces, 6262 ON the main map (8865 self-positioned, 832 in stacks), key 0xd2
+- setup "02 - Fascist Tide (DoD), Duce's Dream": 8963 pieces, 3865 ON the main map (6504 self-positioned, 608 in stacks), key 0x74
+- setup '03 - Guadalcanal, Day of Infamy': 7493 pieces, 2253 ON the main map (5042 self-positioned, 296 in stacks), key 0x6a
+- setup '04 - Barbarossa, Russian Campaign': 6044 pieces, 922 ON the main map (3596 self-positioned, 256 in stacks), key 0xbd
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\world-in-flames-final-edition\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\world-in-flames-final-edition — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\world-in-flames-final-edition\game.json
+- runtime self-check: engine loads the setup and sees 6262 units
 
 ## Grid
 

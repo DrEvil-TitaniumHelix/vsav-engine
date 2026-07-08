@@ -2,7 +2,7 @@
  "name": "The Russian Campaign (5th Ed) \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "Main Map",
  "board_name": "TRC5",
- "save_key": "a3",
+ "save_key": "17",
  "grid": {
   "orient": "pointy",
   "dx": 147.8,
@@ -24,10 +24,13 @@
   "counter_px": 75
  },
  "unit_kinds": [
-  "piece",
-  "prototype",
-  "mark",
-  "hideCmd"
+  "AreaOfEffect",
+  "deck",
+  "emb2",
+  "immob",
+  "label",
+  "obs",
+  "report"
  ],
  "sides": {
   "order": [
@@ -78,5 +81,5 @@
   "grid_how": "hexgrid",
   "module_version": "1.1"
  },
- "setup_save": "../../../VassalIngest/the-russian-campaign-5th-ed/setups/atstart.vsav"
+ "setup_save": "../../../VassalIngest/the-russian-campaign-5th-ed/setups/Scenario Campaign Optional.vsav"
 }

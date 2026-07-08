@@ -23,7 +23,10 @@ import vsav
 import gamespec
 
 PIECE_RE = re.compile(r"^\+/(\d+)/(\w+);")
-IMG_RE = re.compile(r"piece;[^;]*;[^;]*;([^;]+?)\.(png|gif|svg);")
+IMG_RE = re.compile(r"piece;[^;]*;[^;]*;([^;]+?)\.(png|gif|svg|jpg|jpeg|bmp);")
+# some modules reference counter art WITHOUT a file extension (VASSAL allows
+# it); the BasicPiece image is then the raw 3rd field, escaped '/' permitted
+IMG_NOEXT_RE = re.compile(r"piece;[^;]*;[^;]*;((?:\\.|[^;/])+);")
 ESC = "\x1b"
 
 
@@ -47,19 +50,25 @@ class Board:
             m = PIECE_RE.match(c)
             if m:
                 img = IMG_RE.search(c)
-                if not img:
-                    continue
-                # BasicPiece state, two formats seen in the wild:
-                #   3.2-era (Westwall): ".../Pieces\tfalse;<map>;1;x,y" (map EMPTY for singletons)
+                if img:
+                    # VASL escapes '/' in image paths as '\/' inside piece types
+                    nm = img.group(1).strip().replace("\\", "")
+                    imgfile = f"{nm}.{img.group(2)}"
+                else:
+                    img = IMG_NOEXT_RE.search(c)
+                    if not img:
+                        continue
+                    nm = imgfile = img.group(1).strip().replace("\\", "")
+                # BasicPiece state, three formats seen in the wild:
+                #   3.2-era (Westwall): "...\tfalse;<map>;1;x,y" (map EMPTY for singletons;
+                #     Bitter Woods variant uses a map ID like "Map0" + board index 2)
                 #   slot-style (Tobruk): "<map>;x;y;<gpid>"
-                st = re.search(r"/Pieces\tfalse;[^;]*;1;(\d+),(\d+)", c)
+                st = re.search(r"\tfalse;[^;\t]*;\d+;(\d+),(\d+)", c)
                 if not st:
                     st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
                 x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
-                # VASL escapes '/' in image paths as '\/' inside piece types
-                nm = img.group(1).strip().replace("\\", "")
                 self.pieces[m.group(1)] = dict(name=nm, kind=m.group(2),
-                                               img=f"{nm}.{img.group(2)}",
+                                               img=imgfile,
                                                idx=i, x=x, y=y)
         self.member_of = {}  # piece id -> stack id
         for sid, s in self.stacks.items():

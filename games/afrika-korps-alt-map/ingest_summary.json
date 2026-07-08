@@ -8,13 +8,12 @@
   "main board: 'Revised AK Map' on map 'Main Map'; 5 other board(s) not converted: Supply Board (map 'Supply'), Axis Order of Appearance (map 'Axis OoB'), Replacement Record (map 'Replacements'), Allies Order of Appearance (map 'Allies OoB'), Casualties Window (map 'Dead Pool')",
   "hex grid from buildFile: pointy dx=104.8999999999999 dy=91.0 origin=(96.0,69.0) [SIDEWAYS \u2014 unverified mapping]",
   "map asset: map.png (7400x2549 px)",
-  "setup 'Afrika Korps ': 91 pieces (91 self-positioned, 91 in stacks), key 0xbf",
+  "setup 'Afrika Korps ': 91 pieces, 18 ON the main map (91 self-positioned, 91 in stacks), key 0xbf",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.json",
+  "runtime self-check: engine loads the setup and sees 26 units"
  ],
- "problems": [
-  "game.json already exists in C:\\VassalArnhem\\games\\afrika-korps-alt-map \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
- ],
+ "problems": [],
  "verdict": "FULL",
  "module": "Afrika Korps ALT MAP",
  "version": "1.01",
@@ -44,6 +43,7 @@
    "pieces": 91,
    "positioned": 91,
    "in_stacks": 91,
+   "on_map": 18,
    "kinds": {
     "emb2": 4,
     "sendto": 83,
@@ -56,5 +56,6 @@
  ],
  "at_start_count": 0,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.json",
+ "runtime_units": 26
 }

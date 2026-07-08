@@ -1,11 +1,9 @@
 # Ingest report — Empire of the Sun (2nd Edition) v6.0.1
 
-**Verdict: FULL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
+**Verdict: PARTIAL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
 
 - module file: `EotSv6.0.1.vmod`
 - staged at: `C:\VassalIngest\empire-of-the-sun-2nd-edition` (assets stay OUT of the repo)
-
-Play it:  `python ui/server.py --game games\empire-of-the-sun-2nd-edition`
 
 ## What worked
 
@@ -20,12 +18,12 @@ Play it:  `python ui/server.py --game games\empire-of-the-sun-2nd-edition`
 - map asset: map.png (6800x4400 px)
 - no bundled .vsav setups, but 309 at-start pieces on the main map (SetupStack) — convertible
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\empire-of-the-sun-2nd-edition\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\empire-of-the-sun-2nd-edition\game.json
 - built setup save from 309 at-start pieces -> C:\VassalIngest\empire-of-the-sun-2nd-edition\setups\atstart.vsav
 
 ## What didn't (and why)
 
-- game.json already exists in C:\VassalArnhem\games\empire-of-the-sun-2nd-edition — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- runtime self-check FAILED: engine loads the setup but sees 0 units (piece-state format the runtime parser doesn't resolve yet)
 
 ## Grid
 

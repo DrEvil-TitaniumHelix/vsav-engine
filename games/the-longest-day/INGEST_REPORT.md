@@ -16,18 +16,15 @@ Play it:  `python ui/server.py --game games\the-longest-day`
 - main board: 'Normandy Area' on map 'Main Map'; 34 other board(s) not converted: Map A Cherbourg (map 'Main Map'), Map B Coutances (map 'Main Map'), Map C St. LO (map 'Main Map'), Map D Caen (map 'Main Map'), Map E Cabourg (map 'Main Map'), Map F Avranches (map 'Main Map')
 - hex grid from buildFile: flat dx=55.42562584220407 dy=64.0 origin=(-18.0,29.0)
 - map asset: Map_Full a.png (5340x5024 px)
-- setup 'Mortain': 387 pieces (235 self-positioned, 0 in stacks), key 0x0d
-- setup 'The Falaise Pocket': 813 pieces (518 self-positioned, 0 in stacks), key 0x8a
-- setup 'Cobra': 948 pieces (543 self-positioned, 0 in stacks), key 0x60
-- setup 'Battle for Cherbourg': 390 pieces (152 self-positioned, 0 in stacks), key 0xa3
-- setup 'Normandy Beachhead': 952 pieces (481 self-positioned, 0 in stacks), key 0x87
-- setup 'Campaign': 2231 pieces (1515 self-positioned, 0 in stacks), key 0x20
+- setup 'Mortain': 387 pieces, 385 ON the main map (235 self-positioned, 0 in stacks), key 0x0d
+- setup 'The Falaise Pocket': 813 pieces, 812 ON the main map (518 self-positioned, 0 in stacks), key 0x8a
+- setup 'Cobra': 948 pieces, 941 ON the main map (543 self-positioned, 0 in stacks), key 0x60
+- setup 'Battle for Cherbourg': 390 pieces, 368 ON the main map (152 self-positioned, 0 in stacks), key 0xa3
+- setup 'Normandy Beachhead': 952 pieces, 699 ON the main map (481 self-positioned, 0 in stacks), key 0x87
+- setup 'Campaign': 2231 pieces, 1733 ON the main map (1515 self-positioned, 0 in stacks), key 0x20
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\the-longest-day\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\the-longest-day — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\the-longest-day\game.json
+- runtime self-check: engine loads the setup and sees 1733 units
 
 ## Grid
 

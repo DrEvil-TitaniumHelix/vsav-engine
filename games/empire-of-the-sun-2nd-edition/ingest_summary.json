@@ -12,13 +12,13 @@
   "map asset: map.png (6800x4400 px)",
   "no bundled .vsav setups, but 309 at-start pieces on the main map (SetupStack) \u2014 convertible",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\empire-of-the-sun-2nd-edition\\game.ingest.json",
+  "spec skeleton -> C:\\VassalArnhem\\games\\empire-of-the-sun-2nd-edition\\game.json",
   "built setup save from 309 at-start pieces -> C:\\VassalIngest\\empire-of-the-sun-2nd-edition\\setups\\atstart.vsav"
  ],
  "problems": [
-  "game.json already exists in C:\\VassalArnhem\\games\\empire-of-the-sun-2nd-edition \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "runtime self-check FAILED: engine loads the setup but sees 0 units (piece-state format the runtime parser doesn't resolve yet)"
  ],
- "verdict": "FULL",
+ "verdict": "PARTIAL",
  "module": "Empire of the Sun (2nd Edition)",
  "version": "6.0.1",
  "slug": "empire-of-the-sun-2nd-edition",
@@ -50,6 +50,7 @@
    "pieces": 309,
    "positioned": 309,
    "in_stacks": 309,
+   "on_map": 309,
    "kinds": {
     "setprop": 4,
     "globalhotkey": 1,
@@ -67,5 +68,6 @@
  ],
  "at_start_count": 309,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\empire-of-the-sun-2nd-edition\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\empire-of-the-sun-2nd-edition\\game.json",
+ "runtime_units": 0
 }

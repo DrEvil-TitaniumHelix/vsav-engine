@@ -14,17 +14,17 @@
 - 6 card deck(s) / 70 card slot(s) — cards NOT converted (engine future)
 - main board: 'Map' on map 'Main Map'; 2 other board(s) not converted: Forces (map 'Forces'), Removed (map 'Removed From Game')
 - map asset: map.png (5100x3300 px)
-- setup 'Annus Mirabilis (1757-1759)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4
-- setup 'Early War Campaign (1755-1759)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04
-- setup 'Late War Campaign (1757-1762)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4
-- setup 'Full Campaign (1755-1762)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04
+- setup 'Annus Mirabilis (1757-1759)': 271 pieces, 177 ON the main map (265 self-positioned, 185 in stacks), key 0xc4
+- setup 'Early War Campaign (1755-1759)': 260 pieces, 174 ON the main map (254 self-positioned, 174 in stacks), key 0x04
+- setup 'Late War Campaign (1757-1762)': 271 pieces, 177 ON the main map (265 self-positioned, 185 in stacks), key 0xc4
+- setup 'Full Campaign (1755-1762)': 260 pieces, 174 ON the main map (254 self-positioned, 174 in stacks), key 0x04
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\wilderness-war\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\wilderness-war\game.json
+- runtime self-check: engine loads the setup and sees 25 units
 
 ## What didn't (and why)
 
 - board uses 3 NAMED regions (point-to-point/area map) — engine has no region-space support yet
-- game.json already exists in C:\VassalArnhem\games\wilderness-war — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Setups
 

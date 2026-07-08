@@ -2,7 +2,7 @@
  "name": "Ardennes44-122 \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "Ardennes",
  "board_name": "A44 NE",
- "save_key": "a3",
+ "save_key": "5c",
  "grid": {
   "orient": "flat",
   "dx": 81.40638795573723,
@@ -25,10 +25,10 @@
   "counter_px": 75
  },
  "unit_kinds": [
-  "piece",
-  "prototype",
-  "mark",
-  "hideCmd"
+  "emb2",
+  "immob",
+  "rotate",
+  "sendto"
  ],
  "sides": {
   "order": [
@@ -78,5 +78,6 @@
   "tool": "engine/ingest.py",
   "grid_how": "hexgrid",
   "module_version": null
- }
+ },
+ "setup_save": "../../../VassalIngest/ardennes44-122/setups/Campaign Game Quick Start.vsav"
 }

@@ -8,13 +8,14 @@
   "3 card deck(s) / 112 card slot(s) \u2014 cards NOT converted (engine future)",
   "main board: 'Main Board' on map 'Hannibal'; 1 other board(s) not converted: Board 1 (map 'Battle Board')",
   "map asset: plateau_principal.gif (2302x1601 px)",
-  "setup 'Standard Setup': 211 pieces (0 self-positioned, 20 in stacks), key 0x90, LEGACY save normalized to modern .vsav",
+  "setup 'Standard Setup': 211 pieces, 0 ON the main map (0 self-positioned, 20 in stacks), key 0x90",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\hannibal-en-2\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\hannibal-en-2\\game.json",
+  "runtime self-check: engine loads the setup and sees 20 units"
  ],
  "problems": [
   "no grid of any kind on the main board",
-  "game.json already exists in C:\\VassalArnhem\\games\\hannibal-en-2 \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "best setup puts only 0 piece(s) on the main map \u2014 likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)"
  ],
  "verdict": "FAIL",
  "module": "hannibal_en_2",
@@ -35,6 +36,7 @@
    "pieces": 211,
    "positioned": 0,
    "in_stacks": 20,
+   "on_map": 0,
    "kinds": {
     "obs": 64,
     "return": 48,
@@ -49,5 +51,6 @@
  ],
  "at_start_count": 14,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\hannibal-en-2\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\hannibal-en-2\\game.json",
+ "runtime_units": 20
 }

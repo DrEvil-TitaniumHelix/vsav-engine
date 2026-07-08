@@ -1,11 +1,9 @@
 # Ingest report — Ardennes44-122
 
-**Verdict: FULL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
+**Verdict: PARTIAL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
 
 - module file: `Ardennes44-122.vmod`
 - staged at: `C:\VassalIngest\ardennes44-122` (assets stay OUT of the repo)
-
-Play it:  `python ui/server.py --game games\ardennes44-122`
 
 ## What worked
 
@@ -16,13 +14,14 @@ Play it:  `python ui/server.py --game games\ardennes44-122`
 - main board: 'A44 NE' on map 'Ardennes'; 4 other board(s) not converted: Reductions (map 'Reduction Units'), A44 NW (map 'Ardennes'), A44 SW (map 'Ardennes'), A44 SE (map 'Ardennes')
 - hex grid from buildFile: flat dx=81.40638795573723 dy=94.0 origin=(1.0,-17.0)
 - map asset: map.png (2450x2010 px)
-- setup 'Campaign Quick Start': 196 pieces (181 self-positioned, 195 in stacks), key 0x5c, LEGACY save normalized to modern .vsav
+- setup 'Campaign Quick Start': 196 pieces, 0 ON the main map (181 self-positioned, 195 in stacks), key 0x5c
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\ardennes44-122\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\ardennes44-122\game.json
+- runtime self-check: engine loads the setup and sees 131 units
 
 ## What didn't (and why)
 
-- game.json already exists in C:\VassalArnhem\games\ardennes44-122 — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
 
 ## Grid
 

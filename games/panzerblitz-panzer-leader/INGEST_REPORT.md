@@ -16,44 +16,41 @@ Play it:  `python ui/server.py --game games\panzerblitz-panzer-leader`
 - main board: 'PZL Board C' on map 'Mapboard'; 8 other board(s) not converted: PZL Board A (map 'Mapboard'), PZL Board B (map 'Mapboard'), PZL Board D (map 'Mapboard'), PZB Board 1 (map 'Mapboard'), PZB Board 2 (map 'Mapboard'), PZB Board 3 (map 'Mapboard')
 - hex grid from buildFile: flat dx=52.0 dy=60.0 origin=(-2.0,30.0)
 - map asset: PL_board_C.gif (1667x600 px)
-- setup 'PZB #1 White Russia': 47 pieces (47 self-positioned, 47 in stacks), key 0x6a
-- setup 'PZB #2 Nikopol': 60 pieces (60 self-positioned, 60 in stacks), key 0xae
-- setup 'PZB #3 Vyazma': 51 pieces (51 self-positioned, 51 in stacks), key 0x53
-- setup 'PZB #4 Minsk': 69 pieces (69 self-positioned, 69 in stacks), key 0x97
-- setup 'PZB #5 Lutezh Bridgehead.': 68 pieces (68 self-positioned, 68 in stacks), key 0x4c
-- setup 'PZB #6 Dnieper River Crossing.': 68 pieces (68 self-positioned, 68 in stacks), key 0x35
-- setup 'PZB #7 Kiev': 88 pieces (88 self-positioned, 88 in stacks), key 0xdd
-- setup 'PZB #8 Korsun Pocket': 125 pieces (125 self-positioned, 125 in stacks), key 0xd0
-- setup 'PZB #9 Stalino': 105 pieces (105 self-positioned, 105 in stacks), key 0x34
-- setup 'PZB #10 Prochorovka': 113 pieces (113 self-positioned, 113 in stacks), key 0xe4
-- setup 'PZB #11 Unorganized Russian Position (Buchach)': 115 pieces (115 self-positioned, 115 in stacks), key 0x9c
-- setup 'PZB #12 Nikopol Bridgehead': 160 pieces (160 self-positioned, 160 in stacks), key 0xb1
-- setup 'PZL #1 Utah Beach': 42 pieces (42 self-positioned, 42 in stacks), key 0xdb
-- setup 'PZL #2 Omaha Beach': 115 pieces (115 self-positioned, 115 in stacks), key 0xd3
-- setup 'PZL #3 Gold Beach': 88 pieces (88 self-positioned, 88 in stacks), key 0xaa
-- setup 'PZL #4 St. Lo': 78 pieces (78 self-positioned, 78 in stacks), key 0x8f
-- setup 'PZL #5 Operation Goodwood': 127 pieces (127 self-positioned, 127 in stacks), key 0xfe
-- setup 'PZL #6 The Reichswald': 78 pieces (78 self-positioned, 78 in stacks), key 0xfd
-- setup 'PZL #7 Encirclement of Nancy': 67 pieces (67 self-positioned, 67 in stacks), key 0xeb
-- setup 'PZL #8 Marieulles': 49 pieces (49 self-positioned, 49 in stacks), key 0xfe
-- setup 'PZL #9 Operation Market: Nijmegen': 73 pieces (73 self-positioned, 73 in stacks), key 0x94
-- setup 'PZL #10 Operation Market: Arnhem': 52 pieces (52 self-positioned, 52 in stacks), key 0x73
-- setup 'PZL #11 Operation Garden: Anticlimax': 122 pieces (122 self-positioned, 122 in stacks), key 0xc9
-- setup 'PZL #12 Prelude: The Saar': 93 pieces (93 self-positioned, 93 in stacks), key 0x90
-- setup 'PZL #13 Fortified Goose Egg': 180 pieces (180 self-positioned, 180 in stacks), key 0x2b
-- setup 'PZL #14 Bulge: Thrust': 75 pieces (75 self-positioned, 75 in stacks), key 0x32
-- setup 'PZL #15 Elsenborn Ridge': 120 pieces (120 self-positioned, 120 in stacks), key 0xbb
-- setup 'PZL #16 Bastonge: Prelude': 54 pieces (54 self-positioned, 54 in stacks), key 0xd0
-- setup 'PZL #17 Turning Point: Celles': 153 pieces (153 self-positioned, 153 in stacks), key 0x29
-- setup 'PZL #18 Bastonge: Siege': 118 pieces (118 self-positioned, 118 in stacks), key 0x75
-- setup "PZL #19 Patton's Counter Offensive": 190 pieces (190 self-positioned, 190 in stacks), key 0x8c
-- setup 'PZL #20 Remagen Bridge': 28 pieces (28 self-positioned, 28 in stacks), key 0x4d
+- setup 'PZB #1 White Russia': 47 pieces, 47 ON the main map (47 self-positioned, 47 in stacks), key 0x6a
+- setup 'PZB #2 Nikopol': 60 pieces, 60 ON the main map (60 self-positioned, 60 in stacks), key 0xae
+- setup 'PZB #3 Vyazma': 51 pieces, 51 ON the main map (51 self-positioned, 51 in stacks), key 0x53
+- setup 'PZB #4 Minsk': 69 pieces, 69 ON the main map (69 self-positioned, 69 in stacks), key 0x97
+- setup 'PZB #5 Lutezh Bridgehead.': 68 pieces, 50 ON the main map (68 self-positioned, 68 in stacks), key 0x4c
+- setup 'PZB #6 Dnieper River Crossing.': 68 pieces, 56 ON the main map (68 self-positioned, 68 in stacks), key 0x35
+- setup 'PZB #7 Kiev': 88 pieces, 76 ON the main map (88 self-positioned, 88 in stacks), key 0xdd
+- setup 'PZB #8 Korsun Pocket': 125 pieces, 104 ON the main map (125 self-positioned, 125 in stacks), key 0xd0
+- setup 'PZB #9 Stalino': 105 pieces, 71 ON the main map (105 self-positioned, 105 in stacks), key 0x34
+- setup 'PZB #10 Prochorovka': 113 pieces, 98 ON the main map (113 self-positioned, 113 in stacks), key 0xe4
+- setup 'PZB #11 Unorganized Russian Position (Buchach)': 115 pieces, 94 ON the main map (115 self-positioned, 115 in stacks), key 0x9c
+- setup 'PZB #12 Nikopol Bridgehead': 160 pieces, 110 ON the main map (160 self-positioned, 160 in stacks), key 0xb1
+- setup 'PZL #1 Utah Beach': 42 pieces, 34 ON the main map (42 self-positioned, 42 in stacks), key 0xdb
+- setup 'PZL #2 Omaha Beach': 115 pieces, 100 ON the main map (115 self-positioned, 115 in stacks), key 0xd3
+- setup 'PZL #3 Gold Beach': 88 pieces, 78 ON the main map (88 self-positioned, 88 in stacks), key 0xaa
+- setup 'PZL #4 St. Lo': 78 pieces, 56 ON the main map (78 self-positioned, 78 in stacks), key 0x8f
+- setup 'PZL #5 Operation Goodwood': 127 pieces, 99 ON the main map (127 self-positioned, 127 in stacks), key 0xfe
+- setup 'PZL #6 The Reichswald': 78 pieces, 61 ON the main map (78 self-positioned, 78 in stacks), key 0xfd
+- setup 'PZL #7 Encirclement of Nancy': 67 pieces, 48 ON the main map (67 self-positioned, 67 in stacks), key 0xeb
+- setup 'PZL #8 Marieulles': 49 pieces, 36 ON the main map (49 self-positioned, 49 in stacks), key 0xfe
+- setup 'PZL #9 Operation Market: Nijmegen': 73 pieces, 61 ON the main map (73 self-positioned, 73 in stacks), key 0x94
+- setup 'PZL #10 Operation Market: Arnhem': 52 pieces, 40 ON the main map (52 self-positioned, 52 in stacks), key 0x73
+- setup 'PZL #11 Operation Garden: Anticlimax': 122 pieces, 94 ON the main map (122 self-positioned, 122 in stacks), key 0xc9
+- setup 'PZL #12 Prelude: The Saar': 93 pieces, 57 ON the main map (93 self-positioned, 93 in stacks), key 0x90
+- setup 'PZL #13 Fortified Goose Egg': 180 pieces, 140 ON the main map (180 self-positioned, 180 in stacks), key 0x2b
+- setup 'PZL #14 Bulge: Thrust': 75 pieces, 55 ON the main map (75 self-positioned, 75 in stacks), key 0x32
+- setup 'PZL #15 Elsenborn Ridge': 120 pieces, 92 ON the main map (120 self-positioned, 120 in stacks), key 0xbb
+- setup 'PZL #16 Bastonge: Prelude': 54 pieces, 45 ON the main map (54 self-positioned, 54 in stacks), key 0xd0
+- setup 'PZL #17 Turning Point: Celles': 153 pieces, 117 ON the main map (153 self-positioned, 153 in stacks), key 0x29
+- setup 'PZL #18 Bastonge: Siege': 118 pieces, 94 ON the main map (118 self-positioned, 118 in stacks), key 0x75
+- setup "PZL #19 Patton's Counter Offensive": 190 pieces, 150 ON the main map (190 self-positioned, 190 in stacks), key 0x8c
+- setup 'PZL #20 Remagen Bridge': 28 pieces, 19 ON the main map (28 self-positioned, 28 in stacks), key 0x4d
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\panzerblitz-panzer-leader\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\panzerblitz-panzer-leader — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\panzerblitz-panzer-leader\game.json
+- runtime self-check: engine loads the setup and sees 188 units
 
 ## Grid
 

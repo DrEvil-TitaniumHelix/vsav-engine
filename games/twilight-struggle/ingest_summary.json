@@ -8,13 +8,14 @@
   "5 card deck(s) / 102 card slot(s) \u2014 cards NOT converted (engine future)",
   "main board: 'World Map' on map 'World Map'",
   "map asset: Map.gif (3700x3000 px)",
-  "setup 'Initial Setup': 344 pieces (85 self-positioned, 232 in stacks), key 0x1c, LEGACY save normalized to modern .vsav",
+  "setup 'Initial Setup': 344 pieces, 0 ON the main map (85 self-positioned, 232 in stacks), key 0x1c",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\twilight-struggle\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\twilight-struggle\\game.json",
+  "runtime self-check: engine loads the setup and sees 232 units"
  ],
  "problems": [
   "board uses a SQUARE grid (dx=133.0) \u2014 engine has no square-grid support yet",
-  "game.json already exists in C:\\VassalArnhem\\games\\twilight-struggle \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "best setup puts only 0 piece(s) on the main map \u2014 likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)"
  ],
  "verdict": "PARTIAL",
  "module": "Twilight Struggle",
@@ -35,6 +36,7 @@
    "pieces": 344,
    "positioned": 85,
    "in_stacks": 232,
+   "on_map": 0,
    "kinds": {
     "globalkey": 139,
     "sendto": 83,
@@ -50,5 +52,6 @@
  ],
  "at_start_count": 237,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\twilight-struggle\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\twilight-struggle\\game.json",
+ "runtime_units": 232
 }

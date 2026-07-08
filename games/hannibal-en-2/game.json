@@ -2,7 +2,7 @@
  "name": "hannibal_en_2 \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "Hannibal",
  "board_name": "Main Board",
- "save_key": "a3",
+ "save_key": "90",
  "grid": {
   "orient": "flat",
   "dx": 100.0,
@@ -23,10 +23,13 @@
   "counter_px": 75
  },
  "unit_kinds": [
-  "piece",
-  "prototype",
-  "mark",
-  "hideCmd"
+  "clone",
+  "deck",
+  "emb2",
+  "immob",
+  "obs",
+  "return",
+  "sendto"
  ],
  "sides": {
   "order": [
@@ -76,5 +79,6 @@
   "tool": "engine/ingest.py",
   "grid_how": "placeholder",
   "module_version": null
- }
+ },
+ "setup_save": "../../../VassalIngest/hannibal-en-2/setups/setup.vsav"
 }

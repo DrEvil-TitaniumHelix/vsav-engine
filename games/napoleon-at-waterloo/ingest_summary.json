@@ -11,12 +11,12 @@
   "map asset: Large.png (2770x2279 px)",
   "no bundled .vsav setups, but 2 at-start pieces on the main map (SetupStack) \u2014 convertible",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\napoleon-at-waterloo\\game.ingest.json",
+  "spec skeleton -> C:\\VassalArnhem\\games\\napoleon-at-waterloo\\game.json",
   "built setup save from 2 at-start pieces -> C:\\VassalIngest\\napoleon-at-waterloo\\setups\\atstart.vsav"
  ],
  "problems": [
-  "game.json already exists in C:\\VassalArnhem\\games\\napoleon-at-waterloo \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)",
-  "best setup has only 2 piece(s) \u2014 likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)"
+  "runtime self-check: engine sees only 1 unit(s) on the main map \u2014 most pieces start on side charts/OOB windows; scenario authoring needed",
+  "best setup puts only 2 piece(s) on the main map \u2014 likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)"
  ],
  "verdict": "PARTIAL",
  "module": "Napoleon at Waterloo",
@@ -51,6 +51,7 @@
    "pieces": 2,
    "positioned": 2,
    "in_stacks": 2,
+   "on_map": 2,
    "kinds": {
     "globalhotkey": 1,
     "prototype": 1
@@ -60,5 +61,6 @@
  ],
  "at_start_count": 2,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\napoleon-at-waterloo\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\napoleon-at-waterloo\\game.json",
+ "runtime_units": 1
 }
