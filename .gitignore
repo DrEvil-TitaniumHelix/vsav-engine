@@ -19,3 +19,4 @@ INTERNAL_NOTES.md
 __pycache__/
 *.pyc
 dist/
+engine/baseline.json
