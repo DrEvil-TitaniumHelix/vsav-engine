@@ -389,15 +389,23 @@ function sndImpact(){ // penetrating hit: short mid boom (bigger than ping, smal
     g.gain.setValueAtTime(0.55,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
   }catch(e){} }
-function sndMiss(){ // shell whoosh past + soft dirt thump
+function sndMiss(){ // loud shell whoosh past, then dirt-impact thump
   try{ const c=ac(), t=c.currentTime;
-    const src=c.createBufferSource(); src.buffer=noiseBuf(c,0.6);
-    const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.5;
-    bp.frequency.setValueAtTime(2200,t); bp.frequency.exponentialRampToValueAtTime(300,t+0.5);
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,0.55);
+    const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.2;
+    bp.frequency.setValueAtTime(2600,t); bp.frequency.exponentialRampToValueAtTime(350,t+0.45);
     const g=c.createGain();
-    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.28,t+0.15);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.65,t+0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
     src.connect(bp); bp.connect(g); g.connect(c.destination); src.start(t);
+    // dirt thump where the round lands
+    const th=c.createBufferSource(); th.buffer=noiseBuf(c,0.3);
+    const lp=c.createBiquadFilter(); lp.type='lowpass';
+    lp.frequency.setValueAtTime(300,t+0.4); lp.frequency.exponentialRampToValueAtTime(60,t+0.7);
+    const tg=c.createGain();
+    tg.gain.setValueAtTime(0.0001,t); tg.gain.setValueAtTime(0.5,t+0.42);
+    tg.gain.exponentialRampToValueAtTime(0.0001,t+0.72);
+    th.connect(lp); lp.connect(tg); tg.connect(c.destination); th.start(t+0.4);
   }catch(e){} }
 function floatAt(pid,txt,color,delay){
   const tu=units.find(u=>u.id===pid); if(!tu)return;
