@@ -1,0 +1,82 @@
+{
+ "name": "The Russian Campaign (5th Ed) \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "TRC5",
+ "save_key": "a3",
+ "grid": {
+  "orient": "pointy",
+  "dx": 147.8,
+  "dy": 128.00000000000006,
+  "x0": 38.0,
+  "y0": 25.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-5 vOff=-1 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/the-russian-campaign-5th-ed/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/the-russian-campaign-5th-ed/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/the-russian-campaign-5th-ed/assets/map.png",
+  "counters_dir": "../../../VassalIngest/the-russian-campaign-5th-ed/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "piece",
+  "prototype",
+  "mark",
+  "hideCmd"
+ ],
+ "sides": {
+  "order": [
+   "Axis",
+   "Russia"
+  ],
+  "labels": {
+   "Axis": "Axis",
+   "Russia": "Russia"
+  },
+  "default": "Russia",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    34
+   ],
+   "rows": [
+    0,
+    47
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "1.1"
+ },
+ "setup_save": "../../../VassalIngest/the-russian-campaign-5th-ed/setups/atstart.vsav"
+}

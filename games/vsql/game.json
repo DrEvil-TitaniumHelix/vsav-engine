@@ -1,0 +1,80 @@
+{
+ "name": "VSQL \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Graveyard",
+ "board_name": "Graveyard",
+ "save_key": "a3",
+ "grid": {
+  "orient": "flat",
+  "dx": 100.0,
+  "dy": 100.0,
+  "x0": 50.0,
+  "y0": 50.0,
+  "stagger": false,
+  "hexnum_digits": 2,
+  "provenance": "PLACEHOLDER \u2014 no grid detected; snapping is arbitrary, replace before use"
+ },
+ "buildfile": "../../../VassalIngest/vsql/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/vsql/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/vsql/extracted/images/vsql_graveyard.png",
+  "counters_dir": "../../../VassalIngest/vsql/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "piece",
+  "prototype",
+  "mark",
+  "hideCmd"
+ ],
+ "sides": {
+  "order": [
+   "Side A",
+   "Side B"
+  ],
+  "labels": {
+   "Side A": "Side A",
+   "Side B": "Side B"
+  },
+  "default": "Side B",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    5
+   ],
+   "rows": [
+    0,
+    3
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "placeholder",
+  "module_version": "4.3.8"
+ }
+}

@@ -1,0 +1,79 @@
+{
+ "name": "War At Sea \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "War At Sea Map",
+ "board_name": "mapboard",
+ "save_key": "bc",
+ "grid": {
+  "orient": "flat",
+  "dx": 100.0,
+  "dy": 100.0,
+  "x0": 50.0,
+  "y0": 50.0,
+  "stagger": false,
+  "hexnum_digits": 2,
+  "provenance": "PLACEHOLDER \u2014 no grid detected; snapping is arbitrary, replace before use"
+ },
+ "buildfile": "../../../VassalIngest/war-at-sea/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/war-at-sea/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/war-at-sea/extracted/images/war_at_sea_board.gif",
+  "counters_dir": "../../../VassalIngest/war-at-sea/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "delete",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "Allied",
+   "Axis"
+  ],
+  "labels": {
+   "Allied": "Allied",
+   "Axis": "Axis"
+  },
+  "default": "Axis",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    15
+   ],
+   "rows": [
+    0,
+    21
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "placeholder",
+  "module_version": "2.41"
+ },
+ "setup_save": "../../../VassalIngest/war-at-sea/setups/WAS Setup.sav.vsav"
+}

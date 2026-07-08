@@ -1,0 +1,85 @@
+{
+ "name": "Commands & Colors Ancients \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "Map EPIC",
+ "save_key": "25",
+ "grid": {
+  "orient": "pointy",
+  "dx": 132.5,
+  "dy": 116.5,
+  "x0": 111.0,
+  "y0": 66.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=1 vOff=1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/commands-colors-ancients/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/commands-colors-ancients/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/commands-colors-ancients/assets/map.png",
+  "counters_dir": "../../../VassalIngest/commands-colors-ancients/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "deck",
+  "emb2",
+  "globalhotkey",
+  "hideCmd",
+  "macro",
+  "mark",
+  "placemark"
+ ],
+ "sides": {
+  "order": [
+   "Player 1",
+   "Player 2"
+  ],
+  "labels": {
+   "Player 1": "Player 1",
+   "Player 2": "Player 2"
+  },
+  "default": "Player 2",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    25
+   ],
+   "rows": [
+    0,
+    17
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "4.3.31"
+ },
+ "setup_save": "../../../VassalIngest/commands-colors-ancients/setups/001.vsav"
+}

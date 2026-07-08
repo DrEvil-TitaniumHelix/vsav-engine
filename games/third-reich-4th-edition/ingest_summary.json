@@ -1,0 +1,77 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\3R4v22b03.vmod",
+ "steps": [
+  "extracted 895 entries -> C:\\VassalIngest\\third-reich-4th-edition\\extracted",
+  "module: 'Third Reich 4th edition' v2.2b03; 802 images staged",
+  "561 piece/card slots (3 with BasicPiece art, 33 blank-image layer pieces VASL-style); 22 prototypes",
+  "main board: '3R4' on map 'Main'; 17 other board(s) not converted: Replacements (map 'Replacement Pool'), ge OOB (map 'Ge-Card'), It OOB (map 'It-Card'), am OOB (map 'AM-Card'), Br OOB (map 'Br-Card'), Fr OOB (map 'Fr-Card')",
+  "hex grid from buildFile: pointy dx=117.60000000000014 dy=102.0 origin=(48.0,52.0) [SIDEWAYS \u2014 unverified mapping]",
+  "map asset: 3R4_map_16-color060606.png (6189x4284 px)",
+  "setup 'Campaign': 542 pieces (542 self-positioned, 542 in stacks), key 0xc1",
+  "setup '1939': 476 pieces (476 self-positioned, 476 in stacks), key 0xad",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\third-reich-4th-edition\\game.ingest.json"
+ ],
+ "problems": [
+  "setup '1942': file 'Campaignt-070906' missing from module",
+  "setup '1944': file 'Campaignt-070906' missing from module",
+  "game.json already exists in C:\\VassalArnhem\\games\\third-reich-4th-edition \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "Third Reich 4th edition",
+ "version": "2.2b03",
+ "slug": "third-reich-4th-edition",
+ "staging": "C:\\VassalIngest\\third-reich-4th-edition",
+ "out": "C:\\VassalArnhem\\games\\third-reich-4th-edition",
+ "pdfs": [],
+ "main_map": "Main",
+ "main_board": "3R4",
+ "grid": {
+  "orient": "pointy",
+  "dx": 117.60000000000014,
+  "dy": 102.0,
+  "x0": 48.0,
+  "y0": 52.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-1 vOff=15 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\third-reich-4th-edition\\extracted\\images\\3R4_map_16-color060606.png",
+ "setups": [
+  {
+   "name": "Campaign",
+   "path": "C:\\VassalIngest\\third-reich-4th-edition\\setups\\Campaign-100606.vsav",
+   "pieces": 542,
+   "positioned": 542,
+   "in_stacks": 542,
+   "kinds": {
+    "mark": 238,
+    "emb2": 111,
+    "piece": 33,
+    "sendto": 100,
+    "report": 60
+   },
+   "key": "c1"
+  },
+  {
+   "name": "1939",
+   "path": "C:\\VassalIngest\\third-reich-4th-edition\\setups\\1939-100603.vsav",
+   "pieces": 476,
+   "positioned": 476,
+   "in_stacks": 476,
+   "kinds": {
+    "sendto": 181,
+    "mark": 151,
+    "piece": 33,
+    "emb2": 51,
+    "report": 60
+   },
+   "key": "ad"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\third-reich-4th-edition\\game.ingest.json"
+}

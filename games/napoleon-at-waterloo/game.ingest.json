@@ -1,0 +1,83 @@
+{
+ "name": "Napoleon at Waterloo \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Board",
+ "board_name": "Large",
+ "save_key": "a3",
+ "grid": {
+  "orient": "flat",
+  "dx": 88.6310374303766,
+  "dy": 102.31616022969065,
+  "x0": 369.0,
+  "y0": 116.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=1 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/napoleon-at-waterloo/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/napoleon-at-waterloo/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/napoleon-at-waterloo/extracted/images/Large.png",
+  "counters_dir": "../../../VassalIngest/napoleon-at-waterloo/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "piece",
+  "prototype",
+  "mark",
+  "hideCmd"
+ ],
+ "sides": {
+  "order": [
+   "Allied",
+   "French"
+  ],
+  "labels": {
+   "Allied": "Allied",
+   "French": "French"
+  },
+  "default": "French",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    27
+   ],
+   "rows": [
+    0,
+    21
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "1.4.0"
+ },
+ "setup_save": "../../../VassalIngest/napoleon-at-waterloo/setups/atstart.vsav"
+}

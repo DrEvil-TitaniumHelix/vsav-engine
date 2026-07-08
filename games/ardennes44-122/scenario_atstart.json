@@ -1,0 +1,12 @@
+{
+ "name": "Ardennes44-122 at-start setup (from module SetupStacks)",
+ "units": [
+  {
+   "gpid": "37",
+   "xy": [
+    2450,
+    2010
+   ]
+  }
+ ]
+}

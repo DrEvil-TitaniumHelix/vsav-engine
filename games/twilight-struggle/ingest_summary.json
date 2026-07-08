@@ -1,0 +1,54 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Twilight_Struggle-2.5.vmod",
+ "steps": [
+  "extracted 704 entries -> C:\\VassalIngest\\twilight-struggle\\extracted",
+  "module: 'Twilight Struggle' v2.5  View the User guide for important operating information at   http://wiki.vassalengine.org/doku.php?id=Twilight%20Struggle; 579 images staged",
+  "339 piece/card slots (339 with BasicPiece art, 0 blank-image layer pieces VASL-style); 217 prototypes",
+  "declared sides: ['USA', 'USSR', 'Observer']",
+  "5 card deck(s) / 102 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'World Map' on map 'World Map'",
+  "map asset: Map.gif (3700x3000 px)",
+  "setup 'Initial Setup': 344 pieces (85 self-positioned, 232 in stacks), key 0x1c, LEGACY save normalized to modern .vsav",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\twilight-struggle\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses a SQUARE grid (dx=133.0) \u2014 engine has no square-grid support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\twilight-struggle \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Twilight Struggle",
+ "version": "2.5  View the User guide for important operating information at   http://wiki.vassalengine.org/doku.php?id=Twilight%20Struggle",
+ "slug": "twilight-struggle",
+ "staging": "C:\\VassalIngest\\twilight-struggle",
+ "out": "C:\\VassalArnhem\\games\\twilight-struggle",
+ "pdfs": [],
+ "main_map": "World Map",
+ "main_board": "World Map",
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\twilight-struggle\\extracted\\images\\Map.gif",
+ "setups": [
+  {
+   "name": "Initial Setup",
+   "path": "C:\\VassalIngest\\twilight-struggle\\setups\\ts start.vsav",
+   "pieces": 344,
+   "positioned": 85,
+   "in_stacks": 232,
+   "kinds": {
+    "globalkey": 139,
+    "sendto": 83,
+    "macro": 3,
+    "report": 74,
+    "submenu": 4,
+    "hideCmd": 21,
+    "emb2": 15,
+    "deck": 5
+   },
+   "key": "1c"
+  }
+ ],
+ "at_start_count": 237,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\twilight-struggle\\game.ingest.json"
+}

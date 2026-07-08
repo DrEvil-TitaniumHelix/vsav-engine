@@ -1,0 +1,47 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\was241.vmod",
+ "steps": [
+  "extracted 111 entries -> C:\\VassalIngest\\war-at-sea\\extracted",
+  "module: 'War At Sea' v2.41; 95 images staged",
+  "78 piece/card slots (46 with BasicPiece art, 1 blank-image layer pieces VASL-style); 9 prototypes",
+  "declared sides: ['Allied', 'Axis']",
+  "main board: 'mapboard' on map 'War At Sea Map'; 1 other board(s) not converted: Graveyard (map 'Graveyard')",
+  "map asset: war_at_sea_board.gif (1593x2196 px)",
+  "setup 'Standard Setup': 80 pieces (0 self-positioned, 80 in stacks), key 0xbc, LEGACY save normalized to modern .vsav",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\war-at-sea\\game.ingest.json"
+ ],
+ "problems": [
+  "no grid of any kind on the main board",
+  "game.json already exists in C:\\VassalArnhem\\games\\war-at-sea \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "War At Sea",
+ "version": "2.41",
+ "slug": "war-at-sea",
+ "staging": "C:\\VassalIngest\\war-at-sea",
+ "out": "C:\\VassalArnhem\\games\\war-at-sea",
+ "pdfs": [],
+ "main_map": "War At Sea Map",
+ "main_board": "mapboard",
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\war-at-sea\\extracted\\images\\war_at_sea_board.gif",
+ "setups": [
+  {
+   "name": "Standard Setup",
+   "path": "C:\\VassalIngest\\war-at-sea\\setups\\WAS Setup.sav.vsav",
+   "pieces": 80,
+   "positioned": 0,
+   "in_stacks": 80,
+   "kinds": {
+    "sendto": 79,
+    "delete": 1
+   },
+   "key": "bc"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\war-at-sea\\game.ingest.json"
+}

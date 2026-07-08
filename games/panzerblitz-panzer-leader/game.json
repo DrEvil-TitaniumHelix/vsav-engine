@@ -1,0 +1,82 @@
+{
+ "name": "PanzerBlitz/Panzer Leader \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Mapboard",
+ "board_name": "PZL Board C",
+ "save_key": "6a",
+ "grid": {
+  "orient": "flat",
+  "dx": 52.0,
+  "dy": 60.0,
+  "x0": -2.0,
+  "y0": 30.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=A vType=N hOff=0 vOff=-2 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/panzerblitz-panzer-leader/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/panzerblitz-panzer-leader/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/panzerblitz-panzer-leader/extracted/images/PL_board_C.gif",
+  "counters_dir": "../../../VassalIngest/panzerblitz-panzer-leader/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "label",
+  "report",
+  "rotate"
+ ],
+ "sides": {
+  "order": [
+   "German",
+   "Russian"
+  ],
+  "labels": {
+   "German": "German",
+   "Russian": "Russian"
+  },
+  "default": "Russian",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    32
+   ],
+   "rows": [
+    0,
+    9
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "3.7"
+ },
+ "setup_save": "../../../VassalIngest/panzerblitz-panzer-leader/setups/pzb_sit_1_qs.vsav"
+}

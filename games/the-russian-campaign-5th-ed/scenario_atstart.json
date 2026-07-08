@@ -1,0 +1,33 @@
+{
+ "name": "The Russian Campaign (5th Ed) at-start setup (from module SetupStacks)",
+ "units": [
+  {
+   "gpid": "339",
+   "xy": [
+    1436,
+    3160
+   ]
+  },
+  {
+   "gpid": "342",
+   "xy": [
+    2770,
+    160
+   ]
+  },
+  {
+   "gpid": "389",
+   "xy": [
+    2940,
+    160
+   ]
+  },
+  {
+   "gpid": "344",
+   "xy": [
+    509,
+    479
+   ]
+  }
+ ]
+}

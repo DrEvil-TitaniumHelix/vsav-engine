@@ -1,0 +1,1170 @@
+# Ingest report — Commands & Colors Ancients v4.3.31
+
+**Verdict: FULL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
+
+- module file: `CCAncientsV4-3-31.vmod`
+- staged at: `C:\VassalIngest\commands-colors-ancients` (assets stay OUT of the repo)
+
+Play it:  `python ui/server.py --game games\commands-colors-ancients`
+
+## What worked
+
+- extracted 2457 entries -> C:\VassalIngest\commands-colors-ancients\extracted
+- module: 'Commands & Colors Ancients' v4.3.31; 553 images staged
+- 6 PDF(s) bundled (rules material?): Commands & Colors Ancients Module User Guide.pdf, __MACOSX/._Commands & Colors Ancients Module User Guide.pdf, __MACOSX/._C&C Ancients Hotkeys.pdf, CCA CDG Solo Sheet.pdf, C&C Ancients Hotkeys.pdf
+- 510 piece/card slots (483 with BasicPiece art, 16 blank-image layer pieces VASL-style); 203 prototypes
+- declared sides: ['Player 1', 'Player 2', 'Solitaire', 'P1 FG Left', 'P1 FG Center', 'P1 FG Right', 'P2 FG Left', 'P2 FG Center', 'P2 FG Right']
+- 4 card deck(s) / 160 card slot(s) — cards NOT converted (engine future)
+- main board: 'Map EPIC' on map 'Main Map'; 3 other board(s) not converted: Map Board (map 'Main Map'), Side Board (map 'Main Map'), Side EPIC (map 'Main Map')
+- hex grid from buildFile: pointy dx=132.5 dy=116.5 origin=(111.0,66.0) [SIDEWAYS — unverified mapping]
+- map asset: map.png (3533x2120 px)
+- setup '001 Battle of Akragas': 99 pieces (90 self-positioned, 0 in stacks), key 0x25, LEGACY save normalized to modern .vsav
+- setup '002 Crimissos River': 111 pieces (87 self-positioned, 0 in stacks), key 0x34, LEGACY save normalized to modern .vsav
+- setup '003 Bagradas': 113 pieces (104 self-positioned, 0 in stacks), key 0x8c, LEGACY save normalized to modern .vsav
+- setup '004 Ticinus River': 106 pieces (90 self-positioned, 0 in stacks), key 0x34, LEGACY save normalized to modern .vsav
+- setup '005 Trebbia': 115 pieces (99 self-positioned, 0 in stacks), key 0x4a, LEGACY save normalized to modern .vsav
+- setup '006 Lake Trasimenus': 127 pieces (101 self-positioned, 0 in stacks), key 0x45, LEGACY save normalized to modern .vsav
+- setup '007 Cannae': 109 pieces (100 self-positioned, 0 in stacks), key 0x67, LEGACY save normalized to modern .vsav
+- setup '008 Dertosa': 103 pieces (94 self-positioned, 0 in stacks), key 0x2a, LEGACY save normalized to modern .vsav
+- setup '009 2nd Beneventum': 114 pieces (95 self-positioned, 0 in stacks), key 0xad, LEGACY save normalized to modern .vsav
+- setup '010 Castulo': 117 pieces (100 self-positioned, 0 in stacks), key 0x49, LEGACY save normalized to modern .vsav
+- setup '011 Baecula': 119 pieces (97 self-positioned, 0 in stacks), key 0x31, LEGACY save normalized to modern .vsav
+- setup '012 Metaurus': 132 pieces (98 self-positioned, 0 in stacks), key 0xcd, LEGACY save normalized to modern .vsav
+- setup '013 Ilipa': 111 pieces (102 self-positioned, 0 in stacks), key 0xaa, LEGACY save normalized to modern .vsav
+- setup '014 Great Plains': 105 pieces (96 self-positioned, 0 in stacks), key 0x6f, LEGACY save normalized to modern .vsav
+- setup '015 Zama': 116 pieces (107 self-positioned, 0 in stacks), key 0x84, LEGACY save normalized to modern .vsav
+- setup 'TW1 Utica: Rebel Camp': 98 pieces (84 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'TW2 Battle of Utica': 100 pieces (91 self-positioned, 0 in stacks), key 0x50, LEGACY save normalized to modern .vsav
+- setup 'TW3 Hippacritae': 103 pieces (94 self-positioned, 0 in stacks), key 0x17, LEGACY save normalized to modern .vsav
+- setup "TW4 Hannibal's Camp": 110 pieces (86 self-positioned, 0 in stacks), key 0x0e, LEGACY save normalized to modern .vsav
+- setup 'TW5 Leptis': 106 pieces (97 self-positioned, 0 in stacks), key 0xc8, LEGACY save normalized to modern .vsav
+- setup '101 Marathon': 128 pieces (92 self-positioned, 0 in stacks), key 0xaf
+- setup '102 Himera': 121 pieces (97 self-positioned, 0 in stacks), key 0x20, LEGACY save normalized to modern .vsav
+- setup '103 Plataea': 109 pieces (94 self-positioned, 0 in stacks), key 0x19, LEGACY save normalized to modern .vsav
+- setup '104 Leuctra': 96 pieces (87 self-positioned, 0 in stacks), key 0xb1, LEGACY save normalized to modern .vsav
+- setup '105 Mantinea': 114 pieces (92 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup '106 Crocus Plain': 110 pieces (90 self-positioned, 0 in stacks), key 0xcc, LEGACY save normalized to modern .vsav
+- setup '107 Granicus': 118 pieces (93 self-positioned, 0 in stacks), key 0x6b, LEGACY save normalized to modern .vsav
+- setup '108 Issus': 147 pieces (105 self-positioned, 0 in stacks), key 0x44, LEGACY save normalized to modern .vsav
+- setup '109 Gaugamela': 111 pieces (102 self-positioned, 0 in stacks), key 0xec, LEGACY save normalized to modern .vsav
+- setup '110 Jaxartes River': 115 pieces (87 self-positioned, 0 in stacks), key 0xba, LEGACY save normalized to modern .vsav
+- setup '111 Hydaspes': 117 pieces (96 self-positioned, 0 in stacks), key 0xc0, LEGACY save normalized to modern .vsav
+- setup '112 Hellespont': 104 pieces (95 self-positioned, 0 in stacks), key 0x7d, LEGACY save normalized to modern .vsav
+- setup '113 Paraitacene': 117 pieces (102 self-positioned, 0 in stacks), key 0x91, LEGACY save normalized to modern .vsav
+- setup '114 Gabiene': 109 pieces (99 self-positioned, 0 in stacks), key 0x75, LEGACY save normalized to modern .vsav
+- setup '115 Ipsus': 115 pieces (106 self-positioned, 0 in stacks), key 0xcd, LEGACY save normalized to modern .vsav
+- setup '116 Heraclea': 115 pieces (98 self-positioned, 0 in stacks), key 0x0e, LEGACY save normalized to modern .vsav
+- setup '117 Asculum': 101 pieces (92 self-positioned, 0 in stacks), key 0x9c, LEGACY save normalized to modern .vsav
+- setup '118 Beneventum': 126 pieces (101 self-positioned, 0 in stacks), key 0x49, LEGACY save normalized to modern .vsav
+- setup '119 Raphia': 112 pieces (103 self-positioned, 0 in stacks), key 0xcb, LEGACY save normalized to modern .vsav
+- setup '120 Cynoscephalae': 126 pieces (99 self-positioned, 0 in stacks), key 0x9c, LEGACY save normalized to modern .vsav
+- setup '121 Magnesia': 115 pieces (99 self-positioned, 0 in stacks), key 0x6a, LEGACY save normalized to modern .vsav
+- setup '122 Cronium': 113 pieces (104 self-positioned, 0 in stacks), key 0xca, LEGACY save normalized to modern .vsav
+- setup '123 Indus': 121 pieces (94 self-positioned, 0 in stacks), key 0x79, LEGACY save normalized to modern .vsav
+- setup '124 Pydna': 120 pieces (102 self-positioned, 0 in stacks), key 0xe4, LEGACY save normalized to modern .vsav
+- setup '201 Clusium': 116 pieces (93 self-positioned, 0 in stacks), key 0xb5, LEGACY save normalized to modern .vsav
+- setup '202 Telamon': 133 pieces (102 self-positioned, 0 in stacks), key 0x8f, LEGACY save normalized to modern .vsav
+- setup '203 Clastidium': 101 pieces (86 self-positioned, 0 in stacks), key 0x0a, LEGACY save normalized to modern .vsav
+- setup '204 Arausio': 118 pieces (99 self-positioned, 0 in stacks), key 0x2f, LEGACY save normalized to modern .vsav
+- setup '205 Scirthaea': 103 pieces (94 self-positioned, 0 in stacks), key 0xe9, LEGACY save normalized to modern .vsav
+- setup '206 Aquae Sextiae': 121 pieces (98 self-positioned, 0 in stacks), key 0x89, LEGACY save normalized to modern .vsav
+- setup '207 Vercellae': 113 pieces (104 self-positioned, 0 in stacks), key 0x8a, LEGACY save normalized to modern .vsav
+- setup '208 Mount Vesuvius': 128 pieces (85 self-positioned, 0 in stacks), key 0xf2, LEGACY save normalized to modern .vsav
+- setup '209 Mount Garganus': 114 pieces (91 self-positioned, 0 in stacks), key 0x60, LEGACY save normalized to modern .vsav
+- setup '210 Picenum': 131 pieces (100 self-positioned, 0 in stacks), key 0x60, LEGACY save normalized to modern .vsav
+- setup "211 Mummius' Defeat": 116 pieces (90 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup '212 Bruttium': 137 pieces (96 self-positioned, 0 in stacks), key 0x32, LEGACY save normalized to modern .vsav
+- setup '213 Camalatrum': 123 pieces (95 self-positioned, 0 in stacks), key 0xbc, LEGACY save normalized to modern .vsav
+- setup '214 Silarus': 135 pieces (106 self-positioned, 0 in stacks), key 0xf4, LEGACY save normalized to modern .vsav
+- setup '215 River Sabis': 145 pieces (104 self-positioned, 0 in stacks), key 0x59
+- setup '216 Sotium': 128 pieces (100 self-positioned, 0 in stacks), key 0x40, LEGACY save normalized to modern .vsav
+- setup '217 Invasion Britain': 123 pieces (94 self-positioned, 0 in stacks), key 0xf4, LEGACY save normalized to modern .vsav
+- setup '218 River Stour': 120 pieces (88 self-positioned, 0 in stacks), key 0xa5, LEGACY save normalized to modern .vsav
+- setup '219 Foraging Party': 121 pieces (95 self-positioned, 0 in stacks), key 0x84, LEGACY save normalized to modern .vsav
+- setup '220 Teutoburger Wald Part 1': 132 pieces (96 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup '221 Teutoburger Wald Part 2': 131 pieces (87 self-positioned, 0 in stacks), key 0xc6, LEGACY save normalized to modern .vsav
+- setup '222 Angrivarii Rampart': 140 pieces (101 self-positioned, 0 in stacks), key 0x75, LEGACY save normalized to modern .vsav
+- setup '223 Cefn Carnedd': 142 pieces (95 self-positioned, 0 in stacks), key 0xcd, LEGACY save normalized to modern .vsav
+- setup '301 Colline Gate': 108 pieces (87 self-positioned, 0 in stacks), key 0x29, LEGACY save normalized to modern .vsav
+- setup '302 Baetis River': 120 pieces (95 self-positioned, 0 in stacks), key 0x8f, LEGACY save normalized to modern .vsav
+- setup '303 Lauron': 121 pieces (97 self-positioned, 0 in stacks), key 0xff, LEGACY save normalized to modern .vsav
+- setup '304 Valentia': 109 pieces (95 self-positioned, 0 in stacks), key 0x55, LEGACY save normalized to modern .vsav
+- setup '305 Sucro': 118 pieces (98 self-positioned, 0 in stacks), key 0xe0, LEGACY save normalized to modern .vsav
+- setup '306 Bibracte': 144 pieces (105 self-positioned, 0 in stacks), key 0x11, LEGACY save normalized to modern .vsav
+- setup '307 Plain of Alsace': 115 pieces (106 self-positioned, 0 in stacks), key 0xb2, LEGACY save normalized to modern .vsav
+- setup '308 Gergovia': 178 pieces (108 self-positioned, 0 in stacks), key 0x03, LEGACY save normalized to modern .vsav
+- setup '309 Ilerda': 130 pieces (98 self-positioned, 0 in stacks), key 0xaf, LEGACY save normalized to modern .vsav
+- setup '310 Utica, Part 1': 104 pieces (83 self-positioned, 0 in stacks), key 0xc7, LEGACY save normalized to modern .vsav
+- setup '311 Utica, Part 2': 127 pieces (91 self-positioned, 0 in stacks), key 0xb2, LEGACY save normalized to modern .vsav
+- setup '312 Bagradas River': 105 pieces (93 self-positioned, 0 in stacks), key 0x12, LEGACY save normalized to modern .vsav
+- setup '313 Brindisi Raid': 139 pieces (90 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup '314 Dyrrhachium': 123 pieces (95 self-positioned, 0 in stacks), key 0x18, LEGACY save normalized to modern .vsav
+- setup '315 Pharsalus': 118 pieces (101 self-positioned, 0 in stacks), key 0x8a, LEGACY save normalized to modern .vsav
+- setup '316 Zela': 114 pieces (101 self-positioned, 0 in stacks), key 0x38, LEGACY save normalized to modern .vsav
+- setup '317 Ruspina': 98 pieces (89 self-positioned, 0 in stacks), key 0x1d, LEGACY save normalized to modern .vsav
+- setup '318 Thapsus': 128 pieces (103 self-positioned, 0 in stacks), key 0xfc, LEGACY save normalized to modern .vsav
+- setup '319 Munda': 130 pieces (102 self-positioned, 0 in stacks), key 0x13, LEGACY save normalized to modern .vsav
+- setup '401 Tigranocerta': 123 pieces (97 self-positioned, 0 in stacks), key 0x64, LEGACY save normalized to modern .vsav
+- setup '402 Carrhae': 111 pieces (102 self-positioned, 0 in stacks), key 0x72, LEGACY save normalized to modern .vsav
+- setup '403 Philippi I': 139 pieces (104 self-positioned, 0 in stacks), key 0x1b, LEGACY save normalized to modern .vsav
+- setup '404 Philippi II': 117 pieces (96 self-positioned, 0 in stacks), key 0x57, LEGACY save normalized to modern .vsav
+- setup '405 Cilician Gates': 127 pieces (97 self-positioned, 0 in stacks), key 0x9a, LEGACY save normalized to modern .vsav
+- setup "406 Antony's Siege Train": 102 pieces (89 self-positioned, 0 in stacks), key 0x77, LEGACY save normalized to modern .vsav
+- setup '407 Medway': 121 pieces (99 self-positioned, 0 in stacks), key 0xf2, LEGACY save normalized to modern .vsav
+- setup "408 Boudica's Revolt": 143 pieces (106 self-positioned, 0 in stacks), key 0xb6, LEGACY save normalized to modern .vsav
+- setup '409 First Bedriacum': 102 pieces (93 self-positioned, 0 in stacks), key 0x85, LEGACY save normalized to modern .vsav
+- setup '410 Mons Graupius': 129 pieces (103 self-positioned, 0 in stacks), key 0xd7, LEGACY save normalized to modern .vsav
+- setup '411 Issus': 127 pieces (99 self-positioned, 0 in stacks), key 0x79, LEGACY save normalized to modern .vsav
+- setup '412 Lugdunum': 123 pieces (109 self-positioned, 0 in stacks), key 0xd8, LEGACY save normalized to modern .vsav
+- setup '413 Nisibis': 123 pieces (112 self-positioned, 0 in stacks), key 0x62, LEGACY save normalized to modern .vsav
+- setup '414 Hormuz': 118 pieces (95 self-positioned, 0 in stacks), key 0x3c, LEGACY save normalized to modern .vsav
+- setup '415 Carthage': 92 pieces (83 self-positioned, 0 in stacks), key 0x07, LEGACY save normalized to modern .vsav
+- setup '416 Abrittus': 129 pieces (96 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup '417 Edessa': 105 pieces (96 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup '418 Naissus': 122 pieces (100 self-positioned, 0 in stacks), key 0x08, LEGACY save normalized to modern .vsav
+- setup '419 Placentia': 132 pieces (99 self-positioned, 0 in stacks), key 0x0b, LEGACY save normalized to modern .vsav
+- setup '420 Fano': 131 pieces (100 self-positioned, 0 in stacks), key 0x10, LEGACY save normalized to modern .vsav
+- setup '421 Pavia': 126 pieces (100 self-positioned, 0 in stacks), key 0x29, LEGACY save normalized to modern .vsav
+- setup '422 Immae': 116 pieces (95 self-positioned, 0 in stacks), key 0xd5, LEGACY save normalized to modern .vsav
+- setup '423 Milvian Bridge': 128 pieces (109 self-positioned, 0 in stacks), key 0x4e, LEGACY save normalized to modern .vsav
+- setup '424 Cibalae': 134 pieces (107 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup '601 Hysiae': 118 pieces (92 self-positioned, 0 in stacks), key 0xb3, LEGACY save normalized to modern .vsav
+- setup '602 Thyreatis': 109 pieces (84 self-positioned, 0 in stacks), key 0x29, LEGACY save normalized to modern .vsav
+- setup '603 Sepeia': 116 pieces (93 self-positioned, 0 in stacks), key 0x3d, LEGACY save normalized to modern .vsav
+- setup '604 Thermopylae (Middle Gate)': 150 pieces (101 self-positioned, 0 in stacks), key 0x98, LEGACY save normalized to modern .vsav
+- setup '605 Thermopylae (Grand Overview)': 134 pieces (87 self-positioned, 0 in stacks), key 0xeb, LEGACY save normalized to modern .vsav
+- setup '606 Plataea': 110 pieces (96 self-positioned, 0 in stacks), key 0x79, LEGACY save normalized to modern .vsav
+- setup '607 Mycale': 139 pieces (91 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup '608 Tanagra': 104 pieces (91 self-positioned, 0 in stacks), key 0x2f, LEGACY save normalized to modern .vsav
+- setup '609 Olpae': 113 pieces (90 self-positioned, 0 in stacks), key 0xfc, LEGACY save normalized to modern .vsav
+- setup '610 Sphacteria': 130 pieces (92 self-positioned, 0 in stacks), key 0x8c, LEGACY save normalized to modern .vsav
+- setup '611 Delium': 120 pieces (94 self-positioned, 0 in stacks), key 0x8a
+- setup '612 Amphipolis': 128 pieces (93 self-positioned, 0 in stacks), key 0xb8, LEGACY save normalized to modern .vsav
+- setup '613 Mantinea I': 115 pieces (101 self-positioned, 0 in stacks), key 0x33, LEGACY save normalized to modern .vsav
+- setup '614 Anapus River': 124 pieces (91 self-positioned, 0 in stacks), key 0x3f
+- setup '615 Phyle': 103 pieces (79 self-positioned, 0 in stacks), key 0xb3, LEGACY save normalized to modern .vsav
+- setup '616 Munychia': 115 pieces (88 self-positioned, 0 in stacks), key 0x27, LEGACY save normalized to modern .vsav
+- setup '617 Piraeus': 117 pieces (95 self-positioned, 0 in stacks), key 0xe3, LEGACY save normalized to modern .vsav
+- setup '618 River Centrites': 145 pieces (101 self-positioned, 0 in stacks), key 0xa4, LEGACY save normalized to modern .vsav
+- setup '619 Nemea': 95 pieces (86 self-positioned, 0 in stacks), key 0x8f, LEGACY save normalized to modern .vsav
+- setup '620 Coronea': 109 pieces (94 self-positioned, 0 in stacks), key 0x1f
+- setup '621 Lechaeum': 100 pieces (83 self-positioned, 0 in stacks), key 0xff, LEGACY save normalized to modern .vsav
+- setup '622 Tegyra': 92 pieces (78 self-positioned, 0 in stacks), key 0x1a, LEGACY save normalized to modern .vsav
+- setup '623 Leuctra': 99 pieces (90 self-positioned, 0 in stacks), key 0x62, LEGACY save normalized to modern .vsav
+- setup '624 Mantinea II': 119 pieces (97 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup '625 Chaeronea': 123 pieces (94 self-positioned, 0 in stacks), key 0x11, LEGACY save normalized to modern .vsav
+- setup '626 Megalopolis': 118 pieces (95 self-positioned, 0 in stacks), key 0x4f, LEGACY save normalized to modern .vsav
+- setup 'C3i01 Agrigentum (262 BC)': 107 pieces (98 self-positioned, 0 in stacks), key 0x03, LEGACY save normalized to modern .vsav
+- setup 'C3i02 Adys (256 BC)': 114 pieces (91 self-positioned, 0 in stacks), key 0x99, LEGACY save normalized to modern .vsav
+- setup 'C3i03 Panormus (250 BC)': 120 pieces (98 self-positioned, 0 in stacks), key 0xb4, LEGACY save normalized to modern .vsav
+- setup 'C3i08 Cissa (218 BC)': 117 pieces (90 self-positioned, 0 in stacks), key 0x99, LEGACY save normalized to modern .vsav
+- setup 'C3i10 Umbria (217 BC)': 119 pieces (87 self-positioned, 0 in stacks), key 0x89, LEGACY save normalized to modern .vsav
+- setup 'C3i13 Caralis (215 BC)': 120 pieces (107 self-positioned, 0 in stacks), key 0xb4, LEGACY save normalized to modern .vsav
+- setup 'C3i07 Iliturgi (215 BC)': 123 pieces (107 self-positioned, 0 in stacks), key 0x28, LEGACY save normalized to modern .vsav
+- setup 'C3i09 Castrum Album (214 BC)': 119 pieces (96 self-positioned, 0 in stacks), key 0x96, LEGACY save normalized to modern .vsav
+- setup 'C3i04 Orongis (212 BC)': 111 pieces (95 self-positioned, 0 in stacks), key 0x14, LEGACY save normalized to modern .vsav
+- setup 'C3i14 Himeras River (211 BC)': 112 pieces (95 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup 'C3i05 Celtiberia (207 BC)': 121 pieces (94 self-positioned, 0 in stacks), key 0x99, LEGACY save normalized to modern .vsav
+- setup 'C3i11 Agathocles Tower (204 BC)': 111 pieces (85 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup 'C3i12 Cirta (203 BC)': 102 pieces (93 self-positioned, 0 in stacks), key 0x75, LEGACY save normalized to modern .vsav
+- setup 'C3i06 Po River (203 BC)': 120 pieces (103 self-positioned, 0 in stacks), key 0x88, LEGACY save normalized to modern .vsav
+- setup 'C3i17 Mona Insulis (60 AD)': 134 pieces (103 self-positioned, 0 in stacks), key 0x71, LEGACY save normalized to modern .vsav
+- setup 'C3i18 Camulodunum (60 AD)': 121 pieces (100 self-positioned, 0 in stacks), key 0x37, LEGACY save normalized to modern .vsav
+- setup 'VV01 Marcianopolis (377 AD)': 105 pieces (85 self-positioned, 0 in stacks), key 0xb4, LEGACY save normalized to modern .vsav
+- setup 'VV02 Battle of the Willows (377 AD)': 112 pieces (91 self-positioned, 0 in stacks), key 0x6a, LEGACY save normalized to modern .vsav
+- setup 'VV03 Adrianople (378 AD)': 125 pieces (100 self-positioned, 0 in stacks), key 0xa0, LEGACY save normalized to modern .vsav
+- setup 'EPIC01 Cannae': 228 pieces (176 self-positioned, 0 in stacks), key 0x9e, LEGACY save normalized to modern .vsav
+- setup 'EPIC02 Ilipa': 212 pieces (179 self-positioned, 0 in stacks), key 0x87, LEGACY save normalized to modern .vsav
+- setup 'EPIC03 Raphia': 206 pieces (173 self-positioned, 0 in stacks), key 0xa5, LEGACY save normalized to modern .vsav
+- setup 'EPIC04 Zama': 217 pieces (182 self-positioned, 0 in stacks), key 0xd6, LEGACY save normalized to modern .vsav
+- setup 'EPIC05 Arausio': 217 pieces (174 self-positioned, 0 in stacks), key 0xe1, LEGACY save normalized to modern .vsav
+- setup 'EPIC06 Dertosa': 193 pieces (162 self-positioned, 0 in stacks), key 0xde, LEGACY save normalized to modern .vsav
+- setup 'EPIC07 Lake Trasimenus': 228 pieces (172 self-positioned, 0 in stacks), key 0xf1, LEGACY save normalized to modern .vsav
+- setup 'EPIC08 Clusium': 216 pieces (160 self-positioned, 0 in stacks), key 0x6b, LEGACY save normalized to modern .vsav
+- setup 'EPIC09 Bagradas': 211 pieces (176 self-positioned, 0 in stacks), key 0x98, LEGACY save normalized to modern .vsav
+- setup 'EPIC10 Beneventum': 240 pieces (174 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'EPIC11 Paraitacene': 239 pieces (183 self-positioned, 0 in stacks), key 0x99, LEGACY save normalized to modern .vsav
+- setup 'EPIC12 Hydaspes': 213 pieces (166 self-positioned, 0 in stacks), key 0x1f, LEGACY save normalized to modern .vsav
+- setup 'EPIC13 Gaugamela': 205 pieces (174 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'EPIC14 Crimissos River': 201 pieces (151 self-positioned, 0 in stacks), key 0x97, LEGACY save normalized to modern .vsav
+- setup 'EPIC15 Plataea': 202 pieces (163 self-positioned, 0 in stacks), key 0x38, LEGACY save normalized to modern .vsav
+- setup 'EPIC16 Marathon': 238 pieces (153 self-positioned, 0 in stacks), key 0x82, LEGACY save normalized to modern .vsav
+- setup 'C3i15 Leuctra': 178 pieces (149 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup 'C3i16 Asculum': 198 pieces (165 self-positioned, 0 in stacks), key 0x8a, LEGACY save normalized to modern .vsav
+- setup 'C3i19 Adrianople': 248 pieces (181 self-positioned, 0 in stacks), key 0xc6, LEGACY save normalized to modern .vsav
+- setup 'C3i20 Adrianople': 236 pieces (185 self-positioned, 0 in stacks), key 0x52, LEGACY save normalized to modern .vsav
+- setup 'C3i21 Argentoratum': 255 pieces (183 self-positioned, 0 in stacks), key 0xdc, LEGACY save normalized to modern .vsav
+- setup 'C3i22 Paraitacene': 239 pieces (183 self-positioned, 0 in stacks), key 0xe9, LEGACY save normalized to modern .vsav
+- setup 'AC01': 114 pieces (93 self-positioned, 0 in stacks), key 0xf9, LEGACY save normalized to modern .vsav
+- setup 'AC02': 122 pieces (89 self-positioned, 0 in stacks), key 0x9f, LEGACY save normalized to modern .vsav
+- setup 'AC03': 128 pieces (94 self-positioned, 0 in stacks), key 0xa7, LEGACY save normalized to modern .vsav
+- setup 'AC04': 108 pieces (85 self-positioned, 0 in stacks), key 0x0a, LEGACY save normalized to modern .vsav
+- setup 'AC05': 133 pieces (89 self-positioned, 0 in stacks), key 0x83, LEGACY save normalized to modern .vsav
+- setup 'AC06': 120 pieces (92 self-positioned, 0 in stacks), key 0xba, LEGACY save normalized to modern .vsav
+- setup 'AC07': 117 pieces (87 self-positioned, 0 in stacks), key 0x11, LEGACY save normalized to modern .vsav
+- setup 'AC08': 144 pieces (91 self-positioned, 0 in stacks), key 0x5a, LEGACY save normalized to modern .vsav
+- setup 'AC09': 136 pieces (95 self-positioned, 0 in stacks), key 0x09, LEGACY save normalized to modern .vsav
+- setup 'AC10': 111 pieces (92 self-positioned, 0 in stacks), key 0xf5, LEGACY save normalized to modern .vsav
+- setup 'AC11': 129 pieces (94 self-positioned, 0 in stacks), key 0x00, LEGACY save normalized to modern .vsav
+- setup 'AC12': 112 pieces (95 self-positioned, 0 in stacks), key 0x7c, LEGACY save normalized to modern .vsav
+- setup 'AC13': 107 pieces (97 self-positioned, 0 in stacks), key 0x06, LEGACY save normalized to modern .vsav
+- setup 'AC14': 103 pieces (91 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup 'AC15': 115 pieces (92 self-positioned, 0 in stacks), key 0x73, LEGACY save normalized to modern .vsav
+- setup 'AC16': 107 pieces (94 self-positioned, 0 in stacks), key 0x79, LEGACY save normalized to modern .vsav
+- setup 'AC17': 118 pieces (96 self-positioned, 0 in stacks), key 0xbf, LEGACY save normalized to modern .vsav
+- setup 'AC18': 113 pieces (100 self-positioned, 0 in stacks), key 0xd3, LEGACY save normalized to modern .vsav
+- setup 'AC19': 129 pieces (95 self-positioned, 0 in stacks), key 0xf4, LEGACY save normalized to modern .vsav
+- setup 'AC20': 126 pieces (93 self-positioned, 0 in stacks), key 0xc5, LEGACY save normalized to modern .vsav
+- setup 'AC21': 133 pieces (97 self-positioned, 0 in stacks), key 0x11, LEGACY save normalized to modern .vsav
+- setup 'AC22': 129 pieces (96 self-positioned, 0 in stacks), key 0x26, LEGACY save normalized to modern .vsav
+- setup 'AC23': 147 pieces (100 self-positioned, 0 in stacks), key 0x90, LEGACY save normalized to modern .vsav
+- setup 'AC24': 119 pieces (92 self-positioned, 0 in stacks), key 0x91, LEGACY save normalized to modern .vsav
+- setup 'AC25': 114 pieces (97 self-positioned, 0 in stacks), key 0x70, LEGACY save normalized to modern .vsav
+- setup 'AC26': 143 pieces (95 self-positioned, 0 in stacks), key 0x16, LEGACY save normalized to modern .vsav
+- setup 'AC27': 133 pieces (93 self-positioned, 0 in stacks), key 0x18, LEGACY save normalized to modern .vsav
+- setup 'AC28': 107 pieces (90 self-positioned, 0 in stacks), key 0xb9, LEGACY save normalized to modern .vsav
+- setup 'AC29': 134 pieces (88 self-positioned, 0 in stacks), key 0x41, LEGACY save normalized to modern .vsav
+- setup 'AC30': 123 pieces (92 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'AC31': 130 pieces (93 self-positioned, 0 in stacks), key 0x95, LEGACY save normalized to modern .vsav
+- setup 'AC32': 111 pieces (89 self-positioned, 0 in stacks), key 0x0a, LEGACY save normalized to modern .vsav
+- setup 'AC33': 122 pieces (97 self-positioned, 0 in stacks), key 0xef, LEGACY save normalized to modern .vsav
+- setup 'AC34': 119 pieces (91 self-positioned, 0 in stacks), key 0x0a, LEGACY save normalized to modern .vsav
+- setup 'AC35': 106 pieces (94 self-positioned, 0 in stacks), key 0xe9, LEGACY save normalized to modern .vsav
+- setup 'AC36': 113 pieces (98 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'AC37': 115 pieces (95 self-positioned, 0 in stacks), key 0xfa, LEGACY save normalized to modern .vsav
+- setup 'AC38': 106 pieces (97 self-positioned, 0 in stacks), key 0x7d, LEGACY save normalized to modern .vsav
+- setup 'AC39': 129 pieces (102 self-positioned, 0 in stacks), key 0xc4, LEGACY save normalized to modern .vsav
+- setup 'AC40': 114 pieces (89 self-positioned, 0 in stacks), key 0xa7, LEGACY save normalized to modern .vsav
+- setup 'AT01': 108 pieces (88 self-positioned, 0 in stacks), key 0x68, LEGACY save normalized to modern .vsav
+- setup 'AT02': 105 pieces (86 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup 'BR01': 122 pieces (90 self-positioned, 0 in stacks), key 0xea, LEGACY save normalized to modern .vsav
+- setup 'BR02': 150 pieces (98 self-positioned, 0 in stacks), key 0x7d, LEGACY save normalized to modern .vsav
+- setup 'BR03': 126 pieces (91 self-positioned, 0 in stacks), key 0xe2, LEGACY save normalized to modern .vsav
+- setup 'BR04': 150 pieces (100 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav
+- setup 'BR05': 193 pieces (85 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'BR06': 126 pieces (77 self-positioned, 0 in stacks), key 0xac, LEGACY save normalized to modern .vsav
+- setup 'BR07': 204 pieces (112 self-positioned, 0 in stacks), key 0x5e, LEGACY save normalized to modern .vsav
+- setup 'BS01': 109 pieces (84 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup 'BS02': 111 pieces (87 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'BS03': 100 pieces (88 self-positioned, 0 in stacks), key 0xd3, LEGACY save normalized to modern .vsav
+- setup 'BS04': 139 pieces (105 self-positioned, 0 in stacks), key 0x0f, LEGACY save normalized to modern .vsav
+- setup 'BS05': 135 pieces (108 self-positioned, 0 in stacks), key 0x0d, LEGACY save normalized to modern .vsav
+- setup 'BS06': 131 pieces (99 self-positioned, 0 in stacks), key 0x67, LEGACY save normalized to modern .vsav
+- setup 'BS07 Megiddo': 247 pieces (169 self-positioned, 0 in stacks), key 0xef, LEGACY save normalized to modern .vsav
+- setup 'BS08': 114 pieces (84 self-positioned, 0 in stacks), key 0x10, LEGACY save normalized to modern .vsav
+- setup 'BS09': 150 pieces (87 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'BS10': 116 pieces (90 self-positioned, 0 in stacks), key 0x83, LEGACY save normalized to modern .vsav
+- setup 'DC01': 106 pieces (97 self-positioned, 0 in stacks), key 0x2f, LEGACY save normalized to modern .vsav
+- setup 'DC02': 110 pieces (94 self-positioned, 0 in stacks), key 0x0e, LEGACY save normalized to modern .vsav
+- setup 'DC03': 101 pieces (91 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'DC04': 114 pieces (87 self-positioned, 0 in stacks), key 0x25, LEGACY save normalized to modern .vsav
+- setup 'DC05': 104 pieces (86 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'DC06': 99 pieces (86 self-positioned, 0 in stacks), key 0x0a, LEGACY save normalized to modern .vsav
+- setup 'DC07': 107 pieces (94 self-positioned, 0 in stacks), key 0x5d, LEGACY save normalized to modern .vsav
+- setup 'DC08': 119 pieces (95 self-positioned, 0 in stacks), key 0xae, LEGACY save normalized to modern .vsav
+- setup 'DC09': 114 pieces (98 self-positioned, 0 in stacks), key 0x57, LEGACY save normalized to modern .vsav
+- setup 'DC10': 118 pieces (89 self-positioned, 0 in stacks), key 0x26, LEGACY save normalized to modern .vsav
+- setup 'DC11': 121 pieces (88 self-positioned, 0 in stacks), key 0x53, LEGACY save normalized to modern .vsav
+- setup 'DG01': 125 pieces (100 self-positioned, 0 in stacks), key 0xea, LEGACY save normalized to modern .vsav
+- setup 'DG02': 121 pieces (93 self-positioned, 0 in stacks), key 0x99, LEGACY save normalized to modern .vsav
+- setup 'DG03': 120 pieces (89 self-positioned, 0 in stacks), key 0x33, LEGACY save normalized to modern .vsav
+- setup 'DG04': 132 pieces (97 self-positioned, 0 in stacks), key 0xa9, LEGACY save normalized to modern .vsav
+- setup 'DG05': 133 pieces (96 self-positioned, 0 in stacks), key 0x19, LEGACY save normalized to modern .vsav
+- setup 'DG06': 102 pieces (90 self-positioned, 0 in stacks), key 0xa0, LEGACY save normalized to modern .vsav
+- setup 'DG07': 111 pieces (88 self-positioned, 0 in stacks), key 0x52, LEGACY save normalized to modern .vsav
+- setup 'DG08': 117 pieces (93 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'DG09': 112 pieces (94 self-positioned, 0 in stacks), key 0xa5, LEGACY save normalized to modern .vsav
+- setup 'DG10': 115 pieces (83 self-positioned, 0 in stacks), key 0xfc, LEGACY save normalized to modern .vsav
+- setup 'GB01': 113 pieces (104 self-positioned, 0 in stacks), key 0x36, LEGACY save normalized to modern .vsav
+- setup 'GB02': 110 pieces (101 self-positioned, 0 in stacks), key 0x3d, LEGACY save normalized to modern .vsav
+- setup 'GB03': 99 pieces (90 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'GB04': 95 pieces (86 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup 'GB05': 109 pieces (90 self-positioned, 0 in stacks), key 0xca, LEGACY save normalized to modern .vsav
+- setup 'GB06': 111 pieces (94 self-positioned, 0 in stacks), key 0x47, LEGACY save normalized to modern .vsav
+- setup 'GB07': 105 pieces (82 self-positioned, 0 in stacks), key 0xf0, LEGACY save normalized to modern .vsav
+- setup 'GB08': 114 pieces (95 self-positioned, 0 in stacks), key 0x81, LEGACY save normalized to modern .vsav
+- setup 'GB09': 112 pieces (103 self-positioned, 0 in stacks), key 0xc4, LEGACY save normalized to modern .vsav
+- setup 'GB10': 97 pieces (88 self-positioned, 0 in stacks), key 0xa7, LEGACY save normalized to modern .vsav
+- setup 'GB11': 93 pieces (84 self-positioned, 0 in stacks), key 0xd2, LEGACY save normalized to modern .vsav
+- setup 'GB12': 92 pieces (83 self-positioned, 0 in stacks), key 0x91, LEGACY save normalized to modern .vsav
+- setup 'GB13': 87 pieces (78 self-positioned, 0 in stacks), key 0xf0, LEGACY save normalized to modern .vsav
+- setup 'GB14': 103 pieces (94 self-positioned, 0 in stacks), key 0x7f, LEGACY save normalized to modern .vsav
+- setup 'GB15': 110 pieces (101 self-positioned, 0 in stacks), key 0x09, LEGACY save normalized to modern .vsav
+- setup 'GC01 Metaurus': 272 pieces (169 self-positioned, 0 in stacks), key 0xd0, LEGACY save normalized to modern .vsav
+- setup 'GC02 Argentoratum': 208 pieces (153 self-positioned, 0 in stacks), key 0xd2, LEGACY save normalized to modern .vsav
+- setup 'GC03 Watling Street': 262 pieces (164 self-positioned, 0 in stacks), key 0x63, LEGACY save normalized to modern .vsav
+- setup 'GC04 Siege of Jerusalem': 214 pieces (149 self-positioned, 0 in stacks), key 0x85, LEGACY save normalized to modern .vsav
+- setup 'GC05': 99 pieces (87 self-positioned, 0 in stacks), key 0x4e, LEGACY save normalized to modern .vsav
+- setup 'GI01': 116 pieces (98 self-positioned, 0 in stacks), key 0x12, LEGACY save normalized to modern .vsav
+- setup 'GI02': 120 pieces (97 self-positioned, 0 in stacks), key 0x5b, LEGACY save normalized to modern .vsav
+- setup 'GI03': 113 pieces (90 self-positioned, 0 in stacks), key 0x15, LEGACY save normalized to modern .vsav
+- setup 'GI04': 124 pieces (96 self-positioned, 0 in stacks), key 0x37, LEGACY save normalized to modern .vsav
+- setup 'JB01': 143 pieces (90 self-positioned, 0 in stacks), key 0x94, LEGACY save normalized to modern .vsav
+- setup 'JB02': 163 pieces (88 self-positioned, 0 in stacks), key 0x2b, LEGACY save normalized to modern .vsav
+- setup 'JB03': 164 pieces (89 self-positioned, 0 in stacks), key 0x64, LEGACY save normalized to modern .vsav
+- setup 'JB04': 132 pieces (101 self-positioned, 0 in stacks), key 0x1b, LEGACY save normalized to modern .vsav
+- setup 'JB05': 176 pieces (102 self-positioned, 0 in stacks), key 0x5c, LEGACY save normalized to modern .vsav
+- setup 'JB06': 146 pieces (108 self-positioned, 0 in stacks), key 0x93, LEGACY save normalized to modern .vsav
+- setup 'JB07': 119 pieces (92 self-positioned, 0 in stacks), key 0x88, LEGACY save normalized to modern .vsav
+- setup 'JB08': 115 pieces (93 self-positioned, 0 in stacks), key 0xa3, LEGACY save normalized to modern .vsav
+- setup 'JB09': 115 pieces (93 self-positioned, 0 in stacks), key 0xb7, LEGACY save normalized to modern .vsav
+- setup 'JB10': 165 pieces (109 self-positioned, 0 in stacks), key 0x52, LEGACY save normalized to modern .vsav
+- setup 'JB11': 144 pieces (94 self-positioned, 0 in stacks), key 0x71, LEGACY save normalized to modern .vsav
+- setup 'JB12': 120 pieces (87 self-positioned, 0 in stacks), key 0xd7, LEGACY save normalized to modern .vsav
+- setup 'JB13': 117 pieces (90 self-positioned, 0 in stacks), key 0x1f, LEGACY save normalized to modern .vsav
+- setup 'JB14': 141 pieces (88 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'JB15': 152 pieces (102 self-positioned, 0 in stacks), key 0x9b, LEGACY save normalized to modern .vsav
+- setup 'JB16': 127 pieces (95 self-positioned, 0 in stacks), key 0xa9, LEGACY save normalized to modern .vsav
+- setup 'JD01': 104 pieces (86 self-positioned, 0 in stacks), key 0x05, LEGACY save normalized to modern .vsav
+- setup 'JD02': 128 pieces (98 self-positioned, 0 in stacks), key 0x68, LEGACY save normalized to modern .vsav
+- setup 'JD03': 120 pieces (93 self-positioned, 0 in stacks), key 0x8b, LEGACY save normalized to modern .vsav
+- setup 'JD04': 108 pieces (87 self-positioned, 0 in stacks), key 0xc7, LEGACY save normalized to modern .vsav
+- setup 'JD05': 103 pieces (84 self-positioned, 0 in stacks), key 0x73, LEGACY save normalized to modern .vsav
+- setup 'JD06': 117 pieces (108 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'JD07': 125 pieces (91 self-positioned, 0 in stacks), key 0xc2, LEGACY save normalized to modern .vsav
+- setup 'JD08': 116 pieces (93 self-positioned, 0 in stacks), key 0x7d, LEGACY save normalized to modern .vsav
+- setup 'JD09': 123 pieces (95 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup 'JD10': 110 pieces (99 self-positioned, 0 in stacks), key 0x84, LEGACY save normalized to modern .vsav
+- setup 'JD11': 101 pieces (92 self-positioned, 0 in stacks), key 0x9f, LEGACY save normalized to modern .vsav
+- setup 'JD12': 112 pieces (85 self-positioned, 0 in stacks), key 0x07, LEGACY save normalized to modern .vsav
+- setup 'JD13': 116 pieces (91 self-positioned, 0 in stacks), key 0x1a, LEGACY save normalized to modern .vsav
+- setup 'JD14': 100 pieces (91 self-positioned, 0 in stacks), key 0xa6, LEGACY save normalized to modern .vsav
+- setup 'JD15': 129 pieces (90 self-positioned, 0 in stacks), key 0x94, LEGACY save normalized to modern .vsav
+- setup 'JD16': 97 pieces (88 self-positioned, 0 in stacks), key 0x4c, LEGACY save normalized to modern .vsav
+- setup 'JD17': 112 pieces (91 self-positioned, 0 in stacks), key 0x7d, LEGACY save normalized to modern .vsav
+- setup 'JD18 (OT24 Round 3)': 104 pieces (91 self-positioned, 0 in stacks), key 0x28, LEGACY save normalized to modern .vsav
+- setup 'JD19': 128 pieces (105 self-positioned, 0 in stacks), key 0xa9, LEGACY save normalized to modern .vsav
+- setup 'JD20': 147 pieces (96 self-positioned, 0 in stacks), key 0x6d, LEGACY save normalized to modern .vsav
+- setup 'JD21': 123 pieces (88 self-positioned, 0 in stacks), key 0x86, LEGACY save normalized to modern .vsav
+- setup 'JD22': 104 pieces (91 self-positioned, 0 in stacks), key 0x1b, LEGACY save normalized to modern .vsav
+- setup 'JD23': 109 pieces (100 self-positioned, 0 in stacks), key 0x37, LEGACY save normalized to modern .vsav
+- setup 'JD24': 128 pieces (101 self-positioned, 0 in stacks), key 0x09, LEGACY save normalized to modern .vsav
+- setup 'JD25': 104 pieces (86 self-positioned, 0 in stacks), key 0xd7, LEGACY save normalized to modern .vsav
+- setup 'JD26': 93 pieces (84 self-positioned, 0 in stacks), key 0xcf, LEGACY save normalized to modern .vsav
+- setup 'JD27': 151 pieces (101 self-positioned, 0 in stacks), key 0xf1, LEGACY save normalized to modern .vsav
+- setup 'JD28': 108 pieces (92 self-positioned, 0 in stacks), key 0x7c, LEGACY save normalized to modern .vsav
+- setup 'JD29': 98 pieces (89 self-positioned, 0 in stacks), key 0xc7, LEGACY save normalized to modern .vsav
+- setup 'JD30': 99 pieces (88 self-positioned, 0 in stacks), key 0x65, LEGACY save normalized to modern .vsav
+- setup 'JD31': 146 pieces (101 self-positioned, 0 in stacks), key 0x9f, LEGACY save normalized to modern .vsav
+- setup 'JD32': 101 pieces (92 self-positioned, 0 in stacks), key 0xb7, LEGACY save normalized to modern .vsav
+- setup 'JD33': 104 pieces (90 self-positioned, 0 in stacks), key 0xd5, LEGACY save normalized to modern .vsav
+- setup 'JD34': 98 pieces (89 self-positioned, 0 in stacks), key 0x92, LEGACY save normalized to modern .vsav
+- setup 'JD35': 105 pieces (96 self-positioned, 0 in stacks), key 0x19, LEGACY save normalized to modern .vsav
+- setup 'JD36': 107 pieces (98 self-positioned, 0 in stacks), key 0x31, LEGACY save normalized to modern .vsav
+- setup 'JD37': 146 pieces (100 self-positioned, 0 in stacks), key 0x43, LEGACY save normalized to modern .vsav
+- setup 'JD38': 115 pieces (106 self-positioned, 0 in stacks), key 0xd2, LEGACY save normalized to modern .vsav
+- setup 'JD39': 127 pieces (114 self-positioned, 0 in stacks), key 0xcf, LEGACY save normalized to modern .vsav
+- setup 'JD40': 115 pieces (92 self-positioned, 0 in stacks), key 0x18, LEGACY save normalized to modern .vsav
+- setup 'JD41': 148 pieces (91 self-positioned, 0 in stacks), key 0xeb, LEGACY save normalized to modern .vsav
+- setup 'JD42': 150 pieces (99 self-positioned, 0 in stacks), key 0x1f, LEGACY save normalized to modern .vsav
+- setup 'JD43': 125 pieces (88 self-positioned, 0 in stacks), key 0xb9, LEGACY save normalized to modern .vsav
+- setup 'JD44': 124 pieces (103 self-positioned, 0 in stacks), key 0xb2, LEGACY save normalized to modern .vsav
+- setup 'JD45': 117 pieces (94 self-positioned, 0 in stacks), key 0xf0, LEGACY save normalized to modern .vsav
+- setup 'JD46': 119 pieces (90 self-positioned, 0 in stacks), key 0xf4, LEGACY save normalized to modern .vsav
+- setup 'JD47': 136 pieces (92 self-positioned, 0 in stacks), key 0x5f, LEGACY save normalized to modern .vsav
+- setup 'JD48': 137 pieces (96 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'JD49': 108 pieces (91 self-positioned, 0 in stacks), key 0x08, LEGACY save normalized to modern .vsav
+- setup 'JD50': 120 pieces (104 self-positioned, 0 in stacks), key 0x9b, LEGACY save normalized to modern .vsav
+- setup 'JD51': 94 pieces (85 self-positioned, 0 in stacks), key 0xf0, LEGACY save normalized to modern .vsav
+- setup 'JD52': 100 pieces (91 self-positioned, 0 in stacks), key 0x31, LEGACY save normalized to modern .vsav
+- setup 'JD53': 96 pieces (87 self-positioned, 0 in stacks), key 0x0f, LEGACY save normalized to modern .vsav
+- setup 'JD54': 113 pieces (97 self-positioned, 0 in stacks), key 0xa6, LEGACY save normalized to modern .vsav
+- setup 'JD55': 95 pieces (86 self-positioned, 0 in stacks), key 0xdd, LEGACY save normalized to modern .vsav
+- setup 'JD56': 125 pieces (104 self-positioned, 0 in stacks), key 0xb8, LEGACY save normalized to modern .vsav
+- setup 'JD57': 124 pieces (92 self-positioned, 0 in stacks), key 0xd0, LEGACY save normalized to modern .vsav
+- setup 'JD58': 95 pieces (86 self-positioned, 0 in stacks), key 0x79, LEGACY save normalized to modern .vsav
+- setup 'JD59': 103 pieces (94 self-positioned, 0 in stacks), key 0x22, LEGACY save normalized to modern .vsav
+- setup 'JD60': 133 pieces (98 self-positioned, 0 in stacks), key 0xe4, LEGACY save normalized to modern .vsav
+- setup 'JD61': 127 pieces (87 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'JD62': 113 pieces (104 self-positioned, 0 in stacks), key 0x77, LEGACY save normalized to modern .vsav
+- setup 'JD63': 111 pieces (101 self-positioned, 0 in stacks), key 0x2e, LEGACY save normalized to modern .vsav
+- setup 'JD64': 113 pieces (104 self-positioned, 0 in stacks), key 0x61, LEGACY save normalized to modern .vsav
+- setup 'JD65': 111 pieces (102 self-positioned, 0 in stacks), key 0xe1, LEGACY save normalized to modern .vsav
+- setup 'JD66': 120 pieces (84 self-positioned, 0 in stacks), key 0xa1, LEGACY save normalized to modern .vsav
+- setup 'JD67': 121 pieces (91 self-positioned, 0 in stacks), key 0x4a, LEGACY save normalized to modern .vsav
+- setup 'JD68': 140 pieces (94 self-positioned, 0 in stacks), key 0xb9, LEGACY save normalized to modern .vsav
+- setup 'JD69': 119 pieces (92 self-positioned, 0 in stacks), key 0x6b, LEGACY save normalized to modern .vsav
+- setup 'JD70': 117 pieces (96 self-positioned, 0 in stacks), key 0x68, LEGACY save normalized to modern .vsav
+- setup 'JD71': 133 pieces (105 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup 'JD72': 127 pieces (93 self-positioned, 0 in stacks), key 0x0e, LEGACY save normalized to modern .vsav
+- setup 'JD73': 119 pieces (89 self-positioned, 0 in stacks), key 0x4a, LEGACY save normalized to modern .vsav
+- setup 'JD74': 121 pieces (80 self-positioned, 0 in stacks), key 0x6a, LEGACY save normalized to modern .vsav
+- setup 'JD75': 120 pieces (82 self-positioned, 0 in stacks), key 0xa9, LEGACY save normalized to modern .vsav
+- setup 'JD76': 129 pieces (82 self-positioned, 0 in stacks), key 0x14, LEGACY save normalized to modern .vsav
+- setup 'JD77': 126 pieces (84 self-positioned, 0 in stacks), key 0xa8, LEGACY save normalized to modern .vsav
+- setup 'JD78': 128 pieces (89 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'JD79': 130 pieces (99 self-positioned, 0 in stacks), key 0xbd, LEGACY save normalized to modern .vsav
+- setup 'JD80': 107 pieces (86 self-positioned, 0 in stacks), key 0xd5, LEGACY save normalized to modern .vsav
+- setup 'JD81': 99 pieces (90 self-positioned, 0 in stacks), key 0x6f, LEGACY save normalized to modern .vsav
+- setup 'JD82': 101 pieces (92 self-positioned, 0 in stacks), key 0x0e, LEGACY save normalized to modern .vsav
+- setup 'JD83': 107 pieces (98 self-positioned, 0 in stacks), key 0x57, LEGACY save normalized to modern .vsav
+- setup 'JD84': 96 pieces (87 self-positioned, 0 in stacks), key 0x19, LEGACY save normalized to modern .vsav
+- setup 'JD85': 109 pieces (93 self-positioned, 0 in stacks), key 0x5a, LEGACY save normalized to modern .vsav
+- setup 'JD86': 126 pieces (101 self-positioned, 0 in stacks), key 0xa4, LEGACY save normalized to modern .vsav
+- setup 'JD87': 118 pieces (96 self-positioned, 0 in stacks), key 0x07, LEGACY save normalized to modern .vsav
+- setup 'JD88': 103 pieces (86 self-positioned, 0 in stacks), key 0x4e, LEGACY save normalized to modern .vsav
+- setup 'JD89': 114 pieces (96 self-positioned, 0 in stacks), key 0x92, LEGACY save normalized to modern .vsav
+- setup 'JD90': 113 pieces (95 self-positioned, 0 in stacks), key 0x56, LEGACY save normalized to modern .vsav
+- setup 'JD91': 107 pieces (98 self-positioned, 0 in stacks), key 0x29, LEGACY save normalized to modern .vsav
+- setup 'JD92': 145 pieces (89 self-positioned, 0 in stacks), key 0xfd, LEGACY save normalized to modern .vsav
+- setup 'JD93': 109 pieces (92 self-positioned, 0 in stacks), key 0x54, LEGACY save normalized to modern .vsav
+- setup 'JD94': 104 pieces (85 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'JD95': 146 pieces (97 self-positioned, 0 in stacks), key 0xa4, LEGACY save normalized to modern .vsav
+- setup 'JD96': 104 pieces (95 self-positioned, 0 in stacks), key 0xda, LEGACY save normalized to modern .vsav
+- setup 'JD97': 108 pieces (86 self-positioned, 0 in stacks), key 0x74, LEGACY save normalized to modern .vsav
+- setup 'JD98': 104 pieces (88 self-positioned, 0 in stacks), key 0xfc, LEGACY save normalized to modern .vsav
+- setup 'JD99': 130 pieces (90 self-positioned, 0 in stacks), key 0xc3, LEGACY save normalized to modern .vsav
+- setup 'JD100': 120 pieces (88 self-positioned, 0 in stacks), key 0x5d, LEGACY save normalized to modern .vsav
+- setup 'JD101': 101 pieces (92 self-positioned, 0 in stacks), key 0x03, LEGACY save normalized to modern .vsav
+- setup 'JD102': 114 pieces (102 self-positioned, 0 in stacks), key 0x87, LEGACY save normalized to modern .vsav
+- setup 'JD103': 112 pieces (99 self-positioned, 0 in stacks), key 0x06, LEGACY save normalized to modern .vsav
+- setup 'JD104': 104 pieces (95 self-positioned, 0 in stacks), key 0x81, LEGACY save normalized to modern .vsav
+- setup 'JD105': 103 pieces (94 self-positioned, 0 in stacks), key 0x7b, LEGACY save normalized to modern .vsav
+- setup 'JD106': 116 pieces (93 self-positioned, 0 in stacks), key 0x53, LEGACY save normalized to modern .vsav
+- setup 'JD107': 108 pieces (99 self-positioned, 0 in stacks), key 0x0c, LEGACY save normalized to modern .vsav
+- setup 'JD108': 104 pieces (95 self-positioned, 0 in stacks), key 0xc9, LEGACY save normalized to modern .vsav
+- setup 'JD109': 119 pieces (86 self-positioned, 0 in stacks), key 0x53, LEGACY save normalized to modern .vsav
+- setup 'JD110': 110 pieces (100 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav
+- setup 'JD111': 105 pieces (96 self-positioned, 0 in stacks), key 0x14, LEGACY save normalized to modern .vsav
+- setup 'JD112': 113 pieces (104 self-positioned, 0 in stacks), key 0x72, LEGACY save normalized to modern .vsav
+- setup 'JD113': 113 pieces (104 self-positioned, 0 in stacks), key 0x1f, LEGACY save normalized to modern .vsav
+- setup 'JD114': 122 pieces (93 self-positioned, 0 in stacks), key 0x41, LEGACY save normalized to modern .vsav
+- setup 'JD115': 98 pieces (88 self-positioned, 0 in stacks), key 0x37, LEGACY save normalized to modern .vsav
+- setup 'JD116': 128 pieces (98 self-positioned, 0 in stacks), key 0xa0, LEGACY save normalized to modern .vsav
+- setup 'JD117': 109 pieces (100 self-positioned, 0 in stacks), key 0xf4, LEGACY save normalized to modern .vsav
+- setup 'JD118': 116 pieces (107 self-positioned, 0 in stacks), key 0xa2, LEGACY save normalized to modern .vsav
+- setup 'JD119': 108 pieces (86 self-positioned, 0 in stacks), key 0x82, LEGACY save normalized to modern .vsav
+- setup 'JD120': 116 pieces (98 self-positioned, 0 in stacks), key 0xef, LEGACY save normalized to modern .vsav
+- setup 'JD121': 101 pieces (91 self-positioned, 0 in stacks), key 0x6f, LEGACY save normalized to modern .vsav
+- setup 'JD122': 117 pieces (91 self-positioned, 0 in stacks), key 0x7e, LEGACY save normalized to modern .vsav
+- setup 'JD123': 111 pieces (102 self-positioned, 0 in stacks), key 0x9c, LEGACY save normalized to modern .vsav
+- setup 'JD124': 141 pieces (99 self-positioned, 0 in stacks), key 0xde, LEGACY save normalized to modern .vsav
+- setup 'JD125': 112 pieces (103 self-positioned, 0 in stacks), key 0xa3, LEGACY save normalized to modern .vsav
+- setup 'JD126': 114 pieces (90 self-positioned, 0 in stacks), key 0x1a, LEGACY save normalized to modern .vsav
+- setup 'JD127': 99 pieces (89 self-positioned, 0 in stacks), key 0x21, LEGACY save normalized to modern .vsav
+- setup 'JD128': 109 pieces (88 self-positioned, 0 in stacks), key 0x04, LEGACY save normalized to modern .vsav
+- setup 'JD129': 103 pieces (94 self-positioned, 0 in stacks), key 0xc5, LEGACY save normalized to modern .vsav
+- setup 'JD130': 125 pieces (101 self-positioned, 0 in stacks), key 0x57, LEGACY save normalized to modern .vsav
+- setup 'JD131': 107 pieces (98 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup 'JD132': 106 pieces (97 self-positioned, 0 in stacks), key 0xa2, LEGACY save normalized to modern .vsav
+- setup 'JD133': 102 pieces (93 self-positioned, 0 in stacks), key 0xbe, LEGACY save normalized to modern .vsav
+- setup 'JD134': 129 pieces (93 self-positioned, 0 in stacks), key 0xeb, LEGACY save normalized to modern .vsav
+- setup 'JD135': 97 pieces (88 self-positioned, 0 in stacks), key 0xbe, LEGACY save normalized to modern .vsav
+- setup 'JD136': 105 pieces (96 self-positioned, 0 in stacks), key 0x66, LEGACY save normalized to modern .vsav
+- setup 'JD137': 113 pieces (91 self-positioned, 0 in stacks), key 0x13, LEGACY save normalized to modern .vsav
+- setup 'JD138': 98 pieces (89 self-positioned, 0 in stacks), key 0xed, LEGACY save normalized to modern .vsav
+- setup 'JD139': 117 pieces (91 self-positioned, 0 in stacks), key 0x93, LEGACY save normalized to modern .vsav
+- setup 'JD140': 112 pieces (91 self-positioned, 0 in stacks), key 0x19, LEGACY save normalized to modern .vsav
+- setup 'JD141': 112 pieces (102 self-positioned, 0 in stacks), key 0xa0, LEGACY save normalized to modern .vsav
+- setup 'JD142': 132 pieces (91 self-positioned, 0 in stacks), key 0xe4, LEGACY save normalized to modern .vsav
+- setup 'JD143': 111 pieces (92 self-positioned, 0 in stacks), key 0x6c, LEGACY save normalized to modern .vsav
+- setup 'JD144': 126 pieces (99 self-positioned, 0 in stacks), key 0xda, LEGACY save normalized to modern .vsav
+- setup 'JD145': 110 pieces (92 self-positioned, 0 in stacks), key 0x63, LEGACY save normalized to modern .vsav
+- setup 'JD146': 112 pieces (103 self-positioned, 0 in stacks), key 0xfa, LEGACY save normalized to modern .vsav
+- setup 'JD147': 158 pieces (102 self-positioned, 0 in stacks), key 0x16, LEGACY save normalized to modern .vsav
+- setup 'JD148': 134 pieces (95 self-positioned, 0 in stacks), key 0xe3, LEGACY save normalized to modern .vsav
+- setup 'JD149': 112 pieces (100 self-positioned, 0 in stacks), key 0xd3, LEGACY save normalized to modern .vsav
+- setup 'JD150': 126 pieces (100 self-positioned, 0 in stacks), key 0x8c, LEGACY save normalized to modern .vsav
+- setup 'JD151': 117 pieces (88 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'JR01': 117 pieces (90 self-positioned, 0 in stacks), key 0xae, LEGACY save normalized to modern .vsav
+- setup 'JR02': 108 pieces (99 self-positioned, 0 in stacks), key 0x7e, LEGACY save normalized to modern .vsav
+- setup 'JT01': 140 pieces (92 self-positioned, 0 in stacks), key 0xbe, LEGACY save normalized to modern .vsav
+- setup 'KB01': 164 pieces (100 self-positioned, 0 in stacks), key 0x53, LEGACY save normalized to modern .vsav
+- setup 'KP01': 120 pieces (111 self-positioned, 0 in stacks), key 0x4d, LEGACY save normalized to modern .vsav
+- setup 'KP02': 133 pieces (105 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup 'KR01': 143 pieces (106 self-positioned, 0 in stacks), key 0xbe, LEGACY save normalized to modern .vsav
+- setup 'KR02': 138 pieces (98 self-positioned, 0 in stacks), key 0x12, LEGACY save normalized to modern .vsav
+- setup 'MF01': 120 pieces (111 self-positioned, 0 in stacks), key 0x3d, LEGACY save normalized to modern .vsav
+- setup 'MF02': 104 pieces (95 self-positioned, 0 in stacks), key 0x20, LEGACY save normalized to modern .vsav
+- setup 'MF03': 95 pieces (86 self-positioned, 0 in stacks), key 0x8a, LEGACY save normalized to modern .vsav
+- setup 'MF04': 106 pieces (97 self-positioned, 0 in stacks), key 0x42, LEGACY save normalized to modern .vsav
+- setup 'MF05': 104 pieces (95 self-positioned, 0 in stacks), key 0xf5
+- setup 'MF06': 110 pieces (101 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav
+- setup 'MF07': 125 pieces (116 self-positioned, 0 in stacks), key 0x7b, LEGACY save normalized to modern .vsav
+- setup 'MF08': 115 pieces (106 self-positioned, 0 in stacks), key 0x4a, LEGACY save normalized to modern .vsav
+- setup 'MF09': 110 pieces (101 self-positioned, 0 in stacks), key 0x71
+- setup 'MF10': 106 pieces (97 self-positioned, 0 in stacks), key 0x07
+- setup 'MK01': 239 pieces (176 self-positioned, 0 in stacks), key 0xe1, LEGACY save normalized to modern .vsav
+- setup 'MK02': 237 pieces (167 self-positioned, 0 in stacks), key 0x53, LEGACY save normalized to modern .vsav
+- setup 'MK03': 226 pieces (173 self-positioned, 0 in stacks), key 0xda, LEGACY save normalized to modern .vsav
+- setup 'MK04': 244 pieces (177 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup 'MK05': 242 pieces (174 self-positioned, 0 in stacks), key 0xd7, LEGACY save normalized to modern .vsav
+- setup 'MK06': 238 pieces (194 self-positioned, 0 in stacks), key 0x0f
+- setup 'ML01': 164 pieces (106 self-positioned, 0 in stacks), key 0x02, LEGACY save normalized to modern .vsav
+- setup 'ML02': 242 pieces (124 self-positioned, 0 in stacks), key 0x6c, LEGACY save normalized to modern .vsav
+- setup 'ML03': 155 pieces (92 self-positioned, 0 in stacks), key 0x26, LEGACY save normalized to modern .vsav
+- setup 'ML04': 154 pieces (91 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup 'ML05': 160 pieces (92 self-positioned, 0 in stacks), key 0x24, LEGACY save normalized to modern .vsav
+- setup 'ML06': 194 pieces (115 self-positioned, 0 in stacks), key 0x76, LEGACY save normalized to modern .vsav
+- setup 'MM00': 135 pieces (103 self-positioned, 0 in stacks), key 0xcc, LEGACY save normalized to modern .vsav
+- setup 'MM01': 159 pieces (102 self-positioned, 0 in stacks), key 0x25, LEGACY save normalized to modern .vsav
+- setup 'MM02': 137 pieces (91 self-positioned, 0 in stacks), key 0x2f, LEGACY save normalized to modern .vsav
+- setup 'MM03': 104 pieces (91 self-positioned, 0 in stacks), key 0xd1, LEGACY save normalized to modern .vsav
+- setup 'MM04': 117 pieces (100 self-positioned, 0 in stacks), key 0xe2, LEGACY save normalized to modern .vsav
+- setup 'MM05': 121 pieces (95 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup 'MM06': 168 pieces (91 self-positioned, 0 in stacks), key 0x3d, LEGACY save normalized to modern .vsav
+- setup 'MM07': 132 pieces (91 self-positioned, 0 in stacks), key 0x71, LEGACY save normalized to modern .vsav
+- setup 'MM08': 108 pieces (89 self-positioned, 0 in stacks), key 0x95, LEGACY save normalized to modern .vsav
+- setup 'MM09': 110 pieces (90 self-positioned, 0 in stacks), key 0x9a, LEGACY save normalized to modern .vsav
+- setup 'MM10': 125 pieces (95 self-positioned, 0 in stacks), key 0xa4, LEGACY save normalized to modern .vsav
+- setup 'MM11': 105 pieces (91 self-positioned, 0 in stacks), key 0xfb, LEGACY save normalized to modern .vsav
+- setup 'MM12': 101 pieces (85 self-positioned, 0 in stacks), key 0x30, LEGACY save normalized to modern .vsav
+- setup 'MM13': 99 pieces (90 self-positioned, 0 in stacks), key 0x51, LEGACY save normalized to modern .vsav
+- setup 'MM14': 114 pieces (92 self-positioned, 0 in stacks), key 0x65, LEGACY save normalized to modern .vsav
+- setup 'MM15': 116 pieces (92 self-positioned, 0 in stacks), key 0x44, LEGACY save normalized to modern .vsav
+- setup 'MM16': 116 pieces (93 self-positioned, 0 in stacks), key 0x21, LEGACY save normalized to modern .vsav
+- setup 'MM17': 123 pieces (88 self-positioned, 0 in stacks), key 0xef, LEGACY save normalized to modern .vsav
+- setup 'MM18': 131 pieces (94 self-positioned, 0 in stacks), key 0x45, LEGACY save normalized to modern .vsav
+- setup 'MM19': 150 pieces (98 self-positioned, 0 in stacks), key 0x5f, LEGACY save normalized to modern .vsav
+- setup 'MM20': 126 pieces (95 self-positioned, 0 in stacks), key 0xf1, LEGACY save normalized to modern .vsav
+- setup 'MMcG01': 242 pieces (193 self-positioned, 0 in stacks), key 0x59, LEGACY save normalized to modern .vsav
+- setup 'MMcG02': 261 pieces (192 self-positioned, 0 in stacks), key 0x89, LEGACY save normalized to modern .vsav
+- setup 'TT01': 156 pieces (112 self-positioned, 0 in stacks), key 0x41, LEGACY save normalized to modern .vsav
+- setup 'TT02': 123 pieces (93 self-positioned, 0 in stacks), key 0x7e, LEGACY save normalized to modern .vsav
+- setup 'TT03': 104 pieces (95 self-positioned, 0 in stacks), key 0xcc, LEGACY save normalized to modern .vsav
+- setup 'TT04': 110 pieces (94 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav
+- setup 'TT05': 117 pieces (98 self-positioned, 0 in stacks), key 0x8b, LEGACY save normalized to modern .vsav
+- setup 'TT06': 121 pieces (92 self-positioned, 0 in stacks), key 0x60, LEGACY save normalized to modern .vsav
+- setup 'TT07': 128 pieces (101 self-positioned, 0 in stacks), key 0x93, LEGACY save normalized to modern .vsav
+- setup 'TT08': 109 pieces (86 self-positioned, 0 in stacks), key 0x4e, LEGACY save normalized to modern .vsav
+- setup 'TT09': 102 pieces (93 self-positioned, 0 in stacks), key 0x02, LEGACY save normalized to modern .vsav
+- setup 'TT10': 118 pieces (94 self-positioned, 0 in stacks), key 0x72, LEGACY save normalized to modern .vsav
+- setup 'TT11': 156 pieces (97 self-positioned, 0 in stacks), key 0x86, LEGACY save normalized to modern .vsav
+- setup 'TT12': 113 pieces (87 self-positioned, 0 in stacks), key 0x91, LEGACY save normalized to modern .vsav
+- setup 'TT13': 116 pieces (87 self-positioned, 0 in stacks), key 0x09, LEGACY save normalized to modern .vsav
+- setup 'TT14': 127 pieces (90 self-positioned, 0 in stacks), key 0x5b, LEGACY save normalized to modern .vsav
+- setup 'TT15': 152 pieces (90 self-positioned, 0 in stacks), key 0x01, LEGACY save normalized to modern .vsav
+- setup 'TT16': 97 pieces (88 self-positioned, 0 in stacks), key 0xe5, LEGACY save normalized to modern .vsav
+- setup 'TT17': 130 pieces (94 self-positioned, 0 in stacks), key 0x2e, LEGACY save normalized to modern .vsav
+- setup 'TT18': 115 pieces (94 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'TT19': 102 pieces (93 self-positioned, 0 in stacks), key 0x3f, LEGACY save normalized to modern .vsav
+- setup 'TT20': 121 pieces (102 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup 'TT21': 114 pieces (105 self-positioned, 0 in stacks), key 0x36, LEGACY save normalized to modern .vsav
+- setup 'TT22': 107 pieces (98 self-positioned, 0 in stacks), key 0x72, LEGACY save normalized to modern .vsav
+- setup 'TT23': 145 pieces (101 self-positioned, 0 in stacks), key 0xfe, LEGACY save normalized to modern .vsav
+- setup 'TT24': 108 pieces (99 self-positioned, 0 in stacks), key 0x62, LEGACY save normalized to modern .vsav
+- setup 'TT25': 111 pieces (102 self-positioned, 0 in stacks), key 0x27, LEGACY save normalized to modern .vsav
+- setup 'TT26': 115 pieces (106 self-positioned, 0 in stacks), key 0xf7, LEGACY save normalized to modern .vsav
+- setup 'TT27': 107 pieces (96 self-positioned, 0 in stacks), key 0xa3, LEGACY save normalized to modern .vsav
+- setup 'TT28': 116 pieces (107 self-positioned, 0 in stacks), key 0x6d, LEGACY save normalized to modern .vsav
+- setup 'TT29': 102 pieces (93 self-positioned, 0 in stacks), key 0xcc, LEGACY save normalized to modern .vsav
+- setup 'TT30': 118 pieces (94 self-positioned, 0 in stacks), key 0x2c, LEGACY save normalized to modern .vsav
+- setup 'TT31': 105 pieces (96 self-positioned, 0 in stacks), key 0xd2, LEGACY save normalized to modern .vsav
+- setup 'TT32': 107 pieces (98 self-positioned, 0 in stacks), key 0x7c, LEGACY save normalized to modern .vsav
+- setup 'TT33': 106 pieces (97 self-positioned, 0 in stacks), key 0xc5, LEGACY save normalized to modern .vsav
+- setup 'TT34': 112 pieces (103 self-positioned, 0 in stacks), key 0x3f, LEGACY save normalized to modern .vsav
+- setup 'TT35': 154 pieces (99 self-positioned, 0 in stacks), key 0x34, LEGACY save normalized to modern .vsav
+- setup 'TT36': 155 pieces (100 self-positioned, 0 in stacks), key 0x71, LEGACY save normalized to modern .vsav
+- setup 'TT37': 106 pieces (97 self-positioned, 0 in stacks), key 0x7a, LEGACY save normalized to modern .vsav
+- setup 'TT38': 97 pieces (87 self-positioned, 0 in stacks), key 0x8a, LEGACY save normalized to modern .vsav
+- setup 'TT39': 110 pieces (91 self-positioned, 0 in stacks), key 0x83, LEGACY save normalized to modern .vsav
+- setup 'TT40': 99 pieces (87 self-positioned, 0 in stacks), key 0x3c, LEGACY save normalized to modern .vsav
+- setup 'TT41': 114 pieces (105 self-positioned, 0 in stacks), key 0x39, LEGACY save normalized to modern .vsav
+- setup 'TT42': 129 pieces (100 self-positioned, 0 in stacks), key 0x91, LEGACY save normalized to modern .vsav
+- setup 'TT43': 114 pieces (105 self-positioned, 0 in stacks), key 0x62, LEGACY save normalized to modern .vsav
+- setup 'TT44': 103 pieces (94 self-positioned, 0 in stacks), key 0x80, LEGACY save normalized to modern .vsav
+- setup 'TT45': 105 pieces (93 self-positioned, 0 in stacks), key 0x8b, LEGACY save normalized to modern .vsav
+- setup 'TT46': 125 pieces (91 self-positioned, 0 in stacks), key 0x27, LEGACY save normalized to modern .vsav
+- setup 'TT47': 124 pieces (95 self-positioned, 0 in stacks), key 0x15, LEGACY save normalized to modern .vsav
+- setup 'TT48': 105 pieces (89 self-positioned, 0 in stacks), key 0xfc, LEGACY save normalized to modern .vsav
+- setup 'TT49': 155 pieces (99 self-positioned, 0 in stacks), key 0xa8, LEGACY save normalized to modern .vsav
+- setup 'RH01': 111 pieces (85 self-positioned, 0 in stacks), key 0x1f
+- setup 'RH02': 109 pieces (88 self-positioned, 0 in stacks), key 0x8c
+- setup 'RH03': 105 pieces (88 self-positioned, 0 in stacks), key 0x72
+- setup 'RH04': 115 pieces (89 self-positioned, 0 in stacks), key 0xae
+- setup 'RH05': 126 pieces (90 self-positioned, 0 in stacks), key 0x45
+- setup 'RH06': 119 pieces (89 self-positioned, 0 in stacks), key 0xbc
+- setup 'RH07': 118 pieces (86 self-positioned, 0 in stacks), key 0xc0
+- setup 'RH08': 115 pieces (88 self-positioned, 0 in stacks), key 0x25
+- setup 'Standard': 71 pieces (62 self-positioned, 0 in stacks), key 0xd4, LEGACY save normalized to modern .vsav
+- setup 'Epic': 147 pieces (105 self-positioned, 0 in stacks), key 0xcf, LEGACY save normalized to modern .vsav
+- no terrain metadata (normal — terrain is not a Tier-0 item)
+- spec skeleton -> C:\VassalArnhem\games\commands-colors-ancients\game.ingest.json
+
+## What didn't (and why)
+
+- game.json already exists in C:\VassalArnhem\games\commands-colors-ancients — wrote game.ingest.json instead (NOT clobbering a curated spec)
+
+## Grid
+
+```json
+{
+ "orient": "pointy",
+ "dx": 132.5,
+ "dy": 116.5,
+ "x0": 111.0,
+ "y0": 66.0,
+ "stagger": true,
+ "offset_parity": 1,
+ "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=1 vOff=1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+ "hexnum_digits": 2
+}
+```
+- detection: **hexgrid**
+- hex geometry is what Tier-0 needs; printed hex LABELS are unverified until checked against a map anchor.
+
+## Setups
+
+- '001 Battle of Akragas': 99 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'placemark': 5, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '002 Crimissos River': 111 pieces, 0 in stacks, kinds {'emb2': 22, 'hideCmd': 4, 'macro': 56, 'placemark': 4, 'mark': 10, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- '003 Bagradas': 113 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 40, 'placemark': 6, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- '004 Ticinus River': 106 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'emb2': 27, 'hideCmd': 3, 'mark': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- '005 Trebbia': 115 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'emb2': 33, 'hideCmd': 3, 'mark': 6, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- '006 Lake Trasimenus': 127 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 5, 'hideCmd': 3, 'macro': 56, 'mark': 17, 'globalhotkey': 3, 'rotate': 5, 'deck': 2}
+- '007 Cannae': 109 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'placemark': 7, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '008 Dertosa': 103 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 5, 'emb2': 30, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '009 2nd Beneventum': 114 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 31, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '010 Castulo': 117 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'hideCmd': 3, 'placemark': 5, 'mark': 12, 'globalhotkey': 3, 'deck': 2}
+- '011 Baecula': 119 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 18, 'emb2': 32, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '012 Metaurus': 132 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 20, 'placemark': 5, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- '013 Ilipa': 111 pieces, 0 in stacks, kinds {'emb2': 40, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- '014 Great Plains': 105 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'placemark': 7, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '015 Zama': 116 pieces, 0 in stacks, kinds {'emb2': 42, 'macro': 56, 'mark': 4, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TW1 Utica: Rebel Camp': 98 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 21, 'mark': 8, 'hideCmd': 3, 'placemark': 3, 'rotate': 2, 'globalhotkey': 3, 'deck': 2}
+- 'TW2 Battle of Utica': 100 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'placemark': 5, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TW3 Hippacritae': 103 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'hideCmd': 3, 'mark': 4, 'globalhotkey': 3, 'deck': 2}
+- "TW4 Hannibal's Camp": 110 pieces, 0 in stacks, kinds {'emb2': 23, 'mark': 11, 'hideCmd': 3, 'macro': 56, 'placemark': 4, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'TW5 Leptis': 106 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 4, 'hideCmd': 3, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- '101 Marathon': 128 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'mark': 15, 'hideCmd': 3, 'placemark': 5, 'rotate': 17, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '102 Himera': 121 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'placemark': 6, 'hideCmd': 3, 'mark': 8, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- '103 Plataea': 109 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 13, 'globalhotkey': 3, 'deck': 2}
+- '104 Leuctra': 96 pieces, 0 in stacks, kinds {'placemark': 3, 'macro': 56, 'hideCmd': 4, 'mark': 3, 'emb2': 25, 'globalhotkey': 3, 'deck': 2}
+- '105 Mantinea': 114 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'placemark': 6, 'hideCmd': 3, 'mark': 16, 'globalhotkey': 3, 'deck': 2}
+- '106 Crocus Plain': 110 pieces, 0 in stacks, kinds {'emb2': 23, 'mark': 6, 'hideCmd': 3, 'macro': 56, 'placemark': 6, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- '107 Granicus': 118 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 24, 'macro': 56, 'hideCmd': 5, 'mark': 10, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- '108 Issus': 147 pieces, 0 in stacks, kinds {'mark': 23, 'emb2': 32, 'placemark': 6, 'hideCmd': 5, 'macro': 56, 'rotate': 17, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- '109 Gaugamela': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'mark': 8, 'placemark': 6, 'hideCmd': 5, 'globalhotkey': 3, 'deck': 2}
+- '110 Jaxartes River': 115 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 16, 'mark': 18, 'placemark': 3, 'hideCmd': 5, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- '111 Hydaspes': 117 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'placemark': 6, 'hideCmd': 6, 'mark': 13, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- '112 Hellespont': 104 pieces, 0 in stacks, kinds {'emb2': 29, 'mark': 6, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '113 Paraitacene': 117 pieces, 0 in stacks, kinds {'emb2': 34, 'placemark': 7, 'macro': 56, 'hideCmd': 4, 'mark': 11, 'globalhotkey': 3, 'deck': 2}
+- '114 Gabiene': 109 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 4, 'mark': 6, 'emb2': 32, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- '115 Ipsus': 115 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 37, 'placemark': 7, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- '116 Heraclea': 115 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 8, 'placemark': 5, 'hideCmd': 3, 'rotate': 5, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '117 Asculum': 101 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'mark': 5, 'hideCmd': 3, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '118 Beneventum': 126 pieces, 0 in stacks, kinds {'emb2': 34, 'mark': 18, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'rotate': 4, 'globalhotkey': 3, 'deck': 2}
+- '119 Raphia': 112 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'hideCmd': 3, 'emb2': 36, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- '120 Cynoscephalae': 126 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 22, 'hideCmd': 3, 'placemark': 5, 'emb2': 35, 'globalhotkey': 3, 'deck': 2}
+- '121 Magnesia': 115 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'mark': 8, 'placemark': 5, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- '122 Cronium': 113 pieces, 0 in stacks, kinds {'emb2': 35, 'macro': 56, 'placemark': 7, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '123 Indus': 121 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 18, 'emb2': 26, 'hideCmd': 3, 'placemark': 5, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- '124 Pydna': 120 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'placemark': 6, 'mark': 14, 'emb2': 36, 'globalhotkey': 3, 'deck': 2}
+- '201 Clusium': 116 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'placemark': 5, 'emb2': 30, 'mark': 17, 'globalhotkey': 3, 'deck': 2}
+- '202 Telamon': 133 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 38, 'mark': 16, 'hideCmd': 3, 'placemark': 6, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- '203 Clastidium': 101 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 9, 'hideCmd': 3, 'emb2': 23, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '204 Arausio': 118 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '205 Scirthaea': 103 pieces, 0 in stacks, kinds {'emb2': 30, 'macro': 56, 'hideCmd': 3, 'mark': 3, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- '206 Aquae Sextiae': 121 pieces, 0 in stacks, kinds {'emb2': 33, 'macro': 56, 'hideCmd': 3, 'mark': 19, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '207 Vercellae': 113 pieces, 0 in stacks, kinds {'emb2': 36, 'mark': 7, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '208 Mount Vesuvius': 128 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 23, 'placemark': 4, 'hideCmd': 3, 'mark': 31, 'rotate': 6, 'globalhotkey': 3, 'deck': 2}
+- '209 Mount Garganus': 114 pieces, 0 in stacks, kinds {'emb2': 28, 'mark': 17, 'placemark': 4, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '210 Picenum': 131 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 29, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- "211 Mummius' Defeat": 116 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'placemark': 5, 'mark': 22, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '212 Bruttium': 137 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'emb2': 29, 'mark': 30, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- '213 Camalatrum': 123 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 7, 'hideCmd': 3, 'mark': 16, 'rotate': 5, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '214 Silarus': 135 pieces, 0 in stacks, kinds {'emb2': 41, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'mark': 21, 'rotate': 2, 'globalhotkey': 3, 'deck': 2}
+- '215 River Sabis': 145 pieces, 0 in stacks, kinds {'mark': 21, 'macro': 56, 'emb2': 34, 'placemark': 6, 'hideCmd': 6, 'rotate': 16, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '216 Sotium': 128 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'mark': 24, 'globalhotkey': 3, 'deck': 2}
+- '217 Invasion Britain': 123 pieces, 0 in stacks, kinds {'hideCmd': 5, 'emb2': 28, 'macro': 56, 'mark': 13, 'placemark': 4, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- '218 River Stour': 120 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 14, 'emb2': 23, 'placemark': 4, 'hideCmd': 4, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '219 Foraging Party': 121 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 22, 'emb2': 29, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- '220 Teutoburger Wald Part 1': 132 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 31, 'placemark': 7, 'mark': 30, 'globalhotkey': 3, 'deck': 2}
+- '221 Teutoburger Wald Part 2': 131 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'mark': 26, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- '222 Angrivarii Rampart': 140 pieces, 0 in stacks, kinds {'emb2': 35, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 19, 'rotate': 16, 'globalhotkey': 3, 'deck': 2}
+- '223 Cefn Carnedd': 142 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 7, 'mark': 21, 'macro': 56, 'hideCmd': 3, 'rotate': 21, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '301 Colline Gate': 108 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'placemark': 4, 'mark': 8, 'hideCmd': 3, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- '302 Baetis River': 120 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 23, 'placemark': 6, 'mark': 15, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '303 Lauron': 121 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 18, 'emb2': 27, 'hideCmd': 3, 'placemark': 7, 'rotate': 4, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '304 Valentia': 109 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'mark': 9, 'hideCmd': 3, 'placemark': 6, 'rotate': 4, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '305 Sucro': 118 pieces, 0 in stacks, kinds {'emb2': 28, 'mark': 19, 'macro': 56, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '306 Bibracte': 144 pieces, 0 in stacks, kinds {'emb2': 36, 'hideCmd': 6, 'macro': 56, 'mark': 36, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '307 Plain of Alsace': 115 pieces, 0 in stacks, kinds {'emb2': 40, 'macro': 56, 'mark': 5, 'placemark': 3, 'hideCmd': 6, 'globalhotkey': 3, 'deck': 2}
+- '308 Gergovia': 178 pieces, 0 in stacks, kinds {'hideCmd': 6, 'emb2': 34, 'macro': 56, 'placemark': 6, 'mark': 57, 'rotate': 8, 'globalhotkey': 3, 'nonRect2': 6, 'deck': 2}
+- '309 Ilerda': 130 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 30, 'mark': 16, 'macro': 56, 'hideCmd': 4, 'rotate': 12, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '310 Utica, Part 1': 104 pieces, 0 in stacks, kinds {'emb2': 21, 'mark': 7, 'macro': 56, 'hideCmd': 3, 'placemark': 3, 'rotate': 8, 'globalhotkey': 3, 'deck': 2, 'label': 1}
+- '311 Utica, Part 2': 127 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 32, 'emb2': 24, 'placemark': 5, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- '312 Bagradas River': 105 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 10, 'hideCmd': 3, 'emb2': 26, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- '313 Brindisi Raid': 139 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 11, 'mark': 20, 'emb2': 27, 'placemark': 4, 'rotate': 16, 'globalhotkey': 3, 'deck': 2}
+- '314 Dyrrhachium': 123 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 26, 'macro': 56, 'mark': 17, 'hideCmd': 4, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- '315 Pharsalus': 118 pieces, 0 in stacks, kinds {'emb2': 31, 'mark': 16, 'hideCmd': 4, 'placemark': 6, 'macro': 56, 'globalhotkey': 3, 'deck': 2}
+- '316 Zela': 114 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 6, 'hideCmd': 4, 'macro': 56, 'mark': 10, 'globalhotkey': 3, 'deck': 2}
+- '317 Ruspina': 98 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 4, 'macro': 56, 'hideCmd': 4, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- '318 Thapsus': 128 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 4, 'emb2': 32, 'placemark': 6, 'mark': 18, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- '319 Munda': 130 pieces, 0 in stacks, kinds {'emb2': 33, 'mark': 27, 'macro': 56, 'placemark': 5, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- '401 Tigranocerta': 123 pieces, 0 in stacks, kinds {'mark': 22, 'emb2': 27, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- '402 Carrhae': 111 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 28, 'macro': 56, 'mark': 12, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '403 Philippi I': 139 pieces, 0 in stacks, kinds {'emb2': 40, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 20, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- '404 Philippi II': 117 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'hideCmd': 3, 'emb2': 34, 'placemark': 4, 'rotate': 2, 'globalhotkey': 3, 'deck': 2}
+- '405 Cilician Gates': 127 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 18, 'mark': 38, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- "406 Antony's Siege Train": 102 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'emb2': 15, 'mark': 14, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- '407 Medway': 121 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 33, 'placemark': 6, 'mark': 5, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- "408 Boudica's Revolt": 143 pieces, 0 in stacks, kinds {'emb2': 41, 'mark': 28, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 5, 'deck': 2}
+- '409 First Bedriacum': 102 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 26, 'mark': 5, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- '410 Mons Graupius': 129 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'mark': 21, 'placemark': 7, 'nonRect2': 1, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '411 Issus': 127 pieces, 0 in stacks, kinds {'emb2': 31, 'mark': 21, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'rotate': 5, 'globalhotkey': 3, 'deck': 2}
+- '412 Lugdunum': 123 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 39, 'mark': 11, 'hideCmd': 4, 'macro': 56, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '413 Nisibis': 123 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 17, 'globalhotkey': 3, 'deck': 2}
+- '414 Hormuz': 118 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 16, 'placemark': 7, 'mark': 17, 'rotate': 14, 'globalhotkey': 3, 'deck': 2}
+- '415 Carthage': 92 pieces, 0 in stacks, kinds {'emb2': 20, 'macro': 56, 'placemark': 3, 'mark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '416 Abrittus': 129 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 7, 'mark': 32, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '417 Edessa': 105 pieces, 0 in stacks, kinds {'mark': 11, 'emb2': 25, 'placemark': 4, 'macro': 56, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- '418 Naissus': 122 pieces, 0 in stacks, kinds {'emb2': 33, 'macro': 56, 'mark': 15, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 5, 'deck': 2}
+- '419 Placentia': 132 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 6, 'mark': 21, 'macro': 56, 'hideCmd': 3, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- '420 Fano': 131 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'placemark': 7, 'mark': 20, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- '421 Pavia': 126 pieces, 0 in stacks, kinds {'emb2': 31, 'mark': 24, 'macro': 56, 'hideCmd': 3, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- '422 Immae': 116 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 22, 'hideCmd': 3, 'placemark': 6, 'emb2': 24, 'globalhotkey': 3, 'deck': 2}
+- '423 Milvian Bridge': 128 pieces, 0 in stacks, kinds {'emb2': 40, 'placemark': 5, 'mark': 9, 'macro': 56, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '424 Cibalae': 134 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 29, 'hideCmd': 3, 'emb2': 33, 'placemark': 6, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- '601 Hysiae': 118 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'placemark': 7, 'mark': 17, 'emb2': 27, 'rotate': 2, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '602 Thyreatis': 109 pieces, 0 in stacks, kinds {'emb2': 19, 'placemark': 7, 'macro': 56, 'mark': 3, 'nonRect2': 16, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '603 Sepeia': 116 pieces, 0 in stacks, kinds {'mark': 15, 'placemark': 7, 'emb2': 24, 'macro': 56, 'hideCmd': 3, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- '604 Thermopylae (Middle Gate)': 150 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 27, 'macro': 56, 'mark': 33, 'hideCmd': 3, 'rotate': 18, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- '605 Thermopylae (Grand Overview)': 134 pieces, 0 in stacks, kinds {'mark': 36, 'placemark': 5, 'hideCmd': 3, 'macro': 56, 'emb2': 16, 'rotate': 12, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '606 Plataea': 110 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'placemark': 7, 'mark': 14, 'emb2': 25, 'globalhotkey': 3, 'deck': 2}
+- '607 Mycale': 139 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 7, 'hideCmd': 3, 'mark': 26, 'emb2': 21, 'rotate': 20, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '608 Tanagra': 104 pieces, 0 in stacks, kinds {'emb2': 27, 'placemark': 5, 'macro': 56, 'mark': 8, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '609 Olpae': 113 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 6, 'mark': 14, 'macro': 56, 'hideCmd': 3, 'rotate': 5, 'globalhotkey': 3, 'deck': 2}
+- '610 Sphacteria': 130 pieces, 0 in stacks, kinds {'mark': 21, 'placemark': 6, 'emb2': 22, 'macro': 56, 'hideCmd': 3, 'rotate': 17, 'globalhotkey': 3, 'deck': 2}
+- '611 Delium': 120 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 5, 'mark': 22, 'macro': 56, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- '612 Amphipolis': 128 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'placemark': 5, 'mark': 13, 'hideCmd': 3, 'rotate': 15, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- '613 Mantinea I': 115 pieces, 0 in stacks, kinds {'mark': 13, 'macro': 56, 'hideCmd': 4, 'emb2': 30, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- '614 Anapus River': 124 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'placemark': 4, 'mark': 13, 'hideCmd': 3, 'rotate': 18, 'globalhotkey': 3, 'deck': 2}
+- '615 Phyle': 103 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 3, 'emb2': 18, 'mark': 18, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '616 Munychia': 115 pieces, 0 in stacks, kinds {'mark': 24, 'emb2': 23, 'placemark': 4, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '617 Piraeus': 117 pieces, 0 in stacks, kinds {'emb2': 26, 'macro': 56, 'mark': 20, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '618 River Centrites': 145 pieces, 0 in stacks, kinds {'emb2': 29, 'placemark': 7, 'mark': 28, 'macro': 56, 'hideCmd': 3, 'rotate': 16, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '619 Nemea': 95 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- '620 Coronea': 109 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 11, 'hideCmd': 3, 'placemark': 6, 'emb2': 28, 'globalhotkey': 3, 'deck': 2}
+- '621 Lechaeum': 100 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 9, 'emb2': 19, 'placemark': 4, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '622 Tegyra': 92 pieces, 0 in stacks, kinds {'hideCmd': 6, 'emb2': 13, 'placemark': 4, 'macro': 56, 'mark': 8, 'globalhotkey': 3, 'deck': 2}
+- '623 Leuctra': 99 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 3, 'macro': 56, 'hideCmd': 4, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- '624 Mantinea II': 119 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 31, 'macro': 56, 'hideCmd': 4, 'mark': 16, 'globalhotkey': 3, 'deck': 2}
+- '625 Chaeronea': 123 pieces, 0 in stacks, kinds {'mark': 11, 'macro': 56, 'hideCmd': 7, 'placemark': 5, 'emb2': 27, 'rotate': 11, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- '626 Megalopolis': 118 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'emb2': 28, 'mark': 21, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'C3i01 Agrigentum (262 BC)': 107 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 5, 'hideCmd': 3, 'placemark': 4, 'emb2': 34, 'globalhotkey': 3, 'deck': 2}
+- 'C3i02 Adys (256 BC)': 114 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'mark': 17, 'placemark': 6, 'hideCmd': 3, 'rotate': 1, 'globalhotkey': 3, 'deck': 2}
+- 'C3i03 Panormus (250 BC)': 120 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'placemark': 5, 'mark': 12, 'hideCmd': 3, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'C3i08 Cissa (218 BC)': 117 pieces, 0 in stacks, kinds {'emb2': 26, 'macro': 56, 'mark': 22, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'C3i10 Umbria (217 BC)': 119 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 28, 'hideCmd': 3, 'placemark': 5, 'emb2': 22, 'globalhotkey': 3, 'deck': 2}
+- 'C3i13 Caralis (215 BC)': 120 pieces, 0 in stacks, kinds {'placemark': 7, 'macro': 56, 'emb2': 39, 'mark': 10, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'C3i07 Iliturgi (215 BC)': 123 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'emb2': 39, 'hideCmd': 3, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'C3i09 Castrum Album (214 BC)': 119 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 20, 'emb2': 30, 'globalhotkey': 3, 'deck': 2}
+- 'C3i04 Orongis (212 BC)': 111 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'mark': 12, 'hideCmd': 3, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'C3i14 Himeras River (211 BC)': 112 pieces, 0 in stacks, kinds {'emb2': 30, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'C3i05 Celtiberia (207 BC)': 121 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 23, 'emb2': 28, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'C3i11 Agathocles Tower (204 BC)': 111 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 22, 'macro': 56, 'mark': 18, 'hideCmd': 3, 'rotate': 1, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'C3i12 Cirta (203 BC)': 102 pieces, 0 in stacks, kinds {'emb2': 31, 'macro': 56, 'mark': 3, 'hideCmd': 3, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'C3i06 Po River (203 BC)': 120 pieces, 0 in stacks, kinds {'mark': 6, 'macro': 56, 'emb2': 35, 'placemark': 7, 'hideCmd': 3, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'C3i17 Mona Insulis (60 AD)': 134 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'placemark': 7, 'hideCmd': 3, 'mark': 11, 'rotate': 15, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'C3i18 Camulodunum (60 AD)': 121 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 37, 'macro': 56, 'mark': 13, 'hideCmd': 3, 'rotate': 1, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'VV01 Marcianopolis (377 AD)': 105 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'placemark': 3, 'hideCmd': 3, 'mark': 14, 'globalhotkey': 3, 'deck': 2}
+- 'VV02 Battle of the Willows (377 AD)': 112 pieces, 0 in stacks, kinds {'emb2': 25, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'mark': 12, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- 'VV03 Adrianople (378 AD)': 125 pieces, 0 in stacks, kinds {'emb2': 32, 'placemark': 6, 'macro': 56, 'mark': 19, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- 'EPIC01 Cannae': 228 pieces, 0 in stacks, kinds {'placemark': 9, 'emb2': 60, 'hideCmd': 75, 'report': 12, 'mark': 20, 'macro': 4, 'setprop': 6, 'globalkey': 2, 'label': 24, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'EPIC02 Ilipa': 212 pieces, 0 in stacks, kinds {'emb2': 69, 'setprop': 6, 'placemark': 7, 'hideCmd': 75, 'macro': 4, 'globalkey': 2, 'mark': 6, 'report': 12, 'label': 26, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC03 Raphia': 206 pieces, 0 in stacks, kinds {'emb2': 55, 'placemark': 7, 'hideCmd': 75, 'mark': 14, 'setprop': 6, 'report': 12, 'macro': 4, 'globalkey': 2, 'label': 26, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC04 Zama': 217 pieces, 0 in stacks, kinds {'report': 12, 'hideCmd': 75, 'emb2': 70, 'mark': 8, 'placemark': 7, 'setprop': 6, 'macro': 4, 'globalkey': 2, 'label': 28, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC05 Arausio': 217 pieces, 0 in stacks, kinds {'hideCmd': 75, 'emb2': 64, 'report': 12, 'placemark': 7, 'mark': 8, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'label': 26, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC06 Dertosa': 193 pieces, 0 in stacks, kinds {'hideCmd': 75, 'mark': 10, 'emb2': 50, 'placemark': 5, 'report': 12, 'setprop': 6, 'globalkey': 2, 'macro': 4, 'label': 24, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC07 Lake Trasimenus': 228 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 58, 'hideCmd': 75, 'mark': 27, 'report': 12, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'label': 22, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC08 Clusium': 216 pieces, 0 in stacks, kinds {'hideCmd': 75, 'placemark': 7, 'report': 12, 'emb2': 50, 'mark': 35, 'globalkey': 2, 'macro': 4, 'setprop': 6, 'label': 20, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC09 Bagradas': 211 pieces, 0 in stacks, kinds {'emb2': 66, 'hideCmd': 75, 'mark': 6, 'report': 12, 'placemark': 7, 'globalkey': 2, 'macro': 4, 'setprop': 6, 'label': 28, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC10 Beneventum': 240 pieces, 0 in stacks, kinds {'emb2': 60, 'hideCmd': 75, 'report': 12, 'mark': 29, 'placemark': 7, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'label': 30, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC11 Paraitacene': 239 pieces, 0 in stacks, kinds {'hideCmd': 76, 'emb2': 68, 'setprop': 6, 'report': 12, 'mark': 27, 'placemark': 7, 'globalkey': 2, 'macro': 4, 'label': 30, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'EPIC12 Hydaspes': 213 pieces, 0 in stacks, kinds {'mark': 24, 'emb2': 40, 'macro': 4, 'globalkey': 2, 'hideCmd': 79, 'placemark': 6, 'report': 12, 'setprop': 6, 'label': 26, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC13 Gaugamela': 205 pieces, 0 in stacks, kinds {'emb2': 49, 'hideCmd': 79, 'mark': 18, 'setprop': 6, 'placemark': 6, 'report': 12, 'macro': 4, 'globalkey': 2, 'label': 24, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC14 Crimissos River': 201 pieces, 0 in stacks, kinds {'hideCmd': 77, 'report': 12, 'emb2': 35, 'mark': 23, 'placemark': 5, 'globalkey': 2, 'macro': 4, 'setprop': 6, 'label': 18, 'rotate': 14, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC15 Plataea': 202 pieces, 0 in stacks, kinds {'emb2': 46, 'hideCmd': 75, 'macro': 4, 'globalkey': 2, 'placemark': 7, 'mark': 25, 'setprop': 6, 'report': 12, 'label': 20, 'globalhotkey': 3, 'deck': 2}
+- 'EPIC16 Marathon': 238 pieces, 0 in stacks, kinds {'setprop': 6, 'mark': 47, 'placemark': 5, 'emb2': 39, 'hideCmd': 75, 'report': 12, 'macro': 4, 'globalkey': 2, 'label': 20, 'rotate': 22, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'C3i15 Leuctra': 178 pieces, 0 in stacks, kinds {'emb2': 38, 'hideCmd': 76, 'mark': 6, 'globalkey': 2, 'placemark': 7, 'setprop': 6, 'report': 12, 'macro': 4, 'label': 22, 'globalhotkey': 3, 'deck': 2}
+- 'C3i16 Asculum': 198 pieces, 0 in stacks, kinds {'hideCmd': 75, 'emb2': 51, 'mark': 10, 'setprop': 6, 'report': 12, 'placemark': 7, 'macro': 4, 'globalkey': 2, 'label': 26, 'globalhotkey': 3, 'deck': 2}
+- 'C3i19 Adrianople': 248 pieces, 0 in stacks, kinds {'hideCmd': 75, 'macro': 4, 'globalkey': 2, 'emb2': 56, 'placemark': 9, 'mark': 39, 'setprop': 6, 'report': 12, 'label': 32, 'globalhotkey': 3, 'nonRect2': 8, 'deck': 2}
+- 'C3i20 Adrianople': 236 pieces, 0 in stacks, kinds {'emb2': 64, 'placemark': 8, 'hideCmd': 75, 'mark': 23, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'report': 12, 'label': 32, 'globalhotkey': 3, 'nonRect2': 5, 'deck': 2}
+- 'C3i21 Argentoratum': 255 pieces, 0 in stacks, kinds {'placemark': 9, 'emb2': 60, 'mark': 58, 'hideCmd': 75, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'report': 12, 'label': 24, 'globalhotkey': 3, 'deck': 2}
+- 'C3i22 Paraitacene': 239 pieces, 0 in stacks, kinds {'emb2': 68, 'placemark': 7, 'mark': 27, 'hideCmd': 76, 'setprop': 6, 'report': 12, 'macro': 4, 'globalkey': 2, 'label': 30, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'AC01': 114 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'mark': 15, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'AC02': 122 pieces, 0 in stacks, kinds {'emb2': 26, 'macro': 56, 'hideCmd': 3, 'placemark': 5, 'mark': 12, 'rotate': 14, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC03': 128 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 31, 'macro': 56, 'mark': 20, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC04': 108 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 23, 'hideCmd': 3, 'placemark': 4, 'mark': 11, 'rotate': 6, 'globalhotkey': 3, 'deck': 2}
+- 'AC05': 133 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 31, 'hideCmd': 3, 'emb2': 25, 'placemark': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC06': 120 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 12, 'emb2': 25, 'placemark': 5, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC07': 117 pieces, 0 in stacks, kinds {'emb2': 24, 'mark': 23, 'placemark': 3, 'macro': 56, 'hideCmd': 3, 'rotate': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC08': 144 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 36, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'AC09': 136 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'placemark': 5, 'mark': 39, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC10': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 29, 'mark': 15, 'placemark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC11': 129 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 4, 'mark': 22, 'hideCmd': 3, 'rotate': 8, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC12': 112 pieces, 0 in stacks, kinds {'emb2': 30, 'placemark': 4, 'mark': 14, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC13': 107 pieces, 0 in stacks, kinds {'emb2': 32, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'AC14': 103 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 3, 'hideCmd': 3, 'mark': 4, 'rotate': 2, 'globalhotkey': 3, 'deck': 2}
+- 'AC15': 115 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'placemark': 4, 'mark': 8, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- 'AC16': 107 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'AC17': 118 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'AC18': 113 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 35, 'placemark': 5, 'mark': 6, 'hideCmd': 3, 'rotate': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC19': 129 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'placemark': 6, 'mark': 23, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC20': 126 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 23, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC21': 133 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 33, 'hideCmd': 3, 'mark': 30, 'globalhotkey': 3, 'deck': 2}
+- 'AC22': 129 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 28, 'mark': 31, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'AC23': 147 pieces, 0 in stacks, kinds {'emb2': 35, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 29, 'rotate': 11, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'AC24': 119 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 29, 'placemark': 4, 'mark': 15, 'hideCmd': 3, 'rotate': 6, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC25': 114 pieces, 0 in stacks, kinds {'emb2': 34, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 4, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'AC26': 143 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 28, 'placemark': 5, 'emb2': 28, 'rotate': 18, 'globalhotkey': 3, 'deck': 2}
+- 'AC27': 133 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'hideCmd': 3, 'mark': 25, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- 'AC28': 107 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'hideCmd': 3, 'emb2': 27, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC29': 134 pieces, 0 in stacks, kinds {'emb2': 25, 'placemark': 3, 'macro': 56, 'mark': 32, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC30': 123 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'placemark': 3, 'mark': 28, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC31': 130 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 19, 'emb2': 27, 'placemark': 5, 'hideCmd': 3, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'AC32': 111 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'placemark': 3, 'mark': 15, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'AC33': 122 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 30, 'mark': 13, 'macro': 56, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC34': 119 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'mark': 11, 'placemark': 3, 'hideCmd': 3, 'rotate': 10, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'AC35': 106 pieces, 0 in stacks, kinds {'emb2': 30, 'placemark': 4, 'hideCmd': 3, 'macro': 56, 'mark': 8, 'globalhotkey': 3, 'deck': 2}
+- 'AC36': 113 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 15, 'emb2': 30, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'AC37': 115 pieces, 0 in stacks, kinds {'mark': 11, 'emb2': 30, 'placemark': 4, 'hideCmd': 3, 'macro': 56, 'rotate': 5, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC38': 106 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'placemark': 5, 'mark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AC39': 129 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 9, 'emb2': 38, 'hideCmd': 4, 'placemark': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'AC40': 114 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 16, 'hideCmd': 4, 'emb2': 27, 'placemark': 3, 'rotate': 3, 'globalhotkey': 3, 'deck': 2}
+- 'AT01': 108 pieces, 0 in stacks, kinds {'placemark': 4, 'emb2': 23, 'macro': 56, 'mark': 5, 'hideCmd': 5, 'globalhotkey': 3, 'rotate': 10, 'deck': 2}
+- 'AT02': 105 pieces, 0 in stacks, kinds {'mark': 11, 'emb2': 19, 'macro': 56, 'placemark': 4, 'hideCmd': 5, 'globalhotkey': 3, 'rotate': 5, 'deck': 2}
+- 'BR01': 122 pieces, 0 in stacks, kinds {'emb2': 25, 'mark': 14, 'macro': 56, 'hideCmd': 3, 'placemark': 3, 'rotate': 14, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'BR02': 150 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'placemark': 5, 'mark': 27, 'hideCmd': 3, 'rotate': 23, 'globalhotkey': 3, 'deck': 2}
+- 'BR03': 126 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'mark': 18, 'placemark': 4, 'hideCmd': 3, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'BR04': 150 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 33, 'emb2': 30, 'placemark': 5, 'hideCmd': 7, 'rotate': 14, 'globalhotkey': 3, 'deck': 2}
+- 'BR05': 193 pieces, 0 in stacks, kinds {'nonRect2': 5, 'mark': 76, 'emb2': 17, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 27, 'deck': 2}
+- 'BR06': 126 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 15, 'placemark': 3, 'mark': 33, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 11, 'deck': 2}
+- 'BR07': 204 pieces, 0 in stacks, kinds {'mark': 32, 'macro': 56, 'emb2': 38, 'placemark': 8, 'nonRect2': 5, 'hideCmd': 4, 'rotate': 56, 'globalhotkey': 3, 'deck': 2}
+- 'BS01': 109 pieces, 0 in stacks, kinds {'emb2': 23, 'macro': 56, 'hideCmd': 3, 'mark': 15, 'placemark': 3, 'rotate': 4, 'globalhotkey': 3, 'deck': 2}
+- 'BS02': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'placemark': 4, 'hideCmd': 3, 'mark': 10, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'BS03': 100 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 8, 'emb2': 23, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'BS04': 139 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 4, 'mark': 21, 'placemark': 6, 'emb2': 34, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'BS05': 135 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 37, 'mark': 20, 'placemark': 7, 'hideCmd': 4, 'rotate': 6, 'globalhotkey': 3, 'deck': 2}
+- 'BS06': 131 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 29, 'placemark': 7, 'mark': 17, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'BS07 Megiddo': 247 pieces, 0 in stacks, kinds {'emb2': 53, 'hideCmd': 75, 'setprop': 6, 'mark': 38, 'report': 12, 'placemark': 7, 'macro': 4, 'globalkey': 2, 'rotate': 22, 'label': 22, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'BS08': 114 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 3, 'macro': 56, 'hideCmd': 3, 'mark': 24, 'globalhotkey': 3, 'deck': 2}
+- 'BS09': 150 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 53, 'emb2': 12, 'placemark': 5, 'hideCmd': 3, 'rotate': 16, 'globalhotkey': 3, 'deck': 2}
+- 'BS10': 116 pieces, 0 in stacks, kinds {'mark': 10, 'macro': 56, 'hideCmd': 3, 'emb2': 24, 'placemark': 6, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- 'DC01': 106 pieces, 0 in stacks, kinds {'emb2': 32, 'mark': 4, 'hideCmd': 4, 'macro': 56, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'DC02': 110 pieces, 0 in stacks, kinds {'emb2': 32, 'macro': 56, 'mark': 3, 'hideCmd': 4, 'placemark': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'DC03': 101 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'mark': 6, 'hideCmd': 4, 'placemark': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'DC04': 114 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'placemark': 5, 'mark': 15, 'hideCmd': 3, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'DC05': 104 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 7, 'hideCmd': 4, 'emb2': 23, 'placemark': 4, 'rotate': 5, 'globalhotkey': 3, 'deck': 2}
+- 'DC06': 99 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 7, 'hideCmd': 3, 'emb2': 24, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'DC07': 107 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'placemark': 6, 'mark': 7, 'hideCmd': 3, 'rotate': 2, 'globalhotkey': 3, 'deck': 2}
+- 'DC08': 119 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 4, 'mark': 8, 'emb2': 30, 'placemark': 4, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- 'DC09': 114 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 6, 'mark': 7, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'DC10': 118 pieces, 0 in stacks, kinds {'placemark': 4, 'macro': 56, 'hideCmd': 3, 'emb2': 24, 'mark': 16, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'DC11': 121 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 18, 'placemark': 4, 'emb2': 14, 'rotate': 20, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'DG01': 125 pieces, 0 in stacks, kinds {'emb2': 32, 'mark': 17, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'DG02': 121 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 4, 'mark': 16, 'macro': 56, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- 'DG03': 120 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 26, 'emb2': 19, 'placemark': 5, 'rotate': 6, 'globalhotkey': 3, 'deck': 2}
+- 'DG04': 132 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'placemark': 6, 'mark': 15, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'DG05': 133 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 30, 'macro': 56, 'mark': 16, 'hideCmd': 3, 'rotate': 16, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'DG06': 102 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 23, 'placemark': 5, 'mark': 10, 'globalhotkey': 3, 'deck': 2}
+- 'DG07': 111 pieces, 0 in stacks, kinds {'emb2': 23, 'macro': 56, 'placemark': 5, 'mark': 5, 'hideCmd': 3, 'rotate': 14, 'globalhotkey': 3, 'deck': 2}
+- 'DG08': 117 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 7, 'hideCmd': 3, 'emb2': 26, 'placemark': 5, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'DG09': 112 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 6, 'macro': 56, 'mark': 7, 'hideCmd': 3, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'DG10': 115 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'hideCmd': 3, 'emb2': 22, 'placemark': 3, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'GB01': 113 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'hideCmd': 3, 'emb2': 35, 'mark': 9, 'globalhotkey': 3, 'deck': 2}
+- 'GB02': 110 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 9, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB03': 99 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 28, 'placemark': 4, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB04': 95 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 24, 'placemark': 4, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB05': 109 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'placemark': 3, 'hideCmd': 3, 'mark': 6, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- 'GB06': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 4, 'mark': 13, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB07': 105 pieces, 0 in stacks, kinds {'emb2': 20, 'placemark': 3, 'macro': 56, 'hideCmd': 3, 'mark': 18, 'globalhotkey': 3, 'deck': 2}
+- 'GB08': 114 pieces, 0 in stacks, kinds {'mark': 15, 'emb2': 31, 'placemark': 4, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB09': 112 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'mark': 8, 'globalhotkey': 3, 'deck': 2}
+- 'GB10': 97 pieces, 0 in stacks, kinds {'emb2': 25, 'placemark': 4, 'mark': 4, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB11': 93 pieces, 0 in stacks, kinds {'emb2': 21, 'placemark': 3, 'mark': 5, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB12': 92 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 3, 'emb2': 19, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'GB13': 87 pieces, 0 in stacks, kinds {'emb2': 17, 'placemark': 3, 'macro': 56, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB14': 103 pieces, 0 in stacks, kinds {'placemark': 6, 'mark': 10, 'emb2': 23, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GB15': 110 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'GC01 Metaurus': 272 pieces, 0 in stacks, kinds {'mark': 73, 'hideCmd': 75, 'emb2': 54, 'report': 12, 'placemark': 7, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'label': 26, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'GC02 Argentoratum': 208 pieces, 0 in stacks, kinds {'hideCmd': 75, 'mark': 39, 'report': 12, 'emb2': 37, 'placemark': 8, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'label': 20, 'globalhotkey': 3, 'deck': 2}
+- 'GC03 Watling Street': 262 pieces, 0 in stacks, kinds {'emb2': 51, 'placemark': 7, 'hideCmd': 75, 'macro': 4, 'mark': 42, 'globalkey': 2, 'setprop': 6, 'report': 12, 'label': 24, 'rotate': 27, 'globalhotkey': 3, 'nonRect2': 7, 'deck': 2}
+- 'GC04 Siege of Jerusalem': 214 pieces, 0 in stacks, kinds {'emb2': 28, 'hideCmd': 75, 'mark': 21, 'report': 12, 'placemark': 7, 'globalkey': 2, 'macro': 4, 'setprop': 6, 'label': 20, 'rotate': 26, 'globalhotkey': 3, 'nonRect2': 8, 'deck': 2}
+- 'GC05': 99 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 20, 'hideCmd': 3, 'mark': 8, 'placemark': 4, 'rotate': 3, 'globalhotkey': 3, 'deck': 2}
+- 'GI01': 116 pieces, 0 in stacks, kinds {'emb2': 34, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 6, 'rotate': 5, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'GI02': 120 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 19, 'emb2': 32, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'GI03': 113 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 19, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'GI04': 124 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 31, 'placemark': 7, 'mark': 15, 'rotate': 6, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JB01': 143 pieces, 0 in stacks, kinds {'placemark': 3, 'emb2': 29, 'macro': 56, 'mark': 47, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JB02': 163 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'hideCmd': 6, 'mark': 56, 'placemark': 3, 'rotate': 10, 'globalhotkey': 3, 'deck': 2}
+- 'JB03': 164 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'hideCmd': 6, 'placemark': 3, 'mark': 56, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JB04': 132 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 34, 'placemark': 5, 'mark': 17, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JB05': 176 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 39, 'hideCmd': 3, 'mark': 61, 'placemark': 4, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 5, 'deck': 2}
+- 'JB06': 146 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 22, 'emb2': 43, 'placemark': 6, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- 'JB07': 119 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 29, 'placemark': 5, 'hideCmd': 3, 'mark': 21, 'globalhotkey': 3, 'deck': 2}
+- 'JB08': 115 pieces, 0 in stacks, kinds {'emb2': 30, 'mark': 13, 'macro': 56, 'hideCmd': 3, 'placemark': 4, 'rotate': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JB09': 115 pieces, 0 in stacks, kinds {'emb2': 30, 'mark': 13, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JB10': 165 pieces, 0 in stacks, kinds {'emb2': 43, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 43, 'rotate': 8, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JB11': 144 pieces, 0 in stacks, kinds {'emb2': 32, 'placemark': 4, 'macro': 56, 'mark': 28, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 13, 'nonRect2': 3, 'deck': 2}
+- 'JB12': 120 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'hideCmd': 3, 'placemark': 3, 'mark': 15, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'JB13': 117 pieces, 0 in stacks, kinds {'placemark': 4, 'emb2': 27, 'mark': 22, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JB14': 141 pieces, 0 in stacks, kinds {'emb2': 25, 'macro': 56, 'mark': 30, 'hideCmd': 3, 'placemark': 4, 'rotate': 16, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'JB15': 152 pieces, 0 in stacks, kinds {'emb2': 37, 'macro': 56, 'mark': 33, 'placemark': 5, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'JB16': 127 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'mark': 17, 'hideCmd': 3, 'placemark': 3, 'rotate': 14, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'JD01': 104 pieces, 0 in stacks, kinds {'emb2': 21, 'macro': 56, 'mark': 6, 'hideCmd': 3, 'placemark': 4, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'JD02': 128 pieces, 0 in stacks, kinds {'emb2': 34, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 15, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'JD03': 120 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'placemark': 5, 'mark': 24, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD04': 108 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 4, 'macro': 56, 'mark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD05': 103 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'mark': 5, 'hideCmd': 3, 'placemark': 4, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD06': 117 pieces, 0 in stacks, kinds {'emb2': 41, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'JD07': 125 pieces, 0 in stacks, kinds {'hideCmd': 4, 'macro': 56, 'placemark': 5, 'emb2': 25, 'mark': 30, 'globalhotkey': 3, 'deck': 2}
+- 'JD08': 116 pieces, 0 in stacks, kinds {'placemark': 5, 'macro': 56, 'emb2': 28, 'hideCmd': 3, 'mark': 6, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'JD09': 123 pieces, 0 in stacks, kinds {'emb2': 27, 'mark': 25, 'macro': 56, 'placemark': 6, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD10': 110 pieces, 0 in stacks, kinds {'emb2': 31, 'mark': 9, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'nonRect2': 1, 'globalhotkey': 3, 'deck': 2}
+- 'JD11': 101 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'placemark': 4, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'JD12': 112 pieces, 0 in stacks, kinds {'placemark': 4, 'emb2': 23, 'macro': 56, 'hideCmd': 3, 'mark': 21, 'globalhotkey': 3, 'deck': 2}
+- 'JD13': 116 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'rotate': 13, 'deck': 2}
+- 'JD14': 100 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 30, 'placemark': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD15': 129 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'mark': 33, 'globalhotkey': 3, 'deck': 2}
+- 'JD16': 97 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'placemark': 3, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD17': 112 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 15, 'emb2': 29, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD18 (OT24 Round 3)': 104 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 29, 'hideCmd': 3, 'mark': 7, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD19': 128 pieces, 0 in stacks, kinds {'emb2': 41, 'placemark': 6, 'hideCmd': 3, 'macro': 56, 'mark': 17, 'globalhotkey': 3, 'deck': 2}
+- 'JD20': 147 pieces, 0 in stacks, kinds {'emb2': 32, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 40, 'globalhotkey': 3, 'rotate': 5, 'deck': 2}
+- 'JD21': 123 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 15, 'emb2': 24, 'placemark': 4, 'hideCmd': 3, 'nonRect2': 4, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD22': 104 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'placemark': 4, 'nonRect2': 4, 'mark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD23': 109 pieces, 0 in stacks, kinds {'emb2': 38, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD24': 128 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 32, 'mark': 26, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD25': 104 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'nonRect2': 3, 'hideCmd': 3, 'mark': 10, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD26': 93 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 4, 'emb2': 22, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD27': 151 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 6, 'macro': 56, 'mark': 38, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 10, 'deck': 2}
+- 'JD28': 108 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 6, 'emb2': 26, 'placemark': 5, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD29': 98 pieces, 0 in stacks, kinds {'emb2': 22, 'mark': 7, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD30': 99 pieces, 0 in stacks, kinds {'mark': 5, 'macro': 56, 'hideCmd': 3, 'emb2': 24, 'placemark': 4, 'globalhotkey': 3, 'rotate': 2, 'deck': 2}
+- 'JD31': 146 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 34, 'placemark': 7, 'mark': 41, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD32': 101 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'mark': 7, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD33': 104 pieces, 0 in stacks, kinds {'mark': 12, 'macro': 56, 'emb2': 22, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD34': 98 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'placemark': 4, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD35': 105 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'emb2': 23, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD36': 107 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 21, 'mark': 15, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD37': 146 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 33, 'emb2': 26, 'placemark': 5, 'hideCmd': 4, 'globalhotkey': 3, 'rotate': 15, 'nonRect2': 2, 'deck': 2}
+- 'JD38': 115 pieces, 0 in stacks, kinds {'emb2': 33, 'macro': 56, 'hideCmd': 4, 'mark': 11, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'JD39': 127 pieces, 0 in stacks, kinds {'emb2': 38, 'hideCmd': 3, 'macro': 56, 'placemark': 7, 'mark': 17, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JD40': 115 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 3, 'placemark': 5, 'emb2': 27, 'hideCmd': 5, 'globalhotkey': 3, 'rotate': 14, 'deck': 2}
+- 'JD41': 148 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 19, 'mark': 36, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 15, 'nonRect2': 9, 'deck': 2}
+- 'JD42': 150 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 33, 'emb2': 27, 'placemark': 5, 'hideCmd': 3, 'rotate': 21, 'globalhotkey': 3, 'deck': 2}
+- 'JD43': 125 pieces, 0 in stacks, kinds {'emb2': 16, 'macro': 56, 'mark': 32, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD44': 124 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'placemark': 6, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD45': 117 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'placemark': 5, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD46': 119 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 3, 'emb2': 27, 'mark': 24, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD47': 136 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 15, 'emb2': 29, 'placemark': 5, 'globalhotkey': 3, 'rotate': 23, 'deck': 2}
+- 'JD48': 137 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 33, 'mark': 35, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'JD49': 108 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 3, 'hideCmd': 3, 'mark': 7, 'globalhotkey': 3, 'rotate': 3, 'nonRect2': 1, 'deck': 2}
+- 'JD50': 120 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 3, 'emb2': 40, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD51': 94 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'placemark': 5, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD52': 100 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'mark': 6, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD53': 96 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'placemark': 5, 'mark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD54': 113 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'hideCmd': 3, 'mark': 5, 'placemark': 6, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD55': 95 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 4, 'emb2': 18, 'mark': 8, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD56': 125 pieces, 0 in stacks, kinds {'emb2': 39, 'placemark': 7, 'hideCmd': 3, 'macro': 56, 'mark': 10, 'globalhotkey': 3, 'rotate': 5, 'deck': 2}
+- 'JD57': 124 pieces, 0 in stacks, kinds {'mark': 22, 'emb2': 21, 'hideCmd': 5, 'macro': 56, 'placemark': 4, 'globalhotkey': 3, 'rotate': 11, 'deck': 2}
+- 'JD58': 95 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD59': 103 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 26, 'macro': 56, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD60': 133 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'mark': 19, 'hideCmd': 5, 'placemark': 4, 'globalhotkey': 3, 'rotate': 13, 'deck': 2}
+- 'JD61': 127 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 28, 'hideCmd': 5, 'emb2': 16, 'placemark': 4, 'rotate': 13, 'globalhotkey': 3, 'deck': 2}
+- 'JD62': 113 pieces, 0 in stacks, kinds {'emb2': 34, 'macro': 56, 'placemark': 7, 'hideCmd': 3, 'mark': 8, 'globalhotkey': 3, 'deck': 2}
+- 'JD63': 111 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 9, 'hideCmd': 3, 'emb2': 31, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'JD64': 113 pieces, 0 in stacks, kinds {'emb2': 34, 'macro': 56, 'placemark': 6, 'mark': 9, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD65': 111 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 4, 'macro': 56, 'hideCmd': 5, 'mark': 10, 'globalhotkey': 3, 'deck': 2}
+- 'JD66': 120 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'emb2': 20, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 19, 'deck': 2}
+- 'JD67': 121 pieces, 0 in stacks, kinds {'emb2': 21, 'macro': 56, 'placemark': 4, 'hideCmd': 6, 'mark': 29, 'globalhotkey': 3, 'deck': 2}
+- 'JD68': 140 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 29, 'mark': 21, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 17, 'nonRect2': 3, 'deck': 2}
+- 'JD69': 119 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'mark': 21, 'globalhotkey': 3, 'deck': 2}
+- 'JD70': 117 pieces, 0 in stacks, kinds {'emb2': 30, 'hideCmd': 3, 'macro': 56, 'mark': 19, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD71': 133 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 41, 'mark': 15, 'placemark': 6, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD72': 127 pieces, 0 in stacks, kinds {'emb2': 30, 'macro': 56, 'placemark': 3, 'hideCmd': 3, 'mark': 16, 'globalhotkey': 3, 'rotate': 14, 'deck': 2}
+- 'JD73': 119 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 22, 'mark': 20, 'placemark': 4, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'JD74': 121 pieces, 0 in stacks, kinds {'emb2': 16, 'macro': 56, 'mark': 37, 'placemark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JD75': 120 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 37, 'placemark': 5, 'emb2': 14, 'globalhotkey': 3, 'deck': 2}
+- 'JD76': 129 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'emb2': 16, 'hideCmd': 3, 'mark': 30, 'globalhotkey': 3, 'rotate': 13, 'nonRect2': 1, 'deck': 2}
+- 'JD77': 126 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'mark': 30, 'emb2': 17, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 10, 'deck': 2}
+- 'JD78': 128 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'mark': 31, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 6, 'deck': 2}
+- 'JD79': 130 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 29, 'hideCmd': 3, 'mark': 31, 'globalhotkey': 3, 'deck': 2}
+- 'JD80': 107 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'hideCmd': 3, 'mark': 18, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD81': 99 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'hideCmd': 3, 'placemark': 6, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'JD82': 101 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'mark': 9, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD83': 107 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 34, 'placemark': 6, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD84': 96 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'hideCmd': 3, 'placemark': 4, 'mark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD85': 109 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'hideCmd': 3, 'mark': 10, 'globalhotkey': 3, 'deck': 2}
+- 'JD86': 126 pieces, 0 in stacks, kinds {'emb2': 37, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'rotate': 14, 'nonRect2': 2, 'deck': 2}
+- 'JD87': 118 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 33, 'hideCmd': 3, 'placemark': 5, 'mark': 8, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD88': 103 pieces, 0 in stacks, kinds {'emb2': 23, 'nonRect2': 4, 'macro': 56, 'placemark': 3, 'mark': 9, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD89': 114 pieces, 0 in stacks, kinds {'emb2': 27, 'placemark': 6, 'mark': 8, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'JD90': 113 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 6, 'mark': 14, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'JD91': 107 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 26, 'mark': 10, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD92': 145 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 3, 'macro': 56, 'mark': 26, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 28, 'deck': 2}
+- 'JD93': 109 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'emb2': 23, 'mark': 9, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD94': 104 pieces, 0 in stacks, kinds {'emb2': 22, 'macro': 56, 'hideCmd': 3, 'mark': 4, 'placemark': 4, 'globalhotkey': 3, 'rotate': 10, 'deck': 2}
+- 'JD95': 146 pieces, 0 in stacks, kinds {'emb2': 30, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 36, 'globalhotkey': 3, 'rotate': 9, 'nonRect2': 1, 'deck': 2}
+- 'JD96': 104 pieces, 0 in stacks, kinds {'emb2': 26, 'macro': 56, 'placemark': 7, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD97': 108 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 3, 'mark': 4, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 13, 'deck': 2}
+- 'JD98': 104 pieces, 0 in stacks, kinds {'mark': 5, 'macro': 56, 'hideCmd': 3, 'emb2': 23, 'placemark': 5, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD99': 130 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'placemark': 5, 'hideCmd': 3, 'mark': 15, 'globalhotkey': 3, 'rotate': 20, 'deck': 2}
+- 'JD100': 120 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'placemark': 5, 'mark': 19, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD101': 101 pieces, 0 in stacks, kinds {'emb2': 30, 'macro': 56, 'mark': 3, 'hideCmd': 3, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD102': 114 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 34, 'mark': 6, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 3, 'deck': 2}
+- 'JD103': 112 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 33, 'macro': 56, 'mark': 5, 'hideCmd': 3, 'rotate': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD104': 104 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 31, 'mark': 5, 'placemark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD105': 103 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD106': 116 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 15, 'placemark': 7, 'emb2': 28, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'JD107': 108 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 31, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD108': 104 pieces, 0 in stacks, kinds {'emb2': 32, 'placemark': 5, 'macro': 56, 'mark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD109': 119 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'emb2': 25, 'placemark': 3, 'mark': 16, 'globalhotkey': 3, 'rotate': 11, 'deck': 2}
+- 'JD110': 110 pieces, 0 in stacks, kinds {'emb2': 37, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD111': 105 pieces, 0 in stacks, kinds {'emb2': 32, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'JD112': 113 pieces, 0 in stacks, kinds {'mark': 7, 'emb2': 35, 'placemark': 6, 'macro': 56, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- 'JD113': 113 pieces, 0 in stacks, kinds {'placemark': 6, 'hideCmd': 3, 'macro': 56, 'emb2': 38, 'mark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'JD114': 122 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 29, 'macro': 56, 'hideCmd': 3, 'mark': 16, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'JD115': 98 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'placemark': 6, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD116': 128 pieces, 0 in stacks, kinds {'emb2': 34, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'rotate': 21, 'deck': 2}
+- 'JD117': 109 pieces, 0 in stacks, kinds {'emb2': 35, 'placemark': 6, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD118': 116 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'placemark': 7, 'hideCmd': 3, 'mark': 9, 'globalhotkey': 3, 'deck': 2}
+- 'JD119': 108 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 6, 'emb2': 22, 'placemark': 3, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 13, 'deck': 2}
+- 'JD120': 116 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'placemark': 4, 'mark': 12, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 8, 'nonRect2': 1, 'deck': 2}
+- 'JD121': 101 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 4, 'hideCmd': 3, 'macro': 56, 'mark': 8, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JD122': 117 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 9, 'emb2': 26, 'placemark': 5, 'globalhotkey': 3, 'rotate': 13, 'deck': 2}
+- 'JD123': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 33, 'placemark': 6, 'mark': 5, 'hideCmd': 6, 'globalhotkey': 3, 'deck': 2}
+- 'JD124': 141 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 36, 'globalhotkey': 3, 'deck': 2}
+- 'JD125': 112 pieces, 0 in stacks, kinds {'emb2': 32, 'macro': 56, 'mark': 9, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD126': 114 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 24, 'mark': 8, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD127': 99 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 5, 'emb2': 24, 'placemark': 5, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JD128': 109 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 4, 'hideCmd': 3, 'macro': 56, 'mark': 6, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD129': 103 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'placemark': 4, 'hideCmd': 3, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'JD130': 125 pieces, 0 in stacks, kinds {'emb2': 26, 'mark': 13, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 15, 'deck': 2}
+- 'JD131': 107 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'emb2': 31, 'placemark': 6, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'JD132': 106 pieces, 0 in stacks, kinds {'mark': 8, 'emb2': 28, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD133': 102 pieces, 0 in stacks, kinds {'placemark': 5, 'mark': 5, 'emb2': 28, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD134': 129 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 3, 'mark': 17, 'macro': 56, 'hideCmd': 4, 'globalhotkey': 3, 'rotate': 16, 'deck': 2}
+- 'JD135': 97 pieces, 0 in stacks, kinds {'emb2': 20, 'mark': 8, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD136': 105 pieces, 0 in stacks, kinds {'emb2': 27, 'mark': 8, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD137': 113 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 25, 'placemark': 5, 'mark': 19, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD138': 98 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 5, 'emb2': 23, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD139': 117 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'placemark': 6, 'mark': 11, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 12, 'deck': 2}
+- 'JD140': 112 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 6, 'macro': 56, 'mark': 10, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 7, 'nonRect2': 2, 'deck': 2}
+- 'JD141': 112 pieces, 0 in stacks, kinds {'emb2': 35, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'JD142': 132 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 23, 'macro': 56, 'hideCmd': 3, 'mark': 24, 'globalhotkey': 3, 'rotate': 15, 'deck': 2}
+- 'JD143': 111 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 5, 'emb2': 28, 'placemark': 6, 'rotate': 8, 'globalhotkey': 3, 'deck': 2}
+- 'JD144': 126 pieces, 0 in stacks, kinds {'emb2': 30, 'macro': 56, 'hideCmd': 3, 'mark': 10, 'placemark': 7, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'JD145': 110 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 23, 'mark': 8, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 9, 'deck': 2}
+- 'JD146': 112 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 10, 'emb2': 31, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD147': 158 pieces, 0 in stacks, kinds {'mark': 32, 'emb2': 35, 'macro': 56, 'hideCmd': 4, 'placemark': 4, 'rotate': 18, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- 'JD148': 134 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 33, 'globalhotkey': 3, 'deck': 2}
+- 'JD149': 112 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 5, 'emb2': 37, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JD150': 126 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 36, 'macro': 56, 'mark': 12, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 8, 'deck': 2}
+- 'JD151': 117 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'macro': 56, 'mark': 15, 'hideCmd': 3, 'rotate': 11, 'globalhotkey': 3, 'deck': 2}
+- 'JR01': 117 pieces, 0 in stacks, kinds {'emb2': 27, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'rotate': 15, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'JR02': 108 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 7, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'JT01': 140 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 31, 'hideCmd': 3, 'emb2': 19, 'placemark': 4, 'globalhotkey': 3, 'rotate': 21, 'nonRect2': 1, 'deck': 2}
+- 'KB01': 164 pieces, 0 in stacks, kinds {'emb2': 30, 'mark': 46, 'placemark': 5, 'macro': 56, 'hideCmd': 5, 'rotate': 17, 'globalhotkey': 3, 'deck': 2}
+- 'KP01': 120 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'mark': 13, 'placemark': 6, 'hideCmd': 4, 'globalhotkey': 3, 'deck': 2}
+- 'KP02': 133 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 7, 'mark': 24, 'emb2': 29, 'hideCmd': 4, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'KR01': 143 pieces, 0 in stacks, kinds {'emb2': 41, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 28, 'globalhotkey': 3, 'nonRect2': 5, 'deck': 2}
+- 'KR02': 138 pieces, 0 in stacks, kinds {'emb2': 34, 'macro': 56, 'placemark': 6, 'hideCmd': 3, 'mark': 19, 'globalhotkey': 3, 'rotate': 14, 'nonRect2': 1, 'deck': 2}
+- 'MF01': 120 pieces, 0 in stacks, kinds {'placemark': 9, 'emb2': 40, 'macro': 56, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF02': 104 pieces, 0 in stacks, kinds {'emb2': 24, 'mark': 9, 'placemark': 7, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF03': 95 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 5, 'hideCmd': 3, 'emb2': 23, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF04': 106 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'mark': 7, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF05': 104 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 8, 'macro': 56, 'mark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF06': 110 pieces, 0 in stacks, kinds {'emb2': 32, 'macro': 56, 'mark': 6, 'hideCmd': 3, 'placemark': 8, 'globalhotkey': 3, 'deck': 2}
+- 'MF07': 125 pieces, 0 in stacks, kinds {'emb2': 49, 'placemark': 8, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MF08': 115 pieces, 0 in stacks, kinds {'mark': 7, 'emb2': 37, 'macro': 56, 'hideCmd': 3, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'MF09': 110 pieces, 0 in stacks, kinds {'emb2': 31, 'placemark': 9, 'macro': 56, 'hideCmd': 3, 'mark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'MF10': 106 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'hideCmd': 3, 'emb2': 29, 'mark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'MK01': 239 pieces, 0 in stacks, kinds {'mark': 22, 'hideCmd': 76, 'emb2': 62, 'placemark': 6, 'report': 12, 'setprop': 6, 'globalkey': 2, 'macro': 4, 'rotate': 13, 'label': 31, 'globalhotkey': 3, 'deck': 2}
+- 'MK02': 237 pieces, 0 in stacks, kinds {'emb2': 49, 'mark': 28, 'placemark': 5, 'hideCmd': 76, 'report': 12, 'globalkey': 2, 'macro': 4, 'setprop': 6, 'rotate': 17, 'label': 24, 'globalhotkey': 3, 'nonRect2': 9, 'deck': 2}
+- 'MK03': 226 pieces, 0 in stacks, kinds {'mark': 30, 'emb2': 54, 'hideCmd': 76, 'placemark': 6, 'report': 12, 'setprop': 6, 'globalkey': 2, 'macro': 4, 'label': 31, 'globalhotkey': 3, 'deck': 2}
+- 'MK04': 244 pieces, 0 in stacks, kinds {'emb2': 58, 'mark': 37, 'placemark': 6, 'hideCmd': 76, 'report': 12, 'setprop': 6, 'macro': 4, 'globalkey': 2, 'label': 31, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'MK05': 242 pieces, 0 in stacks, kinds {'emb2': 55, 'mark': 45, 'hideCmd': 76, 'placemark': 6, 'macro': 4, 'globalkey': 2, 'report': 12, 'setprop': 6, 'label': 31, 'globalhotkey': 3, 'deck': 2}
+- 'MK06': 238 pieces, 0 in stacks, kinds {'hideCmd': 75, 'mark': 30, 'emb2': 62, 'macro': 4, 'placemark': 7, 'report': 12, 'globalkey': 2, 'setprop': 6, 'label': 31, 'globalhotkey': 3, 'delete': 4, 'deck': 2}
+- 'ML01': 164 pieces, 0 in stacks, kinds {'emb2': 37, 'placemark': 4, 'mark': 32, 'macro': 56, 'hideCmd': 4, 'globalhotkey': 3, 'rotate': 25, 'nonRect2': 1, 'deck': 2}
+- 'ML02': 242 pieces, 0 in stacks, kinds {'emb2': 49, 'macro': 56, 'mark': 40, 'placemark': 10, 'hideCmd': 4, 'nonRect2': 12, 'rotate': 66, 'globalhotkey': 3, 'deck': 2}
+- 'ML03': 155 pieces, 0 in stacks, kinds {'macro': 56, 'nonRect2': 8, 'emb2': 27, 'mark': 10, 'placemark': 3, 'hideCmd': 3, 'rotate': 43, 'globalhotkey': 3, 'deck': 2}
+- 'ML04': 154 pieces, 0 in stacks, kinds {'emb2': 25, 'placemark': 5, 'mark': 9, 'nonRect2': 8, 'macro': 56, 'hideCmd': 3, 'rotate': 43, 'globalhotkey': 3, 'deck': 2}
+- 'ML05': 160 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 28, 'hideCmd': 3, 'mark': 22, 'placemark': 4, 'nonRect2': 9, 'rotate': 33, 'globalhotkey': 3, 'deck': 2}
+- 'ML06': 194 pieces, 0 in stacks, kinds {'placemark': 8, 'emb2': 46, 'macro': 56, 'mark': 20, 'nonRect2': 15, 'hideCmd': 4, 'globalhotkey': 3, 'rotate': 40, 'deck': 2}
+- 'MM00': 135 pieces, 0 in stacks, kinds {'placemark': 8, 'emb2': 30, 'mark': 17, 'macro': 56, 'hideCmd': 3, 'rotate': 14, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'MM01': 159 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'mark': 39, 'placemark': 7, 'hideCmd': 3, 'rotate': 18, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'MM02': 137 pieces, 0 in stacks, kinds {'emb2': 25, 'macro': 56, 'placemark': 4, 'mark': 20, 'hideCmd': 3, 'rotate': 21, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'MM03': 104 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'mark': 8, 'hideCmd': 3, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'MM04': 117 pieces, 0 in stacks, kinds {'emb2': 32, 'macro': 56, 'mark': 8, 'placemark': 5, 'hideCmd': 4, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'MM05': 121 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 30, 'macro': 56, 'hideCmd': 3, 'mark': 22, 'globalhotkey': 3, 'deck': 2}
+- 'MM06': 168 pieces, 0 in stacks, kinds {'emb2': 25, 'placemark': 5, 'macro': 56, 'mark': 46, 'hideCmd': 3, 'rotate': 24, 'globalhotkey': 3, 'nonRect2': 4, 'deck': 2}
+- 'MM07': 132 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 6, 'macro': 56, 'mark': 24, 'hideCmd': 3, 'rotate': 14, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'MM08': 108 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 13, 'hideCmd': 3, 'emb2': 26, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'MM09': 110 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 4, 'macro': 56, 'mark': 12, 'hideCmd': 3, 'rotate': 1, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'MM10': 125 pieces, 0 in stacks, kinds {'emb2': 28, 'placemark': 5, 'mark': 16, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'nonRect2': 5, 'rotate': 7, 'deck': 2}
+- 'MM11': 105 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 7, 'placemark': 4, 'emb2': 29, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'MM12': 101 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 9, 'mark': 10, 'emb2': 17, 'placemark': 4, 'globalhotkey': 3, 'deck': 2}
+- 'MM13': 99 pieces, 0 in stacks, kinds {'emb2': 27, 'macro': 56, 'placemark': 4, 'hideCmd': 4, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'MM14': 114 pieces, 0 in stacks, kinds {'emb2': 26, 'placemark': 6, 'macro': 56, 'mark': 14, 'hideCmd': 4, 'rotate': 2, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'MM15': 116 pieces, 0 in stacks, kinds {'hideCmd': 6, 'placemark': 5, 'emb2': 26, 'macro': 56, 'mark': 14, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'MM16': 116 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 27, 'mark': 20, 'hideCmd': 3, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'MM17': 123 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 4, 'macro': 56, 'mark': 13, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 6, 'deck': 2}
+- 'MM18': 131 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 14, 'hideCmd': 3, 'emb2': 27, 'placemark': 5, 'rotate': 19, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'MM19': 150 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'mark': 34, 'placemark': 6, 'hideCmd': 3, 'rotate': 16, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'MM20': 126 pieces, 0 in stacks, kinds {'emb2': 30, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 23, 'rotate': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'MMcG01': 242 pieces, 0 in stacks, kinds {'placemark': 8, 'hideCmd': 75, 'emb2': 72, 'macro': 4, 'globalkey': 2, 'mark': 16, 'setprop': 6, 'report': 12, 'label': 35, 'rotate': 7, 'globalhotkey': 3, 'deck': 2}
+- 'MMcG02': 261 pieces, 0 in stacks, kinds {'emb2': 80, 'placemark': 9, 'hideCmd': 75, 'mark': 33, 'report': 12, 'macro': 4, 'globalkey': 2, 'setprop': 6, 'globalhotkey': 3, 'label': 35, 'deck': 2}
+- 'TT01': 156 pieces, 0 in stacks, kinds {'emb2': 44, 'macro': 56, 'mark': 35, 'hideCmd': 3, 'placemark': 6, 'globalhotkey': 3, 'nonRect2': 7, 'deck': 2}
+- 'TT02': 123 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 3, 'placemark': 6, 'emb2': 29, 'rotate': 20, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT03': 104 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 29, 'macro': 56, 'hideCmd': 3, 'mark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'TT04': 110 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 27, 'macro': 56, 'hideCmd': 3, 'mark': 10, 'nonRect2': 2, 'globalhotkey': 3, 'deck': 2}
+- 'TT05': 117 pieces, 0 in stacks, kinds {'emb2': 29, 'placemark': 7, 'mark': 7, 'macro': 56, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT06': 121 pieces, 0 in stacks, kinds {'placemark': 6, 'emb2': 27, 'macro': 56, 'hideCmd': 8, 'mark': 4, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'TT07': 128 pieces, 0 in stacks, kinds {'hideCmd': 3, 'macro': 56, 'mark': 25, 'emb2': 33, 'placemark': 6, 'globalhotkey': 3, 'deck': 2}
+- 'TT08': 109 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 21, 'mark': 5, 'hideCmd': 3, 'placemark': 5, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT09': 102 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT10': 118 pieces, 0 in stacks, kinds {'emb2': 27, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 14, 'rotate': 7, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT11': 156 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'hideCmd': 3, 'mark': 47, 'nonRect2': 5, 'placemark': 6, 'rotate': 5, 'globalhotkey': 3, 'deck': 2}
+- 'TT12': 113 pieces, 0 in stacks, kinds {'emb2': 23, 'placemark': 6, 'hideCmd': 3, 'macro': 56, 'mark': 19, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT13': 116 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 21, 'mark': 6, 'placemark': 5, 'hideCmd': 3, 'nonRect2': 5, 'rotate': 15, 'globalhotkey': 3, 'deck': 2}
+- 'TT14': 127 pieces, 0 in stacks, kinds {'emb2': 24, 'placemark': 8, 'hideCmd': 3, 'macro': 56, 'mark': 28, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'TT15': 152 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 30, 'nonRect2': 4, 'emb2': 27, 'placemark': 5, 'hideCmd': 3, 'rotate': 22, 'globalhotkey': 3, 'deck': 2}
+- 'TT16': 97 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 24, 'placemark': 5, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT17': 130 pieces, 0 in stacks, kinds {'placemark': 5, 'emb2': 29, 'mark': 23, 'macro': 56, 'hideCmd': 3, 'rotate': 9, 'globalhotkey': 3, 'deck': 2}
+- 'TT18': 115 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'hideCmd': 3, 'mark': 16, 'globalhotkey': 3, 'deck': 2}
+- 'TT19': 102 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'placemark': 5, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT20': 121 pieces, 0 in stacks, kinds {'emb2': 36, 'placemark': 7, 'nonRect2': 2, 'mark': 12, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT21': 114 pieces, 0 in stacks, kinds {'emb2': 38, 'placemark': 7, 'macro': 56, 'mark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT22': 107 pieces, 0 in stacks, kinds {'emb2': 34, 'placemark': 6, 'macro': 56, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT23': 145 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 34, 'emb2': 24, 'placemark': 7, 'hideCmd': 3, 'rotate': 16, 'globalhotkey': 3, 'deck': 2}
+- 'TT24': 108 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'mark': 8, 'placemark': 6, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT25': 111 pieces, 0 in stacks, kinds {'macro': 56, 'placemark': 6, 'emb2': 29, 'mark': 12, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT26': 115 pieces, 0 in stacks, kinds {'emb2': 35, 'macro': 56, 'placemark': 7, 'mark': 9, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT27': 107 pieces, 0 in stacks, kinds {'nonRect2': 2, 'macro': 56, 'mark': 9, 'hideCmd': 3, 'emb2': 27, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'TT28': 116 pieces, 0 in stacks, kinds {'emb2': 37, 'placemark': 7, 'mark': 8, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT29': 102 pieces, 0 in stacks, kinds {'placemark': 5, 'mark': 11, 'emb2': 22, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT30': 118 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'mark': 4, 'placemark': 6, 'hideCmd': 3, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 2, 'deck': 2}
+- 'TT31': 105 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'mark': 7, 'hideCmd': 3, 'placemark': 5, 'globalhotkey': 3, 'deck': 2}
+- 'TT32': 107 pieces, 0 in stacks, kinds {'emb2': 31, 'macro': 56, 'placemark': 7, 'mark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT33': 106 pieces, 0 in stacks, kinds {'emb2': 31, 'macro': 56, 'placemark': 7, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT34': 112 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 3, 'emb2': 38, 'placemark': 7, 'globalhotkey': 3, 'deck': 2}
+- 'TT35': 154 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 36, 'hideCmd': 3, 'mark': 35, 'placemark': 5, 'rotate': 13, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT36': 155 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 31, 'hideCmd': 3, 'placemark': 6, 'emb2': 34, 'globalhotkey': 3, 'rotate': 20, 'deck': 2}
+- 'TT37': 106 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 30, 'placemark': 5, 'mark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT38': 97 pieces, 0 in stacks, kinds {'placemark': 7, 'emb2': 22, 'macro': 56, 'hideCmd': 3, 'mark': 3, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT39': 110 pieces, 0 in stacks, kinds {'emb2': 27, 'placemark': 5, 'macro': 56, 'mark': 4, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 9, 'nonRect2': 1, 'deck': 2}
+- 'TT40': 99 pieces, 0 in stacks, kinds {'emb2': 22, 'placemark': 5, 'macro': 56, 'hideCmd': 3, 'mark': 8, 'globalhotkey': 3, 'deck': 2}
+- 'TT41': 114 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 34, 'mark': 9, 'placemark': 7, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT42': 129 pieces, 0 in stacks, kinds {'emb2': 29, 'macro': 56, 'hideCmd': 5, 'mark': 8, 'placemark': 8, 'rotate': 17, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'TT43': 114 pieces, 0 in stacks, kinds {'emb2': 35, 'macro': 56, 'placemark': 7, 'mark': 8, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT44': 103 pieces, 0 in stacks, kinds {'mark': 6, 'emb2': 28, 'placemark': 5, 'hideCmd': 3, 'macro': 56, 'globalhotkey': 3, 'deck': 2}
+- 'TT45': 105 pieces, 0 in stacks, kinds {'emb2': 29, 'mark': 7, 'macro': 56, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT46': 125 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'mark': 30, 'placemark': 5, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT47': 124 pieces, 0 in stacks, kinds {'emb2': 28, 'macro': 56, 'mark': 22, 'hideCmd': 3, 'placemark': 7, 'globalhotkey': 3, 'nonRect2': 3, 'deck': 2}
+- 'TT48': 105 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 26, 'placemark': 5, 'mark': 10, 'hideCmd': 3, 'globalhotkey': 3, 'deck': 2}
+- 'TT49': 155 pieces, 0 in stacks, kinds {'emb2': 33, 'placemark': 7, 'mark': 34, 'macro': 56, 'hideCmd': 3, 'globalhotkey': 3, 'rotate': 17, 'deck': 2}
+- 'RH01': 111 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 22, 'hideCmd': 3, 'mark': 5, 'placemark': 3, 'rotate': 17, 'globalhotkey': 3, 'deck': 2}
+- 'RH02': 109 pieces, 0 in stacks, kinds {'hideCmd': 3, 'emb2': 25, 'macro': 56, 'mark': 14, 'placemark': 3, 'globalhotkey': 3, 'rotate': 3, 'deck': 2}
+- 'RH03': 105 pieces, 0 in stacks, kinds {'macro': 56, 'mark': 16, 'emb2': 22, 'hideCmd': 3, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'RH04': 115 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'mark': 12, 'hideCmd': 3, 'placemark': 3, 'rotate': 12, 'globalhotkey': 3, 'deck': 2}
+- 'RH05': 126 pieces, 0 in stacks, kinds {'emb2': 24, 'macro': 56, 'mark': 28, 'hideCmd': 3, 'placemark': 3, 'globalhotkey': 3, 'rotate': 7, 'deck': 2}
+- 'RH06': 119 pieces, 0 in stacks, kinds {'macro': 56, 'emb2': 23, 'mark': 24, 'hideCmd': 3, 'placemark': 3, 'globalhotkey': 3, 'rotate': 5, 'deck': 2}
+- 'RH07': 118 pieces, 0 in stacks, kinds {'mark': 31, 'macro': 56, 'emb2': 20, 'hideCmd': 3, 'placemark': 3, 'globalhotkey': 3, 'deck': 2}
+- 'RH08': 115 pieces, 0 in stacks, kinds {'mark': 14, 'macro': 56, 'emb2': 22, 'hideCmd': 3, 'placemark': 3, 'rotate': 11, 'globalhotkey': 3, 'nonRect2': 1, 'deck': 2}
+- 'Standard': 71 pieces, 0 in stacks, kinds {'macro': 56, 'hideCmd': 3, 'mark': 3, 'emb2': 3, 'globalhotkey': 3, 'deck': 2, 'placemark': 1}
+- 'Epic': 147 pieces, 0 in stacks, kinds {'hideCmd': 75, 'macro': 4, 'globalkey': 2, 'mark': 6, 'report': 12, 'setprop': 6, 'placemark': 1, 'label': 35, 'globalhotkey': 3, 'emb2': 1, 'deck': 2}
+
+---
+*Generated by engine/ingest.py — every claim above was produced by running the tool against the module, not by hand.*

@@ -1,0 +1,111 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\ahd_v05e.vmod",
+ "steps": [
+  "extracted 236 entries -> C:\\VassalIngest\\a-house-divided\\extracted",
+  "module: 'A House Divided' v0.5e; 179 images staged",
+  "20 piece/card slots (0 with BasicPiece art, 18 blank-image layer pieces VASL-style); 6 prototypes",
+  "main board: 'Board' on map 'Main Map'; 1 other board(s) not converted: Battle Window (map 'Battle Window')",
+  "map asset: ahd_mod_2.png (1896x1289 px)",
+  "setup 'New Game (Blank Map)': 8 pieces (8 self-positioned, 4 in stacks), key 0x41",
+  "setup '1861 Scenario': 36 pieces (36 self-positioned, 32 in stacks), key 0xa8",
+  "setup '1862 Scenario': 77 pieces (77 self-positioned, 57 in stacks), key 0xb9",
+  "setup '1863 Scenario': 120 pieces (120 self-positioned, 90 in stacks), key 0x96",
+  "setup '1864 Scenario': 133 pieces (133 self-positioned, 90 in stacks), key 0xa7",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\a-house-divided\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses 125 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\a-house-divided \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "A House Divided",
+ "version": "0.5e",
+ "slug": "a-house-divided",
+ "staging": "C:\\VassalIngest\\a-house-divided",
+ "out": "C:\\VassalArnhem\\games\\a-house-divided",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Board",
+ "region_names": 125,
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\a-house-divided\\extracted\\images\\ahd_mod_2.png",
+ "setups": [
+  {
+   "name": "New Game (Blank Map)",
+   "path": "C:\\VassalIngest\\a-house-divided\\setups\\New Game Blank.vsav",
+   "pieces": 8,
+   "positioned": 8,
+   "in_stacks": 4,
+   "kinds": {
+    "report": 4,
+    "clone": 4
+   },
+   "key": "41"
+  },
+  {
+   "name": "1861 Scenario",
+   "path": "C:\\VassalIngest\\a-house-divided\\setups\\1861 Scenario.vsav",
+   "pieces": 36,
+   "positioned": 36,
+   "in_stacks": 32,
+   "kinds": {
+    "sendto": 21,
+    "mark": 7,
+    "report": 4,
+    "clone": 4
+   },
+   "key": "a8"
+  },
+  {
+   "name": "1862 Scenario",
+   "path": "C:\\VassalIngest\\a-house-divided\\setups\\1862 Scenario.vsav",
+   "pieces": 77,
+   "positioned": 77,
+   "in_stacks": 57,
+   "kinds": {
+    "sendto": 38,
+    "mark": 7,
+    "report": 5,
+    "clone": 10,
+    "delete": 1,
+    "immob": 16
+   },
+   "key": "b9"
+  },
+  {
+   "name": "1863 Scenario",
+   "path": "C:\\VassalIngest\\a-house-divided\\setups\\1863 Scenario.vsav",
+   "pieces": 120,
+   "positioned": 120,
+   "in_stacks": 90,
+   "kinds": {
+    "delete": 14,
+    "sendto": 56,
+    "mark": 8,
+    "report": 7,
+    "clone": 9,
+    "immob": 26
+   },
+   "key": "96"
+  },
+  {
+   "name": "1864 Scenario",
+   "path": "C:\\VassalIngest\\a-house-divided\\setups\\1864 Scenario.vsav",
+   "pieces": 133,
+   "positioned": 133,
+   "in_stacks": 90,
+   "kinds": {
+    "clone": 16,
+    "sendto": 65,
+    "mark": 9,
+    "immob": 43
+   },
+   "key": "a7"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\a-house-divided\\game.ingest.json"
+}

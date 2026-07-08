@@ -1,0 +1,35 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Washington'sWar_v2_1.vmod",
+ "steps": [
+  "extracted 140 entries -> C:\\VassalIngest\\washington-s-war\\extracted",
+  "module: \"Washington's War\" v2.1; 138 images staged",
+  "259 piece/card slots (255 with BasicPiece art, 2 blank-image layer pieces VASL-style); 21 prototypes",
+  "declared sides: ['British', 'Americans', 'Solo']",
+  "7 card deck(s) / 110 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Map' on map 'Main Map'; 1 other board(s) not converted: Cards (map 'Cards')",
+  "map asset: map.png (3300x5100 px)",
+  "no bundled .vsav setups, but 115 at-start pieces on the main map (SetupStack) \u2014 convertible",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\washington-s-war\\game.ingest.json"
+ ],
+ "problems": [
+  "no grid of any kind on the main board",
+  "game.json already exists in C:\\VassalArnhem\\games\\washington-s-war \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Washington's War",
+ "version": "2.1",
+ "slug": "washington-s-war",
+ "staging": "C:\\VassalIngest\\washington-s-war",
+ "out": "C:\\VassalArnhem\\games\\washington-s-war",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Map",
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\washington-s-war\\assets\\map.png",
+ "setups": [],
+ "at_start_count": 115,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\washington-s-war\\game.ingest.json"
+}

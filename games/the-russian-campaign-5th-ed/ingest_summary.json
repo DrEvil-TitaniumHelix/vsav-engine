@@ -1,0 +1,132 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\TRC5 GMT v1-1.vmod",
+ "steps": [
+  "extracted 401 entries -> C:\\VassalIngest\\the-russian-campaign-5th-ed\\extracted",
+  "module: 'The Russian Campaign (5th Ed)' v1.1; 393 images staged",
+  "515 piece/card slots (512 with BasicPiece art, 2 blank-image layer pieces VASL-style); 10 prototypes",
+  "declared sides: ['Axis', 'Russia', 'Solo']",
+  "7 card deck(s) / 30 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'TRC5' on map 'Main Map'; 8 other board(s) not converted: Axis OOB Standard (map 'Axis OOB'), Axis OOB Optionals (map 'Axis OOB'), Russian OOB Standard (map 'Russian OOB'), Russian OOB Optionals (map 'Russian OOB'), Board (map 'Weather'), Fall Blau (map 'Fall Blau')",
+  "hex grid from buildFile: pointy dx=147.8 dy=128.00000000000006 origin=(38.0,25.0) [SIDEWAYS \u2014 unverified mapping]",
+  "map asset: map.png (5100x6167 px)",
+  "setup 'Campaign (Standard)': 236 pieces (136 self-positioned, 0 in stacks), key 0x17, LEGACY save normalized to modern .vsav",
+  "setup 'Campaign (Optional)': 300 pieces (199 self-positioned, 0 in stacks), key 0x5a, LEGACY save normalized to modern .vsav",
+  "setup 'Fall Blau': 498 pieces (374 self-positioned, 0 in stacks), key 0x3e, LEGACY save normalized to modern .vsav",
+  "setup 'Zitadelle': 498 pieces (371 self-positioned, 0 in stacks), key 0xe7, LEGACY save normalized to modern .vsav",
+  "setup 'Bagration': 498 pieces (300 self-positioned, 0 in stacks), key 0x69, LEGACY save normalized to modern .vsav",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\the-russian-campaign-5th-ed\\game.ingest.json"
+ ],
+ "problems": [
+  "game.json already exists in C:\\VassalArnhem\\games\\the-russian-campaign-5th-ed \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "The Russian Campaign (5th Ed)",
+ "version": "1.1",
+ "slug": "the-russian-campaign-5th-ed",
+ "staging": "C:\\VassalIngest\\the-russian-campaign-5th-ed",
+ "out": "C:\\VassalArnhem\\games\\the-russian-campaign-5th-ed",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "TRC5",
+ "grid": {
+  "orient": "pointy",
+  "dx": 147.8,
+  "dy": 128.00000000000006,
+  "x0": 38.0,
+  "y0": 25.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-5 vOff=-1 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\assets\\map.png",
+ "setups": [
+  {
+   "name": "Campaign (Standard)",
+   "path": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\setups\\Scenario Campaign Standard.vsav",
+   "pieces": 236,
+   "positioned": 136,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 210,
+    "AreaOfEffect": 4,
+    "immob": 1,
+    "deck": 7,
+    "emb2": 1,
+    "obs": 12,
+    "label": 1
+   },
+   "key": "17"
+  },
+  {
+   "name": "Campaign (Optional)",
+   "path": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\setups\\Scenario Campaign Optional.vsav",
+   "pieces": 300,
+   "positioned": 199,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 272,
+    "AreaOfEffect": 6,
+    "immob": 1,
+    "deck": 7,
+    "emb2": 1,
+    "obs": 12,
+    "label": 1
+   },
+   "key": "5a"
+  },
+  {
+   "name": "Fall Blau",
+   "path": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\setups\\Scenario Fall Blau.vsav",
+   "pieces": 498,
+   "positioned": 374,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 467,
+    "immob": 1,
+    "AreaOfEffect": 10,
+    "deck": 7,
+    "emb2": 1,
+    "obs": 12
+   },
+   "key": "3e"
+  },
+  {
+   "name": "Zitadelle",
+   "path": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\setups\\Scenario Zitadelle.vsav",
+   "pieces": 498,
+   "positioned": 371,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 467,
+    "immob": 1,
+    "AreaOfEffect": 10,
+    "deck": 7,
+    "emb2": 1,
+    "obs": 12
+   },
+   "key": "e7"
+  },
+  {
+   "name": "Bagration",
+   "path": "C:\\VassalIngest\\the-russian-campaign-5th-ed\\setups\\Scenario Bagration.vsav",
+   "pieces": 498,
+   "positioned": 300,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 467,
+    "immob": 1,
+    "AreaOfEffect": 10,
+    "deck": 7,
+    "emb2": 1,
+    "obs": 12
+   },
+   "key": "69"
+  }
+ ],
+ "at_start_count": 4,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\the-russian-campaign-5th-ed\\game.ingest.json"
+}

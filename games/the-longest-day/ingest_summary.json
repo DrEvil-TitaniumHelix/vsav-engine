@@ -1,0 +1,151 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\The_Longest_Day_v_1.0.22.vmod",
+ "steps": [
+  "extracted 3397 entries -> C:\\VassalIngest\\the-longest-day\\extracted",
+  "module: 'The Longest Day' v1.0.22; 3365 images staged",
+  "2044 piece/card slots (2033 with BasicPiece art, 2 blank-image layer pieces VASL-style); 62 prototypes",
+  "declared sides: ['SHAEF', 'OKW', 'G2 Rundstedt', 'A2 Bradley', 'G3 Rommel', 'A3 Montgomery', 'Solo player']",
+  "main board: 'Normandy Area' on map 'Main Map'; 34 other board(s) not converted: Map A Cherbourg (map 'Main Map'), Map B Coutances (map 'Main Map'), Map C St. LO (map 'Main Map'), Map D Caen (map 'Main Map'), Map E Cabourg (map 'Main Map'), Map F Avranches (map 'Main Map')",
+  "hex grid from buildFile: flat dx=55.42562584220407 dy=64.0 origin=(-18.0,29.0)",
+  "map asset: Map_Full a.png (5340x5024 px)",
+  "setup 'Mortain': 387 pieces (235 self-positioned, 0 in stacks), key 0x0d",
+  "setup 'The Falaise Pocket': 813 pieces (518 self-positioned, 0 in stacks), key 0x8a",
+  "setup 'Cobra': 948 pieces (543 self-positioned, 0 in stacks), key 0x60",
+  "setup 'Battle for Cherbourg': 390 pieces (152 self-positioned, 0 in stacks), key 0xa3",
+  "setup 'Normandy Beachhead': 952 pieces (481 self-positioned, 0 in stacks), key 0x87",
+  "setup 'Campaign': 2231 pieces (1515 self-positioned, 0 in stacks), key 0x20",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\the-longest-day\\game.ingest.json"
+ ],
+ "problems": [
+  "game.json already exists in C:\\VassalArnhem\\games\\the-longest-day \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "The Longest Day",
+ "version": "1.0.22",
+ "slug": "the-longest-day",
+ "staging": "C:\\VassalIngest\\the-longest-day",
+ "out": "C:\\VassalArnhem\\games\\the-longest-day",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Normandy Area",
+ "grid": {
+  "orient": "flat",
+  "dx": 55.42562584220407,
+  "dy": 64.0,
+  "x0": -18.0,
+  "y0": 29.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\the-longest-day\\extracted\\images\\Map_Full a.png",
+ "setups": [
+  {
+   "name": "Mortain",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\Mortain v22.vsav",
+   "pieces": 387,
+   "positioned": 235,
+   "in_stacks": 0,
+   "kinds": {
+    "emb2": 200,
+    "mark": 15,
+    "report": 20,
+    "sendto": 2,
+    "immob": 122,
+    "AreaOfEffect": 28
+   },
+   "key": "0d"
+  },
+  {
+   "name": "The Falaise Pocket",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\Falaise Pocket v22.vsav",
+   "pieces": 813,
+   "positioned": 518,
+   "in_stacks": 0,
+   "kinds": {
+    "emb2": 434,
+    "sendto": 7,
+    "mark": 30,
+    "report": 47,
+    "AreaOfEffect": 24,
+    "immob": 270,
+    "delete": 1
+   },
+   "key": "8a"
+  },
+  {
+   "name": "Cobra",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\Cobra v22.vsav",
+   "pieces": 948,
+   "positioned": 543,
+   "in_stacks": 0,
+   "kinds": {
+    "emb2": 452,
+    "report": 40,
+    "mark": 31,
+    "delete": 24,
+    "sendto": 3,
+    "AreaOfEffect": 102,
+    "immob": 296
+   },
+   "key": "60"
+  },
+  {
+   "name": "Battle for Cherbourg",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\Cherbourg v22.vsav",
+   "pieces": 390,
+   "positioned": 152,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 55,
+    "delete": 50,
+    "emb2": 93,
+    "mark": 11,
+    "AreaOfEffect": 45,
+    "immob": 132,
+    "sendto": 4
+   },
+   "key": "a3"
+  },
+  {
+   "name": "Normandy Beachhead",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\Normandy Beachhead v22.vsav",
+   "pieces": 952,
+   "positioned": 481,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 130,
+    "emb2": 419,
+    "delete": 183,
+    "mark": 52,
+    "sendto": 12,
+    "AreaOfEffect": 156
+   },
+   "key": "87"
+  },
+  {
+   "name": "Campaign",
+   "path": "C:\\VassalIngest\\the-longest-day\\setups\\campaign v22.vsav",
+   "pieces": 2231,
+   "positioned": 1515,
+   "in_stacks": 0,
+   "kinds": {
+    "report": 281,
+    "emb2": 1434,
+    "mark": 115,
+    "delete": 225,
+    "AreaOfEffect": 156,
+    "sendto": 19,
+    "label": 1
+   },
+   "key": "20"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\the-longest-day\\game.ingest.json"
+}

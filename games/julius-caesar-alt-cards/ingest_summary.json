@@ -1,0 +1,36 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Julius Caesar 3 1.a.vmod",
+ "steps": [
+  "extracted 119 entries -> C:\\VassalIngest\\julius-caesar-alt-cards\\extracted",
+  "module: 'Julius Caesar (Alt Cards)' v3.2; 114 images staged",
+  "97 piece/card slots (97 with BasicPiece art, 0 blank-image layer pieces VASL-style); 13 prototypes",
+  "declared sides: ['Caesar', 'Pompey', 'Solo']",
+  "2 card deck(s) / 27 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'map' on map 'Main Map'; 2 other board(s) not converted: cardsboard (map 'cardsboard'), battle (map 'BattleBoard')",
+  "map asset: map.png (3168x1632 px)",
+  "no bundled .vsav setups, but 31 at-start pieces on the main map (SetupStack) \u2014 convertible",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses 67 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\julius-caesar-alt-cards \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Julius Caesar (Alt Cards)",
+ "version": "3.2",
+ "slug": "julius-caesar-alt-cards",
+ "staging": "C:\\VassalIngest\\julius-caesar-alt-cards",
+ "out": "C:\\VassalArnhem\\games\\julius-caesar-alt-cards",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "map",
+ "region_names": 67,
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\julius-caesar-alt-cards\\extracted\\images\\map.png",
+ "setups": [],
+ "at_start_count": 31,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.ingest.json"
+}

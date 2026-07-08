@@ -1,0 +1,60 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Afrika_Korps_REV_Map_1.01.vmod",
+ "steps": [
+  "extracted 132 entries -> C:\\VassalIngest\\afrika-korps-alt-map\\extracted",
+  "module: 'Afrika Korps ALT MAP' v1.01; 128 images staged",
+  "108 piece/card slots (105 with BasicPiece art, 1 blank-image layer pieces VASL-style); 2 prototypes",
+  "declared sides: ['Axis', 'Commonwealth', 'Observer']",
+  "main board: 'Revised AK Map' on map 'Main Map'; 5 other board(s) not converted: Supply Board (map 'Supply'), Axis Order of Appearance (map 'Axis OoB'), Replacement Record (map 'Replacements'), Allies Order of Appearance (map 'Allies OoB'), Casualties Window (map 'Dead Pool')",
+  "hex grid from buildFile: pointy dx=104.8999999999999 dy=91.0 origin=(96.0,69.0) [SIDEWAYS \u2014 unverified mapping]",
+  "map asset: map.png (7400x2549 px)",
+  "setup 'Afrika Korps ': 91 pieces (91 self-positioned, 91 in stacks), key 0xbf",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.ingest.json"
+ ],
+ "problems": [
+  "game.json already exists in C:\\VassalArnhem\\games\\afrika-korps-alt-map \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "FULL",
+ "module": "Afrika Korps ALT MAP",
+ "version": "1.01",
+ "slug": "afrika-korps-alt-map",
+ "staging": "C:\\VassalIngest\\afrika-korps-alt-map",
+ "out": "C:\\VassalArnhem\\games\\afrika-korps-alt-map",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Revised AK Map",
+ "grid": {
+  "orient": "pointy",
+  "dx": 104.8999999999999,
+  "dy": 91.0,
+  "x0": 96.0,
+  "y0": 69.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); no grid numbering in module",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\afrika-korps-alt-map\\assets\\map.png",
+ "setups": [
+  {
+   "name": "Afrika Korps ",
+   "path": "C:\\VassalIngest\\afrika-korps-alt-map\\setups\\AK_Setup.vsav",
+   "pieces": 91,
+   "positioned": 91,
+   "in_stacks": 91,
+   "kinds": {
+    "emb2": 4,
+    "sendto": 83,
+    "delete": 1,
+    "rotate": 2,
+    "clone": 1
+   },
+   "key": "bf"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\afrika-korps-alt-map\\game.ingest.json"
+}

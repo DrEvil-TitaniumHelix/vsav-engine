@@ -1,0 +1,73 @@
+{
+ "vmod": "C:\\VassalIngest\\downloads\\Diplo-v0_2.vmod",
+ "steps": [
+  "extracted 134 entries -> C:\\VassalIngest\\diplomacy\\extracted",
+  "module: 'Diplomacy' v0.2; 76 images staged",
+  "18 piece/card slots (18 with BasicPiece art, 0 blank-image layer pieces VASL-style); 21 prototypes",
+  "declared sides: ['Referee', 'Austria', 'England', 'France', 'Germany', 'Italy', 'Russia', 'Turkey']",
+  "main board: 'Diplomacy' on map 'Main Map'; 2 other board(s) not converted: Left Stock (map 'Main Map'), Right Stock (map 'Main Map')",
+  "map asset: map.png (2000x1700 px)",
+  "setup 'New Game': 0 pieces (0 self-positioned, 0 in stacks), key 0xa3, LEGACY save normalized to modern .vsav",
+  "setup 'Centers and Pools': 165 pieces (0 self-positioned, 125 in stacks), key 0xd8, LEGACY save normalized to modern .vsav",
+  "setup 'Spring 1900': 165 pieces (0 self-positioned, 105 in stacks), key 0x1d, LEGACY save normalized to modern .vsav",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\diplomacy\\game.ingest.json"
+ ],
+ "problems": [
+  "board uses 80 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
+  "game.json already exists in C:\\VassalArnhem\\games\\diplomacy \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+ ],
+ "verdict": "PARTIAL",
+ "module": "Diplomacy",
+ "version": "0.2",
+ "slug": "diplomacy",
+ "staging": "C:\\VassalIngest\\diplomacy",
+ "out": "C:\\VassalArnhem\\games\\diplomacy",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Diplomacy",
+ "region_names": 80,
+ "grid": null,
+ "grid_how": null,
+ "map_asset": "C:\\VassalIngest\\diplomacy\\assets\\map.png",
+ "setups": [
+  {
+   "name": "New Game",
+   "path": "C:\\VassalIngest\\diplomacy\\setups\\Blank Game.vsav",
+   "pieces": 0,
+   "positioned": 0,
+   "in_stacks": 0,
+   "kinds": {},
+   "key": "a3"
+  },
+  {
+   "name": "Centers and Pools",
+   "path": "C:\\VassalIngest\\diplomacy\\setups\\Game-centers-and-pools.vsav",
+   "pieces": 165,
+   "positioned": 0,
+   "in_stacks": 125,
+   "kinds": {
+    "hideCmd": 125,
+    "report": 34,
+    "macro": 6
+   },
+   "key": "d8"
+  },
+  {
+   "name": "Spring 1900",
+   "path": "C:\\VassalIngest\\diplomacy\\setups\\Game-spring-1900.vsav",
+   "pieces": 165,
+   "positioned": 0,
+   "in_stacks": 105,
+   "kinds": {
+    "hideCmd": 125,
+    "report": 34,
+    "macro": 6
+   },
+   "key": "1d"
+  }
+ ],
+ "at_start_count": 0,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\diplomacy\\game.ingest.json"
+}

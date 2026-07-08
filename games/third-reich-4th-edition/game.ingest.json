@@ -1,0 +1,83 @@
+{
+ "name": "Third Reich 4th edition \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main",
+ "board_name": "3R4",
+ "save_key": "c1",
+ "grid": {
+  "orient": "pointy",
+  "dx": 117.60000000000014,
+  "dy": 102.0,
+  "x0": 48.0,
+  "y0": 52.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-1 vOff=15 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/third-reich-4th-edition/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/third-reich-4th-edition/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/third-reich-4th-edition/extracted/images/3R4_map_16-color060606.png",
+  "counters_dir": "../../../VassalIngest/third-reich-4th-edition/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "emb2",
+  "mark",
+  "piece",
+  "report",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "Side A",
+   "Side B"
+  ],
+  "labels": {
+   "Side A": "Side A",
+   "Side B": "Side B"
+  },
+  "default": "Side B",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    52
+   ],
+   "rows": [
+    0,
+    41
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "2.2b03"
+ },
+ "setup_save": "../../../VassalIngest/third-reich-4th-edition/setups/Campaign-100606.vsav"
+}

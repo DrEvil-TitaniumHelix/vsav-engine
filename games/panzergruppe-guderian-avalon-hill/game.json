@@ -1,0 +1,82 @@
+{
+ "name": "Panzergruppe Guderian {Avalon Hill} \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "Main Map",
+ "save_key": "a3",
+ "grid": {
+  "orient": "flat",
+  "dx": 77.62562584220342,
+  "dy": 89.59999999999854,
+  "x0": 12.0,
+  "y0": 39.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=0 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/panzergruppe-guderian-avalon-hill/extracted/buildFile",
+ "moduledata": "../../../VassalIngest/panzergruppe-guderian-avalon-hill/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/panzergruppe-guderian-avalon-hill/extracted/images/PGG-map-ver1.png",
+  "counters_dir": "../../../VassalIngest/panzergruppe-guderian-avalon-hill/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "piece",
+  "prototype",
+  "mark",
+  "hideCmd"
+ ],
+ "sides": {
+  "order": [
+   "German",
+   "Soviet"
+  ],
+  "labels": {
+   "German": "German",
+   "Soviet": "Soviet"
+  },
+  "default": "Soviet",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    60
+   ],
+   "rows": [
+    0,
+    31
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "v1.2"
+ }
+}
