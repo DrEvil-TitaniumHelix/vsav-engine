@@ -431,6 +431,8 @@ async function selectMove(u){
     <br>Fire picture from HERE (${rangeInfo.weapon_label}): ${inreach} enemy in gun range — chips show
     <b>to-hit + % per round × rounds → % ≥1 hit</b>; 🔒 = may not open fire (HPN>8) unless flank/rear/return fire.
     Dragging shows the (dashed) NEXT-turn picture from that hex — <b>moving forfeits this turn's fire [I.E.4]</b>.
+    <br><i>Turret: 360° field of fire — facing never blocks YOUR shot [I.E.2]; it sets which armor
+    (front/flank/rear) the ENEMY hits, and flank/rear exposure lets them open fire beyond the normal limit [I.H.2].</i>
     <br><i>${rangeInfo.secondary}</i>
     <button class="sidebtn" onclick="deselect()">Cancel</button>`;
   A.style.display='block';
