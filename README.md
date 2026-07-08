@@ -89,10 +89,20 @@ PieceSlots, scenarios can be built from data (`make_save.py`), and the rules lay
 JSON plus one procedure module. Game #2 of this engine (Arnhem) and game #3 (ASL)
 were driven from their modules the same way.
 
-## How this relates to VASSAL (it is not a fork)
+## How this relates to VASSAL (it is not a fork — but VASSAL made it feasible)
 
-This project contains **zero lines of VASSAL code**. It is an independent engine
-(pure-stdlib Python) that is **file-format compatible** with VASSAL 3:
+Credit where it belongs: **this project exists because the VASSAL ecosystem did the
+digitizing.** Thirty years of volunteer module authors produced exactly the data this
+engine consumes — maps scanned and grid-calibrated, every counter as art, the charts,
+and often the entire rulebook, packaged in one `.vmod` and hosted with the publishers'
+permission. Building the same thing from a physical copy would have been possible;
+the module ecosystem made it an afternoon instead of a month, and it's why the
+approach can scale to the thousands of other modules. This is built **on VASSAL's
+shoulders, without touching VASSAL's code** — a complement to the module ecosystem,
+not a competitor to the engine.
+
+Technically, the project contains **zero lines of VASSAL code**. It is an independent
+engine (pure-stdlib Python) that is **file-format compatible** with VASSAL 3:
 
 - It reads and writes VASSAL's own `.vsav` saves (the `!VCSK` + XOR-obfuscated zip),
   byte-perfectly — real VASSAL opens our saves and vice versa.
