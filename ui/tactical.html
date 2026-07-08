@@ -70,6 +70,11 @@
   .rchip.locked { color:#d8b46a; border-color:#7a6a3e; background:rgba(35,28,8,.88); }
   .rchip.hypo { border-style:dashed; color:#8fd6e8; border-color:#3e6a7a; background:rgba(8,25,35,.88); }
   .rchip small { color:#8a8f98; font-size:15px; }
+  .floater { position:absolute; z-index:48; pointer-events:none; transform:translate(-50%,-50%);
+             font-weight:bold; font-size:40px; text-shadow:0 0 8px #000,0 0 4px #000;
+             animation:floatup 1.6s ease-out forwards; white-space:nowrap; }
+  @keyframes floatup { 0%{opacity:0; margin-top:0;} 12%{opacity:1;}
+                       75%{opacity:1;} 100%{opacity:0; margin-top:-90px;} }
   #banner { position:fixed; top:52px; left:0; right:340px; z-index:45; text-align:center; pointer-events:none; }
   #banner div { display:inline-block; margin-top:8px; padding:6px 22px; border-radius:16px;
                 background:rgba(25,28,34,.92); color:#eee; font-size:15px; border:1px solid #444; }
@@ -380,15 +385,44 @@ function sndImpact(){ // penetrating hit: short mid boom (bigger than ping, smal
     g.gain.setValueAtTime(0.55,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
   }catch(e){} }
+function sndMiss(){ // shell whoosh past + soft dirt thump
+  try{ const c=ac(), t=c.currentTime;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,0.6);
+    const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.5;
+    bp.frequency.setValueAtTime(2200,t); bp.frequency.exponentialRampToValueAtTime(300,t+0.5);
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.28,t+0.15);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+    src.connect(bp); bp.connect(g); g.connect(c.destination); src.start(t);
+  }catch(e){} }
+function floatAt(pid,txt,color,delay){
+  const tu=units.find(u=>u.id===pid); if(!tu)return;
+  setTimeout(()=>{
+    const d=document.createElement('div'); d.className='floater';
+    d.style.color=color; d.textContent=txt;
+    d.style.left=tu.x+'px'; d.style.top=(tu.y-CPX*0.4)+'px';
+    W.appendChild(d); setTimeout(()=>d.remove(),1700);
+  },delay);
+}
 function soundsForFire(res){
   sndFire();
-  // each hit lands audibly in sequence after the muzzle blast:
-  // '-' = ricochet ping, damage = armor-penetrating impact, K = explosion
+  // after the muzzle blast, each round lands in sequence — audibly AND on the map
   let dt=420;
+  if(!(res.hits||0)){
+    setTimeout(sndMiss,dt);
+    floatAt(res.target,`MISS${res.rounds>1?' ×'+res.rounds:''}`,'#c8ccd4',dt);
+    return;
+  }
+  const misses=(res.shots||[]).filter(s=>!s.hit&&!s.auto).length;
+  if(misses){ setTimeout(sndMiss,dt); floatAt(res.target,`miss ×${misses}`,'#9aa0a8',dt); dt+=340; }
   (res.damage||[]).forEach(d=>{
     const killed=(d.result||[]).some(x=>x.startsWith('K'))||(d.pk_roll&&d.pk_roll.k_kill);
-    const f = killed?sndKill : (d.part==='-'||!(d.result||[]).length) ? sndRicochet : sndImpact;
-    setTimeout(f,dt); dt+=300;
+    let f,txt,col;
+    if(killed){ f=sndKill; txt='K-KILL'; col='#ff6a5e'; }
+    else if(d.part==='-'){ f=sndRicochet; txt='RICOCHET'; col='#ffd75e'; }
+    else if(!(d.result||[]).length){ f=sndRicochet; txt='NO EFFECT'; col='#d8b46a'; }
+    else { f=sndImpact; txt=d.result.join('+')+' hit '+d.part; col='#ff9a5e'; }
+    setTimeout(f,dt); floatAt(res.target,txt,col,dt); dt+=340;
   });
 }
 
