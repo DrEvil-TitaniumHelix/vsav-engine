@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Dr Evil's Move Legality Engine — Tobruk</title>
+<title>Dr Evil's Game Legality Engine v2 — Tobruk</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#16181c; font-family:Segoe UI,sans-serif; }
   #topbar { position:fixed; top:0; left:0; right:0; height:52px; background:#22262c; color:#ddd;
@@ -83,7 +83,7 @@
 </head>
 <body>
 <div id="topbar">
-  <b>DR EVIL'S MOVE LEGALITY ENGINE</b>
+  <b>DR EVIL'S GAME LEGALITY ENGINE <span style="color:#7ce07c">v2</span></b>
   <span class="chip" id="turnchip">…</span>
   <span class="chip" id="segchip">…</span>
   <span class="chip brit" id="vpbrit">…</span>
@@ -844,6 +844,43 @@ many hulls (they can only alternate so fast) rather than feeding one tank at a t
 at 7+ — that actually kills Stuarts, especially any showing flank.</li>
 <li><b>Punish their movement:</b> a Stuart that moved cannot answer this turn — swarm-fire it.</li>
 <li>An M-killed Stuart is frozen forever: 4 easy VP now, a guaranteed flank shot later.</li></ul>`,
+'About / Tech Stack':`<h2>Dr Evil's Game Legality Engine — v2</h2>
+<p><b>v1</b> proved move legality for three games (Arnhem, Tobruk, ASL). <b>v2</b> is full
+gameplay: turn sequence, gunnery, damage, victory — a complete scenario a human plays
+against an AI opponent, with every action gated and the whole game verifiable.</p>
+<h3>The stack (top to bottom)</h3>
+<ul>
+<li><b>Browser client</b> — one HTML file (this page): map + counters, legal-move and
+fire overlays, facing wheel, sounds (synthesized WebAudio, no media files), this guide.</li>
+<li><b>HTTP server</b> — small Python stdlib server: state, legal_moves, legal_targets,
+action, ai_plan, log. No frameworks, no database, no dependencies.</li>
+<li><b>The legality gate</b> (gamestate.py) — the only door. Validates every proposal
+against the transcribed rules, cites the rule when refusing, owns the seeded dice,
+writes the append-only game log with a state hash per entry.</li>
+<li><b>Combat engine</b> (combat.py) — the rulebook's three-question gunnery procedure,
+entirely data-driven from combat.json (to-hit tables, Area Impacted, damage cards —
+each cell cites the chart image in the module it was transcribed from).</li>
+<li><b>AI opponent</b> (ai.py) — a transparent tactical policy that reads the same
+public state you see and submits proposals through the same gate. It cannot roll,
+apply, or alter anything — it can only ask.</li>
+<li><b>Verifier</b> (verify_game.py) — replays a finished game's log through a fresh
+engine and re-checks every verdict, every die, every hash. Independent proof that no
+illegal action was ever applied by either player.</li>
+<li><b>Save codec + module reader</b> (vsav.py, board.py, gamespec.py, make_save.py) —
+reads/writes VASSAL's own .vsav files byte-perfectly and reads the module's buildFile
+for grid geometry and counters. The scenario save opens in real VASSAL.</li>
+</ul>
+<h3>Relationship to VASSAL</h3>
+<p><b>Not a fork — zero VASSAL code.</b> This is an independent engine that speaks
+VASSAL's <i>file formats</i>: it consumes the module (.vmod) as a data package — map,
+counters, grid, and the scanned rulebook + charts the rules were transcribed from —
+and exchanges ordinary .vsav saves with real VASSAL, the way other software can open
+a spreadsheet's files without containing any of its code. VASSAL never runs in the
+loop; the save file is the shared game state.</p>
+<p><b>Reproducible for other games:</b> everything needed came from inside the module
+itself (rulebook scans, charts, grid, counters). Any module that packages its
+reference material — most do — can be driven through the same pipeline: read rules →
+transcribe charts to data → validate against the book's worked examples → gate.</p>`,
 'The Legality Engine':`<h2>What the engine is doing underneath</h2>
 <p>Every action — yours and the AI's — is submitted to the same deterministic legality gate.
 The gate validates it against the transcribed Scenario One rules and cites the rule when it refuses.

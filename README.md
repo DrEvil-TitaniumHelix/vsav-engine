@@ -1,93 +1,165 @@
-# vsav-engine
+# vsav-engine — Dr Evil's Game Legality Engine for VASSAL (v2)
 
-**A game-state API for VASSAL 3 — no VASSAL modifications, no GUI automation.**
+**v2: from move legality to full gameplay.** A complete, playable wargame scenario —
+Avalon Hill's *Tobruk* (1975), Firefight B — where a human plays against an AI opponent
+in the browser and **neither side is capable of cheating**: every action either player
+proposes passes through the same deterministic legality gate, every die is rolled by the
+gate from a seeded stream, and the whole game is recorded in an append-only log that
+**anyone can independently re-verify**.
 
-Read the board, rule-check moves, and write new positions directly into VASSAL's own
-`.vsav` save files. VASSAL, a browser UI, and an AI opponent become three interchangeable
-clients sharing one file.
+This is the working answer to *"an AI opponent will cheat and won't even know it's
+cheating."* The AI never adjudicates anything. It proposes; the gate disposes; the log
+remembers; the verifier proves.
 
-Reference implementation: **SPI's *Arnhem*** (from the *Westwall* quad, 1976), played on the
-sanctioned [Westwall: Four Battles to Germany VASSAL module](https://vassalengine.org/wiki/Module:Westwall:_Four_Battles_to_Germany).
-The engine is spec-driven — a game is a `games/<name>/game.json` data directory, not code —
-and currently drives three very different games: **Arnhem**, **AH Tobruk** (1975, pointy-top
-grid + vehicle facing), and **ASL** (VASL board 3, walls/hedges).
+```
+python engine/verify_game.py live/game_tobruk.log.jsonl
+VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
+          (0 illegal proposals ever touched the game state)
+```
 
-**Browser demo:** *Dr Evil's Move Legality Engine for VASSAL* — the three games playable
-serverless in the browser (`web/build_web.py` bakes them; `web/shared/local.js` is a JS
-port of the legality engine). Distributed as a zip on the VASSAL forum/Discord. All of
-this is step one toward the real goal: **an AI opponent for VASSAL games.**
-
+v1 (movement legality for Arnhem / Tobruk / ASL) is still here and still works.
 By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
 
-## How it works
+## What v2 adds — the playable proof game
 
-1. **Save-file codec** — a `.vsav` is a ZIP; the `savedGame` entry is obfuscated with a
-   `!VCSK` header + one-byte XOR cipher (`0xA3` for this module). We decode to plain text
-   and re-encode byte-perfectly, so VASSAL can't tell our saves from its own.
-2. **Board parser** — game state is a list of records: one per counter (pixel position)
-   plus separate *stack* records that control rendering. A unit's position lives in BOTH;
-   edit them together or nothing moves. Parses all 99 Arnhem counters.
-3. **Hex math** — grid geometry from the module's `buildFile` (dx=96, dy=119, origin 60,60,
-   staggered) gives pixel↔hex formulas, validated against the module's player-aid setup cards.
-4. **Terrain + rules engine** — terrain for all 1,128 hexes is extracted **from the map
-   image itself** by color-classifying hexes and hexsides (towns, woods, rivers, roads,
-   all 14 bridges). Legal movement is Dijkstra pathfinding with road bonuses, river/bridge
-   logic, and zone-of-control stops, per the published rules.
-5. **Move writer + clients** — edit the decoded save, re-encode, and VASSAL just reloads
-   the file. A local web UI serves the real map with legal-move highlighting and drag-to-move;
-   a watcher diffs saves to detect (and legality-judge) moves a human made in VASSAL.
+**Firefight B — "An Even Encounter"** (*Tobruk* rulebook p.24, an official scenario):
+6 British Stuart Mk.III vs 15 Italian M13/40, 10 turns, open desert, official victory
+point table. Rules scope is Scenario One ("The Clash of Armor," pp.4-5) — declared,
+complete, and enforced:
+
+- **Turn sequence** — movement segment (side by side) then combat segment with
+  **alternating single-unit fire**, exactly per I.B; damage applies immediately.
+- **Movement** — MP budgets, facing (move through the front hexside), free pivots,
+  +1 MP final-facing pivots, one-hex reverse with its facing constraints, move-OR-fire.
+- **Gunnery** — the full three-question procedure: Hit Probability Numbers by range
+  (2d6, +1 vs moved targets), rate of fire with **target acquisition** (fired at the
+  same target last turn = more rounds), the **fire initiation doctrine** (no opening
+  fire past HPN 8 unless flanked/answered), aspect determination (front/flank/rear by
+  the hexside the shot crosses), per-vehicle **Area Impacted** charts, range-gated
+  damage codes (K / M / F / possibility-kills / ricochets).
+- **Every number transcribed from the module's own charts** (the .vmod ships the
+  scanned rulebook and all tables) and validated against the rulebook's printed worked
+  examples before use.
+
+**The browser client** (`ui/tactical.html`): legal-move highlighting with MP costs, a
+facing wheel, fire rings showing to-hit odds on every target, range rings, on-map shot
+results (MISS / RICOCHET / K-KILL), synthesized sound, an in-game rules **Guide**, a
+live audit-log panel where rejected proposals show up in red — and an AI opponent you
+can run **auto-paced or stepped with the spacebar** (watch it select a unit, declare
+intent, then act).
+
+## The anti-cheat architecture
+
+1. **One gate for everyone.** `engine/gamestate.py` exposes exactly one door,
+   `submit(side, action)`. Human clicks and AI decisions become identical proposals.
+   Illegal ones are rejected with the rule citation ("no weapon or vehicle which has
+   been MOVED may fire in the combat segment of the same turn [I.E.4]").
+2. **The AI owns nothing.** `engine/ai.py` reads the same public state you see and
+   submits proposals like anyone else. It cannot roll dice, cannot apply damage,
+   cannot move a counter — it can only ask.
+3. **Append-only log.** Every proposal — legal or rejected — is written to
+   `live/game_tobruk.log.jsonl` with the verdict, the dice, and a state hash.
+4. **Independent verification.** `engine/verify_game.py` replays the log through a
+   fresh engine: every verdict re-validated, every die re-rolled from the logged seed,
+   every state hash re-derived. If any illegal action had ever been applied, or a die
+   fudged, or a counter teleported, the replay cannot reproduce the log.
+
+## Where the rules came from — and why this generalizes
+
+Nothing here required owning the physical game. The Tobruk module **ships its own
+source material**: the complete scanned 1975 rulebook (36 pages), the Hit Probability
+Tables, the per-vehicle Target & Damage cards, the Turn Sequence chart — all as images
+inside the `.vmod`. The build pipeline was:
+
+1. **Read the scanned rulebook** out of the module → the rules scope (Scenario One)
+   and every procedure, with section numbers.
+2. **Transcribe the charts** into data files (`games/tobruk/combat.json`) — every
+   table cell cites the exact chart image it came from.
+3. **Validate against the rulebook's own worked examples** before trusting anything
+   (the book says a 2-pounder needs 6+ at 8 hexes and a 47mm M37 needs 11+ at 12-13
+   hexes — the transcribed tables must reproduce both, and do).
+4. **Encode the procedures** as the gate, citing rule sections in its rejections.
+
+That recipe is repeatable for **any module that packages its reference material** —
+and most serious VASSAL modules do (rulebooks, charts, player aids are standard
+contents). Grid geometry comes from the module's `buildFile`, counters from its
+PieceSlots, scenarios can be built from data (`make_save.py`), and the rules layer is
+JSON plus one procedure module. Game #2 of this engine (Arnhem) and game #3 (ASL)
+were driven from their modules the same way.
+
+## How this relates to VASSAL (it is not a fork)
+
+This project contains **zero lines of VASSAL code**. It is an independent engine
+(pure-stdlib Python) that is **file-format compatible** with VASSAL 3:
+
+- It reads and writes VASSAL's own `.vsav` saves (the `!VCSK` + XOR-obfuscated zip),
+  byte-perfectly — real VASSAL opens our saves and vice versa.
+- It reads the **module** (`.vmod`) as data: grid geometry from the `buildFile`,
+  counters from PieceSlot definitions, map art, and the charts the rules were
+  transcribed from. A VASSAL module is a data package, and this engine is another
+  consumer of that data — the way a spreadsheet other than Excel can open an .xlsx.
+- VASSAL never needs to run. The save file *is* the game state; VASSAL, this browser
+  UI, and the AI are three interchangeable clients of the same file. (The VASSAL team
+  has said a programmatic game-state API arrives in V4 — this is that behavior on V3
+  files, today, without touching their code.)
+
+## Quickstart (bring your own module)
+
+Python 3.10+. The engine is stdlib-only; `pip install pillow` once for setup's
+map conversion.
+
+```
+git clone https://github.com/DrEvil-TitaniumHelix/vsav-engine
+# download Tobruk_v1.1.vmod from https://vassalengine.org/wiki/Module:Tobruk
+python engine/setup_module.py tobruk "path/to/Tobruk_v1.1.vmod"
+python ui/server.py --game games/tobruk
+# open http://localhost:8642 — you're British; the AI plays the Italians
+```
+
+Verify any finished (or in-progress) game:
+
+```
+python engine/verify_game.py live/game_tobruk.log.jsonl -v
+```
 
 ## What's in the repo
 
 ```
-engine/arnhem.py           save codec (XOR/zip), hex math, v1 CLI: dump / move
-engine/board.py            v2 full-fidelity mover: batch moves, stack split/join
-engine/rules.py            movement + ZOC + CRT rules engine (Dijkstra legal-move search)
-engine/extract_terrain.py  builds terrain.json by color-classifying the module's map image
-engine/play.py             AI turn driver: analyze side, generate moves, resolve combat
-engine/watch.py            human-move watcher: diff saves, judge legality
-engine/inspect_build.py    dump grid geometry from a module's buildFile
-engine/extract_pdf.py      helpers for rendering rules PDFs to images
-engine/render_pdf.py
-ui/server.py               local HTTP API over the .vsav (state / legal / move / pass / reset)
-ui/index.html              browser client: real map, pan/zoom, legal-hex highlights, drag to move
-ahk/arnhem_sync.ahk        optional AutoHotkey v2 reload macro for the VASSAL window
+engine/gamestate.py        THE LEGALITY GATE: turn flow, movement/fire validation with
+                           rule citations, seeded dice, damage, VP, append-only log
+engine/combat.py           the three-question gunnery procedure (data-driven)
+engine/verify_game.py      standalone auditor: replays a game log, re-checks everything
+engine/ai.py               the AI opponent's policy — proposes through the same gate
+engine/gamespec.py         one engine, many games: grids, sides, terrain, movement
+engine/vsav.py             .vsav codec (zip + !VCSK/XOR), byte-perfect round-trip
+engine/board.py            full-fidelity save parser/mover (pieces + stacks)
+engine/make_save.py        builds scenario .vsav files from the module's own PieceSlots
+engine/setup_module.py     one-command setup from a downloaded .vmod
+engine/rules.py            v1 Arnhem CRT · engine/watch.py  human-move watcher
+engine/extract_terrain.py  terrain from map art (v1) · capture_baseline.py  regression
+games/tobruk/game.json     the game as data: grid, facing, sides, MAs
+games/tobruk/combat.json   to-hit tables, Area Impacted, damage cards — every cell
+                           cites its source chart image in the module
+games/tobruk/scenario_firefight_b.json   the scenario as data
+ui/server.py               HTTP API: state/legal_moves/legal_targets/action/ai_plan/log
+ui/tactical.html           the playable browser client (v2)
+ui/index.html              the v1 movement-legality client
+web/                       v1 serverless browser build (movement only)
 ```
 
 ## What's NOT in the repo (bring your own)
 
-**No game assets are included or will ever be.** The module, map, counter art, and rules
-are the property of Decision Games (SPI's successor) — the module is hosted **with
-permission** at vassalengine.org, so get it there:
-
-1. Install [VASSAL 3.7+](https://vassalengine.org) and download the
-   *Westwall: Four Battles to Germany* module via the in-app Module Manager.
-2. Open the Arnhem historical setup and save a game → `game.vsav`.
-3. Extract the map image from the `.vmod` (it's a ZIP) and run
-   `python engine/extract_terrain.py` to regenerate `terrain.json` locally.
-
-## Quickstart
-
-Python 3.10+; `pip install pillow` (only needed for terrain extraction).
-
-```
-python engine/board.py dump game.vsav                 # board state: 99 counters w/ hex + side
-python engine/board.py move game.vsav out.vsav "9SSRcn=2822"   # write a move, load out.vsav in VASSAL
-python ui/server.py                                   # browser client on http://localhost:8641
-python engine/watch.py game.vsav                      # watch for + legality-judge human moves
-```
-
-## Why this matters
-
-The VASSAL team has said a programmatic game-state interface arrives "in V4."
-This gets that behavior **today, on V3, without touching VASSAL's code** — because
-the save file *is* the game state.
+**No game assets are included or ever will be.** Maps, counter art, charts, and rules
+are the property of their rights-holders; the modules are hosted **with permission** at
+vassalengine.org — get them there (`setup_module.py` does the rest). This repo is code
+plus data *derived by us from the rules* (tables transcribed and cited, like any rules
+reference), under the same bring-your-own-module guardrail as v1.
 
 ## Legal
 
-Code is MIT. *Arnhem*, *Westwall*, and all game content, artwork, and rules are the
-property of their respective rights-holders (Decision Games). This project ships **zero**
-of their material and requires you to obtain the module through the sanctioned channel.
-Not affiliated with or endorsed by VASSAL or Decision Games.
+Code is MIT. *Tobruk* © its rights-holders (originally Avalon Hill, 1975); *Arnhem* /
+*Westwall* © Decision Games; ASL/VASL content © MMP / the VASL project. This project
+ships none of their material. Not affiliated with or endorsed by VASSAL, Decision
+Games, or MMP.
