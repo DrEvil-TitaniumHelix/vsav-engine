@@ -197,7 +197,7 @@ function render(){
   T.textContent=`Turn ${Math.min(FLOW.turn,FLOW.turns)} / ${FLOW.turns}`;
   const segTxt = FLOW.segment==='movement'
     ? `MOVEMENT — ${sideLabel(FLOW.mover)} moving`
-    : `COMBAT — ${sideLabel(FLOW.initiative)} to fire`;
+    : `COMBAT — alternating fire [I.B.2] — ${sideLabel(FLOW.initiative)} shoots next`;
   SG.textContent=segTxt; SG.className='chip hot';
   document.getElementById('vpbrit').textContent=`British ${FLOW.vp.scores.British} VP`;
   document.getElementById('vpaxis').textContent=`Axis ${FLOW.vp.scores.Axis} VP`;
@@ -207,7 +207,9 @@ function render(){
       `GAME OVER — ${sideLabel(FLOW.winner)} WINS  (British ${FLOW.vp.scores.British} : Axis ${FLOW.vp.scores.Axis})`;
   } else { B.className='';
     const stepMode=document.getElementById('aimode').value==='step';
-    B.textContent = myPhase() ? `YOUR ${FLOW.segment==='movement'?'MOVE':'FIRE'} — ${sideLabel(mySide)}`
+    B.textContent = myPhase() ? (FLOW.segment==='movement'
+        ? `YOUR MOVE — ${sideLabel(mySide)}`
+        : `YOUR SHOT — fire ONE unit (then the enemy answers), or Pass fire to finish`)
       : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press SPACE to step its actions`
                  : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`;
   }
