@@ -64,6 +64,12 @@
                       font-size:20px; cursor:pointer; }
   #facewheel button.pivotcost { border-color:#e0c05e; color:#e8d493; background:rgba(45,40,15,.9); }
   #facewheel button:hover { background:#2e5c2e; }
+  .rchip { position:absolute; z-index:33; pointer-events:none; transform:translate(-50%,0);
+           background:rgba(10,25,10,.88); color:#9ee493; font-size:22px; padding:3px 10px;
+           border-radius:12px; border:1px solid #4e7a4e; white-space:nowrap; }
+  .rchip.locked { color:#d8b46a; border-color:#7a6a3e; background:rgba(35,28,8,.88); }
+  .rchip.hypo { border-style:dashed; color:#8fd6e8; border-color:#3e6a7a; background:rgba(8,25,35,.88); }
+  .rchip small { color:#8a8f98; font-size:15px; }
   #banner { position:fixed; top:52px; left:0; right:340px; z-index:45; text-align:center; pointer-events:none; }
   #banner div { display:inline-block; margin-top:8px; padding:6px 22px; border-radius:16px;
                 background:rgba(25,28,34,.92); color:#eee; font-size:15px; border:1px solid #444; }
@@ -105,7 +111,9 @@ const FACE_ARROWS = ['↗','→','↘','↙','←','↖'];
 let GAME=null, FLOW=null, MAPW=0, MAPH=0, CPX=120, HX=64, HXC=32, HYH=59.5;
 let scale=0.25, panX=0, panY=0;
 let units=[], mySide='British', selected=null, legal=null, targets=null, dragging=null;
-let aiBusy=false;
+let aiBusy=false, rangeInfo=null, rangeCache={}, dragHex=null;
+// P(2d6 >= n) in %
+const P2D6={2:100,3:97,4:92,5:83,6:72,7:58,8:42,9:28,10:17,11:8,12:3};
 
 function apply(){ W.style.transform=`translate(${panX}px,${panY}px) scale(${scale})`; }
 function fitBounds(){
@@ -213,7 +221,49 @@ function render(){
     if(u.K)badge('☠',' #ff6a5e',-14,-24);
     else{ if(u.M)badge('M','#ffd75e',-40,-24); if(u.F)badge('F','#ff9a5e',10,-24); }
   });
-  drawOverlay(); drawTargets();
+  drawOverlay(); drawTargets(); drawRangeChips();
+}
+
+// ---------- fire-picture overlay (movement phase) ----------
+function drawRangeRings(){
+  if(!rangeInfo||!selected||FLOW.segment!=='movement')return;
+  const g=GAME.grid, cx=selected.x, cy=selected.y;
+  const ring=(r,color,dash,label)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r*g.dx);
+    c.setAttribute('fill','none'); c.setAttribute('stroke',color);
+    c.setAttribute('stroke-width','5'); if(dash)c.setAttribute('stroke-dasharray',dash);
+    OV.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx); t.setAttribute('y',cy-r*g.dx-12); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','26'); t.setAttribute('fill',color); t.setAttribute('font-weight','bold');
+    t.textContent=label; OV.appendChild(t);
+  };
+  if(rangeInfo.initiation_range)
+    ring(rangeInfo.initiation_range,'#7ce07c','',`open fire ≤ ${rangeInfo.initiation_range} hexes (HPN ≤ 8)`);
+  if(rangeInfo.max_range>rangeInfo.initiation_range)
+    ring(rangeInfo.max_range,'#e0c05e','22 14',`max range ${rangeInfo.max_range} (needs flank/rear or return fire)`);
+}
+function drawRangeChips(){
+  document.querySelectorAll('.rchip').forEach(n=>n.remove());
+  if(!rangeInfo||!selected||FLOW.segment!=='movement')return;
+  rangeInfo.targets.forEach(t=>{
+    if(t.hpn===null||t.hpn===undefined)return;
+    const tu=units.find(u=>u.id===t.target); if(!tu)return;
+    const d=document.createElement('div');
+    d.className='rchip'+(t.initiation_ok?'':' locked')+(rangeInfo.hypothetical?' hypo':'');
+    d.innerHTML=(t.initiation_ok?'':'🔒')+
+      `${t.hpn_adjusted}+ ${t.prob}%<small> ×${t.rounds}${t.acquired?' ACQ':''} → ${t.prob_any}%</small>`;
+    d.style.left=tu.x+'px'; d.style.top=(tu.y+CPX*0.55)+'px';
+    W.appendChild(d);
+  });
+}
+async function fetchRange(hex){
+  const key=hex?`${hex.col},${hex.row}`:'HERE';
+  if(rangeCache[key])return rangeCache[key];
+  const q=hex?`&col=${hex.col}&row=${hex.row}`:'';
+  const r=await(await fetch(`/api/range_info?id=${selected.id}${q}`)).json();
+  rangeCache[key]=r; return r;
 }
 
 // ---------- overlays ----------
@@ -247,6 +297,7 @@ function drawOverlay(){
     tx.setAttribute('font-size','30'); tx.setAttribute('fill','#194d19'); tx.setAttribute('font-weight','bold');
     tx.textContent=h.cost; OV.appendChild(tx); });
   (legal.reverse||[]).forEach(h=>poly(h,'#e0b45e','rgba(224,180,94,0.15)'));
+  drawRangeRings();
 }
 
 function drawTargets(){
@@ -259,7 +310,7 @@ function drawTargets(){
     r.style.left=(tu.x-R)+'px'; r.style.top=(tu.y-R)+'px';
     r.style.width=(2*R)+'px'; r.style.height=(2*R)+'px';
     r.style.border=`5px ${t.legal?'solid #7ce07c':'dashed #b0483a'}`;
-    r.innerHTML=`<span class="lbl">${t.legal?(t.hpn_adjusted+'+ ×'+t.rounds+(t.acquired?' ACQ':'')):'✕'}</span>`;
+    r.innerHTML=`<span class="lbl">${t.legal?(t.hpn_adjusted+'+ '+(P2D6[t.hpn_adjusted]??(t.range===0?100:0))+'% ×'+t.rounds+(t.acquired?' ACQ':'')):'✕'}</span>`;
     r.title=t.legal
       ? `range ${t.range}, aspect ${t.aspect.toUpperCase()}, needs ${t.hpn_adjusted}+, ${t.rounds} round(s)`
       : t.reasons.join('; ');
@@ -268,12 +319,86 @@ function drawTargets(){
   });
 }
 
+// ---------- sound (WebAudio synthesis — no files) ----------
+let AC=null;
+function ac(){ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume(); return AC; }
+document.addEventListener('pointerdown',()=>{ try{ac();}catch(e){} },{once:true});
+function noiseBuf(ctx,secs){
+  const b=ctx.createBuffer(1,ctx.sampleRate*secs,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; return b; }
+function sndMove(){ // tank engine rumble + track squeak
+  try{ const c=ac(), t=c.currentTime, dur=1.1;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,dur);
+    const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=140; lp.Q.value=2;
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.12);
+    g.gain.setValueAtTime(0.5,t+dur-0.35); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=11; lg.gain.value=60;
+    lfo.connect(lg); lg.connect(lp.frequency); lfo.start(t); lfo.stop(t+dur);
+    src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
+    const o=c.createOscillator(), og=c.createGain(); o.type='sawtooth';
+    o.frequency.setValueAtTime(48,t); o.frequency.linearRampToValueAtTime(62,t+dur);
+    og.gain.setValueAtTime(0.10,t); og.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(og); og.connect(c.destination); o.start(t); o.stop(t+dur);
+  }catch(e){} }
+function sndFire(){ // cannon: sharp noise crack + deep thump
+  try{ const c=ac(), t=c.currentTime;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,0.5);
+    const bp=c.createBiquadFilter(); bp.type='lowpass';
+    bp.frequency.setValueAtTime(3000,t); bp.frequency.exponentialRampToValueAtTime(120,t+0.4);
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.9,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+    src.connect(bp); bp.connect(g); g.connect(c.destination); src.start(t);
+    const o=c.createOscillator(), og=c.createGain(); o.type='sine';
+    o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(38,t+0.35);
+    og.gain.setValueAtTime(0.8,t); og.gain.exponentialRampToValueAtTime(0.0001,t+0.45);
+    o.connect(og); og.connect(c.destination); o.start(t); o.stop(t+0.5);
+  }catch(e){} }
+function sndRicochet(){ // high metallic ping, quick pitch drop
+  try{ const c=ac(), t=c.currentTime;
+    const o=c.createOscillator(), g=c.createGain(); o.type='triangle';
+    o.frequency.setValueAtTime(2600,t); o.frequency.exponentialRampToValueAtTime(700,t+0.28);
+    g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.32);
+  }catch(e){} }
+function sndKill(){ // slow deep explosion
+  try{ const c=ac(), t=c.currentTime, dur=1.4;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,dur);
+    const lp=c.createBiquadFilter(); lp.type='lowpass';
+    lp.frequency.setValueAtTime(900,t); lp.frequency.exponentialRampToValueAtTime(60,t+dur);
+    const g=c.createGain();
+    g.gain.setValueAtTime(1.0,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
+  }catch(e){} }
+function sndImpact(){ // penetrating hit: short mid boom (bigger than ping, smaller than kill)
+  try{ const c=ac(), t=c.currentTime, dur=0.5;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,dur);
+    const lp=c.createBiquadFilter(); lp.type='lowpass';
+    lp.frequency.setValueAtTime(500,t); lp.frequency.exponentialRampToValueAtTime(80,t+dur);
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.55,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
+  }catch(e){} }
+function soundsForFire(res){
+  sndFire();
+  // each hit lands audibly in sequence after the muzzle blast:
+  // '-' = ricochet ping, damage = armor-penetrating impact, K = explosion
+  let dt=420;
+  (res.damage||[]).forEach(d=>{
+    const killed=(d.result||[]).some(x=>x.startsWith('K'))||(d.pk_roll&&d.pk_roll.k_kill);
+    const f = killed?sndKill : (d.part==='-'||!(d.result||[]).length) ? sndRicochet : sndImpact;
+    setTimeout(f,dt); dt+=300;
+  });
+}
+
 // ---------- actions ----------
 async function postAction(action){
   const r=await(await fetch('/api/action',{method:'POST',
     body:JSON.stringify({side:mySide,action})})).json();
   if(!r.verdict.legal) toastReasons(r.verdict.reasons);
-  if(r.result&&r.result.weapon) showFire(r.result,mySide,action);
+  else if(action.type==='move'||action.type==='reverse') sndMove();
+  if(r.result&&r.result.weapon){ showFire(r.result,mySide,action); soundsForFire(r.result); }
   deselect(); await refresh();
   return r;
 }
@@ -294,13 +419,19 @@ function onCounterDown(ev,u){
 }
 
 async function selectMove(u){
-  targets=null;
+  targets=null; rangeCache={}; dragHex=null;
   const lm=await(await fetch('/api/legal_moves?id='+u.id)).json();
   if(!lm.can_act){ toastReasons(lm.reasons); return; }
-  selected=u; legal=lm; render();
+  selected=u; legal=lm;
+  rangeInfo=await fetchRange(null);
+  render();
+  const inreach=rangeInfo.targets.filter(t=>t.hpn!==null&&t.hpn!==undefined).length;
   const A=document.getElementById('actions');
   A.innerHTML=`<b>${u.name}</b> @ ${u.hexnum} — budget ${lm.budget} MP, ${lm.dests.length} hexes.
-    Drag to a green hex (amber = reverse), then pick facing. Right-click the counter to pivot in place (keeps its fire).
+    <br>Fire picture from HERE (${rangeInfo.weapon_label}): ${inreach} enemy in gun range — chips show
+    <b>to-hit + % per round × rounds → % ≥1 hit</b>; 🔒 = may not open fire (HPN>8) unless flank/rear/return fire.
+    Dragging shows the (dashed) NEXT-turn picture from that hex — <b>moving forfeits this turn's fire [I.E.4]</b>.
+    <br><i>${rangeInfo.secondary}</i>
     <button class="sidebtn" onclick="deselect()">Cancel</button>`;
   A.style.display='block';
 }
@@ -351,7 +482,13 @@ function nearestLegal(m){ let best=null,bd=90*90;
   allSpots().forEach(h=>{const d=(h.x-m.x)**2+(h.y-m.y)**2; if(d<bd){bd=d;best=h;}});
   return best; }
 function dragMove(e){ const m=toMap(e);
-  dragging.el.style.left=m.x+'px'; dragging.el.style.top=m.y+'px'; }
+  dragging.el.style.left=m.x+'px'; dragging.el.style.top=m.y+'px';
+  const best=nearestLegal(m);
+  const key=best?`${best.col},${best.row}`:null;
+  if(key!==dragHex){ dragHex=key;
+    if(best){ fetchRange(best).then(r=>{ if(dragHex===key){ rangeInfo=r; drawRangeChips(); } }); }
+    else { fetchRange(null).then(r=>{ if(dragHex===null){ rangeInfo=r; drawRangeChips(); } }); }
+  } }
 function dragEnd(e){
   const m=toMap(e), u=dragging.u;
   dragging.el.classList.remove('dragging'); dragging=null;
@@ -404,7 +541,8 @@ function onCounterMenu(ev,u){
 document.addEventListener('pointerdown',e=>{
   if(!e.target.closest('#picker'))document.getElementById('picker').style.display='none'; });
 
-function deselect(){ selected=null; legal=null; targets=null; FW.style.display='none';
+function deselect(){ selected=null; legal=null; targets=null; rangeInfo=null; rangeCache={}; dragHex=null;
+  FW.style.display='none';
   document.getElementById('actions').style.display='none'; render(); }
 
 // ---------- log panel ----------
@@ -436,7 +574,12 @@ async function runAI(){
   try{
     const r=await(await fetch('/api/ai_turn',{method:'POST',
       body:JSON.stringify({side:aiSide()})})).json();
-    (r.steps||[]).forEach(st=>{ if(st.result&&st.result.weapon)showFire(st.result,aiSide(),st.action); });
+    let moved=false;
+    (r.steps||[]).forEach(st=>{
+      if(st.result&&st.result.weapon){ showFire(st.result,aiSide(),st.action); soundsForFire(st.result); }
+      if(st.verdict.legal&&['move','reverse'].includes(st.action.type))moved=true;
+    });
+    if(moved)sndMove();
   } finally { aiBusy=false; }
   await refresh();
 }
