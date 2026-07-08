@@ -116,9 +116,12 @@ def parse_buildfile(bf_path):
             mod["charts"].append(n)
 
     for mp in root.iter():
-        if local(mp.tag) not in ("Map", "PrivateMap"):
+        lt = local(mp.tag)
+        # stock Map/PrivateMap plus custom subclasses (VASL's ASLMap etc.)
+        if not (lt in ("Map", "PrivateMap")
+                or (lt.endswith("Map") and mp.get("mapName") is not None)):
             continue
-        m = dict(name=mp.get("mapName", ""), private=local(mp.tag) == "PrivateMap",
+        m = dict(name=mp.get("mapName", ""), private=lt == "PrivateMap",
                  boards=[], setup_stacks=0, at_start=[])
         for el in mp.iter():
             lt = local(el.tag)
@@ -248,6 +251,70 @@ def _fit_axis(points, orient):
     return cfg
 
 
+# ---------------------------------------------------------------- external boards
+def load_external_board(boards_dir, want, staging):
+    """VASL-pattern modules ship NO boards — players download board archives
+    separately (e.g. github vasl-developers bdFiles). A board archive is a dir
+    or zip holding BoardMetadata.xml + the board image; the metadata declares
+    the board's size IN HEXES, so the grid is computed from the board's own
+    data (dx = imageW/(cols-1), dy = imageH/rows — VASL geoboard convention:
+    A1 top-left, odd letter-columns shifted up half a hex).
+    Returns (board_dict, err_msg): exactly one is None."""
+    cands = []
+    for entry in sorted(os.listdir(boards_dir)):
+        p = os.path.join(boards_dir, entry)
+        try:
+            if os.path.isdir(p) and os.path.exists(os.path.join(p, "BoardMetadata.xml")):
+                cands.append((entry, p, False))
+            elif os.path.isfile(p) and zipfile.is_zipfile(p):
+                with zipfile.ZipFile(p) as z:
+                    if any(n.endswith("BoardMetadata.xml") for n in z.namelist()):
+                        cands.append((entry, p, True))
+        except OSError:
+            continue
+    if not cands:
+        return None, f"no board archives (BoardMetadata.xml) found in {boards_dir}"
+    pick = None
+    if want:
+        pick = next((c for c in cands if want.lower() in c[0].lower()), None)
+        if pick is None:
+            return None, f"--board {want!r} not among {[c[0] for c in cands]}"
+    entry, path, is_zip = pick or cands[0]
+    if is_zip:
+        dst = os.path.join(staging, "boards", os.path.splitext(entry)[0])
+        os.makedirs(dst, exist_ok=True)
+        with zipfile.ZipFile(path) as z:
+            z.extractall(dst)
+        path = dst
+    meta_path = os.path.join(path, "BoardMetadata.xml")
+    if not os.path.exists(meta_path):
+        for base, _, files in os.walk(path):
+            if "BoardMetadata.xml" in files:
+                meta_path = os.path.join(base, "BoardMetadata.xml")
+                break
+    md = ElementTree.parse(meta_path).getroot().attrib
+    cols, rows = int(md.get("width", 0)), int(md.get("height", 0))
+    img = os.path.join(os.path.dirname(meta_path), md.get("boardImageFileName", ""))
+    if not (cols > 1 and rows and os.path.exists(img)):
+        return None, f"board {entry!r}: metadata incomplete (width={md.get('width')} " \
+                     f"height={md.get('height')} image={md.get('boardImageFileName')!r})"
+    dims = img_size(img)
+    if not dims:
+        return None, f"board {entry!r}: image {os.path.basename(img)} unreadable"
+    dx, dy = dims[0] / (cols - 1), dims[1] / rows
+    grid = dict(orient="flat", dx=round(dx, 3), dy=round(dy, 3), x0=0.0, y0=round(-dy / 2, 3),
+                stagger=True, stagger_sign=-1, odd_row_carry=0, hexnum_digits=2,
+                naming={"style": "colletter"},
+                provenance=(f"computed from the board's own metadata: {cols}x{rows} hexes "
+                            f"declared, image {dims[0]}x{dims[1]} px -> dx={round(dx, 3)} "
+                            f"dy={round(dy, 3)}; VASL geoboard convention (A1 top-left, "
+                            "odd letter-columns shifted up)"))
+    name = md.get("name", entry)
+    return dict(entry=entry, name=name.lstrip("0") or name, image=img, grid=grid,
+                cols=cols, rows=rows, n_candidates=len(cands),
+                terrain_meta=os.path.exists(os.path.join(os.path.dirname(meta_path), "LOSData"))), None
+
+
 # ---------------------------------------------------------------- grids -> engine
 def hexgrid_to_engine(g):
     """Map a VASSAL HexGrid to our Grid config. sideways=false (flat-top,
@@ -359,7 +426,8 @@ def stage_map(img_path, staging):
 
 
 # ---------------------------------------------------------------- ingest
-def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
+def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
+           boards_dir=None, board_pick=None):
     rep = dict(vmod=os.path.abspath(vmod_path), steps=[], problems=[], verdict=None)
 
     def ok(msg):
@@ -450,12 +518,35 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
     ok(f"main board: {main_board['name']!r} on map {main_map['name']!r}"
        + (f"; {len(others)} other board(s) not converted: {', '.join(others[:6])}" if others else ""))
 
+    # --- external board files (--boards): the VASL pattern
+    ext = None
+    if boards_dir and not (main_board["grids"] and find_image(extracted, main_board["image"])):
+        ext, err = load_external_board(boards_dir, board_pick, staging)
+        if err:
+            bad(err)
+        else:
+            ok(f"external board {ext['entry']!r} (board name {ext['name']!r}, "
+               f"{ext['cols']}x{ext['rows']} hexes, {ext['n_candidates']} archive(s) available"
+               + (", LOSData present" if ext["terrain_meta"] else "") + ")")
+            # the map that TAKES external boards is the one shipping without any
+            boardless = [m for m in mod["maps"] if not m["private"] and not m["boards"]]
+            tgt = next((m for m in boardless if m["name"] == "Main Map"),
+                       boardless[0] if boardless else None)
+            if tgt:
+                main_map = tgt
+                rep["main_map"] = tgt["name"]
+                ok(f"targeting map window {tgt['name']!r} (ships boardless — takes external boards)")
+
     # --- grid
     grid_cfg, grid_how = None, None
     hexes = [g for g in main_board["grids"] if g["kind"] == "hex" and g["dx"]]
     regions = [g for g in main_board["grids"] if g["kind"] == "region"]
     squares = [g for g in main_board["grids"] if g["kind"] == "square"]
-    if hexes:
+    if ext:
+        grid_cfg, grid_how = ext["grid"], "board-file-metadata"
+        ok(f"grid from board metadata: flat dx={grid_cfg['dx']} dy={grid_cfg['dy']} "
+           f"origin=({grid_cfg['x0']},{grid_cfg['y0']})")
+    elif hexes:
         g = next((h for h in hexes if h.get("numbering")), hexes[0])
         grid_cfg, grid_how = hexgrid_to_engine(g), "hexgrid"
         ok(f"hex grid from buildFile: {grid_cfg['orient']} dx={grid_cfg['dx']} dy={grid_cfg['dy']} "
@@ -485,7 +576,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
     rep["grid"], rep["grid_how"] = grid_cfg, grid_how
 
     # --- map asset
-    img_path = find_image(extracted, main_board["image"])
+    img_path = ext["image"] if ext else find_image(extracted, main_board["image"])
     map_asset, map_dims = None, None
     if not img_path:
         bad("main board has no bundled image" if not main_board["image"] else
@@ -544,7 +635,9 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
                         stagger=False, hexnum_digits=2,
                         provenance="PLACEHOLDER — no grid detected; snapping is arbitrary, replace before use")
     bounds = None
-    if map_dims:
+    if ext:
+        bounds = dict(cols=[0, ext["cols"] - 1], rows=[1, ext["rows"]])
+    elif map_dims:
         bounds = dict(cols=[0, max(1, int((map_dims[0] - grid_cfg["x0"]) / grid_cfg["dx"]))],
                       rows=[0, max(1, int((map_dims[1] - grid_cfg["y0"]) / grid_cfg["dy"]))])
     unit_kinds = sorted(setups[0]["kinds"]) if setups else ["piece", "prototype", "mark", "hideCmd"]
@@ -555,7 +648,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
     spec = {
         "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
         "map_name": main_map["name"] or "Main Map",
-        "board_name": main_board["name"] or main_map["name"] or "Main Map",
+        "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
         "save_key": save_key,
         "grid": grid_cfg,
         "buildfile": rel(bf_path),
@@ -612,7 +705,11 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None):
             bad(f"at-start save build failed: {e}")
 
     # --- verdict
-    if grid_how and setups and map_asset and n_slots:
+    best_setup = max((s["pieces"] for s in setups), default=0)
+    if setups and best_setup < 10:
+        bad(f"best setup has only {best_setup} piece(s) — likely markers, not a scenario; "
+            "real setups need authoring (the make_save scenario-JSON path)")
+    if grid_how and setups and best_setup >= 10 and map_asset and n_slots:
         rep["verdict"] = "FULL"
     elif map_asset and n_slots:
         rep["verdict"] = "PARTIAL"
@@ -706,12 +803,14 @@ if __name__ == "__main__":
     ap.add_argument("--out", help="output game dir (default games/<slug>)")
     ap.add_argument("--staging", help="asset staging dir (default ../VassalIngest/<slug>)")
     ap.add_argument("--name", help="slug override")
+    ap.add_argument("--boards", help="dir of external board archives (VASL pattern)")
+    ap.add_argument("--board", help="which external board to use (name fragment)")
     ap.add_argument("--batch", help="ingest every .vmod in this directory")
     ap.add_argument("--scorecard", default=os.path.join(ROOT, "SCORECARD.md"))
     a = ap.parse_args()
     if a.batch:
         batch(a.batch, a.scorecard)
     elif a.vmod:
-        ingest(a.vmod, a.out, a.staging, a.name)
+        ingest(a.vmod, a.out, a.staging, a.name, a.boards, a.board)
     else:
         ap.print_help()
