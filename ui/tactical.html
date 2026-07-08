@@ -90,6 +90,10 @@
   <span class="chip axis" id="vpaxis">…</span>
   <span style="margin-left:auto">you play:</span><span id="sidebtns"></span>
   <label style="font-size:12px"><input type="checkbox" id="autoai" checked> auto-AI</label>
+  <label style="font-size:12px">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+    <option value="1000">1s</option><option value="2000">2s</option>
+    <option value="3000" selected>3s</option><option value="5000">5s</option>
+  </select></label>
   <button class="sidebtn" id="endmove">End movement</button>
   <button class="sidebtn" id="passfire">Pass fire</button>
   <button class="sidebtn" id="aibtn">AI acts</button>
@@ -620,9 +624,16 @@ async function runAI(){
   await refresh();
 }
 function maybeAutoAI(){
-  if(document.getElementById('autoai').checked&&!FLOW.over&&!myPhase())
-    setTimeout(runAI,600);
+  if(!document.getElementById('autoai').checked||FLOW.over||myPhase())return;
+  // movement resolves as one batch — short delay; enemy FIRE is paced by the dial
+  const delay=FLOW.segment==='combat'?parseInt(document.getElementById('aipace').value):800;
+  setTimeout(runAI,delay);
 }
+document.addEventListener('DOMContentLoaded',()=>{
+  const p=document.getElementById('aipace');
+  p.value=localStorage.getItem('aipace')||'3000';
+  p.onchange=()=>localStorage.setItem('aipace',p.value);
+});
 
 // ---------- top bar ----------
 document.getElementById('endmove').onclick=()=>postAction({type:'end_movement'});
