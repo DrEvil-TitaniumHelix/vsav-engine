@@ -22,8 +22,11 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "engine"))
 import board as board_mod  # noqa: E402
 import gamespec  # noqa: E402
+import gamestate as gs_mod  # noqa: E402
+import ai as ai_mod  # noqa: E402
 
 GAME_OBJ = None   # gamespec.Game
+TG = None         # gamestate.TacticalGame when the game spec names a scenario
 WORK = None       # working .vsav path
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
 facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
@@ -64,10 +67,85 @@ def fresh_board():
 def unit_view(u):
     g = GAME_OBJ
     a, d, m = g.stats(u["name"])
-    return dict(u, att=a, dfn=d, ma=m, onmap=g.on_map(u["col"], u["row"]),
-                terrain=g.hex_terrain(u["col"], u["row"]),
-                status=done.get(u["id"]),
-                facing=facing.get(u["id"], 0) if g.facing else None)
+    v = dict(u, att=a, dfn=d, ma=m, onmap=g.on_map(u["col"], u["row"]),
+             terrain=g.hex_terrain(u["col"], u["row"]),
+             status=done.get(u["id"]),
+             facing=facing.get(u["id"], 0) if g.facing else None)
+    if TG:
+        tu = TG.s["units"].get(u["id"])
+        if tu:
+            v.update(side=tu["side"], facing=tu["facing"], afv=tu["afv"],
+                     K=tu["K"], M=tu["M"], F=tu["F"], ma=TG.budget(tu),
+                     moved=tu["pid"] in TG.s["moved"],
+                     pivoted=tu["pid"] in TG.s["pivoted"],
+                     fired=tu["pid"] in TG.s["fired"],
+                     acquired=TG.s["acquired"].get(tu["pid"]))
+    return v
+
+
+def flow_view():
+    s = TG.s
+    return dict(turn=s["turn"], turns=TG.turns, segment=s["segment"],
+                mover=s["mover"], initiative=s["initiative"],
+                movement_done=s["movement_done"], fire_done=s["fire_done"],
+                over=s["over"], winner=s["winner"], vp=TG.victory(),
+                seed=s["seed"], n=s["n"],
+                first_player=TG.first_player, combat_first=TG.combat_first,
+                bounds=TG.bounds, scenario=TG.scenario["name"],
+                rules_scope=TG.scenario.get("rules_scope"))
+
+
+def mirror_move(pid, col, row):
+    """Reflect a gate-applied position change into the work .vsav so real
+    VASSAL can open the same game."""
+    b = fresh_board()
+    b.move_piece_by_id(pid, GAME_OBJ.grid.hexnum(col, row))
+    b.write(WORK)
+
+
+def api_action(body):
+    side, action = body["side"], body["action"]
+    r = TG.submit(side, action)
+    if r["verdict"]["legal"] and action.get("type") in ("move", "reverse"):
+        u = TG.unit(action["unit"])
+        mirror_move(u["pid"], u["col"], u["row"])
+    r["flow"] = flow_view()
+    return r
+
+
+def api_ai_turn(body):
+    side = body["side"]
+    s = TG.s
+    if s["over"]:
+        return dict(error="game is over", flow=flow_view())
+    steps = []
+    if s["segment"] == "movement" and s["mover"] == side:
+        steps = ai_mod.take_movement_segment(TG, side)
+        for st in steps:
+            if st["verdict"]["legal"] and st["action"].get("type") in ("move", "reverse"):
+                u = TG.unit(st["action"]["unit"])
+                mirror_move(u["pid"], u["col"], u["row"])
+    elif s["segment"] == "combat" and s["initiative"] == side and side not in s["fire_done"]:
+        steps = ai_mod.take_one_fire(TG, side)
+    return dict(steps=steps, flow=flow_view())
+
+
+def api_log_tail(qs):
+    n = int(qs.get("n", ["40"])[0])
+    if not os.path.exists(TG.log_path):
+        return dict(entries=[])
+    lines = open(TG.log_path, encoding="utf-8").read().splitlines()
+    return dict(entries=[json.loads(l) for l in lines[-n:]])
+
+
+def api_new_game(body):
+    global done
+    TG.new_game(body.get("seed"))
+    done = {}
+    if os.path.exists(WORK):
+        os.remove(WORK)
+    fresh_board()
+    return dict(ok=True, flow=flow_view())
 
 
 def game_descriptor():
@@ -88,8 +166,12 @@ def game_descriptor():
 def api_state():
     b = fresh_board()
     units = [unit_view(u) for u in b.units()]
-    return dict(units=units, game=game_descriptor(),
-                notes=f"{GAME_OBJ.name} — spec-driven engine")
+    out = dict(units=units, game=game_descriptor(),
+               notes=f"{GAME_OBJ.name} — spec-driven engine")
+    if TG:
+        out["flow"] = flow_view()
+        out["notes"] = TG.scenario["name"]
+    return out
 
 
 def api_legal(qs):
@@ -200,6 +282,14 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_state())
             if url.path == "/api/legal":
                 return self._json(api_legal(qs))
+            if TG and url.path == "/api/game":
+                return self._json(flow_view())
+            if TG and url.path == "/api/legal_moves":
+                return self._json(TG.legal_moves(qs["id"][0]))
+            if TG and url.path == "/api/legal_targets":
+                return self._json(dict(targets=TG.legal_targets(qs["id"][0])))
+            if TG and url.path == "/api/log":
+                return self._json(api_log_tail(qs))
             if url.path == "/gasset/map":
                 return self._file(GAME_OBJ.assets.get("map"))
             if url.path.startswith("/gasset/counters/"):
@@ -213,12 +303,18 @@ class H(http.server.SimpleHTTPRequestHandler):
         except Exception as e:
             return self._json(dict(error=str(e)))
         if url.path == "/":
-            self.path = "/index.html"
+            self.path = "/tactical.html" if TG else "/index.html"
         return super().do_GET()
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"] or 0)) or b"{}")
         try:
+            if TG and self.path == "/api/action":
+                return self._json(api_action(body))
+            if TG and self.path == "/api/ai_turn":
+                return self._json(api_ai_turn(body))
+            if TG and self.path == "/api/new_game":
+                return self._json(api_new_game(body))
             if self.path == "/api/move":
                 return self._json(api_move(body))
             if self.path == "/api/pass":
@@ -240,6 +336,10 @@ if __name__ == "__main__":
     GAME_OBJ = gamespec.Game(a.game)
     gkey = os.path.basename(os.path.normpath(a.game))
     WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
+    if GAME_OBJ.spec.get("scenario"):
+        scen = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
+        TG = gs_mod.TacticalGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
+        print(f"tactical mode: {TG.scenario['name']} (log {TG.log_path})")
     # migrate the pre-generalization Arnhem work save (was live\game.vsav)
     legacy = os.path.join(ROOT, "live", "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
