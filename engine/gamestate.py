@@ -485,6 +485,57 @@ class TacticalGame:
                                            "hexnum": self.game.grid.hexnum(*nb)})
         return out
 
+    # P(2d6 >= n) numerator out of 36
+    P2D6 = {2: 36, 3: 35, 4: 33, 5: 30, 6: 26, 7: 21, 8: 15, 9: 10, 10: 6, 11: 3, 12: 1}
+
+    def range_info(self, pid, col=None, row=None):
+        """Fire picture for a unit from its current hex (col/row None) or a
+        hypothetical hex (a move candidate). Movement forfeits this turn's
+        fire [I.E.4], so hypothetical numbers are NEXT-turn shots: initial
+        ROF, no target-moved modifier, acquisition lost."""
+        u = self.unit(pid)
+        hypo = col is not None and (col, row) != (u["col"], u["row"])
+        pos = {"col": u["col"] if col is None else col,
+               "row": u["row"] if row is None else row}
+        weapon = self.cd.weapon_of(u["afv"])
+        tbl = self.cd.weapons[weapon]["hpn_by_range"]
+        init_range = max((r for r in range(1, len(tbl) + 1)
+                          if tbl[r - 1] <= self.cd.init_max_hpn), default=0)
+        out = {"weapon": weapon, "weapon_label": self.cd.weapons[weapon]["label"],
+               "hypothetical": hypo, "initiation_range": init_range,
+               "max_range": len(tbl),
+               "secondary": "MG: no effect vs AFVs (machine guns engage personnel — out of Scenario 1 scope)",
+               "targets": []}
+        for tgt in self.s["units"].values():
+            if tgt["side"] == u["side"] or tgt["K"]:
+                continue
+            rng = self.range_between(pos, tgt)
+            hpn = self.cd.hpn(weapon, rng) if rng and rng > 0 else (0 if rng == 0 else None)
+            rec = {"target": tgt["pid"], "range": rng, "hpn": hpn}
+            if hpn is None:
+                rec["note"] = "out of range"
+                out["targets"].append(rec)
+                continue
+            moved = (not hypo) and tgt["pid"] in self.s["moved"]
+            adj = hpn + (self.cd.target_moved_mod if moved else 0)
+            acquired = (not hypo) and self.s["acquired"].get(u["pid"]) == tgt["pid"]
+            rounds = self.cd.rof(weapon, acquired)
+            p1 = self.P2D6.get(adj, 36 if rng == 0 else 0) / 36.0
+            aspect = combat_mod.target_aspect(
+                tgt["facing"], self.xy(tgt),
+                self.game.grid.hex_to_pixel(pos["col"], pos["row"]), moved)
+            can_init = (hpn <= self.cd.init_max_hpn
+                        or [u["pid"], tgt["pid"]] in self.s["fired_pairs"]
+                        or [tgt["pid"], u["pid"]] in self.s["fired_pairs"]
+                        or aspect in ("flank", "rear"))
+            rec.update(hpn_adjusted=adj, prob=round(p1 * 100),
+                       rounds=rounds, acquired=acquired, aspect=aspect,
+                       prob_any=round((1 - (1 - p1) ** rounds) * 100),
+                       initiation_ok=can_init)
+            out["targets"].append(rec)
+        out["targets"].sort(key=lambda t: (t.get("hpn") is None, t.get("range") or 0))
+        return out
+
     def legal_targets(self, pid):
         """For the UI/AI: every enemy unit with range, HPN, rounds, and the
         gate's verdict (so illegal choices are visible-but-blocked)."""

@@ -288,6 +288,10 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(TG.legal_moves(qs["id"][0]))
             if TG and url.path == "/api/legal_targets":
                 return self._json(dict(targets=TG.legal_targets(qs["id"][0])))
+            if TG and url.path == "/api/range_info":
+                col = int(qs["col"][0]) if "col" in qs else None
+                row = int(qs["row"][0]) if "row" in qs else None
+                return self._json(TG.range_info(qs["id"][0], col, row))
             if TG and url.path == "/api/log":
                 return self._json(api_log_tail(qs))
             if url.path == "/gasset/map":
