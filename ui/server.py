@@ -156,7 +156,8 @@ def game_descriptor():
         map_url="/gasset/map", map_w=w, map_h=h,
         counters_url="/gasset/counters/",
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
-        grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient),
+        grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
+                  x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity),
         sides=[dict(id=s, label=g.spec["sides"].get("labels", {}).get(s, s))
                for s in g.side_order],
         facing=g.facing,
@@ -294,6 +295,9 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(TG.range_info(qs["id"][0], col, row))
             if TG and url.path == "/api/log":
                 return self._json(api_log_tail(qs))
+            if TG and url.path == "/api/ai_plan":
+                p = ai_mod.plan_next(TG, qs["side"][0])
+                return self._json(p if p else dict(none=True, flow=flow_view()))
             if url.path == "/gasset/map":
                 return self._file(GAME_OBJ.assets.get("map"))
             if url.path.startswith("/gasset/counters/"):
