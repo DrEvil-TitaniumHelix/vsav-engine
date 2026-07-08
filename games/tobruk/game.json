@@ -1,60 +1,197 @@
 {
-  "name": "Tobruk (Avalon Hill, 1975)",
-  "map_name": "Main Map",
-  "board_name": "Main Map",
-  "save_key": "a3",
-  "grid": {
-    "orient": "pointy",
-    "dx": 186.0, "dy": 161.0, "x0": 7.0, "y0": 36.0,
-    "stagger": true, "offset_parity": 0, "hexnum_digits": 2,
-    "naming": {"style": "letter_diag", "row0": 1, "num0": -1},
-    "provenance": "fitted from the module's 1535 RegionGrid snap points (2 outliers); printed row A = lattice row 1, hex A1 = (col 2, row 1)"
+ "name": "Tobruk (Avalon Hill, 1975)",
+ "map_name": "Main Map",
+ "board_name": "Main Map",
+ "save_key": "a3",
+ "grid": {
+  "orient": "pointy",
+  "dx": 186.0,
+  "dy": 161.0,
+  "x0": 7.0,
+  "y0": 36.0,
+  "stagger": true,
+  "offset_parity": 0,
+  "hexnum_digits": 2,
+  "naming": {
+   "style": "letter_diag",
+   "row0": 1,
+   "num0": -1
   },
-  "buildfile": "../../../VassalTobruk/extracted/buildFile",
-  "moduledata": "../../../VassalTobruk/extracted/moduledata",
-  "setup_save": "scenario_meeting.vsav",
-  "assets": {
-    "map": "../../../VassalTobruk/assets/map.png",
-    "map_thumb": "../../../VassalTobruk/assets/map_thumb.png",
-    "counters_dir": "../../../VassalTobruk/extracted/images"
+  "provenance": "fitted from the module's 1535 RegionGrid snap points (2 outliers); printed row A = lattice row 1, hex A1 = (col 2, row 1)"
+ },
+ "buildfile": "../../../VassalTobruk/extracted/buildFile",
+ "moduledata": "../../../VassalTobruk/extracted/moduledata",
+ "setup_save": "scenario_firefight_b.vsav",
+ "assets": {
+  "map": "../../../VassalTobruk/assets/map.png",
+  "map_thumb": "../../../VassalTobruk/assets/map_thumb.png",
+  "counters_dir": "../../../VassalTobruk/extracted/images"
+ },
+ "ui": {
+  "counter_px": 120
+ },
+ "facing": {
+  "count": 6,
+  "step_deg": 60,
+  "offset_deg": 30,
+  "provenance": "6 legal facings = the 6 hexsides. Pointy-top map: neighbor directions are at 30/90/150/210/270/330 deg while counter art rests pointing at a VERTEX (0 deg) \u2014 hence offset_deg 30 and hence the module's rotate;12 trait (legal facings are its odd steps). Turn MP cost: pending rulebook. VASSAL state write-through pending one rotate-save-diff experiment."
+ },
+ "unit_kinds": [
+  "prototype"
+ ],
+ "sides": {
+  "order": [
+   "Axis",
+   "British"
+  ],
+  "labels": {
+   "Axis": "Axis (German)",
+   "British": "British"
   },
-  "ui": {"counter_px": 120},
-  "facing": {
-    "count": 6, "step_deg": 60, "offset_deg": 30,
-    "provenance": "6 legal facings = the 6 hexsides. Pointy-top map: neighbor directions are at 30/90/150/210/270/330 deg while counter art rests pointing at a VERTEX (0 deg) — hence offset_deg 30 and hence the module's rotate;12 trait (legal facings are its odd steps). Turn MP cost: pending rulebook. VASSAL state write-through pending one rotate-save-diff experiment."
+  "default": "British",
+  "detect_tokens": {
+   "Axis": [
+    "Ger_",
+    "It_"
+   ]
   },
-  "unit_kinds": ["prototype"],
-  "sides": {
-    "order": ["Axis", "British"],
-    "labels": {"Axis": "Axis (German)", "British": "British"},
-    "default": "British",
-    "detect_tokens": {"Axis": ["Ger_", "It_"]},
-    "note": "unit name = counter image basename (piece names collide across sides: both have '1/1')"
+  "note": "unit name = counter image basename (piece names collide across sides: both have '1/1')"
+ },
+ "stats": {
+  "patterns": [
+   [
+    "UK_Stuart",
+    [
+     0,
+     0,
+     5
+    ]
+   ],
+   [
+    "UK_Grant",
+    [
+     0,
+     0,
+     3
+    ]
+   ],
+   [
+    "UK_Crusader",
+    [
+     0,
+     0,
+     4
+    ]
+   ],
+   [
+    "UK_Matilda",
+    [
+     0,
+     0,
+     2
+    ]
+   ],
+   [
+    "UK_Valintine",
+    [
+     0,
+     0,
+     2
+    ]
+   ],
+   [
+    "Ger_Pz_3H",
+    [
+     0,
+     0,
+     3
+    ]
+   ],
+   [
+    "Ger_Pz_3J",
+    [
+     0,
+     0,
+     3
+    ]
+   ],
+   [
+    "Ger_Pz_4E",
+    [
+     0,
+     0,
+     3
+    ]
+   ],
+   [
+    "Ger_Marder_3",
+    [
+     0,
+     0,
+     3
+    ]
+   ],
+   [
+    "It_M13-40",
+    [
+     0,
+     0,
+     2
+    ]
+   ],
+   [
+    "It_Semovente",
+    [
+     0,
+     0,
+     2
+    ]
+   ],
+   [
+    "_Inf_",
+    [
+     0,
+     0,
+     2
+    ]
+   ],
+   [
+    "Crew",
+    [
+     0,
+     0,
+     2
+    ]
+   ]
+  ],
+  "default": [
+   0,
+   0,
+   2
+  ],
+  "provenance": "MAs from the counters as listed on rulebook p.3 (unit-types diagrams, module's own scanned rulebook Page_03.png): Stuart 5, Grant 3, Crusader 4, Matilda/Valentine 2, PzIII-H/J 3, PzIV-E 3, Marder 3, M13/40 2, Semovente 2. Supersedes the provisional guesses (2026-07-08)."
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
   },
-  "stats": {
-    "patterns": [
-      ["Ger_Pz_3H", [0, 0, 4]],
-      ["Ger_Pz_3J", [0, 0, 4]],
-      ["Ger_Pz_4E", [0, 0, 4]],
-      ["UK_Crusader", [0, 0, 5]],
-      ["UK_Stuart", [0, 0, 6]],
-      ["UK_Matilda", [0, 0, 2]],
-      ["UK_Grant", [0, 0, 4]],
-      ["_Inf_", [0, 0, 2]],
-      ["Crew", [0, 0, 2]]
-    ],
-    "default": [0, 0, 2],
-    "provenance": "MA values PROVISIONAL — engineering placeholders pending Bruce's physical rulebook (AFV data cards). Attack/defense unused: Tobruk resolves fire via To-Hit tables, not factors (combat phase TBD)."
+  "enter_enemy_hex": false,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    36
+   ],
+   "rows": [
+    1,
+    39
+   ]
   },
-  "movement": {
-    "impassable_terrain": [],
-    "terrain_mp": {},
-    "default_mp": 1.0,
-    "hexside_rules": [],
-    "zoc": {"exerts": false},
-    "enter_enemy_hex": false,
-    "pass_through_friendly": true,
-    "bounds": {"cols": [0, 36], "rows": [1, 39]},
-    "note": "featureless open desert — uniform 1 MP; the map has no terrain, historically correct"
-  }
+  "note": "featureless open desert \u2014 uniform 1 MP; the map has no terrain, historically correct"
+ },
+ "scenario": "scenario_firefight_b.json"
 }

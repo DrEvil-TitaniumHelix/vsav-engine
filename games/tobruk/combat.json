@@ -1,0 +1,81 @@
+{
+  "comment": "Tobruk Scenario One ('The Clash of Armor', rulebook pp.4-5) direct-fire data, transcribed from the charts the VASSAL module itself ships (extracted/images/*). Every table cites its source image. Damage-code grammar per rulebook p.5.b: clauses separated by '|', each 'DMG<=R' applies only at range<=R; first matching clause by range wins; no match = hit with no effect. DMG tokens: K kill, M mobility-kill, F firepower-kill, Cn crew casualties (IGNORED in Scenario 1 per p.5.e), (Pn) = roll one die, <=n means K-kill. '-' = ricochet.",
+  "hpn_modifiers": {
+    "target_moved": 1,
+    "comment": "p.4 I.F.1.b.2 (+1 if target moved this turn). Other modifiers on Hit_Modifier_Chart.png reference scenarios 5-7 (weapon pit, flank -1 [VII.B.2], burst-on-target, bunker) - OUT OF SCOPE for Scenario 1 and deliberately not applied."
+  },
+  "fire_initiation": {
+    "max_unadjusted_hpn": 8,
+    "comment": "p.5 H: an AFV may not INITIATE fire when the unadjusted HPN exceeds 8 unless (a) the target has fired at it, or (b) the target is an AFV presenting flank/rear aspect; once it has fired at a target it may keep firing at it regardless."
+  },
+  "weapons": {
+    "37mmM6": {
+      "label": "37mm M6 (Stuart)",
+      "rof_initial": 2,
+      "rof_acquired": 6,
+      "hpn_by_range": [2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9, 9, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12],
+      "source": "UK_To_Hit_Table.png row 'Stuart' (index 0 = range 1; beyond list = no fire possible)"
+    },
+    "47mmM37": {
+      "label": "47mm M37 (M13/40)",
+      "rof_initial": 1,
+      "rof_acquired": 4,
+      "hpn_by_range": [2, 3, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 11, 12, 12, 12],
+      "source": "To_Hit_Table.png (German/Italian) row 'M13/40'"
+    }
+  },
+  "afv_types": {
+    "stuart": {
+      "label": "U.S. M3 (Lt.) 'General Stuart'",
+      "counter_token": "UK_Stuart",
+      "ma": 5,
+      "weapon": "37mmM6",
+      "card": "stuart",
+      "vp": {"K": 12, "MF": 4},
+      "source": "MA printed on counter, rulebook p.3 unit-types listing; VP from Firefight Victory Point Table p.24"
+    },
+    "m13_40": {
+      "label": "Italian M13/40",
+      "counter_token": "It_M13-40",
+      "ma": 2,
+      "weapon": "47mmM37",
+      "card": "m13_40",
+      "vp": {"K": 12, "MF": 4},
+      "source": "MA printed on counter, rulebook p.3; VP from Firefight Victory Point Table p.24 (Italian block)"
+    }
+  },
+  "cards": {
+    "stuart": {
+      "source": "Ger_Target_Stuart.png (module's Axis target/damage card for the Stuart)",
+      "area_impacted": {
+        "front": {"2": "GM", "3": "TUR", "4": "LH", "5": "-", "6": "UH", "7": "-", "8": "-", "9": "TR", "10": "-", "11": "UH", "12": "R"},
+        "flank": {"2": "-", "3": "TR", "4": "TR", "5": "LH", "6": "LH", "7": "UH", "8": "LH", "9": "TUR", "10": "-", "11": "-", "12": "R"},
+        "rear":  {"2": "TUR", "3": "-", "4": "-", "5": "TUR", "6": "H", "7": "-", "8": "H", "9": "TR", "10": "-", "11": "H", "12": "R"}
+      },
+      "damage": {
+        "47mmM37": {
+          "front": {"UH": "K/C2<=4|C2(P4)<=8", "LH": "M(P3)<=1", "TUR": "K/C2<=4|F/C1(P4)<=8", "GM": "K/C2<=7|F/C2(P4)<=11"},
+          "flank": {"UH": "K/C2<=13|C2(P4)<=17", "LH": "K/C1<=13|C1(P5)<=17", "TUR": "K/C2<=10|F/C1(P3)<=15"},
+          "rear":  {"H": "K<=13|M(P5)<=17", "TUR": "K/C2<=10|F/C1(P3)<=15"},
+          "any":   {"R": "K/C2", "G": "-", "TR": "M"}
+        }
+      }
+    },
+    "m13_40": {
+      "source": "UK_Target_M13-40.png (module's British target/damage card for the M13/40)",
+      "area_impacted": {
+        "front": {"2": "TUR", "3": "-", "4": "LH", "5": "LH", "6": "TR", "7": "UH", "8": "-", "9": "-", "10": "UH", "11": "GM", "12": "R"},
+        "flank": {"2": "-", "3": "-", "4": "TUR", "5": "LH", "6": "TR", "7": "UH", "8": "UH", "9": "LH", "10": "LH", "11": "-", "12": "R"},
+        "rear":  {"2": "TUR", "3": "-", "4": "TUR", "5": "H", "6": "TR", "7": "H", "8": "H", "9": "-", "10": "H", "11": "H", "12": "R"}
+      },
+      "damage": {
+        "37mmM6": {
+          "front": {"UH": "K/C2<=15|C2(P4)<=22", "LH": "M/C1(P5)<=4|M(P4)<=13", "TUR": "F/C1(P3)<=7", "GM": "-"},
+          "flank": {"UH": "K/C2<=20|C2(P4)<=25", "LH": "K/C1<=20|M/C1(P5)<=25", "TUR": "K/C1<=15|F/C1(P3)<=22"},
+          "rear":  {"H": "K<=20|M(P4)<=25", "TUR": "K/C2<=15|F/C2(P3)<=22"},
+          "any":   {"R": "K/C2<=22|F/C2(P4)<=27", "G": "-", "TR": "M"}
+        }
+      }
+    }
+  }
+}
