@@ -103,6 +103,27 @@ def pick_fire(tg, side):
             {"type": "fire", "unit": u["pid"], "target": t["target"]})
 
 
+def plan_next(tg, side):
+    """The AI's next intended action WITHOUT applying it — lets the UI present
+    select/intent/execute as separate beats (spacebar step-through)."""
+    s = tg.s
+    if s["over"]:
+        return None
+    if s["segment"] == "movement" and s["mover"] == side:
+        acts = movement_actions(tg, side)
+        if acts:
+            return {"desc": acts[0][0], "action": acts[0][1]}
+        return {"desc": f"{side} has no more moves — ends movement",
+                "action": {"type": "end_movement"}}
+    if s["segment"] == "combat" and s["initiative"] == side and side not in s["fire_done"]:
+        p = pick_fire(tg, side)
+        if p:
+            return {"desc": p[0], "action": p[1]}
+        return {"desc": f"{side} has no shot — passes",
+                "action": {"type": "pass_fire"}}
+    return None
+
+
 def take_movement_segment(tg, side):
     """Run the AI's whole movement segment through the gate; returns log."""
     out = []

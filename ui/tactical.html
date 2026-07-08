@@ -89,7 +89,11 @@
   <span class="chip brit" id="vpbrit">…</span>
   <span class="chip axis" id="vpaxis">…</span>
   <span style="margin-left:auto">you play:</span><span id="sidebtns"></span>
-  <label style="font-size:12px"><input type="checkbox" id="autoai" checked> auto-AI</label>
+  <label style="font-size:12px">AI <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+    <option value="step" selected>stepped (SPACE)</option>
+    <option value="auto">auto</option>
+    <option value="off">off</option>
+  </select></label>
   <label style="font-size:12px">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
     <option value="1000">1s</option><option value="2000">2s</option>
     <option value="3000" selected>3s</option><option value="5000">5s</option>
@@ -121,6 +125,10 @@ let GAME=null, FLOW=null, MAPW=0, MAPH=0, CPX=120, HX=64, HXC=32, HYH=59.5;
 let scale=0.25, panX=0, panY=0;
 let units=[], mySide='British', selected=null, legal=null, targets=null, dragging=null;
 let aiBusy=false, rangeInfo=null, rangeCache={}, dragHex=null;
+let aiStep=null;   // {plan:{desc,action}, stage:0 select | 1 intent}  (stage 2 = execute)
+function hexToPixel(col,row){ const g=GAME.grid;
+  const xoff=(row%2===g.offset_parity)?g.dx/2:0;
+  return {x:Math.round(g.x0+col*g.dx+xoff), y:Math.round(g.y0+row*g.dy)}; }
 // P(2d6 >= n) in %
 const P2D6={2:100,3:97,4:92,5:83,6:72,7:58,8:42,9:28,10:17,11:8,12:3};
 
@@ -198,8 +206,10 @@ function render(){
     B.textContent=FLOW.winner==='draw'?`GAME OVER — DRAW ${JSON.stringify(FLOW.vp.scores)}`:
       `GAME OVER — ${sideLabel(FLOW.winner)} WINS  (British ${FLOW.vp.scores.British} : Axis ${FLOW.vp.scores.Axis})`;
   } else { B.className='';
+    const stepMode=document.getElementById('aimode').value==='step';
     B.textContent = myPhase() ? `YOUR ${FLOW.segment==='movement'?'MOVE':'FIRE'} — ${sideLabel(mySide)}`
-                              : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`;
+      : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press SPACE to step its actions`
+                 : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`;
   }
   document.getElementById('endmove').disabled=!(myPhase()&&FLOW.segment==='movement');
   document.getElementById('passfire').disabled=!(myPhase()&&FLOW.segment==='combat');
@@ -288,6 +298,7 @@ function drawOverlay(){
     rc.setAttribute('fill','none'); rc.setAttribute('stroke','#c9a227'); rc.setAttribute('stroke-width','6');
     rc.setAttribute('stroke-dasharray','30 18'); OV.appendChild(rc);
   }
+  drawAIStep();
   if(!legal||!selected)return;
   let d=`M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
   const hole=(x,y)=>'M'+hexCorners(x,y).map(q=>q.join(' ')).join(' L ')+' Z ';
@@ -327,6 +338,77 @@ function drawTargets(){
     W.appendChild(r);
   });
 }
+
+// ---------- stepped AI (spacebar) ----------
+function drawAIStep(){
+  if(!aiStep||!GAME)return;
+  const a=aiStep.plan.action;
+  const hexPoly=(x,y,color)=>{ const pg=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    pg.setAttribute('points',hexPts(x,y)); pg.setAttribute('fill','none');
+    pg.setAttribute('stroke',color); pg.setAttribute('stroke-width','12'); OV.appendChild(pg); return pg; };
+  const actor=units.find(u=>u.id===a.unit);
+  if(actor)hexPoly(actor.x,actor.y,'#ffd75e');                     // acting unit: yellow
+  if(aiStep.stage>=1){
+    if(a.dest){ const p=hexToPixel(a.dest[0],a.dest[1]);           // move intent: cyan + path line
+      hexPoly(p.x,p.y,'#5ec8e0');
+      if(actor){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',actor.x); ln.setAttribute('y1',actor.y);
+        ln.setAttribute('x2',p.x); ln.setAttribute('y2',p.y);
+        ln.setAttribute('stroke','#5ec8e0'); ln.setAttribute('stroke-width','8');
+        ln.setAttribute('stroke-dasharray','24 16'); OV.appendChild(ln); } }
+    if(a.target){ const tu=units.find(u=>u.id===a.target);         // fire intent: red target hex
+      if(tu)hexPoly(tu.x,tu.y,'#ff6a5e'); }
+  }
+}
+function aiNarrate(txt){
+  const A=document.getElementById('actions');
+  A.innerHTML=`<b style="color:#ffd75e">AI:</b> ${txt} &nbsp; <span style="color:#8a8f98">— SPACE to continue</span>`;
+  A.style.display='block';
+}
+const STAGE_HINTS=['selected','intent'];
+async function advanceAIStep(){
+  if(aiBusy||FLOW.over||myPhase())return;
+  if(!aiStep){
+    aiBusy=true;
+    const p=await(await fetch('/api/ai_plan?side='+aiSide())).json();
+    aiBusy=false;
+    if(p.none){ await refresh(); return; }
+    const single=['end_movement','pass_fire'].includes(p.action.type);
+    aiStep={plan:p, stage: single?1:0};
+    if(single){ aiNarrate(p.desc); drawOverlay(); return; }
+    const u=units.find(x=>x.id===p.action.unit);
+    aiNarrate(`<b>${u?u.name:'unit'}</b> @ ${u?u.hexnum:'?'} selected — ${
+      {move:'will move',reverse:'will reverse',pivot:'will pivot',fire:'will fire'}[p.action.type]}…`);
+    drawOverlay(); return;
+  }
+  if(aiStep.stage===0){
+    aiStep.stage=1;
+    aiNarrate(aiStep.plan.desc);
+    drawOverlay(); return;
+  }
+  // execute through the gate
+  aiBusy=true;
+  const act=aiStep.plan.action;
+  const r=await(await fetch('/api/action',{method:'POST',
+    body:JSON.stringify({side:aiSide(),action:act})})).json();
+  aiBusy=false;
+  if(r.result&&r.result.weapon){ showFire(r.result,aiSide(),act); soundsForFire(r.result); }
+  else if(r.verdict.legal&&['move','reverse'].includes(act.type)) sndMove();
+  const done=aiStep.plan.desc;
+  aiStep=null;
+  await refresh();
+  const A=document.getElementById('actions');
+  A.innerHTML=`<b style="color:#9ee493">AI did:</b> ${done}` +
+    (r.verdict.legal?'':` — <b style="color:#e88">REJECTED by the gate:</b> ${r.verdict.reasons.join('; ')}`) +
+    ` &nbsp; <span style="color:#8a8f98">— SPACE for next</span>`;
+  A.style.display='block';
+}
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space')return;
+  if(document.getElementById('aimode').value!=='step')return;
+  if(!FLOW||FLOW.over||myPhase())return;
+  e.preventDefault(); advanceAIStep();
+});
 
 // ---------- sound (WebAudio synthesis — no files) ----------
 let AC=null;
@@ -632,15 +714,18 @@ async function runAI(){
   await refresh();
 }
 function maybeAutoAI(){
-  if(!document.getElementById('autoai').checked||FLOW.over||myPhase())return;
+  if(FLOW.over||myPhase()){ aiStep=null; return; }
+  if(document.getElementById('aimode').value!=='auto')return;
   // movement resolves as one batch — short delay; enemy FIRE is paced by the dial
   const delay=FLOW.segment==='combat'?parseInt(document.getElementById('aipace').value):800;
   setTimeout(runAI,delay);
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  const p=document.getElementById('aipace');
+  const p=document.getElementById('aipace'), m=document.getElementById('aimode');
   p.value=localStorage.getItem('aipace')||'3000';
   p.onchange=()=>localStorage.setItem('aipace',p.value);
+  m.value=localStorage.getItem('aimode')||'step';
+  m.onchange=()=>{ localStorage.setItem('aimode',m.value); aiStep=null; refresh(); };
 });
 
 // ---------- top bar ----------
