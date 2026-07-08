@@ -7,15 +7,14 @@
   "main board: 'DBW map' on map 'DBW Map'; 4 other board(s) not converted: Graveyard (map 'Graveyard'), Flugplatz (map 'Airfield'), Allied OOB (map 'Am OOB'), German OOB (map 'Ge OOB')",
   "hex grid from buildFile: flat dx=72.88203230275488 dy=89.89999999999944 origin=(54.0,-1.0)",
   "map asset: dbw-Full-map-080720-24.gif (4680x3376 px)",
-  "setup 'Campaign': 261 pieces (261 self-positioned, 254 in stacks), key 0x13",
-  "setup 'Pattons Relief of Bastonge': 343 pieces (343 self-positioned, 268 in stacks), key 0x88",
-  "setup 'New': 255 pieces (255 self-positioned, 243 in stacks), key 0x10",
+  "setup 'Campaign': 261 pieces, 78 ON the main map (261 self-positioned, 254 in stacks), key 0x13",
+  "setup 'Pattons Relief of Bastonge': 343 pieces, 8 ON the main map (343 self-positioned, 268 in stacks), key 0x88",
+  "setup 'New': 255 pieces, 125 ON the main map (255 self-positioned, 243 in stacks), key 0x10",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.json",
+  "runtime self-check: engine loads the setup and sees 121 units"
  ],
- "problems": [
-  "game.json already exists in C:\\VassalArnhem\\games\\deluxe-bitter-woods \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
- ],
+ "problems": [],
  "verdict": "FULL",
  "module": "Deluxe Bitter Woods",
  "version": "15b09",
@@ -46,6 +45,7 @@
    "pieces": 261,
    "positioned": 261,
    "in_stacks": 254,
+   "on_map": 78,
    "kinds": {
     "emb2": 14,
     "label": 209,
@@ -62,6 +62,7 @@
    "pieces": 343,
    "positioned": 343,
    "in_stacks": 268,
+   "on_map": 8,
    "kinds": {
     "emb2": 166,
     "immob": 6,
@@ -78,6 +79,7 @@
    "pieces": 255,
    "positioned": 255,
    "in_stacks": 243,
+   "on_map": 125,
    "kinds": {
     "emb2": 6,
     "immob": 10,
@@ -90,5 +92,6 @@
  ],
  "at_start_count": 0,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\deluxe-bitter-woods\\game.json",
+ "runtime_units": 121
 }

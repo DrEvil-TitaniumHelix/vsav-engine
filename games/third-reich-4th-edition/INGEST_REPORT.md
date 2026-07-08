@@ -15,16 +15,16 @@ Play it:  `python ui/server.py --game games\third-reich-4th-edition`
 - main board: '3R4' on map 'Main'; 17 other board(s) not converted: Replacements (map 'Replacement Pool'), ge OOB (map 'Ge-Card'), It OOB (map 'It-Card'), am OOB (map 'AM-Card'), Br OOB (map 'Br-Card'), Fr OOB (map 'Fr-Card')
 - hex grid from buildFile: pointy dx=117.60000000000014 dy=102.0 origin=(48.0,52.0) [SIDEWAYS — unverified mapping]
 - map asset: 3R4_map_16-color060606.png (6189x4284 px)
-- setup 'Campaign': 542 pieces (542 self-positioned, 542 in stacks), key 0xc1
-- setup '1939': 476 pieces (476 self-positioned, 476 in stacks), key 0xad
+- setup 'Campaign': 542 pieces, 212 ON the main map (542 self-positioned, 542 in stacks), key 0xc1
+- setup '1939': 476 pieces, 138 ON the main map (476 self-positioned, 476 in stacks), key 0xad
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\third-reich-4th-edition\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\third-reich-4th-edition\game.json
+- runtime self-check: engine loads the setup and sees 508 units
 
 ## What didn't (and why)
 
 - setup '1942': file 'Campaignt-070906' missing from module
 - setup '1944': file 'Campaignt-070906' missing from module
-- game.json already exists in C:\VassalArnhem\games\third-reich-4th-edition — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Grid
 

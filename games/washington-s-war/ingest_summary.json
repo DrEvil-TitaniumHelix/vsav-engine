@@ -10,11 +10,10 @@
   "map asset: map.png (3300x5100 px)",
   "no bundled .vsav setups, but 115 at-start pieces on the main map (SetupStack) \u2014 convertible",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\washington-s-war\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\washington-s-war\\game.json"
  ],
  "problems": [
-  "no grid of any kind on the main board",
-  "game.json already exists in C:\\VassalArnhem\\games\\washington-s-war \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "no grid of any kind on the main board"
  ],
  "verdict": "PARTIAL",
  "module": "Washington's War",
@@ -31,5 +30,6 @@
  "setups": [],
  "at_start_count": 115,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\washington-s-war\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\washington-s-war\\game.json",
+ "runtime_units": null
 }

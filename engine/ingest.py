@@ -43,6 +43,13 @@ SLOT_RE = re.compile(
     r'(.*?)</VASSAL\.build\.widget\.(?:Piece|Card)Slot>', re.S)
 
 
+def load_json_quiet(path):
+    try:
+        return json.load(open(path, encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def slugify(name):
     s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
     return s or "module"
@@ -355,12 +362,16 @@ def read_any_save(path):
     return vsav.decode_saved(raw), int(raw[5:7], 16)
 
 
-def inspect_save(path, key_hint=None):
-    """Decode a save (any generation) and count what our parsers can resolve."""
+def inspect_save(path, map_name=None):
+    """Decode a save (any generation) and count what our parsers can resolve.
+    on_map counts pieces whose state places them on map_name — setups often
+    start most counters on OOB charts/side windows, and only on_map pieces
+    are visible on the battle map (that's the number that matters)."""
     plain, key = read_any_save(path)
     cmds = plain.split(ESC)
+    on_map_re = re.compile(rf"[;\t]{re.escape(map_name)};(-?\d+);(-?\d+);\d*") if map_name else None
     kinds = Counter()
-    pieces, positioned, in_stacks = 0, 0, 0
+    pieces, positioned, in_stacks, on_map = 0, 0, 0, 0
     stack_members = set()
     for c in cmds:
         m = STACK_RE.match(c.rstrip())
@@ -373,11 +384,14 @@ def inspect_save(path, key_hint=None):
             kinds[m.group(2)] += 1
             if POS32_RE.search(c) or re.search(r"[;\t][^;\t]+;(-?\d+);(-?\d+);\d*(?:[\t\\]|$)", c):
                 positioned += 1
+            if on_map_re and (POS32_RE.search(c) or on_map_re.search(c)):
+                on_map += 1
     for c in cmds:
         m = PIECE_RE.match(c)
         if m and m.group(1) in stack_members:
             in_stacks += 1
     return dict(pieces=pieces, positioned=positioned, in_stacks=in_stacks,
+                on_map=on_map if map_name else None,
                 kinds=dict(kinds), key=f"{key:02x}")
 
 
@@ -614,7 +628,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             bad(f"setup {ps['name']!r}: file {ps['file']!r} missing from module")
             continue
         try:
-            info = inspect_save(src)
+            info = inspect_save(src, main_map["name"] or "Main Map")
             os.makedirs(setup_dir, exist_ok=True)
             base = os.path.basename(ps["file"])
             dst = os.path.join(setup_dir, base if base.lower().endswith(".vsav") else base + ".vsav")
@@ -638,7 +652,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             else:
                 legacy = ""
             setups.append(dict(name=ps["name"], path=dst, **info))
-            ok(f"setup {ps['name']!r}: {info['pieces']} pieces "
+            ok(f"setup {ps['name']!r}: {info['pieces']} pieces, {info['on_map']} ON the main map "
                f"({info['positioned']} self-positioned, {info['in_stacks']} in stacks), "
                f"key 0x{info['key']}{legacy}")
         except Exception as e:
@@ -672,7 +686,8 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     elif map_dims:
         bounds = dict(cols=[0, max(1, int((map_dims[0] - grid_cfg["x0"]) / grid_cfg["dx"]))],
                       rows=[0, max(1, int((map_dims[1] - grid_cfg["y0"]) / grid_cfg["dy"]))])
-    unit_kinds = sorted(setups[0]["kinds"]) if setups else ["piece", "prototype", "mark", "hideCmd"]
+    unit_kinds = sorted({k for s in setups for k in s["kinds"]}) if setups \
+        else ["piece", "prototype", "mark", "hideCmd"]
     sides = [s for s in mod["sides"] if s.lower() not in ("solitaire", "solo", "referee", "observer")]
     if len(sides) < 2:
         sides = (sides + ["Side A", "Side B"])[:2]
@@ -704,12 +719,17 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
                    "module_version": md["version"]},
     }
     if setups:
-        spec["setup_save"] = rel(setups[0]["path"])
+        spec["setup_save"] = rel(max(setups, key=lambda s: (s["on_map"] or 0, s["pieces"]))["path"])
     os.makedirs(out_dir, exist_ok=True)
     spec_path = os.path.join(out_dir, "game.json")
     if os.path.exists(spec_path):
-        spec_path = os.path.join(out_dir, "game.ingest.json")
-        bad(f"game.json already exists in {out_dir} — wrote {os.path.basename(spec_path)} instead (NOT clobbering a curated spec)")
+        # overwrite our own earlier output freely; NEVER clobber a curated spec
+        # (generated specs carry the "ingest" marker)
+        old = load_json_quiet(spec_path)
+        if not (old and "ingest" in old):
+            spec_path = os.path.join(out_dir, "game.ingest.json")
+            bad(f"game.json already exists in {out_dir} and is not ingest-generated — "
+                f"wrote {os.path.basename(spec_path)} instead (NOT clobbering a curated spec)")
     with open(spec_path, "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=1)
     ok(f"spec skeleton -> {spec_path}")
@@ -730,18 +750,45 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             make_save.build(game, scen, sav)
             spec["setup_save"] = rel(sav)
             json.dump(spec, open(spec_path, "w", encoding="utf-8"), indent=1)
-            setups.append(dict(name="at-start (built)", path=sav, **inspect_save(sav)))
+            setups.append(dict(name="at-start (built)", path=sav,
+                               **inspect_save(sav, main_map["name"] or "Main Map")))
             ok(f"built setup save from {len(usable)} at-start pieces -> {sav}"
                + (f" ({len(at_start) - len(usable)} skipped, no gpid)" if len(usable) < len(at_start) else ""))
         except Exception as e:
             bad(f"at-start save build failed: {e}")
 
+    # --- runtime self-check: load the generated spec + setup through the REAL
+    # engine (gamespec + board) and count the units the UI would actually show.
+    # A FULL verdict must be backed by this, not by the ingest parser's counts.
+    rt_units = None
+    if setups and spec_path.endswith("game.json"):
+        try:
+            import gamespec
+            import board as board_mod
+            game_rt = gamespec.Game(out_dir)
+            if game_rt.setup_save and os.path.exists(game_rt.setup_save):
+                rt_units = len(board_mod.Board(game_rt.setup_save, game_rt).units())
+                if rt_units >= 10:
+                    ok(f"runtime self-check: engine loads the setup and sees {rt_units} units")
+                elif rt_units:
+                    bad(f"runtime self-check: engine sees only {rt_units} unit(s) on the main map "
+                        "— most pieces start on side charts/OOB windows; scenario authoring needed")
+                else:
+                    bad("runtime self-check FAILED: engine loads the setup but sees 0 units "
+                        "(piece-state format the runtime parser doesn't resolve yet)")
+        except Exception as e:
+            rt_units = 0
+            bad(f"runtime self-check FAILED: {e}")
+    rep["runtime_units"] = rt_units
+
     # --- verdict
-    best_setup = max((s["pieces"] for s in setups), default=0)
+    best_setup = max(((s["on_map"] if s["on_map"] is not None else s["pieces"]) for s in setups),
+                     default=0)
     if setups and best_setup < 10:
-        bad(f"best setup has only {best_setup} piece(s) — likely markers, not a scenario; "
-            "real setups need authoring (the make_save scenario-JSON path)")
-    if grid_how and setups and best_setup >= 10 and map_asset and n_slots:
+        bad(f"best setup puts only {best_setup} piece(s) on the main map — likely markers, "
+            "not a scenario; real setups need authoring (the make_save scenario-JSON path)")
+    if grid_how and setups and best_setup >= 10 and map_asset and n_slots \
+            and (rt_units is None or rt_units >= 10):
         rep["verdict"] = "FULL"
     elif map_asset and n_slots:
         rep["verdict"] = "PARTIAL"

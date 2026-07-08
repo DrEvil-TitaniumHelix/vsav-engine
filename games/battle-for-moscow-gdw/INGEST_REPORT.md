@@ -17,13 +17,10 @@ Play it:  `python ui/server.py --game games\battle-for-moscow-gdw`
 - main board: 'Board' on map 'Map'
 - hex grid from buildFile: flat dx=102.5 dy=118.0 origin=(146.0,67.0)
 - map asset: board.png (2389x1248 px)
-- setup 'German historical setup': 40 pieces (39 self-positioned, 0 in stacks), key 0xaa
+- setup 'German historical setup': 40 pieces, 40 ON the main map (39 self-positioned, 0 in stacks), key 0xaa
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\battle-for-moscow-gdw\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\battle-for-moscow-gdw — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\battle-for-moscow-gdw\game.json
+- runtime self-check: engine loads the setup and sees 40 units
 
 ## Grid
 

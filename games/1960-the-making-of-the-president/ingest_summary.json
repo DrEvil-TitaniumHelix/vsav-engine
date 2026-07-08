@@ -10,11 +10,10 @@
   "map asset: map.png (5100x3300 px)",
   "no bundled .vsav setups, but 71 at-start pieces on the main map (SetupStack) \u2014 convertible",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\1960-the-making-of-the-president\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\1960-the-making-of-the-president\\game.json"
  ],
  "problems": [
-  "no grid of any kind on the main board",
-  "game.json already exists in C:\\VassalArnhem\\games\\1960-the-making-of-the-president \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "no grid of any kind on the main board"
  ],
  "verdict": "PARTIAL",
  "module": "1960 The Making of the President",
@@ -31,5 +30,6 @@
  "setups": [],
  "at_start_count": 71,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\1960-the-making-of-the-president\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\1960-the-making-of-the-president\\game.json",
+ "runtime_units": null
 }

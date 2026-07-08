@@ -25,7 +25,9 @@
   "counter_px": 75
  },
  "unit_kinds": [
+  "emb2",
   "label",
+  "piece",
   "report",
   "rotate"
  ],
@@ -78,5 +80,5 @@
   "grid_how": "hexgrid",
   "module_version": "3.7"
  },
- "setup_save": "../../../VassalIngest/panzerblitz-panzer-leader/setups/pzb_sit_1_qs.vsav"
+ "setup_save": "../../../VassalIngest/panzerblitz-panzer-leader/setups/pzl_sit_19_qs.vsav"
 }

@@ -17,13 +17,13 @@
 - map asset: Large.png (2770x2279 px)
 - no bundled .vsav setups, but 2 at-start pieces on the main map (SetupStack) — convertible
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\napoleon-at-waterloo\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\napoleon-at-waterloo\game.json
 - built setup save from 2 at-start pieces -> C:\VassalIngest\napoleon-at-waterloo\setups\atstart.vsav
 
 ## What didn't (and why)
 
-- game.json already exists in C:\VassalArnhem\games\napoleon-at-waterloo — wrote game.ingest.json instead (NOT clobbering a curated spec)
-- best setup has only 2 piece(s) — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
+- runtime self-check: engine sees only 1 unit(s) on the main map — most pieces start on side charts/OOB windows; scenario authoring needed
+- best setup puts only 2 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
 
 ## Grid
 

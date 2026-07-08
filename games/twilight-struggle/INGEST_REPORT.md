@@ -14,14 +14,15 @@
 - 5 card deck(s) / 102 card slot(s) — cards NOT converted (engine future)
 - main board: 'World Map' on map 'World Map'
 - map asset: Map.gif (3700x3000 px)
-- setup 'Initial Setup': 344 pieces (85 self-positioned, 232 in stacks), key 0x1c, LEGACY save normalized to modern .vsav
+- setup 'Initial Setup': 344 pieces, 0 ON the main map (85 self-positioned, 232 in stacks), key 0x1c
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\twilight-struggle\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\twilight-struggle\game.json
+- runtime self-check: engine loads the setup and sees 232 units
 
 ## What didn't (and why)
 
 - board uses a SQUARE grid (dx=133.0) — engine has no square-grid support yet
-- game.json already exists in C:\VassalArnhem\games\twilight-struggle — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
 
 ## Setups
 

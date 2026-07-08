@@ -23,10 +23,9 @@
   "counter_px": 75
  },
  "unit_kinds": [
-  "piece",
-  "prototype",
-  "mark",
-  "hideCmd"
+  "hideCmd",
+  "macro",
+  "report"
  ],
  "sides": {
   "order": [
@@ -76,5 +75,6 @@
   "tool": "engine/ingest.py",
   "grid_how": "placeholder",
   "module_version": "0.2"
- }
+ },
+ "setup_save": "../../../VassalIngest/diplomacy/setups/Game-centers-and-pools.vsav"
 }

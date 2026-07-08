@@ -16,13 +16,10 @@ Play it:  `python ui/server.py --game games\afrika-korps-alt-map`
 - main board: 'Revised AK Map' on map 'Main Map'; 5 other board(s) not converted: Supply Board (map 'Supply'), Axis Order of Appearance (map 'Axis OoB'), Replacement Record (map 'Replacements'), Allies Order of Appearance (map 'Allies OoB'), Casualties Window (map 'Dead Pool')
 - hex grid from buildFile: pointy dx=104.8999999999999 dy=91.0 origin=(96.0,69.0) [SIDEWAYS — unverified mapping]
 - map asset: map.png (7400x2549 px)
-- setup 'Afrika Korps ': 91 pieces (91 self-positioned, 91 in stacks), key 0xbf
+- setup 'Afrika Korps ': 91 pieces, 18 ON the main map (91 self-positioned, 91 in stacks), key 0xbf
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\afrika-korps-alt-map\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\afrika-korps-alt-map — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\afrika-korps-alt-map\game.json
+- runtime self-check: engine loads the setup and sees 26 units
 
 ## Grid
 

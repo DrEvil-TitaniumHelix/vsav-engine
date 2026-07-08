@@ -26,8 +26,10 @@
  },
  "unit_kinds": [
   "AreaOfEffect",
+  "delete",
   "emb2",
   "immob",
+  "label",
   "mark",
   "report",
   "sendto"
@@ -81,5 +83,5 @@
   "grid_how": "hexgrid",
   "module_version": "1.0.22"
  },
- "setup_save": "../../../VassalIngest/the-longest-day/setups/Mortain v22.vsav"
+ "setup_save": "../../../VassalIngest/the-longest-day/setups/campaign v22.vsav"
 }

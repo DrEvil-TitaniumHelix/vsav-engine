@@ -15,15 +15,12 @@ Play it:  `python ui/server.py --game games\deluxe-bitter-woods`
 - main board: 'DBW map' on map 'DBW Map'; 4 other board(s) not converted: Graveyard (map 'Graveyard'), Flugplatz (map 'Airfield'), Allied OOB (map 'Am OOB'), German OOB (map 'Ge OOB')
 - hex grid from buildFile: flat dx=72.88203230275488 dy=89.89999999999944 origin=(54.0,-1.0)
 - map asset: dbw-Full-map-080720-24.gif (4680x3376 px)
-- setup 'Campaign': 261 pieces (261 self-positioned, 254 in stacks), key 0x13
-- setup 'Pattons Relief of Bastonge': 343 pieces (343 self-positioned, 268 in stacks), key 0x88
-- setup 'New': 255 pieces (255 self-positioned, 243 in stacks), key 0x10
+- setup 'Campaign': 261 pieces, 78 ON the main map (261 self-positioned, 254 in stacks), key 0x13
+- setup 'Pattons Relief of Bastonge': 343 pieces, 8 ON the main map (343 self-positioned, 268 in stacks), key 0x88
+- setup 'New': 255 pieces, 125 ON the main map (255 self-positioned, 243 in stacks), key 0x10
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\deluxe-bitter-woods\game.ingest.json
-
-## What didn't (and why)
-
-- game.json already exists in C:\VassalArnhem\games\deluxe-bitter-woods — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- spec skeleton -> C:\VassalArnhem\games\deluxe-bitter-woods\game.json
+- runtime self-check: engine loads the setup and sees 121 units
 
 ## Grid
 

@@ -10,11 +10,10 @@
   "map asset: map.png (3168x1632 px)",
   "no bundled .vsav setups, but 31 at-start pieces on the main map (SetupStack) \u2014 convertible",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.json"
  ],
  "problems": [
-  "board uses 67 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
-  "game.json already exists in C:\\VassalArnhem\\games\\julius-caesar-alt-cards \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "board uses 67 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet"
  ],
  "verdict": "PARTIAL",
  "module": "Julius Caesar (Alt Cards)",
@@ -32,5 +31,6 @@
  "setups": [],
  "at_start_count": 31,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\julius-caesar-alt-cards\\game.json",
+ "runtime_units": null
 }

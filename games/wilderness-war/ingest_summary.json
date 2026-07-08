@@ -8,16 +8,16 @@
   "6 card deck(s) / 70 card slot(s) \u2014 cards NOT converted (engine future)",
   "main board: 'Map' on map 'Main Map'; 2 other board(s) not converted: Forces (map 'Forces'), Removed (map 'Removed From Game')",
   "map asset: map.png (5100x3300 px)",
-  "setup 'Annus Mirabilis (1757-1759)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4",
-  "setup 'Early War Campaign (1755-1759)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04",
-  "setup 'Late War Campaign (1757-1762)': 271 pieces (265 self-positioned, 185 in stacks), key 0xc4",
-  "setup 'Full Campaign (1755-1762)': 260 pieces (254 self-positioned, 174 in stacks), key 0x04",
+  "setup 'Annus Mirabilis (1757-1759)': 271 pieces, 177 ON the main map (265 self-positioned, 185 in stacks), key 0xc4",
+  "setup 'Early War Campaign (1755-1759)': 260 pieces, 174 ON the main map (254 self-positioned, 174 in stacks), key 0x04",
+  "setup 'Late War Campaign (1757-1762)': 271 pieces, 177 ON the main map (265 self-positioned, 185 in stacks), key 0xc4",
+  "setup 'Full Campaign (1755-1762)': 260 pieces, 174 ON the main map (254 self-positioned, 174 in stacks), key 0x04",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\wilderness-war\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\wilderness-war\\game.json",
+  "runtime self-check: engine loads the setup and sees 25 units"
  ],
  "problems": [
-  "board uses 3 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet",
-  "game.json already exists in C:\\VassalArnhem\\games\\wilderness-war \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "board uses 3 NAMED regions (point-to-point/area map) \u2014 engine has no region-space support yet"
  ],
  "verdict": "PARTIAL",
  "module": "Wilderness War",
@@ -39,6 +39,7 @@
    "pieces": 271,
    "positioned": 265,
    "in_stacks": 185,
+   "on_map": 177,
    "kinds": {
     "mark": 231,
     "markmoved": 8,
@@ -58,6 +59,7 @@
    "pieces": 260,
    "positioned": 254,
    "in_stacks": 174,
+   "on_map": 174,
    "kinds": {
     "mark": 222,
     "hideCmd": 20,
@@ -76,6 +78,7 @@
    "pieces": 271,
    "positioned": 265,
    "in_stacks": 185,
+   "on_map": 177,
    "kinds": {
     "mark": 231,
     "markmoved": 8,
@@ -95,6 +98,7 @@
    "pieces": 260,
    "positioned": 254,
    "in_stacks": 174,
+   "on_map": 174,
    "kinds": {
     "mark": 222,
     "hideCmd": 20,
@@ -110,5 +114,6 @@
  ],
  "at_start_count": 95,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\wilderness-war\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\wilderness-war\\game.json",
+ "runtime_units": 25
 }

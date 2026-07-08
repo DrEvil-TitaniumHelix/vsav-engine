@@ -15,17 +15,17 @@
 - 8 card deck(s) / 144 card slot(s) — cards NOT converted (engine future)
 - main board: 'Main Map' on map 'Map'; 5 other board(s) not converted: Permanently Eliminated (map 'Permanently Removed'), Combat Tables (map 'Combat Tables'), Strategic Will (map 'Strategic Will'), Player Aids (map 'Player Aids'), Preferences (map 'Preferences')
 - map asset: FTP map-2014C BR.png (6800x5296 px)
-- setup 'Campaign Game / 1861': 607 pieces (585 self-positioned, 0 in stacks), key 0x1e
-- setup '1862 Scenario': 640 pieces (543 self-positioned, 0 in stacks), key 0x40
-- setup '1863 Scenario': 679 pieces (560 self-positioned, 0 in stacks), key 0x6c
-- setup '1864 Scenario': 711 pieces (548 self-positioned, 0 in stacks), key 0x06
+- setup 'Campaign Game / 1861': 607 pieces, 552 ON the main map (585 self-positioned, 0 in stacks), key 0x1e
+- setup '1862 Scenario': 640 pieces, 585 ON the main map (543 self-positioned, 0 in stacks), key 0x40
+- setup '1863 Scenario': 679 pieces, 624 ON the main map (560 self-positioned, 0 in stacks), key 0x6c
+- setup '1864 Scenario': 711 pieces, 655 ON the main map (548 self-positioned, 0 in stacks), key 0x06
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\for-the-people\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\for-the-people\game.json
+- runtime self-check: engine loads the setup and sees 131 units
 
 ## What didn't (and why)
 
 - board uses 16 NAMED regions (point-to-point/area map) — engine has no region-space support yet
-- game.json already exists in C:\VassalArnhem\games\for-the-people — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Setups
 

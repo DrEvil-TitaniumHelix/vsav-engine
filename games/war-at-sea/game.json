@@ -2,7 +2,7 @@
  "name": "War At Sea \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "War At Sea Map",
  "board_name": "mapboard",
- "save_key": "a3",
+ "save_key": "bc",
  "grid": {
   "orient": "flat",
   "dx": 100.0,
@@ -23,10 +23,8 @@
   "counter_px": 75
  },
  "unit_kinds": [
-  "piece",
-  "prototype",
-  "mark",
-  "hideCmd"
+  "delete",
+  "sendto"
  ],
  "sides": {
   "order": [
@@ -76,5 +74,6 @@
   "tool": "engine/ingest.py",
   "grid_how": "placeholder",
   "module_version": "2.41"
- }
+ },
+ "setup_save": "../../../VassalIngest/war-at-sea/setups/WAS Setup.sav.vsav"
 }

@@ -7,12 +7,11 @@
   "main board: 'Graveyard' on map 'Graveyard'",
   "map asset: vsql_graveyard.png (640x374 px)",
   "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
-  "spec skeleton -> C:\\VassalArnhem\\games\\vsql\\game.ingest.json"
+  "spec skeleton -> C:\\VassalArnhem\\games\\vsql\\game.json"
  ],
  "problems": [
   "no grid of any kind on the main board",
-  "no setups of any kind: no bundled saves, no at-start stacks \u2014 board starts empty",
-  "game.json already exists in C:\\VassalArnhem\\games\\vsql \u2014 wrote game.ingest.json instead (NOT clobbering a curated spec)"
+  "no setups of any kind: no bundled saves, no at-start stacks \u2014 board starts empty"
  ],
  "verdict": "PARTIAL",
  "module": "VSQL",
@@ -29,5 +28,6 @@
  "setups": [],
  "at_start_count": 0,
  "terrain_meta": [],
- "spec_path": "C:\\VassalArnhem\\games\\vsql\\game.ingest.json"
+ "spec_path": "C:\\VassalArnhem\\games\\vsql\\game.json",
+ "runtime_units": null
 }

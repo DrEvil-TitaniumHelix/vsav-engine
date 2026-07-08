@@ -13,14 +13,15 @@
 - declared sides: ['Allied', 'Axis']
 - main board: 'mapboard' on map 'War At Sea Map'; 1 other board(s) not converted: Graveyard (map 'Graveyard')
 - map asset: war_at_sea_board.gif (1593x2196 px)
-- setup 'Standard Setup': 80 pieces (0 self-positioned, 80 in stacks), key 0xbc, LEGACY save normalized to modern .vsav
+- setup 'Standard Setup': 80 pieces, 0 ON the main map (0 self-positioned, 80 in stacks), key 0xbc
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\war-at-sea\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\war-at-sea\game.json
+- runtime self-check: engine loads the setup and sees 80 units
 
 ## What didn't (and why)
 
 - no grid of any kind on the main board
-- game.json already exists in C:\VassalArnhem\games\war-at-sea — wrote game.ingest.json instead (NOT clobbering a curated spec)
+- best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path)
 
 ## Setups
 

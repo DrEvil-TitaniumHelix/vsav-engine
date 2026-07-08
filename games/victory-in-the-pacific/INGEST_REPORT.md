@@ -14,16 +14,16 @@
 - declared sides: ['Japan', 'Allies']
 - main board: 'Black&White' on map 'Main Map'; 6 other board(s) not converted: Nautical (map 'Main Map'), Original (map 'Main Map'), Allied OOA (map 'Allied OOA'), Japan OOA (map 'Japan OOA'), BattleBoard (map 'Battle'), Sunk (map 'Sunk')
 - map asset: map.png (2800x2217 px)
-- setup 'Nautical_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0x58
-- setup 'B&W_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0xb5
-- setup 'Original_Map': 214 pieces (0 self-positioned, 0 in stacks), key 0x2a
+- setup 'Nautical_Map': 214 pieces, 106 ON the main map (0 self-positioned, 0 in stacks), key 0x58
+- setup 'B&W_Map': 214 pieces, 106 ON the main map (0 self-positioned, 0 in stacks), key 0xb5
+- setup 'Original_Map': 214 pieces, 106 ON the main map (0 self-positioned, 0 in stacks), key 0x2a
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\victory-in-the-pacific\game.ingest.json
+- spec skeleton -> C:\VassalArnhem\games\victory-in-the-pacific\game.json
+- runtime self-check: engine loads the setup and sees 106 units
 
 ## What didn't (and why)
 
 - no grid of any kind on the main board
-- game.json already exists in C:\VassalArnhem\games\victory-in-the-pacific — wrote game.ingest.json instead (NOT clobbering a curated spec)
 
 ## Setups
 

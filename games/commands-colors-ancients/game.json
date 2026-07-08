@@ -2,7 +2,7 @@
  "name": "Commands & Colors Ancients \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "Main Map",
  "board_name": "Map EPIC",
- "save_key": "af",
+ "save_key": "25",
  "grid": {
   "orient": "pointy",
   "dx": 132.5,
@@ -25,14 +25,19 @@
  },
  "unit_kinds": [
   "deck",
+  "delete",
   "emb2",
   "globalhotkey",
+  "globalkey",
   "hideCmd",
+  "label",
   "macro",
   "mark",
   "nonRect2",
   "placemark",
-  "rotate"
+  "report",
+  "rotate",
+  "setprop"
  ],
  "sides": {
   "order": [
@@ -83,5 +88,5 @@
   "grid_how": "hexgrid",
   "module_version": "4.3.31"
  },
- "setup_save": "../../../VassalIngest/commands-colors-ancients/setups/101.vsav"
+ "setup_save": "../../../VassalIngest/commands-colors-ancients/setups/GC01.vsav"
 }
