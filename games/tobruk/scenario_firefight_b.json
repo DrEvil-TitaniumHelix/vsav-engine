@@ -4,6 +4,7 @@
   "rules_scope": "Tobruk Scenario One pp.4-5 + Firefight rules p.24. In scope: vehicular movement/facing/pivot/reverse, AP-vs-armor three-question fire, target acquisition, fire initiation doctrine, same-hex fire. Out of scope (declared): crew casualties (p.5.e says ignore in Scenario 1), experimental/optional rules, personnel, artillery.",
   "game": {
     "turns": 10,
+    "side_labels": {"Axis": "Axis (Italian)", "British": "British"},
     "first_player": "Axis",
     "combat_first_fire": "British",
     "bounds": {"cols": [3, 20], "rows": [4, 16]},

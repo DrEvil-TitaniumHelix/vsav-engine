@@ -158,7 +158,8 @@ def game_descriptor():
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
         grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
                   x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity),
-        sides=[dict(id=s, label=g.spec["sides"].get("labels", {}).get(s, s))
+        sides=[dict(id=s, label=(TG.scenario["game"].get("side_labels", {}) if TG else {}).get(
+                        s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
     )
