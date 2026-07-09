@@ -71,6 +71,8 @@ def unit_view(u):
     a, d, m = g.stats(u["name"])
     v = dict(u, att=a, dfn=d, ma=m, onmap=g.on_map(u["col"], u["row"]),
              terrain=g.hex_terrain(u["col"], u["row"]),
+             cls=g.unit_class(u["name"]),
+             hexname=g.grid.display_name(u["col"], u["row"]),
              status=done.get(u["id"]),
              facing=facing.get(u["id"], 0) if g.facing else None)
     if TG:
@@ -85,13 +87,23 @@ def unit_view(u):
     if SG:
         su = SG.s["units"].get(u["id"])
         if su:
-            v.update(side=su["side"], col=su["col"], row=su["row"],
-                     status="moved" if u["id"] in SG.s["moved"] else done.get(u["id"]))
-            x, y = GAME_OBJ.grid.hex_to_pixel(su["col"], su["row"])
-            v.update(x=x, y=y, hexnum=GAME_OBJ.grid.hexnum(su["col"], su["row"]),
-                     onmap=True)
+            v.update(side=su["side"])
+            if SG.on_map(su):
+                v.update(col=su["col"], row=su["row"],
+                         status="moved" if u["id"] in SG.s["moved"] else done.get(u["id"]))
+                x, y = GAME_OBJ.grid.hex_to_pixel(su["col"], su["row"])
+                v.update(x=x, y=y, hexnum=GAME_OBJ.grid.hexnum(su["col"], su["row"]),
+                         hexname=GAME_OBJ.grid.display_name(su["col"], su["row"]),
+                         terrain=g.hex_terrain(su["col"], su["row"]),
+                         onmap=True)
+            else:                      # at sea: mirror keeps the last board spot
+                v.update(status="at sea",
+                         must_land=su.get("embark_turn", SG.s["turn"]) < SG.s["turn"])
         else:
             v["status"] = "reserve"    # OOA track / markers: outside the gate
+            e = SG.schedule.get(u["id"])
+            if e:
+                v["due"] = SG.turn_label(e["due"])
     return v
 
 

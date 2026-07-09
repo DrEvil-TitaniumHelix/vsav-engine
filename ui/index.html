@@ -38,6 +38,18 @@
            background:#5a2323; border:1px solid #c33; color:#ffd8d0; padding:10px 18px;
            border-radius:8px; z-index:70; font-size:14px; max-width:70%;
            box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #tip { position:fixed; display:none; z-index:80; pointer-events:none;
+         background:#23262cf5; border:1px solid #556; border-radius:8px; padding:8px 11px;
+         color:#dde3ea; font-size:12.5px; max-width:300px; line-height:1.5;
+         box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #tip b { color:#fff; font-size:13px; }
+  .dim { color:#9aa3ad; }
+  #rulespanel { display:none; position:fixed; top:52px; right:8px; width:440px; max-width:44vw;
+                max-height:82vh; overflow:auto; background:#23262cee; color:#dde3ea;
+                font-size:13px; border:1px solid #3a3f47; border-radius:8px;
+                padding:10px 14px; z-index:45; box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  #rulespanel ul { margin:4px 0 8px; padding-left:20px; }
+  #rulespanel li { margin:3px 0; }
 </style>
 </head>
 <body>
@@ -49,6 +61,7 @@
   <button class="sidebtn" id="endphasebtn" style="display:none">End player turn</button>
   <span id="progress"></span>
   <span id="note"></span>
+  <button class="sidebtn" id="rulesbtn">Rules</button>
   <button class="sidebtn" id="resetbtn">Reset game</button>
 </div>
 <div id="viewport">
@@ -59,6 +72,8 @@
 </div>
 <div id="picker"></div>
 <div id="actions"></div>
+<div id="tip"></div>
+<div id="rulespanel"></div>
 <div id="arrivals" style="display:none; position:fixed; top:52px; left:8px; max-width:340px;
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
@@ -152,6 +167,7 @@ async function refresh() {
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   renderFlow();
   renderArrivals();
+  renderRules();
   render();
 }
 
@@ -167,6 +183,42 @@ function renderFlow() {
 }
 
 function sideLabel(id) { const s = GAME.sides.find(s => s.id === id); return s ? s.label : id; }
+
+// ---------- unit tooltip (hover; pinned while a unit is selected) ----------
+const TIP = document.getElementById('tip');
+const CLS_LABEL = { supply:'Supply unit (non-combat)', hq:'HQ (non-combat)',
+                    markers:'Status marker' };
+function tipHTML(u) {
+  let h = `<b>${u.name}</b><br><span class="dim">${sideLabel(u.side)} — ${
+           CLS_LABEL[u.cls] || 'Combat unit'}</span>`;
+  if (u.cls !== 'markers')
+    h += `<br>Attack ${u.att} · Defense ${u.dfn} · Movement ${u.ma}`;
+  if (u.onmap && u.status !== 'at sea' && u.status !== 'reserve')
+    h += `<br><span class="dim">Hex</span> ${u.hexname || u.hexnum}`
+       + (u.terrain ? ` <span class="dim">(${u.terrain})</span>` : '');
+  if (u.status === 'reserve')
+    h += `<br><span style="color:#e0a34e">Off-board reinforcement${
+          u.due ? ' — due ' + u.due : ''}</span>`;
+  else if (u.status === 'at sea')
+    h += `<br><span style="color:#7cb6e0">At sea${
+          u.must_land ? ' — must land this turn or be eliminated' : ''}</span>`;
+  else if (u.status)
+    h += `<br><span class="dim">${u.status} this turn</span>`;
+  return h;
+}
+function moveTip(x, y) {
+  TIP.style.bottom = '';
+  const r = TIP.getBoundingClientRect();
+  TIP.style.left = Math.min(x + 14, innerWidth - r.width - 8) + 'px';
+  TIP.style.top = Math.min(y + 14, innerHeight - r.height - 8) + 'px';
+}
+function showTip(u, x, y) { TIP.innerHTML = tipHTML(u); TIP.style.display = 'block'; moveTip(x, y); }
+function pinTip() {          // selected unit's card sits above the action bar
+  if (!selected) return;
+  TIP.innerHTML = tipHTML(selected); TIP.style.display = 'block';
+  TIP.style.left = '14px'; TIP.style.top = ''; TIP.style.bottom = '64px';
+}
+function hideTip() { if (selected) pinTip(); else TIP.style.display = 'none'; }
 
 // ---------- arrivals / supply / sea panel (strategic gate) ----------
 async function sgAction(action) {
@@ -237,7 +289,9 @@ function render() {
     el.dataset.id = u.id;
     if (u.facing !== null && u.facing !== undefined && GAME.facing)
       el.style.transform = `rotate(${(GAME.facing.offset_deg||0) + u.facing * GAME.facing.step_deg}deg)`;
-    el.title = `${u.name}  [${u.att}-${u.dfn}-${u.ma}]  hex ${u.hexnum}` + (u.status ? `  (${u.status})` : '');
+    el.addEventListener('pointerenter', ev => { if (!dragging) showTip(u, ev.clientX, ev.clientY); });
+    el.addEventListener('pointermove', ev => { if (!dragging) moveTip(ev.clientX, ev.clientY); });
+    el.addEventListener('pointerleave', hideTip);
     el.addEventListener('pointerdown', ev => onCounterDown(ev, u, byhex[h]));
     el.addEventListener('contextmenu', ev => onCounterMenu(ev, u));
     W.appendChild(el);
@@ -318,6 +372,7 @@ async function select(u, whole, ev) {
   selected = u; selected.whole = whole;
   legal = await (await fetch(`/api/legal?id=${u.id}&whole=${whole?1:0}`)).json();
   render();
+  pinTip();
   const A = document.getElementById('actions');
   if (legal.reasons && legal.reasons.length && !legal.dests.length) {
     A.innerHTML = `<b>${u.name}</b> — <span style="color:#e08c7c">${legal.reasons.join('; ')}</span>
@@ -330,6 +385,7 @@ async function select(u, whole, ev) {
   A.style.left = '14px'; A.style.bottom = '14px'; A.style.top = ''; A.style.display = 'block';
 }
 function deselect() { selected = null; legal = null;
+  TIP.style.display = 'none';
   document.getElementById('actions').style.display = 'none'; render(); }
 async function passSel() {
   await fetch('/api/pass', {method:'POST', body:JSON.stringify({id:selected.id, whole:selected.whole})});
@@ -371,6 +427,7 @@ document.addEventListener('contextmenu', e => {
 function dragStart(ev, u) {
   const el = document.querySelector(`.counter[data-id="${u.id}"]`);
   dragging = {u, el}; el.classList.add('dragging');
+  TIP.style.display = 'none';
   ev.stopPropagation();
 }
 function dragMove(e) {
@@ -400,6 +457,40 @@ async function dragEnd(e) {
   if (r.error) toast('Gate: ' + r.error);
   deselect(); refresh();
 }
+
+// ---------- rules panel (from the scenario's declared rules_scope) ----------
+function renderRules() {
+  const P = document.getElementById('rulespanel');
+  if (P.style.display !== 'block') return;
+  const rs = FLOW && FLOW.rules_scope;
+  let h = `<b>Rules enforced by the engine</b>`;
+  if (!rs) {
+    h += `<div class="dim" style="margin-top:6px">Tier 0 — free play. No rules are
+          enforced for this game yet; move pieces as you would at a physical table.
+          You are the umpire.</div>`;
+  } else {
+    h += `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || GAME.name}.
+          Every proposed action passes through the legality gate and is accepted or
+          rejected against these rules. Numbers in parentheses cite the game's own
+          rulebook sections.</div>`;
+    h += `<div style="color:#9fc27f;font-weight:600">Enforced</div><ul>`;
+    (rs.enforced || []).forEach(r => h += `<li>${r}</li>`);
+    h += `</ul>`;
+    if (rs.not_enforced && rs.not_enforced.length) {
+      h += `<div style="color:#e0a34e;font-weight:600">Not yet enforced — umpire these yourself</div><ul>`;
+      rs.not_enforced.forEach(r => h += `<li>${r}</li>`);
+      h += `</ul>`;
+    }
+  }
+  P.innerHTML = h;
+}
+document.getElementById('rulesbtn').onclick = () => {
+  const P = document.getElementById('rulespanel');
+  const open = P.style.display === 'block';
+  P.style.display = open ? 'none' : 'block';
+  document.getElementById('rulesbtn').classList.toggle('on', !open);
+  renderRules();
+};
 
 // ---------- top bar ----------
 document.getElementById('resetbtn').onclick = async () => {
