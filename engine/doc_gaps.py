@@ -28,7 +28,9 @@ RULESISH = re.compile(r"rule|manual|rulebook|livret|regla|regel|playbook|"
 
 
 def clean_title(t):
-    return re.sub(r"\s+", " ", re.sub(r"[\\/:*?\"<>|']", "_", t or "")).strip()
+    # trailing dots/spaces are stripped by Win32 at dir creation - mirror that
+    return re.sub(r"\s+", " ", re.sub(r"[\\/:*?\"<>|']", "_", t or "")) \
+        .strip().rstrip(". ")
 
 
 def main():
@@ -38,15 +40,23 @@ def main():
     textcheck = json.load(open(os.path.join(META, "manual_textcheck.json"),
                                encoding="utf-8"))
     assets_dir = os.path.join(META, "assets")
+    ocr_dir = os.path.join(META, "ocr")
 
     out = []
     for x in rows:
         g = games.get(x["game"], {})
         slugs = [m.get("slug") for m in g.get("modules", []) if m.get("slug")]
 
-        # rulebook channel
-        tc = textcheck.get(clean_title(x["title"]), [])
+        # rulebook channel - graded from what is ON DISK (Manuals tree +
+        # OCR sidecars), so acquisition runs move games automatically
+        t = clean_title(x["title"])
+        tc = textcheck.get(t, [])
         has_text = any(e.get("text") for e in tc)
+        has_pdf = bool(tc)
+        has_ocr = os.path.isdir(ocr_dir) and any(
+            f.startswith(t + "__") and f.endswith(".txt")
+            and os.path.getsize(os.path.join(ocr_dir, f)) > 1500
+            for f in os.listdir(ocr_dir))
         pkg_pdfs = []
         for s in slugs:
             r = cat.get(s) or {}
@@ -57,8 +67,13 @@ def main():
                             and "readme" not in fn.lower():
                         pkg_pdfs.append(dict(slug=s, filename=fn,
                                              url=f.get("url")))
-        if x["rules_grade"] == "bundled":
-            rulebook = "bundled-text" if has_text else "bundled-scanned(OCR)"
+        if has_text:
+            rulebook = ("bundled-text" if x["rules_grade"] == "bundled"
+                        else "fetched-text")
+        elif has_ocr:
+            rulebook = "ocr-text"
+        elif has_pdf:
+            rulebook = "bundled-scanned(OCR)"
         elif pkg_pdfs:
             rulebook = "library-package"
         elif x["rules_grade"] == "html-help":
@@ -77,7 +92,8 @@ def main():
                 art = "have"
                 break
         gaps = [k for k, v in [("rulebook", rulebook), ("setups", setups)]
-                if v.startswith(("MISSING", "bundled-scanned"))]
+                if v.startswith(("MISSING", "bundled-scanned",
+                                 "library-package"))]
         out.append(dict(x, rulebook=rulebook, charts=charts,
                         setups_status=setups, art=art,
                         package_pdfs=pkg_pdfs, gaps=gaps,
@@ -112,8 +128,9 @@ def main():
          "## Rulebook status",
          "",
          "| status | all games | hex lane |", "|---|---|---|"]
-    for k in ("bundled-text", "bundled-scanned(OCR)", "library-package",
-              "html-help", "MISSING(external sweep)"):
+    for k in ("bundled-text", "fetched-text", "ocr-text",
+              "bundled-scanned(OCR)", "library-package", "html-help",
+              "MISSING(external sweep)"):
         L.append(row(k))
     L += ["",
           "## Action queues (by descending tier-target score)",
