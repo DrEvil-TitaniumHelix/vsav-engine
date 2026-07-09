@@ -37,16 +37,19 @@
  ],
  "sides": {
   "order": [
-   "Side A",
-   "Side B"
+   "Axis",
+   "Allied"
   ],
   "labels": {
-   "Side A": "Side A",
-   "Side B": "Side B"
+   "Axis": "Axis (German-Italian)",
+   "Allied": "Allied (British Commonwealth)"
   },
-  "default": "Side B",
-  "detect_tokens": {},
-  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+  "default": "Axis",
+  "detect_tokens": {
+   "Allied": ["A "],
+   "Axis": ["G ", "I "]
+  },
+  "note": "Name prefixes from the module: 'A '=Allied 68, 'G '=German 43, 'I '=Italian 13 (Ariete, Pavia, Trieste... all Axis). Allied listed FIRST: Indian units ('A 4 I Inf 23') contain 'I ' and must match 'A ' before Axis tokens; verified zero Axis names contain 'A '. Rules 1.22: Blue=Allied, Red=Axis. Only non-unit piece = 'Marker Game Turn Axis' -> default Axis, harmless."
  },
  "stats": {
   "patterns": [],
