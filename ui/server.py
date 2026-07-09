@@ -286,6 +286,28 @@ def api_end_phase():
     return out
 
 
+def api_sg_action(body):
+    """Strategic mode: any gate action (arrivals, supply roll, sea movement,
+    Rommel bonus) goes THROUGH the gate; placements are mirrored into the
+    work .vsav (units at sea keep their last board spot in the mirror)."""
+    action = body["action"]
+    side = body.get("side") or SG.s["mover"]
+    r = SG.submit(side, action)
+    if r["verdict"]["legal"]:
+        if action.get("type") in ("land_supply", "land_reinforcement", "debark"):
+            c, row = r["result"]["at"]
+            pid = r["result"].get("placed") or r["result"].get("landed") \
+                or str(action.get("unit"))
+            mirror_move(pid, c, row)
+        elif action.get("type") in ("move", "rommel_extend"):
+            u = SG.unit(action["unit"])
+            mirror_move(u["pid"], u["col"], u["row"])
+    out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
+    if not r["verdict"]["legal"]:
+        out["error"] = "; ".join(r["verdict"]["reasons"])
+    return out
+
+
 def api_move(body):
     if SG:
         return api_move_sg(body)
@@ -417,6 +439,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_move(body))
             if SG and self.path == "/api/end_phase":
                 return self._json(api_end_phase())
+            if SG and self.path == "/api/sg_action":
+                return self._json(api_sg_action(body))
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
             if self.path == "/api/face":

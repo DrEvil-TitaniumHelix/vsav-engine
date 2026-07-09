@@ -921,7 +921,10 @@
     "hq"
    ],
    "supply_no_enter": true,
-   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase)"
+   "immune_terrain": [
+    "fortress"
+   ],
+   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase); 19.5/23.1 adjacent units do not exert a ZOC over a fortress hex"
   },
   "enemy_hex": {
    "pass_classes": [
@@ -992,6 +995,26 @@
  },
  "setup_save": "../../../VassalIngest/afrika-korps-classic-ah/setups/Starting positions Trails on.vsav",
  "scenario": "scenario_campaign.json",
+ "ports": {
+  "list": [
+   {
+    "name": "Tobruch",
+    "hex": [31, 11],
+    "usable_by": ["Axis", "Allied"]
+   },
+   {
+    "name": "Axis home base (W3)",
+    "hex": [1, 27],
+    "usable_by": ["Axis"]
+   },
+   {
+    "name": "Allied home base (J62)",
+    "hex": [67, 14],
+    "usable_by": ["Allied"]
+   }
+  ],
+  "cite": "12.4 supply lands at Tobruch or own home base; 19.2 reinforcements enter at Tobruch and/or own home base; 19.7 + 4.3 note: an opponent's home base is never usable as a port; 23.3 no sea movement in/out of Bengasi (fortress, not a port); 23.4/23.5 sea movement runs Tobruch <-> own home base only; 4.3 control = hex occupied by a combat, supply or Rommel unit, and a home base must additionally be free of enemy ZOC"
+ },
  "classes": {
   "markers": [
    "G RD 1",

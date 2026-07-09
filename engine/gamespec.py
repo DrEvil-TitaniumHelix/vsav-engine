@@ -262,6 +262,12 @@ class Game:
             return False
         return True
 
+    def _zoc_immune(self, h):
+        """ZOC never extends over hexes of zoc.immune_terrain (AK 19.5/23.1:
+        adjacent units do not exert a ZOC over a fortress hex)."""
+        imm = self.zoc_cfg.get("immune_terrain")
+        return bool(imm) and self.hex_terrain(*h) in imm
+
     def zoc_hexes(self, board, enemy_side):
         z = set()
         if not self.zoc_cfg.get("exerts", False):
@@ -269,7 +275,8 @@ class Game:
         for u in board:
             if u["side"] == enemy_side and self._exerts_zoc(u):
                 for nb in self.neighbors(u["col"], u["row"]):
-                    z.add(nb)
+                    if not self._zoc_immune(nb):
+                        z.add(nb)
         return z
 
     def zoc_by_unit(self, board, enemy_side):
@@ -279,7 +286,8 @@ class Game:
             return out
         for u in board:
             if u["side"] == enemy_side and self._exerts_zoc(u):
-                out[u["id"]] = set(self.neighbors(u["col"], u["row"]))
+                out[u["id"]] = {nb for nb in self.neighbors(u["col"], u["row"])
+                                if not self._zoc_immune(nb)}
         return out
 
     def legal_destinations(self, unit, ma, board):
