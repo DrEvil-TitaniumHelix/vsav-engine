@@ -60,11 +60,21 @@
   ],
   "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
  },
+ "terrain_file": "terrain.json",
  "movement": {
-  "impassable_terrain": [],
-  "terrain_mp": {},
+  "impassable_terrain": ["sea", "qattara", "offmap"],
+  "terrain_mp": {
+   "clear": 1.0,
+   "escarpment": 1.0,
+   "qattara_partial": 1.0,
+   "fortress": 1.0,
+   "homebase": 1.0
+  },
   "default_mp": 1.0,
-  "hexside_rules": [],
+  "hexside_rules": [
+   {"feature": "water", "value": true, "effect": "prohibit", "cite": "rule 5.7 all-water hexside (E18-F19 example)"},
+   {"feature": "qattara", "value": true, "effect": "prohibit", "cite": "rule 5.7 Qattara Depression hexside (W62-X62 example)"}
+  ],
   "zoc": {
    "exerts": false
   },
@@ -80,7 +90,7 @@
     29
    ]
   },
-  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+  "note": "Terrain layer VERIFIED (terrain.json, 38 rulebook checks). Still Tier 0: ZOC (7.1/8.1/8.3), escarpment stop (18.1-18.3) and coast-road bonus (17.1-17.2) need an engine extension + counter MFs (mastermind OCR pending) before any movement enforcement is claimed."
  },
  "ingest": {
   "tool": "engine/ingest.py",
