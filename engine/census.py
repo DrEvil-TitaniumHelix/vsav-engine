@@ -153,7 +153,8 @@ def download(limit=None, gap=2.0):
     picks = [(s, m) for s, m in picks if m]
     done = got = fail = 0
     for slug, m in picks:
-        dst_dir = os.path.join(LIB, "modules", slug)
+        # Windows silently strips trailing dots/spaces in dir names — sanitize
+        dst_dir = os.path.join(LIB, "modules", slug.rstrip(". ") or slug.strip("."))
         dst = os.path.join(dst_dir, m["filename"])
         if os.path.exists(dst) and os.path.getsize(dst) == m["size"]:
             done += 1
@@ -162,8 +163,12 @@ def download(limit=None, gap=2.0):
             break
         os.makedirs(dst_dir, exist_ok=True)
         url = m["url"]
-        if " " in url:
+        if " " in url or any(ord(c) > 127 for c in url):
             url = urllib.parse.quote(url, safe="/:?&=%")
+        # some entries carry a bucket-subdomain host whose cert only covers the
+        # bare object store — rewrite to path-style
+        url = url.replace("https://obj.vassalengine.org.us-east-1.linodeobjects.com/",
+                          "https://us-east-1.linodeobjects.com/obj.vassalengine.org/")
         try:
             req = urllib.request.Request(url, headers=UA)
             h = hashlib.sha256()

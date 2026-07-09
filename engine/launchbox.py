@@ -33,7 +33,11 @@ PLATFORM = "VASSAL"
 VASSAL_EXE = r"C:\Program Files\VASSAL-3.7.24\VASSAL.exe"
 NS = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 EMU_ID = str(uuid.uuid5(NS, "vassal-engine-emulator"))
-MODULE_DIRS = [os.path.join(census.LIB, "modules"), r"C:\VassalIngest\downloads"]
+# where the .vmods live (Bruce: the ROM drive once moved) — override with
+# --modules-root or the VASSAL_MODULES env var; first existing hit wins,
+# missing modules get their ApplicationPath under the FIRST root
+MODULE_DIRS = ([os.environ["VASSAL_MODULES"]] if os.environ.get("VASSAL_MODULES") else []) \
+    + [os.path.join(census.LIB, "modules"), r"C:\VassalIngest\downloads"]
 
 
 def gid(slug):
@@ -68,7 +72,7 @@ def game_xml(slug, rec):
             if app:
                 break
         if not app:
-            app = os.path.join(census.LIB, "modules", slug, fname)   # future home
+            app = os.path.join(MODULE_DIRS[0], slug, fname)   # future home
     h = harvest_row(fname) if fname else {}
     pieces = h.get("pieces", {})
     genres = [t.split(":", 1)[1] for t in rec.get("tags", []) if ":" in t
@@ -202,6 +206,11 @@ Regenerating the XML re-checks the disk and refreshes Installed flags.
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if a != "--pilot"]
+    args = sys.argv[1:]
+    if "--modules-root" in args:
+        i = args.index("--modules-root")
+        MODULE_DIRS.insert(0, args[i + 1])
+        del args[i:i + 2]
+    args = [a for a in args if a != "--pilot"]
     slugs = args or sorted(os.listdir(ASSETS))
     build(slugs)
