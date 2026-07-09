@@ -21,7 +21,7 @@ ApplicationPath points at the local mirror location; Installed=Yes/No is
 stamped by checking the disk at generation time (regenerate to refresh).
 """
 import html
-import json, os, re, shutil, sys, uuid
+import json, os, re, shutil, sys, uuid, zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import census
@@ -42,6 +42,48 @@ MODULE_DIRS = ([os.environ["VASSAL_MODULES"]] if os.environ.get("VASSAL_MODULES"
 
 def gid(slug):
     return str(uuid.uuid5(NS, "vassal-game-" + slug))
+
+
+# docs bundled inside modules: PDFs (rulebooks, charts, playbooks, hint cards).
+# The one that names itself the rules becomes the LaunchBox manual; every other
+# PDF becomes an "Additional App" so it's one click away on the game's page.
+MANUAL_RE = re.compile(r"rule|manual|rulebook|livret|regle|regel", re.I)
+
+
+def extract_docs(vmod_path, title):
+    """Pull every PDF out of the module into Manuals/<PLATFORM>/<title>/.
+    Returns (manual_relpath, [(name, relpath), ...]) — paths relative to the
+    LaunchBox root, or (None, []) if the module bundles no PDFs."""
+    try:
+        with zipfile.ZipFile(vmod_path) as z:
+            pdfs = [n for n in z.namelist()
+                    if n.lower().endswith(".pdf") and not n.endswith("/")]
+            if not pdfs:
+                return None, []
+            t = clean_title(title)
+            reldir = os.path.join("Manuals", PLATFORM, t)
+            outdir = os.path.join(OUT, reldir)
+            os.makedirs(outdir, exist_ok=True)
+            out = []
+            seen = set()
+            for n in pdfs:
+                bn = re.sub(r'[\\/:*?"<>|]', "_", os.path.basename(n)).strip() or "doc.pdf"
+                if bn.lower() in seen:
+                    bn = f"{len(seen)}_{bn}"
+                seen.add(bn.lower())
+                dest = os.path.join(outdir, bn)
+                if not os.path.exists(dest) or os.path.getsize(dest) != z.getinfo(n).file_size:
+                    with z.open(n) as src, open(dest, "wb") as f:
+                        shutil.copyfileobj(src, f)
+                out.append((bn, os.path.join(reldir, bn),
+                            z.getinfo(n).file_size))
+            # manual = the PDF that says it's the rules; tiebreak/fallback: biggest
+            ranked = sorted(out, key=lambda r: (not MANUAL_RE.search(r[0]), -r[2]))
+            manual = ranked[0][1]
+            others = [(bn, rel) for bn, rel, _ in out if rel != manual]
+            return manual, others
+    except Exception:
+        return None, []
 
 
 def clean_title(t):
@@ -88,6 +130,8 @@ def game_xml(slug, rec):
                  f"{h.get('n_decks', 0)} card decks.")
     notes.append(f"Module library page: {rec.get('library_page')}")
     notes.append(f"Direct module download: {dl.get('url')}")
+    manual, other_docs = (extract_docs(app, rec.get("title", slug))
+                          if installed == "Yes" else (None, []))
     g = gid(slug)
     x = ["  <Game>",
          f"    <ID>{g}</ID>",
@@ -99,6 +143,8 @@ def game_xml(slug, rec):
          f"    <Publisher>{esc(rec.get('publisher') or '')}</Publisher>",
          f"    <Notes>{esc(chr(10).join(notes))}</Notes>",
          f"    <Version>{esc(h.get('version') or '')}</Version>"]
+    if manual:
+        x.append(f"    <ManualPath>{esc(manual)}</ManualPath>")
     if year and str(year).isdigit():
         x.append(f"    <ReleaseDate>{year}-01-01T00:00:00</ReleaseDate>")
     x.append("  </Game>")
@@ -127,6 +173,13 @@ def game_xml(slug, rec):
               f"    <GameID>{g}</GameID>",
               f"    <ApplicationPath>{esc(dl['url'])}</ApplicationPath>",
               "    <Name>Download module (opens browser)</Name>",
+              "  </AdditionalApplication>"]
+    for bn, rel in other_docs:
+        x += ["  <AdditionalApplication>",
+              f"    <Id>{str(uuid.uuid5(NS, 'doc-' + slug + '-' + bn))}</Id>",
+              f"    <GameID>{g}</GameID>",
+              f"    <ApplicationPath>{esc(rel)}</ApplicationPath>",
+              f"    <Name>Doc: {esc(os.path.splitext(bn)[0])}</Name>",
               "  </AdditionalApplication>"]
     return "\n".join(x), rec.get("title", slug), installed
 
@@ -193,6 +246,9 @@ or add VASSAL via Tools > Manage Emulators and re-point games' emulator. -->
 1. CLOSE LaunchBox.
 2. Copy `Data\\Platforms\\VASSAL.xml` into your `LaunchBox\\Data\\Platforms\\`.
 3. Copy the `Images\\VASSAL` folder into `LaunchBox\\Images\\`.
+3b. Copy the `Manuals\\VASSAL` folder into `LaunchBox\\Manuals\\` — rulebooks
+   bundled inside modules appear as each game's Manual; extra PDFs (charts,
+   playbooks, hint cards) appear under the game's Additional Apps as "Doc: ...".
 4. Emulator: open `Emulators.snippet.xml` and merge its two blocks into
    `LaunchBox\\Data\\Emulators.xml` (paste just inside `<LaunchBox>`).
    VASSAL executable expected at: {VASSAL_EXE}
