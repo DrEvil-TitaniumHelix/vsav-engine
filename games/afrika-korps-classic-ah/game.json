@@ -11,7 +11,12 @@
   "y0": 32.0,
   "stagger": true,
   "offset_parity": 1,
-  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-5 vOff=-12 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "naming": {
+   "style": "letter_diag",
+   "row0": 5,
+   "num0": -10
+  },
+  "provenance": "VERIFIED 2026-07-09: sideways axis-swap geometry confirmed against the printed map grid (edge autocorrelation dx=102/51 dy=89, row phase 31.4 vs buildFile 32.0, overlay visual check dead-center); naming letter_diag row0=5 num0=-10 exact on 14 rulebook 1.1/5.8 anchors (W3 W6 H2 G25 L59 J62 + east-edge I63 K64 M65 O66 Q67 S68 U69) + printed east-edge row letters I-L + rule 18 movement-chain adjacency \u2014 see VALIDATION.md + validate_grid.py",
   "hexnum_digits": 2
  },
  "buildfile": "../../../VassalIngest/afrika-korps-classic-ah/extracted/buildFile.xml",
