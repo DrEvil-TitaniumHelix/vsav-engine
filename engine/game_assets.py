@@ -151,7 +151,8 @@ def module_art(vmod_path, out_dir, max_counters=40):
 
 
 def gather(slug, cat):
-    d = os.path.join(ASSETS, slug)
+    # Windows silently strips trailing dots/spaces in dir names
+    d = os.path.join(ASSETS, slug.rstrip(". ") or slug)
     os.makedirs(d, exist_ok=True)
     rec = dict(slug=slug, sources={})
     try:
@@ -212,7 +213,7 @@ def main(slugs, resume=False):
     cat = json.load(open(census.CATALOG, encoding="utf-8"))
     if resume:
         slugs = [s for s in slugs
-                 if not os.path.exists(os.path.join(ASSETS, s, "assets.json"))]
+                 if not os.path.exists(os.path.join(ASSETS, s.rstrip(". ") or s, "assets.json"))]
         print(f"resume: {len(slugs)} games still need assets")
     hits = dict(cover_vassal=0, cover_module=0, map_background=0, counters_composite=0)
     for i, slug in enumerate(slugs):

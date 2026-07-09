@@ -65,7 +65,8 @@ def game_xml(slug, rec):
     installed = "No"
     if fname:
         for d in MODULE_DIRS:
-            for p in (os.path.join(d, slug, fname), os.path.join(d, fname)):
+            for p in (os.path.join(d, slug.rstrip(". ") or slug, fname),
+                      os.path.join(d, fname)):
                 if os.path.exists(p):
                     app, installed = p, "Yes"
                     break
@@ -131,7 +132,7 @@ def game_xml(slug, rec):
 
 
 def copy_art(slug, title):
-    src = os.path.join(ASSETS, slug)
+    src = os.path.join(ASSETS, slug.rstrip(". ") or slug)
     if not os.path.isdir(src):
         return 0
     t = clean_title(title)
@@ -155,7 +156,7 @@ def copy_art(slug, title):
 def build(slugs):
     games, arts, installed_n = [], 0, 0
     for slug in slugs:
-        ap = os.path.join(ASSETS, slug, "assets.json")
+        ap = os.path.join(ASSETS, slug.rstrip(". ") or slug, "assets.json")
         if not os.path.exists(ap):
             print(f"  ! no assets.json for {slug} — run game_assets.py first")
             continue
