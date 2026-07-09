@@ -76,13 +76,22 @@ def game_text(title):
     return " ".join(text), src
 
 
-def screen_text(text):
+def screen_text(text, era=""):
     knocks = {k: len(v.findall(text)) for k, v in KNOCK.items()}
     poss = {k: len(v.findall(text)) for k, v in POS.items()}
     hard = [k for k, n in knocks.items() if n >= 5]
     good = [k for k, n in poss.items() if n >= 2]
-    verdict = ("CLEAN-FIT" if not hard and {"crt", "zoc"} <= set(good)
-               else "KNOCKOUT:" + "+".join(hard) if hard else "WEAK-SIGNALS")
+    if hard:
+        verdict = "KNOCKOUT:" + "+".join(hard)
+    elif {"crt", "zoc"} <= set(good):
+        verdict = "CLEAN-FIT"
+    elif ({"crt", "odds"} <= set(good)
+          and re.search(r"ancient|medieval|renaissance", era or "", re.I)):
+        # pre-gunpowder tactical games have no ZOC concept (adjacency and
+        # facing instead) - 2026-07-09 skim finding (Agincourt case)
+        verdict = "CLEAN-FIT(no-zoc-era)"
+    else:
+        verdict = "WEAK-SIGNALS"
     return verdict, {k: n for k, n in knocks.items() if n}, \
         {k: n for k, n in poss.items() if n}
 
@@ -95,7 +104,7 @@ def main():
         text, src = game_text(x["title"])
         if len(text) < 2000:
             continue
-        verdict, knocks, poss = screen_text(text)
+        verdict, knocks, poss = screen_text(text, era=x.get("era"))
         out.append(dict(x, screen=verdict, text_chars=len(text), sources=src,
                         knocks=knocks, positives=poss))
     json.dump(out, open(os.path.join(META, "rules_screen.json"), "w",
