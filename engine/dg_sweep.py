@@ -31,6 +31,30 @@ SLEEP = 1.2
 MAX_MB = 200
 PUBS = ("decision games", "simulations publications")
 
+LANGRX = re.compile(r"SPANISH|ITALIAN|FRENCH|GERMAN|Other lang|"
+                    r"\b(ESP|ITA|SPA|FRA|GER|POR)\b")
+# curated false positives: same headline title, different modern game
+DROP = {
+    ("Leningrad", "W17-Leningrad-WhatIf_Rules.rtf"),
+    ("Barbarossa: The Russo-German War 1941-45", "W1-Barbarossa_eRules.rtf"),
+    ("Barbarossa: The Russo-German War 1941-45",
+     "W1-Barbarossa-Add-On-eRules.rtf"),
+    # S326 is DG's Russo-Japanese 1905 Mukden, not SPI's Sino-Soviet one
+    # (verified by reading the downloaded PDF, 2026-07-09)
+    ("Mukden: Sino-Soviet Combat in the '70's", "S326 Mukden-Rules-v5-WEB.pdf"),
+}
+
+
+def kind_of(name):
+    n = name.lower()
+    if re.search(r"errata|faq|clarification", n):
+        return "errata"
+    if re.search(r"chart|table|player aid|display", n):
+        return "chart"
+    if re.search(r"rule|manual", n):
+        return "rules"
+    return "other"
+
 
 def fetch(url, binary=False, retries=3):
     for i in range(retries):
@@ -46,11 +70,17 @@ def fetch(url, binary=False, retries=3):
             time.sleep(3 * (i + 1))
 
 
-def norm(t):
+def norm(t, is_file=False):
     t = html.unescape(t or "").lower().replace("’", "'")
-    t = re.sub(r"\.pdf$", "", t)
-    t = re.sub(r"\b(rules?|manual|rulebook|e-?rules|charts?|tables?|errata|"
-               r"v?\d+(\.\d+)*|final|web(site)?|update[ds]?)\b", " ", t)
+    if is_file:
+        t = re.sub(r"\.(pdf|rtf|docx?|zip)$", "", t)
+        t = re.sub(r"^[a-z]{1,2}\d{1,3}([\s_-]+[a-z]{0,2}\d{1,3})*[\s_-]+",
+                   "", t)          # magazine issue prefixes: S210, W1-, MW10
+        t = re.sub(r"\b(scenario|system|deluxe edition|folio|add-?on)\b",
+                   " ", t)
+        t = re.sub(r"\b(rules?|manual|rulebook|e-?rules|charts?|tables?|"
+                   r"errata|final|web(site)?|update[ds]?|v\d+f?|"
+                   r"(19|20)\d\d(\s?\d\d)*)\b", " ", t)
     t = re.sub(r"[^a-z0-9']+", " ", t)
     return re.sub(r"\s+", " ", t).strip()
 
@@ -113,16 +143,18 @@ def plan():
     tree = json.load(open(TREE, encoding="utf-8"))
     print(f"{len(rows)} DG/SPI games missing rules; {len(tree)} Drive files")
     for f in tree:
-        f["n_name"] = norm(f["name"])
+        f["n_name"] = norm(f["name"], is_file=True)
         f["n_dir"] = norm(f["path"].split("/")[-1]) if f["path"] else ""
-        f["is_pdf"] = f["name"].lower().endswith(".pdf")
+        f["is_doc"] = f["name"].lower().endswith((".pdf", ".rtf"))
     out = []
     for x in rows:
         title = x["title"]
         gn, gm = norm(title), norm(title.split(":")[0])
         hits = []
         for f in tree:
-            if not f["is_pdf"]:
+            if not f["is_doc"] or (title, f["name"]) in DROP:
+                continue
+            if LANGRX.search(f["path"] + "/" + f["name"]):
                 continue
             fn, dn = f["n_name"], f["n_dir"]
             s = 0
@@ -130,14 +162,22 @@ def plan():
                 s = 100
             elif dn and dn in (gn, gm):
                 s = 90
-            elif fn and len(fn) >= 12 and (gn.startswith(fn) or fn.startswith(gn)):
+            # token-boundary prefixes only: "world war i" must not take
+            # "world war ii ..." and vice versa
+            elif fn and len(fn) >= 10 and (gn.startswith(fn + " ")
+                                           or fn.startswith(gn + " ")):
+                s = 85
+            elif fn and len(fn) >= 10 and (fn in gn or gn in fn):
                 s = 60
             if s:
                 hits.append(dict(score=s, id=f["id"], name=f["name"],
-                                 path=f["path"]))
+                                 path=f["path"], kind=kind_of(f["name"])))
         hits.sort(key=lambda h: -h["score"])
         best = hits[0]["score"] if hits else 0
-        verdict = ("MATCH" if best >= 90 else
+        has_rules = any(h["kind"] == "rules" and h["score"] >= 85
+                        for h in hits)
+        verdict = ("MATCH" if best >= 85 and has_rules else
+                   "AUX-ONLY" if best >= 85 else
                    "REVIEW" if best else "NO-HIT")
         out.append(dict(game=title, style=x["style"],
                         tier_score=x.get("score"), verdict=verdict,
@@ -151,23 +191,32 @@ def plan():
     print("\nplan ->", PLAN, " ", Counter(r["verdict"] for r in out))
 
 
+def rtf_to_text(data):
+    """Crude RTF -> plain text: good enough for keyword screening."""
+    s = data.decode("latin-1", "replace")
+    s = re.sub(r"\\'[0-9a-f]{2}", " ", s)
+    s = re.sub(r"\\[a-z]+-?\d* ?", " ", s)
+    s = re.sub(r"[{}]", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def download_drive(fid):
     """uc?export=download, following the >25MB virus-scan confirm form."""
     url = f"https://drive.google.com/uc?export=download&id={fid}"
     data = fetch(url, binary=True)
-    if data[:4] == b"%PDF":
+    if data[:4] == b"%PDF" or data[:5] == b"{\\rtf":
         return data
     page = data.decode("utf-8", "replace")
     m = re.search(r'action="([^"]*)"[^>]*>(.*?)</form>', page, re.S)
     if not m:
-        raise RuntimeError("no direct pdf and no confirm form")
+        raise RuntimeError("no direct file and no confirm form")
     action = html.unescape(m.group(1))
     params = dict(re.findall(
         r'name="([^"]+)"\s+value="([^"]*)"', m.group(2)))
     q = urllib.parse.urlencode(params)
     data = fetch(f"{action}?{q}", binary=True)
-    if data[:4] != b"%PDF":
-        raise RuntimeError("confirm flow did not yield a pdf")
+    if data[:4] != b"%PDF" and data[:5] != b"{\\rtf":
+        raise RuntimeError("confirm flow did not yield a pdf/rtf")
     return data
 
 
@@ -179,9 +228,11 @@ def do_fetch():
     for r in rows:
         if r["verdict"] != "MATCH":
             continue
-        d = os.path.join(MANUALS, clean_title(r["game"]))
+        t = clean_title(r["game"])
+        d = os.path.join(MANUALS, t)
         for f in r["files"]:
-            if f["score"] < 90 or (r["game"], f["id"]) in have:
+            if f["score"] < 85 or f.get("kind") == "other" \
+                    or (r["game"], f["id"]) in have:
                 n_skip += 1
                 continue
             fname = clean_title(f["name"])
@@ -196,6 +247,15 @@ def do_fetch():
                     continue
                 os.makedirs(d, exist_ok=True)
                 open(path, "wb").write(data)
+                if data[:5] == b"{\\rtf":
+                    # native-text rules: sidecar so rules_screen can read it
+                    txt = rtf_to_text(data)
+                    if len(txt) > 1500:
+                        ocr_dir = os.path.join(META, "ocr")
+                        os.makedirs(ocr_dir, exist_ok=True)
+                        open(os.path.join(
+                            ocr_dir, f"{t}__{os.path.splitext(fname)[0]}.txt"),
+                            "w", encoding="utf-8").write(txt)
                 log.append(dict(game=r["game"], id=f["id"], name=f["name"],
                                 drive_path=f["path"], file=fname,
                                 url=f"https://drive.google.com/file/d/{f['id']}",

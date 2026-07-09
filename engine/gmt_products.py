@@ -102,6 +102,13 @@ def search_products(query):
     """xsearch -> [(url, product_title)]"""
     q = urllib.parse.quote_plus(query)
     page = fetch(f"{SITE}/xsearch?searchterm={q}")
+    # exact-match searches 302 straight to the product page: results pages
+    # are titled "GMT Games", product pages "GMT Games - <product>"
+    t = re.search(r"<title>GMT Games - (.*?)</title>", page)
+    if t:
+        m = re.search(r'"(/p-(?!564-)\d+-[a-z0-9-]+\.aspx)"', page)
+        if m:
+            return [(SITE + m.group(1), html.unescape(t.group(1)).strip())]
     out, seen = [], set()
     # pair anchor+title strictly inside one <li> block: an anchor without its
     # own <h2> (the gift-certificate promo) must not steal the next title
@@ -112,15 +119,11 @@ def search_products(query):
         if not (m and h):
             continue
         u, t = SITE + m.group(1), html.unescape(h.group(1)).strip()
+        if t.lower() == "description":
+            continue
         if u not in seen:
             seen.add(u)
             out.append((u, t))
-    if not out:
-        # exact-match searches 302 straight to the product page
-        t = re.search(r"<title>GMT Games - (.*?)</title>", page)
-        m = re.search(r'"(/p-(?!564-)\d+-[a-z0-9-]+\.aspx)"', page)
-        if t and m:
-            out.append((SITE + m.group(1), html.unescape(t.group(1)).strip()))
     return out
 
 
@@ -151,9 +154,10 @@ def product_pdfs(url):
         seen.add(u)
         fname = urllib.parse.unquote(u.split("/")[-1].split("?")[0])
         probe = text + " " + fname
-        # translation? language word next to rules-ish wording, not factional aids
-        if LANG.search(text) and not re.search(r"player|aid|card|pac|chart",
-                                               text, re.I):
+        # translation? language word next to rules-ish wording, not factional
+        # aids - check the filename too (FallingSkyRulebookSPANISH.pdf)
+        if (LANG.search(text) or LANG.search(fname)) \
+                and not re.search(r"player|aid|card|pac|chart", text, re.I):
             out.append((u, text, "skip:translation"))
             continue
         kind = next((k for k, rx in KIND if rx.search(probe)), "other")
