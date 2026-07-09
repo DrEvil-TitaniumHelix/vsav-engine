@@ -208,8 +208,12 @@ def gather(slug, cat):
     return rec
 
 
-def main(slugs):
+def main(slugs, resume=False):
     cat = json.load(open(census.CATALOG, encoding="utf-8"))
+    if resume:
+        slugs = [s for s in slugs
+                 if not os.path.exists(os.path.join(ASSETS, s, "assets.json"))]
+        print(f"resume: {len(slugs)} games still need assets")
     hits = dict(cover_vassal=0, cover_module=0, map_background=0, counters_composite=0)
     for i, slug in enumerate(slugs):
         rec = gather(slug, cat)
@@ -227,4 +231,10 @@ def main(slugs):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    main(PILOT_SLUGS if "--pilot" in args else args)
+    if "--all" in args:
+        cat = json.load(open(census.CATALOG, encoding="utf-8"))
+        slugs = sorted(s for s, e in cat.items()
+                       if "error" not in e and census.main_vmod(e))
+        main(slugs, resume=True)
+    else:
+        main(PILOT_SLUGS if "--pilot" in args else args)
