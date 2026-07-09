@@ -1,5 +1,5 @@
 {
- "name": "Afrika Korps Classic AH \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "name": "Afrika Korps Classic AH",
  "map_name": "Main Map",
  "board_name": "Board",
  "save_key": "ca",
@@ -912,7 +912,16 @@
    }
   ],
   "zoc": {
-   "exerts": false
+   "exerts": true,
+   "stop_on_enter": true,
+   "same_unit_first_step": true,
+   "exempt_classes": [
+    "markers",
+    "supply",
+    "hq"
+   ],
+   "supply_no_enter": true,
+   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase)"
   },
   "enter_enemy_hex": true,
   "pass_through_friendly": true,
@@ -926,7 +935,39 @@
     29
    ]
   },
-  "note": "Terrain layer VERIFIED (terrain.json, 38 rulebook checks). Still Tier 0: ZOC (7.1/8.1/8.3), escarpment stop (18.1-18.3) and coast-road bonus (17.1-17.2) need an engine extension + counter MFs (mastermind OCR pending) before any movement enforcement is claimed."
+  "note": "Movement gate semantics encoded: 5.2 MF=hexes, terrain_stop=escarpment (18.1-18.3), road_bonus 10 via road hexsides (17.1-17.2), I26 two-road exception (17.3/17.32) via road_through_pairs, ZOC per 7.1/8.1/8.3. Validated against the five rule-17/18 worked path examples - see validate_movement.py.",
+  "terrain_stop": [
+   "escarpment"
+  ],
+  "road_bonus": {
+   "feature": "road",
+   "mp": 10,
+   "cite": "rule 17.1 ten additional hexes on the coast road; 17.2 only through road-bisected hexsides"
+  },
+  "road_through_pairs": {
+   "3113": [
+    [
+     [
+      30,
+      13
+     ],
+     [
+      32,
+      14
+     ]
+    ],
+    [
+     [
+      32,
+      12
+     ],
+     [
+      32,
+      14
+     ]
+    ]
+   ]
+  }
  },
  "ingest": {
   "tool": "engine/ingest.py",
