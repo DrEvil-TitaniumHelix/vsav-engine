@@ -25,6 +25,19 @@ road_m = (r_ >= 185) & (g_ <= 70) & (b_ <= 60)
 road_m[TITLE_BOX[1]:TITLE_BOX[3], TITLE_BOX[0]:TITLE_BOX[2]] = False
 black_m = (r_ <= 45) & (g_ <= 40) & (b_ <= 35)
 gray_m = near((105, 95, 72), 30) | near((119, 109, 78), 30)
+# printed decorations ON the map image (Turn Record strip, CRT box, Units at
+# Sea box, Rommel's Route legend): distinct posterized fills, none of which
+# occur as terrain art. Hexes mostly covered by them are NOT playable field.
+decor_m = (near((254, 255, 153), 16) | near((255, 249, 116), 16) |   # strip yellows
+           near((255, 203, 153), 14) | near((245, 198, 146), 14) |   # track cells / title tan
+           near((255, 255, 255), 12) | near((174, 219, 216), 14) |   # CRT white / pale teal
+           near((217, 113, 74), 14) |                                # CRT header orange
+           near((127, 186, 0), 16) | near((186, 232, 96), 16) |      # legend greens
+           near((237, 144, 108), 12) | near((230, 145, 109), 12) |   # printed counter salmon
+           near((151, 150, 149), 12) | near((169, 169, 169), 12) |   # printed counter grays
+           near((177, 179, 178), 12) | near((129, 130, 130), 8) |
+           near((140, 195, 220), 8))    # printed Allied counter blue (tol 8:
+                                        # real sea is (130,198,226), outside)
 
 DS = 4
 hc, wc = (Hpx // DS) * DS, (Wpx // DS) * DS
@@ -92,8 +105,12 @@ for r in range(5, 29):
         di, de = int(dep[sl_ds].sum() * 0 + interior[sl_ds].sum()), int(ext[sl_ds].sum())
         int_frac = di / max(1, di + de)
         t = "clear"
-        if fr(sea_m) > 0.72:
+        if fr(decor_m) > 0.30:
+            t = "offmap"        # printed table/track/legend, no hex field here
+        elif fr(sea_m) > 0.72:
             t = "sea"
+        elif fr(sea_m) + fr(decor_m) > 0.80:
+            t = "offmap"        # sea under a decoration edge (e.g. C19 row label)
         elif fr(gray_m) > 0.25:
             t = "homebase"
         elif fr(black_m) > 0.28 and fr(sea_m) > 0.1:
@@ -231,6 +248,52 @@ for a_, b_, want in [("E18", "F19", "water"), ("W62", "X62", "qattara"),
     f = sf(a_, b_)
     ok = (want in f) if want else not f
     check(ok, f"side {a_}-{b_} = {want or 'plain'} (got {f})")
+
+# ---------- module-zone cross-check (independent ground truth) ----------
+# The module's buildFile defines the playable hex field ("Hexes") and every
+# printed decoration (TRT, CRT, holding boxes) as Zone polygons. Every hex we
+# classify as enterable must sit inside the Hexes polygon and outside all
+# decoration zones. Exceptions (rule 5.6 overrides the module's coarse
+# trail-only zoning): partial-Qattara rim hexes T57/W61 play as clear.
+import re
+BUILDFILE = r"C:\VassalIngest\afrika-korps-classic-ah\extracted\buildFile.xml"
+ZONE_EXCEPTIONS = {"5724", "5927"}   # T57, W61: qattara_partial per printed art (5.6)
+bf = open(BUILDFILE, encoding="utf-8").read()
+zpolys = {}
+for m in re.finditer(r'<VASSAL.build.module.map.boardPicker.board.mapgrid.Zone([^>]*)>', bf):
+    at = dict(re.findall(r'(\w+)="([^"]*)"', m.group(1)))
+    if at.get("path"):
+        nm = at["name"]
+        while nm in zpolys:
+            nm += "+"
+        zpolys[nm] = [tuple(map(int, p.split(","))) for p in at["path"].split(";")]
+
+def in_poly(poly, px, py):
+    nn, cc = len(poly), False
+    for i in range(nn):
+        ax, ay = poly[i]; bx, by = poly[(i + 1) % nn]
+        if (ay > py) != (by > py) and px < (bx - ax) * (py - ay) / (by - ay) + ax:
+            cc = not cc
+    return cc
+
+DECOR_ZONES = [z for z in zpolys if z.split("+")[0] in (
+    "TRT", "Marker Track", "Substitutes", "Allied Supply", "Axis Supply",
+    "Allied Replacements Track", "Axis Replacements Track",
+    "Combat Results Table", "Units at Sea",
+    "Rommel Route Markers", "Rommel Road Markers")]
+zc_bad = []
+for key, v in hexes.items():
+    if v["t"] in ("offmap", "sea", "qattara") or key in ZONE_EXCEPTIONS:
+        continue
+    c, r = int(key[:2]), int(key[2:])
+    px, py = center(c, r)
+    if not in_poly(zpolys["Hexes"], px, py):
+        zc_bad.append(f"{key} ({disp(c, r)}) {v['t']} outside module Hexes zone")
+    for zn in DECOR_ZONES:
+        if in_poly(zpolys[zn], px, py):
+            zc_bad.append(f"{key} ({disp(c, r)}) {v['t']} inside decoration zone {zn}")
+check(not zc_bad, f"module-zone cross-check: every enterable hex in the Hexes "
+                  f"polygon, none in decoration zones ({len(zc_bad)} bad: {zc_bad[:6]})")
 
 if fails:
     print(f"\n{len(fails)} FAILURES — terrain.json NOT written")

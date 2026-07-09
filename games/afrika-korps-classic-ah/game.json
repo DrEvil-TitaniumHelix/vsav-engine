@@ -923,7 +923,23 @@
    "supply_no_enter": true,
    "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase)"
   },
-  "enter_enemy_hex": true,
+  "enemy_hex": {
+   "pass_classes": [
+    "supply",
+    "hq",
+    "markers"
+   ],
+   "cite": "rule 5.4 may not move on top of or through opponent's COMBAT units - supply and Rommel are not combat units; 22.3 enemy units can move directly on top of a lone Rommel; 15.22 on top of a lone supply unit (capture itself is a Tier-2 consequence)"
+  },
+  "stacking": {
+   "max": 3,
+   "exempt_classes": [
+    "markers",
+    "supply",
+    "hq"
+   ],
+   "cite": "rule 6.1 up to three combat units per hex, supply units and/or Rommel stack above the limit; 6.2 stack moves at slowest MF; 6.3 pass through freely even at maximum, limits bind only at end of movement"
+  },
   "pass_through_friendly": true,
   "bounds": {
    "cols": [
@@ -975,6 +991,7 @@
   "module_version": "3.0.1"
  },
  "setup_save": "../../../VassalIngest/afrika-korps-classic-ah/setups/Starting positions Trails on.vsav",
+ "scenario": "scenario_campaign.json",
  "classes": {
   "markers": [
    "G RD 1",

@@ -1,0 +1,827 @@
+{
+ "name": "Afrika Korps campaign (March 1941 Situation) \u2014 Tier 1 movement",
+ "mode": "strategic",
+ "rules_scope": {
+  "enforced": [
+   "player-turn alternation, Axis first (3.1-3.5)",
+   "movement factors & terrain (5.2, 5.6, 5.7, 5.8)",
+   "enemy combat units block on-top/through; lone supply/Rommel do not (5.4, 22.3, 15.22)",
+   "stacking: 3 combat units, checked at end of movement and destinations (2.3, 6.1, 6.3)",
+   "ZOC: stop on entry, no pass-through, same-unit first-step ban, supply exclusion (7.1, 8.1, 8.3, 13.2)",
+   "coast road bonus +10 via road hexsides, I26 two-road exception (17.1-17.3)",
+   "escarpment stop/one-hex + road exceptions, one non-road move (18.1-18.5)"
+  ],
+  "not_enforced": [
+   "combat and everything downstream (3.2/3.4, 7-16) \u2014 Tier 2",
+   "reinforcement/supply arrivals from the Time Record track (3.1/3.3, 12, 19) \u2014 reserve pieces are gate-rejected",
+   "Rommel two-hex companion bonus (22.1) \u2014 interpretation needs validation material",
+   "sea movement Tobruch/home-base (23.3-23.44)",
+   "replacements (20) and substitute units (21)",
+   "victory adjudication (4.1-4.3) \u2014 needs combat; game ends unadjudicated after turn 38"
+  ]
+ },
+ "game": {
+  "turns": 38,
+  "first_player": "Axis",
+  "side_labels": {
+   "Axis": "Axis (German-Italian)",
+   "Allied": "Allied (British Commonwealth)"
+  },
+  "turn_labels": [
+   "1 April 1941",
+   "15 April 1941",
+   "1 May 1941",
+   "15 May 1941",
+   "1 June 1941",
+   "15 June 1941",
+   "1 July 1941",
+   "15 July 1941",
+   "1 August 1941",
+   "15 August 1941",
+   "1 September 1941",
+   "15 September 1941",
+   "1 October 1941",
+   "15 October 1941",
+   "1 November 1941",
+   "15 November 1941",
+   "1 December 1941",
+   "15 December 1941",
+   "1 January 1942",
+   "15 January 1942",
+   "1 February 1942",
+   "15 February 1942",
+   "1 March 1942",
+   "15 March 1942",
+   "1 April 1942",
+   "15 April 1942",
+   "1 May 1942",
+   "15 May 1942",
+   "1 June 1942",
+   "15 June 1942",
+   "1 July 1942",
+   "15 July 1942",
+   "1 August 1942",
+   "15 August 1942",
+   "1 September 1942",
+   "15 September 1942",
+   "1 October 1942",
+   "15 October 1942"
+  ],
+  "cite": "3.1-3.5 sequence of play; 2.2-2.3 setup; game span 1.1/4.1"
+ },
+ "units": [
+  {
+   "id": "1751829781091",
+   "slot": "A 7A Inf 2",
+   "side": "Allied",
+   "hex": [
+    53,
+    13
+   ]
+  },
+  {
+   "id": "1751829781092",
+   "slot": "A 7A Inf 1",
+   "side": "Allied",
+   "hex": [
+    53,
+    13
+   ]
+  },
+  {
+   "id": "1751829781094",
+   "slot": "A 2 Arm 2 S.G",
+   "side": "Allied",
+   "hex": [
+    8,
+    12
+   ]
+  },
+  {
+   "id": "1751829781096",
+   "slot": "A 7 Arm 3 I Motor",
+   "side": "Allied",
+   "hex": [
+    21,
+    12
+   ]
+  },
+  {
+   "id": "1751829781097",
+   "slot": "A 2 Arm 3",
+   "side": "Allied",
+   "hex": [
+    21,
+    12
+   ]
+  },
+  {
+   "id": "1751829781099",
+   "slot": "A Supply 1",
+   "side": "Allied",
+   "hex": [
+    31,
+    11
+   ]
+  },
+  {
+   "id": "1751829781100",
+   "slot": "A 9A Inf 20",
+   "side": "Allied",
+   "hex": [
+    31,
+    11
+   ]
+  },
+  {
+   "id": "1751829781102",
+   "slot": "A 22 Gds Inf",
+   "side": "Allied",
+   "hex": [
+    38,
+    13
+   ]
+  },
+  {
+   "id": "1751829781104",
+   "slot": "A Pol Carpathian",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781105",
+   "slot": "A 4 I Inf 5",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781106",
+   "slot": "A 4 I Inf 7",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781107",
+   "slot": "A 4 I Inf 11",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781133",
+   "slot": "I Savena",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781134",
+   "slot": "I Bologna",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781135",
+   "slot": "I Brescia",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781136",
+   "slot": "I Pavia",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781137",
+   "slot": "I Trenta",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781138",
+   "slot": "I Ariete",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781139",
+   "slot": "G 21Pz 104",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781140",
+   "slot": "G 21Pz 5",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781141",
+   "slot": "G Supply 1",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781142",
+   "slot": "G 21Pz 3",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781143",
+   "slot": "G Rommel",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  }
+ ],
+ "reserve": [
+  {
+   "id": "1751829780929",
+   "slot": "G Supply Captured #",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780930",
+   "slot": "G Supply Captured 5",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780932",
+   "slot": "G Supply Captured 4",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780934",
+   "slot": "G Supply 3",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780936",
+   "slot": "G Supply 2",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780938",
+   "slot": "Marker Game Turn Axis",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829780940",
+   "slot": "A 4 I Inf 23",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780942",
+   "slot": "A 7 Arm 7",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780944",
+   "slot": "A 7 Arm 7 S.G",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780946",
+   "slot": "A 7 Arm 4SA Motor",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780948",
+   "slot": "A 7 Arm 4",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780950",
+   "slot": "A 9A Inf 18",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780952",
+   "slot": "A 2 SA Inf 4",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780954",
+   "slot": "A 50 Inf 69",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780956",
+   "slot": "A 50 Inf 150",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780958",
+   "slot": "A 50 Inf 6SA Motor",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780960",
+   "slot": "A 50 Inf 151",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780962",
+   "slot": "A 2 SA Inf 7 Recce",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780964",
+   "slot": "A 2 SA Inf 6",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780966",
+   "slot": "A 5 I Inf 29",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780968",
+   "slot": "A 5 I Inf 10",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780970",
+   "slot": "A 5 I Inf 9",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780972",
+   "slot": "A 70 Inf 23",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780974",
+   "slot": "A 32 Arm",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780976",
+   "slot": "A 1 Arm",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780978",
+   "slot": "A 1 SA Inf 3 Recce",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780980",
+   "slot": "A 1 Arm 201 Gds",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780982",
+   "slot": "A 2 NZ Inf 6",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780984",
+   "slot": "A 2 NZ Inf 5",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780986",
+   "slot": "A 2 NZ Inf 4",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780988",
+   "slot": "A 1 SA Inf 5",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780990",
+   "slot": "A 1 SA Inf 3",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780992",
+   "slot": "A 1 SA Inf 2",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780994",
+   "slot": "A 1 SA Inf 1",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780996",
+   "slot": "A 1 Arm 22",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829780998",
+   "slot": "A 1 Arm 2",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781000",
+   "slot": "A 51 Inf 2",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781002",
+   "slot": "A 51 Inf 1",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781004",
+   "slot": "A NZ 2 Inf",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781006",
+   "slot": "A 44 Inf 132",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781008",
+   "slot": "A 44 Inf 61",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781010",
+   "slot": "A 8 I Inf 161",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781012",
+   "slot": "A 9A Inf 24",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781014",
+   "slot": "A 10 Arm 23",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781016",
+   "slot": "A 10 Arm 8",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781018",
+   "slot": "A Free Fr Inf",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781020",
+   "slot": "A Jews Inf",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781022",
+   "slot": "A 10 I Inf 25",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781024",
+   "slot": "A 10 I Inf 21",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781026",
+   "slot": "A 8 I Inf 18",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781028",
+   "slot": "I Pistolio",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781030",
+   "slot": "I Centor",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781032",
+   "slot": "G 164Inf 433",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781034",
+   "slot": "G 164Inf 382",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781036",
+   "slot": "G 164Inf 125",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781038",
+   "slot": "G 51 Fj",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781040",
+   "slot": "I Folgere",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781042",
+   "slot": "I Littorio",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781044",
+   "slot": "I Facists",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781046",
+   "slot": "I Sabratha",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781048",
+   "slot": "I Trieste",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781050",
+   "slot": "G 90Inf 361",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781052",
+   "slot": "G 90Inf 580",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781054",
+   "slot": "G 90Inf 200",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781056",
+   "slot": "G 90Inf 55",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781058",
+   "slot": "G 15Pz 33",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781060",
+   "slot": "G 15Pz 8",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781062",
+   "slot": "G 15Pz 115",
+   "side": "Axis"
+  },
+  {
+   "id": "1751829781068",
+   "slot": "A Supply Captured #",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781069",
+   "slot": "A Supply Captured 6",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781071",
+   "slot": "A Supply Captured 5",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781073",
+   "slot": "A Supply 4",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781075",
+   "slot": "A Supply 3",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781077",
+   "slot": "A Supply 2",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781079",
+   "slot": "A Sub Inf 6",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781081",
+   "slot": "A Sub Inf 5",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781083",
+   "slot": "A Sub Arm 1",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781085",
+   "slot": "A Sub Arm 2",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781087",
+   "slot": "A Sub Inf 4",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781089",
+   "slot": "A Sub Inf 3",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781109",
+   "slot": "G RD 10",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781110",
+   "slot": "G RD 9",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781111",
+   "slot": "G RD 8",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781112",
+   "slot": "G RD 7",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781113",
+   "slot": "G RD 6",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781114",
+   "slot": "G RD 5",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781115",
+   "slot": "G RD 4",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781116",
+   "slot": "G RD 3",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781117",
+   "slot": "G RD 2",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781118",
+   "slot": "G RD 1",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781120",
+   "slot": "G RR 11",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781121",
+   "slot": "G RR 10",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781122",
+   "slot": "G RR 9",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781123",
+   "slot": "G RR 8",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781124",
+   "slot": "G RR 7",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781125",
+   "slot": "G RR 6",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781126",
+   "slot": "G RR 5",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781127",
+   "slot": "G RR 4",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781128",
+   "slot": "G RR 3",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781129",
+   "slot": "G RR 2",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781130",
+   "slot": "G RR 1",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781131",
+   "slot": "G RR Start",
+   "side": "Axis",
+   "cls": "markers"
+  }
+ ]
+}

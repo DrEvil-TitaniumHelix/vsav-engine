@@ -26,6 +26,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gamespec            # noqa: E402
 import gamestate as gs_mod  # noqa: E402
+import strategic as strat_mod  # noqa: E402
 
 
 def verify(game_dir, log_path, verbose=False):
@@ -47,13 +48,17 @@ def verify(game_dir, log_path, verbose=False):
     if not scen_path:
         return False, f"scenario '{init['scenario']}' not found in {game_dir}"
 
+    strategic = init.get("mode") == "strategic"
     with tempfile.TemporaryDirectory() as tmp:
-        tg = gs_mod.TacticalGame(game, scen_path, tmp, seed=init["seed"])
+        if strategic:
+            tg = strat_mod.StrategicGame(game, scen_path, tmp, seed=init["seed"])
+        else:
+            tg = gs_mod.TacticalGame(game, scen_path, tmp, seed=init["seed"])
         # confirm starting positions match the log's init record
         for lu in init["units"]:
             u = tg.s["units"][lu["pid"]]
-            if [u["col"], u["row"]] != lu["hex"] or u["facing"] != lu["facing"] \
-               or u["side"] != lu["side"]:
+            if [u["col"], u["row"]] != lu["hex"] or u["side"] != lu["side"] \
+               or (not strategic and u["facing"] != lu["facing"]):
                 return False, f"init mismatch for {lu['pid']}"
 
         n_ok = n_actions = n_rejected = 0
@@ -77,7 +82,7 @@ def verify(game_dir, log_path, verbose=False):
             n_ok += 1
             if verbose:
                 tag = "LEGAL  " if v_logged["legal"] else "ILLEGAL"
-                print(f"  ok n={e['n']:>3} t{e['turn']} {e['segment']:<8} {e['side']:<7} "
+                print(f"  ok n={e['n']:>3} t{e['turn']} {(e.get('segment') or e.get('phase')):<8} {e['side']:<7} "
                       f"{e['action'].get('type'):<13} {tag} {'; '.join(v_logged['reasons'])[:70]}")
 
     return True, (f"{n_ok}/{n_actions} entries verified: every verdict, every die, "
