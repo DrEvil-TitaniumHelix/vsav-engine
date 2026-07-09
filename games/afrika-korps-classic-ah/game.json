@@ -1,0 +1,83 @@
+{
+ "name": "Afrika Korps Classic AH \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "map_name": "Main Map",
+ "board_name": "Board",
+ "save_key": "ca",
+ "grid": {
+  "orient": "pointy",
+  "dx": 101.79999999999785,
+  "dy": 88.12562584220231,
+  "x0": 0.0,
+  "y0": 32.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-5 vOff=-12 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "buildfile": "../../../VassalIngest/afrika-korps-classic-ah/extracted/buildFile.xml",
+ "moduledata": "../../../VassalIngest/afrika-korps-classic-ah/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalIngest/afrika-korps-classic-ah/extracted/images/AK consolidated map.png",
+  "counters_dir": "../../../VassalIngest/afrika-korps-classic-ah/extracted/images"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "emb2",
+  "footprint",
+  "piece",
+  "report",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "Side A",
+   "Side B"
+  ],
+  "labels": {
+   "Side A": "Side A",
+   "Side B": "Side B"
+  },
+  "default": "Side B",
+  "detect_tokens": {},
+  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+ },
+ "stats": {
+  "patterns": [],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+ },
+ "movement": {
+  "impassable_terrain": [],
+  "terrain_mp": {},
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {
+   "exerts": false
+  },
+  "enter_enemy_hex": true,
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    69
+   ],
+   "rows": [
+    0,
+    29
+   ]
+  },
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "3.0.1"
+ },
+ "setup_save": "../../../VassalIngest/afrika-korps-classic-ah/setups/Starting positions Trails on.vsav"
+}
