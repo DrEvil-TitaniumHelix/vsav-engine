@@ -94,7 +94,9 @@ def folder_docs(title):
 
 
 def clean_title(t):
-    return re.sub(r"\s+", " ", re.sub(r"[\\/:*?\"<>|']", "_", t)).strip()
+    # trailing dots/spaces are stripped by Win32 at dir creation - mirror that
+    return re.sub(r"\s+", " ", re.sub(r"[\\/:*?\"<>|']", "_", t)) \
+        .strip().rstrip(". ")
 
 
 def esc(s):
@@ -153,6 +155,7 @@ def load_enrichment():
             e["carrier_path"] = findex[l["module"]]
             e["carrier_module"] = l["module"]
         if e:
+            e["gk"] = gk
             ENRICH[slug] = e
 
 
@@ -302,7 +305,7 @@ def write_playlists(members):
              f"    <SortBy>Title</SortBy>",
              f"    <Notes>{esc(notes)}</Notes>",
              "  </Playlist>"]
-        for i, (slug, title) in enumerate(sorted(members.get(name, []),
+        for i, (slug, title) in enumerate(sorted(members.get(name, {}).values(),
                                                  key=lambda m: m[1]), 1):
             x += ["  <PlaylistGame>",
                   f"    <PlaylistId>{pid}</PlaylistId>",
@@ -335,7 +338,9 @@ def build(slugs):
         e = ENRICH.get(slug, {})
         for name, _, want in PLAYLISTS:
             if want(e):
-                members.setdefault(name, []).append((slug, title))
+                # one entry per GAME, not per edition-slug
+                seen = members.setdefault(name, {})
+                seen.setdefault(e.get("gk", slug), (slug, title))
     os.makedirs(os.path.join(OUT, "Data", "Platforms"), exist_ok=True)
     doc = ('<?xml version="1.0" standalone="yes"?>\n<LaunchBox>\n'
            + "\n".join(games) + "\n</LaunchBox>\n")
