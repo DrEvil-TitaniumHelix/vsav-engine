@@ -46,23 +46,849 @@
   },
   "default": "Axis",
   "detect_tokens": {
-   "Allied": ["A "],
-   "Axis": ["G ", "I "]
+   "Allied": [
+    "A "
+   ],
+   "Axis": [
+    "G ",
+    "I "
+   ]
   },
   "note": "Name prefixes from the module: 'A '=Allied 68, 'G '=German 43, 'I '=Italian 13 (Ariete, Pavia, Trieste... all Axis). Allied listed FIRST: Indian units ('A 4 I Inf 23') contain 'I ' and must match 'A ' before Axis tokens; verified zero Axis names contain 'A '. Rules 1.22: Blue=Allied, Red=Axis. Only non-unit piece = 'Marker Game Turn Axis' -> default Axis, harmless."
  },
  "stats": {
-  "patterns": [],
+  "patterns": [
+   [
+    "G Supply Captured 4",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply Captured 5",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply Captured #",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured 6",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured 5",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured #",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A 1 SA Inf 3 Recce",
+    [
+     1,
+     1,
+     12
+    ]
+   ],
+   [
+    "A 2 SA Inf 7 Recce",
+    [
+     1,
+     1,
+     12
+    ]
+   ],
+   [
+    "A 50 Inf 6SA Motor",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 4SA Motor",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 3 I Motor",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A Pol Carpathian",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 Arm 201 Gds",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 7 S.G",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "A 2 Arm 2 S.G",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "A Free Fr Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 I Inf 21",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 I Inf 25",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 8 I Inf 161",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 23",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 22 Gds Inf",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 11",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 6",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G 164Inf 125",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 1 SA Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 4",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 3",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 8 I Inf 18",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G 164Inf 382",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "G 164Inf 433",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 50 Inf 151",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 29",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 SA Inf 6",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 10",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 44 Inf 132",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 SA Inf 4",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 50 Inf 150",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 7",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 9A Inf 20",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A Sub Inf 5",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Arm 2",
+    [
+     4,
+     4,
+     10
+    ]
+   ],
+   [
+    "A Sub Arm 1",
+    [
+     4,
+     4,
+     10
+    ]
+   ],
+   [
+    "A Sub Inf 3",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Inf 4",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Inf 6",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 580",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "G 90Inf 361",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 200",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 70 Inf 23",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 9",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 Arm 23",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A 9A Inf 18",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 50 Inf 69",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 44 Inf 61",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 9A Inf 24",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 51 Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 51 Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G Supply 2",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply 3",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A 7A Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7A Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A Supply 1",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 3",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 4",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 2",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G 15Pz 115",
+    [
+     3,
+     3,
+     10
+    ]
+   ],
+   [
+    "A 1 Arm 22",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 55",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Littorio",
+    [
+     4,
+     5,
+     6
+    ]
+   ],
+   [
+    "I Sabratha",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "I Pistolio",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "A 10 Arm 8",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 21Pz 104",
+    [
+     3,
+     3,
+     10
+    ]
+   ],
+   [
+    "G Supply 1",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Jews Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A NZ 2 Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 7",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A 7 Arm 4",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "A 2 Arm 3",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "G 15Pz 33",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "I Trieste",
+    [
+     3,
+     4,
+     6
+    ]
+   ],
+   [
+    "A 1 Arm 2",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "I Folgere",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "I Facists",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "I Brescia",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "I Bologna",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "G 15Pz 8",
+    [
+     7,
+     7,
+     10
+    ]
+   ],
+   [
+    "A 32 Arm",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Centor",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "I Ariete",
+    [
+     4,
+     5,
+     6
+    ]
+   ],
+   [
+    "I Trenta",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "G 21Pz 5",
+    [
+     7,
+     7,
+     10
+    ]
+   ],
+   [
+    "G Rommel",
+    [
+     0,
+     0,
+     12
+    ]
+   ],
+   [
+    "G 21Pz 3",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "I Savena",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "G 51 Fj",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "A 1 Arm",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Pavia",
+    [
+     2,
+     3,
+     4
+    ]
+   ]
+  ],
   "default": [
    0,
    0,
-   6
+   0
   ],
-  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+  "provenance": "attack-defense-movement transcribed from counter art by independent OCR pass (C:/VassalIngest/afrika-korps-classic-ah/counter_stats.json, 2026-07-09); validated: all 125 setup pieces resolve via their image file, rulebook cross-checks 7.3 (A 7 Arm 7=3-3-7, I Savena=2-2-4) match, worked-example factors 2-3-4 and 3-4-6 (rule 7.5) exist as printed; supply=0-0-10, Rommel=0-0-12 as printed (movement factors real per rules 13/22)"
  },
  "terrain_file": "terrain.json",
  "movement": {
-  "impassable_terrain": ["sea", "qattara", "offmap"],
+  "impassable_terrain": [
+   "sea",
+   "qattara",
+   "offmap"
+  ],
   "terrain_mp": {
    "clear": 1.0,
    "escarpment": 1.0,
@@ -72,8 +898,18 @@
   },
   "default_mp": 1.0,
   "hexside_rules": [
-   {"feature": "water", "value": true, "effect": "prohibit", "cite": "rule 5.7 all-water hexside (E18-F19 example)"},
-   {"feature": "qattara", "value": true, "effect": "prohibit", "cite": "rule 5.7 Qattara Depression hexside (W62-X62 example)"}
+   {
+    "feature": "water",
+    "value": true,
+    "effect": "prohibit",
+    "cite": "rule 5.7 all-water hexside (E18-F19 example)"
+   },
+   {
+    "feature": "qattara",
+    "value": true,
+    "effect": "prohibit",
+    "cite": "rule 5.7 Qattara Depression hexside (W62-X62 example)"
+   }
   ],
   "zoc": {
    "exerts": false
@@ -97,5 +933,51 @@
   "grid_how": "hexgrid",
   "module_version": "3.0.1"
  },
- "setup_save": "../../../VassalIngest/afrika-korps-classic-ah/setups/Starting positions Trails on.vsav"
+ "setup_save": "../../../VassalIngest/afrika-korps-classic-ah/setups/Starting positions Trails on.vsav",
+ "classes": {
+  "markers": [
+   "G RD 1",
+   "G RD 10",
+   "G RD 2",
+   "G RD 3",
+   "G RD 4",
+   "G RD 5",
+   "G RD 6",
+   "G RD 7",
+   "G RD 8",
+   "G RD 9",
+   "G RR 1",
+   "G RR 10",
+   "G RR 11",
+   "G RR 2",
+   "G RR 3",
+   "G RR 4",
+   "G RR 5",
+   "G RR 6",
+   "G RR 7",
+   "G RR 8",
+   "G RR 9",
+   "G RR Start",
+   "Marker Game Turn Axis"
+  ],
+  "supply": [
+   "A Supply 1",
+   "A Supply 2",
+   "A Supply 3",
+   "A Supply 4",
+   "A Supply Captured #",
+   "A Supply Captured 5",
+   "A Supply Captured 6",
+   "G Supply 1",
+   "G Supply 2",
+   "G Supply 3",
+   "G Supply Captured #",
+   "G Supply Captured 4",
+   "G Supply Captured 5"
+  ],
+  "hq": [
+   "G Rommel"
+  ],
+  "note": "markers = Rommel-route/turn-track status counters, no factors printed, exempt from any future movement gate; supply/hq are non-combat units (5.4, 13, 22) - no ZOC, special movement rules pending Tier-1 gate"
+ }
 }
