@@ -59,6 +59,10 @@
 </div>
 <div id="picker"></div>
 <div id="actions"></div>
+<div id="arrivals" style="display:none; position:fixed; top:52px; left:8px; max-width:340px;
+     max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
+     border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
+     box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
 <div id="toast"></div>
 
 <script>
@@ -147,6 +151,7 @@ async function refresh() {
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   renderFlow();
+  renderArrivals();
   render();
 }
 
@@ -162,6 +167,60 @@ function renderFlow() {
 }
 
 function sideLabel(id) { const s = GAME.sides.find(s => s.id === id); return s ? s.label : id; }
+
+// ---------- arrivals / supply / sea panel (strategic gate) ----------
+async function sgAction(action) {
+  const r = await (await fetch('/api/sg_action', {method:'POST',
+    body: JSON.stringify({action})})).json();
+  if (r.error) toast('Gate: ' + r.error);
+  else if (r.result && (r.result.result || r.result.note))
+    toast(r.result.result || r.result.note);
+  refresh();
+}
+function renderArrivals() {
+  const box = document.getElementById('arrivals');
+  const A = FLOW && FLOW.arrivals;
+  if (!A || FLOW.over) { box.style.display = 'none'; return; }
+  const S = A.supply;
+  let h = `<b>${sideLabel(FLOW.mover)} — arrivals & sea</b><br>`;
+  h += `<span style="color:#9aa3ad">controlled ports: ${
+        A.ports.length ? A.ports.map(p => p.name).join(', ') : 'NONE (4.3: occupy to control)'}</span><br>`;
+  if (!A.placements_open)
+    h += `<span style="color:#e0a34e">movement has begun — placements closed [3.1/3.3]</span><br>`;
+  h += `<div style="margin-top:6px"><b>Supply</b> ${S.on_board}/${S.max} on board, ${S.pool} off board`;
+  if (S.can_roll)
+    h += ` <button class="sidebtn" onclick='sgAction({type:"roll_supply"})'>Roll Supply Table (sunk on ${S.sunk_on.join(",")})</button>`;
+  if (S.pending && A.placements_open && A.ports.length)
+    h += '<br>' + A.ports.map(p =>
+      `<button class="sidebtn" onclick='sgAction({type:"land_supply",port:[${p.hex}]})'>Land supply: ${p.name}</button>`).join(' ');
+  h += `</div>`;
+  if (A.due.length) {
+    h += `<div style="margin-top:6px"><b>Reinforcements due</b> (19.2: land before moving)<br>`;
+    A.due.forEach(d => {
+      h += `<div style="margin:2px 0">${d.slot} <i style="color:#9aa3ad">(${d.due})</i> `;
+      if (A.placements_open && A.ports.length)
+        h += A.ports.map(p =>
+          `<button class="sidebtn" onclick='sgAction({type:"land_reinforcement",unit:"${d.pid}",port:[${p.hex}]})'>${p.name}</button>`).join(' ');
+      h += `</div>`;
+    });
+    h += `</div>`;
+  }
+  if (A.at_sea.length) {
+    h += `<div style="margin-top:6px"><b>At sea</b><br>`;
+    A.at_sea.forEach(u => {
+      h += `<div style="margin:2px 0">${u.slot}${u.must_land ?
+            ' <span style="color:#e06c5e">must land NOW or be eliminated [23.42]</span>' : ''} `;
+      if (u.must_land && A.placements_open)
+        h += A.ports.map(p =>
+          `<button class="sidebtn" onclick='sgAction({type:"debark",unit:"${u.pid}",port:[${p.hex}]})'>Land: ${p.name}</button>`).join(' ');
+      h += `</div>`;
+    });
+    h += `</div>`;
+  }
+  h += `<div style="margin-top:6px;color:#9aa3ad">selected unit at a port? `
+     + `<button class="sidebtn" onclick='selected ? sgAction({type:"embark",unit:selected.id}) : toast("select a unit first")'>Put out to sea [23.4]</button></div>`;
+  box.innerHTML = h; box.style.display = '';
+}
 
 function render() {
   document.querySelectorAll('.counter,.badge').forEach(n => n.remove());

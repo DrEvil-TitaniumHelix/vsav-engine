@@ -53,7 +53,86 @@ positions fails — pieces are hand-placed off-center and contaminated by
 turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
 spacing, not the grid). The printed map grid is the ground truth.
 
-## TIER-1 SUBMIT GATE: LIVE + VALIDATED 2026-07-09 (re-run `python validate_gate.py`)
+## TIER 1 COMPLETE 2026-07-09 (late): arrivals + sea movement + Rommel bonus
+## (re-run `python validate_arrivals.py` and `python validate_tier1.py`)
+
+The three items Bruce gated the badge on are now enforced through the gate,
+each with independent validation:
+
+**ARRIVALS (3.1/3.3, 12, 19) — data cross-validated from FOUR sources**
+(validate_arrivals.py, ALL PASS): the canonical 62-unit reinforcement
+schedule was read cell-by-cell from the printed Turn Record track art and
+verified against (1) the mastermind track transcription, (2) the
+independent counter-face transcription, (3) the module setup pieces
+physically parked on the track (x-position clusters reproduce every turn
+group), (4) game.json stats. TRANSCRIPTION DEFECT found + corrected: the
+1 Aug 41 brigades print "5I" (5th Indian: 29/9/10) — transcription misread
+"51 Inf"; counter faces + module slots + printed art agree on 5I; factors
+identical, no gate impact. The track's supply wedges (15 Apr 41: 1,2 "to
+end of June"; 1 Jul 41: 1,2,3 "to end of November"; 1 Dec 41: 1 "to end of
+game") are exactly the rulebook 12.2 SUPPLY TABLE columns — two-source
+match. Gate enforcement (validate_tier1.py): due turns (19.1), controlled
+ports only, Tobruch/own home base (19.2/19.7/4.3 — the OPPONENT's home
+base and Bengasi rejected), later landing allowed (19.3), full move on
+arrival (19.2/13.1), placements strictly before movement (3.1/3.3), own
+player turn only (19.6), Allied 1 supply/turn max 4 (12.1), Axis Supply
+Table d6 through the ENGINE-OWNED seeded RNG with the correct sunk window
+per date column (12.2 — no roll turn 1, once per game turn), land-or-forfeit
+(12.4), declining allowed (12.5), 19.8 at game end.
+
+**SEA MOVEMENT (23.3-23.44)**: embark from Tobruch/own home base only
+(Bengasi rejected 23.3, enemy home 23.5), move-then-embark same turn OK
+(23.4), control-at-start OR ZOC-free embarkation (23.44), landing only on
+the FOLLOWING friendly turn (23.4), same-port return OK (23.43), landing
+requires start-of-turn port control (23.44), landed units may move inland
+but not re-embark (23.42), units overdue at sea are ELIMINATED at the end
+of their player turn (23.42 — validated: a garrison that sailed and lost
+its only port died on schedule). Port control = 4.3 occupation by
+combat/supply/Rommel, home bases additionally ZOC-free.
+
+**ROMMEL BONUS (22.1) — ambiguity RESOLVED by the module's own tournament
+clarifications** (both "Afrika Korps Rule Clarifications for Vassal.pdf"
+and "Afrika_Korps_Clarifications_-_Nov_2023.docx", identical text): the
+bonus may be taken at any point of the turn, even after Rommel departs, so
+long as Rommel moved WITH the unit for the claimed hexes at some point;
+1 co-moved hex = only +1; units may fully expend MF first and Rommel adds
+the two escorted hexes afterward; combines with the coast road bonus (the
+clarification's Q&A: 2 escorted + 10 road + regular MF on turn 1 = yes).
+ENCODING: moves may carry an explicit `path`; Rommel's path move is
+submitted first; a claim (`rommel_bonus` on a move, or a `rommel_extend`
+appended to a completed path move) is legal iff the unit's path shares a
+directed contiguous segment of >= claimed length with Rommel's submitted
+path, once per unit per turn, whole path re-validated under the full
+movement rules at MF+bonus. Validated: exact budget boundaries (MF4+2=6
+hexes legal, 7 illegal), no-shared-segment and short-segment claims
+rejected with citations, the move-first-escort-later flavor, and
+escort+road+regular composition. Submission-order note: the gate requires
+Rommel's path before claims — order inside the player turn is our
+sequential-submission artifact; the clarification makes any order
+outcome-equivalent, and every legal outcome remains expressible.
+
+**MOVEMENT DEFECT FOUND + FIXED (was live in the shipped gate): fortress
+ZOC immunity (19.5/23.1)** — "adjacent units do not exert a ZOC over a
+fortress hex" was not encoded; enemy ZOC wrongly stopped/pinned movement
+into and out of Tobruch/Bengasi. Fixed spec-gated (`zoc.immune_terrain:
+["fortress"]`), validated (validate_tier1.py: H25 unit exerts no ZOC over
+G25, garrison not ZOC-locked), Arnhem/Tobruk semantics untouched (no
+immune_terrain in their specs — SHA/verify regressions identical).
+
+Every session above replays through engine/verify_game.py (verdicts, dice,
+state hashes; illegal proposals provably inert). UI: index.html arrivals
+panel (ports, supply roll/land, due reinforcements, at-sea units) drives
+/api/sg_action through the gate; confirmed in Chrome. Rommel path claims
+are API-level (UI path-drawing is future polish — the UI cannot express an
+escort, it simply doesn't offer it; nothing the UI offers bypasses a rule).
+
+**Still NOT enforced (declared in rules_scope, UI-visible):** combat and
+everything needing it (Tier 2), supply capture/consumption (14/15),
+isolation (24), replacements (20), substitutes (21), victory adjudication
+(4.1-4.3). Web build (web/) still runs the legacy JS engine — AK gate is
+Python/HTTP only.
+
+## SUPERSEDED — TIER-1 SUBMIT GATE: LIVE + VALIDATED 2026-07-09 (re-run `python validate_gate.py`)
 The anti-cheat trinity (spec #9) is wired for the campaign scenario:
 - **engine/strategic.py StrategicGame** — submit() is the only door; player-turn
   alternation Axis-first (3.1-3.5); per-unit once-per-turn (5.2/5.5); destination

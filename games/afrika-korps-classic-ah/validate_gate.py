@@ -73,7 +73,7 @@ res_unit = next(u for u in sg.reserve.values() if u["side"] == "Axis"
 res_marker = next(u for u in sg.reserve.values() if u.get("cls") == "markers")
 expect("Axis", {"type": "move", "unit": res_unit["id"], "dest": W6},
        False, f"moving OOA-track reinforcement '{res_unit['slot']}' is ILLEGAL",
-       "Order of Appearance")
+       "scheduled reinforcement")
 expect("Axis", {"type": "move", "unit": res_marker["id"], "dest": W6},
        False, f"moving status marker '{res_marker['slot']}' is ILLEGAL")
 
