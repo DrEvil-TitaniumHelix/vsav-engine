@@ -35,7 +35,6 @@ def norm(t):
 DROP = {
     "blood bowl",            # != Blood Bowl: Team Manager (card game)
     "napoleon",              # != Commands & Colors: Napoleonics
-    "dauntless",             # != Operation Dauntless (GMT ground combat)
     "east & west",           # != Blocks in the East/West
     "intruder",              # != Flight of the Intruder
     "banzai",                # != Mississippi Banzai
@@ -43,6 +42,13 @@ DROP = {
     "star trek: the game",   # != Star Trek: Ascendancy
     "goblin",                # != Goblin Supremacy
     "testing",               # junk stub
+}
+
+# hand-resolved carriers where auto evidence ties on the wrong module
+# (P8 2026-07-09: "dauntless" was wrongly DROPped - AH's Dauntless is the
+# companion game inside Air Force / Dauntless, not GMT's Operation Dauntless)
+OVERRIDE = {
+    "dauntless": "AirForce_BL_v1.0.vmod",
 }
 
 
@@ -63,6 +69,17 @@ def main():
         if gk in DROP:
             continue
         nt = norm(g.get("title"))
+        if gk in OVERRIDE:
+            r = next((r for r in db.values()
+                      if r.get("file") == OVERRIDE[gk]), None)
+            if r:
+                links[gk] = dict(module=r["file"],
+                                 evidence=["curated OVERRIDE"],
+                                 setups=r.get("n_setups"),
+                                 style=r.get("board_style"))
+                log.append(f"{g['title'][:44]:46} -> {r['file'][:40]:42} "
+                           "[curated OVERRIDE]")
+            continue
         if len(nt) < 6:            # too generic to match safely
             continue
         best = None
