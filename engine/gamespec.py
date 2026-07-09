@@ -122,6 +122,11 @@ class Game:
         # extended movement semantics (all optional; absent = legacy behavior)
         self.terrain_stop = set(m.get("terrain_stop", []))   # enter => movement ends
         self.road_bonus = m.get("road_bonus")  # {"feature","mp"}: extra budget on road hexsides
+        # class-aware enemy hexes: units of pass_classes never block (AK 5.4
+        # "supply and Rommel are not combat units"; 22.3 move onto lone Rommel)
+        self.enemy_pass_classes = set((m.get("enemy_hex") or {}).get("pass_classes", []))
+        # end-of-move stacking limit (AK 6.1-6.3); absent = never end on friendlies
+        self.stacking = m.get("stacking")
         # per-hex whitelist of (entry,exit) neighbor pairs allowed as a free
         # road-through where several roads share a hex without connecting
         self.road_pairs = {k: {tuple(sorted(tuple(h) for h in pair)) for pair in v}
@@ -327,6 +332,37 @@ class Game:
     def _is_stop_hex(self, h):
         return self.hex_terrain(*h) in self.terrain_stop
 
+    def _enemy_hexes(self, board, enemy):
+        """(blocked, passable): blocked = enemy-occupied hexes that may never
+        be entered; passable = enemy hexes whose occupants are ALL of
+        enemy_hex.pass_classes (AK 5.4: only COMBAT units block on-top/through;
+        a lone supply or Rommel hex may be entered, 22.3/15.22)."""
+        occ = {}
+        for u in board:
+            if u["side"] == enemy:
+                occ.setdefault((u["col"], u["row"]), []).append(u)
+        if not self.enemy_pass_classes:
+            return set(occ), set()
+        blocked = {h for h, us in occ.items()
+                   if any(self.unit_class(u["name"]) not in self.enemy_pass_classes
+                          for u in us)}
+        return blocked, set(occ) - blocked
+
+    def _stack_ok(self, unit, h, board):
+        """May `unit` END its move in friendly-occupied hex h? Only with a
+        stacking spec (AK 6.1: three combat units per hex; exempt classes
+        stack above the limit; 6.3: the limit binds only at end of move)."""
+        if not self.stacking:
+            return False
+        exempt = set(self.stacking.get("exempt_classes", []))
+        if self.unit_class(unit["name"]) in exempt:
+            return True
+        n = sum(1 for u in board
+                if u["side"] == unit["side"] and (u["col"], u["row"]) == h
+                and u.get("id") != unit.get("id")
+                and self.unit_class(u["name"]) not in exempt)
+        return n < int(self.stacking["max"])
+
     def _step_check(self, cur, nb, prev, came_by_road, nonroad_used, start):
         """Shared step legality for extended movement (AK rules 17/18).
         prev = hex we entered cur from (None at start); came_by_road = the
@@ -366,14 +402,26 @@ class Game:
         (tracked only inside multi-road exception hexes) — costs form a
         pareto frontier of (normal_used, road_used)."""
         enemy = self.enemy(unit["side"])
-        epos = {(u["col"], u["row"]) for u in board if u["side"] == enemy}
         fpos = {(u["col"], u["row"]) for u in board if u["side"] != enemy}
+        eblock, epass = self._enemy_hexes(board, enemy)
+        # legacy bool applies only when no class rule is specified: everything
+        # enterable, nothing endable
+        if not self.enemy_pass_classes \
+           and self.spec["movement"].get("enter_enemy_hex", False):
+            epass, eblock = eblock | epass, set()
+
+        def can_end(h):
+            if h in eblock or (h in epass and not self.enemy_pass_classes):
+                return False
+            if h in fpos and not self._stack_ok(unit, h, board):
+                return False
+            return True
+
         ezoc = self.zoc_hexes(board, enemy)
         start = (unit["col"], unit["row"])
         if self.zoc_cfg.get("locked_at_start", False) and start in ezoc:
             return {}
         stop_on_enter = self.zoc_cfg.get("stop_on_enter", False)
-        enter_enemy = self.spec["movement"].get("enter_enemy_hex", False)
         # supply units may not enter enemy ZOC during movement (AK 13.2's
         # sustain exception is a combat-phase decision, not a move)
         supply_no_zoc = (self.zoc_cfg.get("supply_no_enter")
@@ -401,14 +449,14 @@ class Game:
             if all((n_used, r_used) != p for p in best.get(st, [])):
                 continue
             if cur != start:
-                if cur not in fpos and cur not in epos:
+                if can_end(cur):
                     if cur not in dests or n_used < dests[cur]:
                         dests[cur] = n_used
                 if cur in ezoc and stop_on_enter:
                     continue                      # 8.1: entered ZOC, stop
             for nb in self.neighbors(*cur):
-                if nb in epos and not enter_enemy:
-                    continue
+                if nb in eblock:
+                    continue                      # 5.4: enemy combat unit
                 if cur == start and nb in banned_first:
                     continue
                 if supply_no_zoc and nb in ezoc:
@@ -435,21 +483,23 @@ class Game:
                                    if not (n2 <= pn + 1e-9 and r2 <= pr + 1e-9)]
                     frontier.append((n2, r2))
                     if terminal:
-                        if nb not in fpos and nb not in epos \
-                           and (nb not in dests or n2 < dests[nb]):
+                        if can_end(nb) and (nb not in dests or n2 < dests[nb]):
                             dests[nb] = n2
                     else:
                         heapq.heappush(pq, (n2, r2, nb, nr2,
                                             entry_key(nb, cur), cur, road_side))
         dests.pop(start, None)
-        return {h: c for h, c in dests.items() if h not in fpos and h not in epos}
+        return {h: c for h, c in dests.items() if can_end(h)}
 
     def trace_path(self, unit, ma, board, path):
         """Validate an explicit hex path (list of (col,row), start first)
         under the extended rules. Returns (legal, reason). Used to check the
         rulebook's worked movement examples verbatim."""
         enemy = self.enemy(unit["side"])
-        epos = {(u["col"], u["row"]) for u in board if u["side"] == enemy}
+        fpos = {(u["col"], u["row"]) for u in board if u["side"] != enemy}
+        eblock, epass = self._enemy_hexes(board, enemy)
+        if not self.enemy_pass_classes:
+            eblock |= epass          # no class rule: every enemy hex blocks
         ezoc = self.zoc_hexes(board, enemy)
         stop_on_enter = self.zoc_cfg.get("stop_on_enter", False)
         banned_first = set()
@@ -463,8 +513,8 @@ class Game:
         prev, by_road = None, False
         start = path[0]
         for i, (cur, nb) in enumerate(zip(path, path[1:])):
-            if nb in epos:
-                return False, f"step {i+1}: enemy-occupied hex"
+            if nb in eblock:
+                return False, f"step {i+1}: enemy combat unit blocks (5.4)"
             if cur == start and nb in banned_first:
                 return False, f"step {i+1}: same-unit ZOC hop (8.3)"
             c = self.move_cost(cur, nb)
@@ -486,6 +536,8 @@ class Game:
             if stop_on_enter and nb in ezoc and not last:
                 return False, f"step {i+1}: enemy ZOC entered, move ends (8.1)"
             prev, by_road = cur, road_side
+        if path[-1] in fpos and not self._stack_ok(unit, path[-1], board):
+            return False, "end hex over the stacking limit (6.1/6.3)"
         return True, f"ok (normal {n_used:g}/{ma}, road {r_used:g}/{road_mp:g})"
 
     def legal_destinations_t(self, unit, ma, board):
@@ -496,7 +548,8 @@ class Game:
         Dispatches to the extended engine when the spec uses stop-terrain,
         road bonus or per-unit ZOC semantics."""
         if self.terrain_stop or self.road_bonus \
-           or self.zoc_cfg.get("same_unit_first_step"):
+           or self.zoc_cfg.get("same_unit_first_step") \
+           or self.stacking or self.enemy_pass_classes:
             return self._legal_destinations_ext(unit, ma, board)
         enemy = self.enemy(unit["side"])
         epos = {(u["col"], u["row"]) for u in board if u["side"] == enemy}

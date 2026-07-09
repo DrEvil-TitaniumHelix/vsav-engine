@@ -53,7 +53,46 @@ positions fails — pieces are hand-placed off-center and contaminated by
 turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
 spacing, not the grid). The printed map grid is the ground truth.
 
-## NEXT: movement rules (Tier 1 gate)
+## TIER-1 SUBMIT GATE: LIVE + VALIDATED 2026-07-09 (re-run `python validate_gate.py`)
+The anti-cheat trinity (spec #9) is wired for the campaign scenario:
+- **engine/strategic.py StrategicGame** — submit() is the only door; player-turn
+  alternation Axis-first (3.1-3.5); per-unit once-per-turn (5.2/5.5); destination
+  legality via the validated movement engine; end_phase blocked while overstacked
+  (2.3/6.1/6.3); every proposal (incl. rejections) logged to JSONL with state hashes.
+- **scenario_campaign.json** (make_scenario.py, assertion-guarded): 23 deployed
+  units (12 Allied / 11 Axis incl. the El Agheila stack) = the March 1941 Situation
+  placement (2.3); 102 reserve pieces on the printed OOA track (2.2) are
+  gate-rejected; 38 half-month turns 1 Apr 1941 - 15 Oct 1942.
+- **verify_game.py** dispatches on log mode; validate_gate.py = 18/18 replay with
+  9 illegal proposals provably inert. ui/server.py hard-rejects over HTTP
+  (/api/move, /api/end_phase) with cited reasons; index.html shows flow banner +
+  gate toasts. Confirmed in-browser (drag-move through gate, overstack rejection).
+
+**Engine additions this pass (spec-gated, legacy SHA-identical):** enemy_hex
+pass_classes (5.4: combat blocks on-top/through; lone supply/Rommel enterable,
+22.3/15.22) replacing the wrong blanket enter_enemy_hex:true; stacking max 3
+combat at end-of-move, exempt classes above the limit (6.1-6.3). validate_movement
+36/36 (24 original + 12 new cited cases).
+
+**TERRAIN DEFECT FOUND+FIXED:** printed decorations (Turn Record strip, CRT,
+holding boxes, legend art incl. printed counter pictures) classified as clear —
+156 hexes flipped to offmap by decoration color masks + sea/decor combination
+rule. All 38 art checks still pass, 99 road hexsides intact, plus NEW module-zone
+cross-check: every enterable hex inside the buildFile "Hexes" polygon and outside
+all decoration zones (exceptions T57/W61: qattara_partial per printed art, 5.6 —
+the module's Unplayable trail-zone is coarser than the rules).
+
+**HONESTY LINE — what Tier 1 does NOT yet cover (declared in rules_scope, UI-visible):**
+reinforcement/supply arrivals (3.1/3.3, 12, 19 — OOA data transcribed, needs
+Time-Record validation), Rommel two-hex companion bonus (22.1 — ambiguous text,
+no worked example found; do NOT encode a guess), sea movement (23.3-23.44 —
+crisp text, needs port-control + off-board state), replacements/substitutes
+(20/21), all combat (Tier 2). The gate is intentionally STRICTER than the full
+rules on arrivals/22.1/23.4: banner + scenario declare it. Bruce decides whether
+scoped Tier 1 is claimable or whether 22.1+23.4+arrivals must land first.
+Web build (web/) still runs the legacy JS engine — AK gate is Python/HTTP only.
+
+## SUPERSEDED: movement rules (Tier 1 gate)
 1. Read rules sections: movement (5), stacking (6), supply-for-movement,
    coast road (10?), escarpment, Qattara — encode MFs + terrain with
    citations into game.json.

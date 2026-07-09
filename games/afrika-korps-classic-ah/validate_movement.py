@@ -135,5 +135,54 @@ supz = U("A Supply 1", "M32", side="Allied", uid="s1")
 check(not g.zoc_hexes([marker], "Axis"), "5.4: markers exert no ZOC")
 check(not g.zoc_hexes([supz], "Allied"), "5.4: supply units exert no ZOC")
 
+print("rule 5.4 enemy hexes / 22.3 Rommel / 15.22 supply:")
+# an enemy COMBAT unit's hex may never be entered — not even as a hop from
+# an adjacent start (on top of OR through, 5.4)
+axis3 = U("G 21Pz 5", "M31")
+efoe = U("A 22 Gds Inf", "M32", side="Allied", uid="e1")
+board3 = [axis3, efoe]
+d = g.legal_destinations_t(axis3, 6, board3)
+check(cr("M32") not in d, "5.4: enemy combat hex is not a destination")
+legal, why = g.trace_path(axis3, 6, board3, [cr("M31"), cr("M32")])
+check(not legal, f"5.4: cannot step onto an enemy combat unit -> {why}")
+legal, why = g.trace_path(axis3, 6, board3, [cr("M31"), cr("M32"), cr("M33")])
+check(not legal, f"5.4: cannot hop THROUGH an enemy combat unit -> {why}")
+# a lone enemy Rommel does not block: his hex is a legal destination (22.3)
+rommel = U("G Rommel", "M32", uid="r1")
+dr = g.legal_destinations_t(U("A 22 Gds Inf", "M30", side="Allied"),
+                            6, [rommel])
+check(cr("M32") in dr, "22.3: may move directly on top of a lone Rommel")
+# same for a lone enemy supply unit (15.22); with a combat escort it blocks
+dsup = g.legal_destinations_t(U("A 22 Gds Inf", "M30", side="Allied"),
+                              6, [U("G Supply 1", "M32", uid="s1")])
+check(cr("M32") in dsup, "15.22: lone enemy supply hex is enterable")
+descort = g.legal_destinations_t(
+    U("A 22 Gds Inf", "M28", side="Allied"), 6,
+    [U("G Supply 1", "M32", uid="s1"), U("G 21Pz 5", "M32", uid="e2")])
+check(cr("M32") not in descort, "5.4: supply WITH a combat escort blocks")
+
+print("rule 6.1-6.3 stacking:")
+mover = U("G 15Pz 8", "M30")
+stack2 = [U("G 21Pz 5", "M32", uid="f1"), U("G 90Inf 55", "M32", uid="f2")]
+stack3 = stack2 + [U("G 164Inf 125", "M32", uid="f3")]
+d2 = g.legal_destinations_t(mover, 6, stack2)
+check(cr("M32") in d2, "6.1: may join two friendly combat units (3 total)")
+d3 = g.legal_destinations_t(mover, 6, stack3)
+check(cr("M32") not in d3, "6.1: may NOT become a fourth combat unit")
+# friendly supply/Rommel do not count against the three-high limit (6.1)
+stack_sup = stack2 + [U("G Supply 1", "M32", uid="s1"),
+                      U("G Rommel", "M32", uid="r1")]
+dsup2 = g.legal_destinations_t(mover, 6, stack_sup)
+check(cr("M32") in dsup2, "6.1: supply/Rommel stack above the limit")
+# a supply unit may itself end on a full stack (6.1)
+dsupm = g.legal_destinations_t(U("G Supply 2", "M30"), 10, stack3)
+check(cr("M32") in dsupm, "6.1: a supply unit may join a full combat stack")
+# 6.3: passing THROUGH a maximum stack is legal (end beyond it)
+legal, why = g.trace_path(mover, 6, stack3,
+                          [cr("M30"), cr("M31"), cr("M32"), cr("M33")])
+check(legal, f"6.3: may pass through a full stack, limits bind at end -> {why}")
+legal, why = g.trace_path(mover, 6, stack3, [cr("M30"), cr("M31"), cr("M32")])
+check(not legal, f"6.1: may not END on the full stack -> {why}")
+
 print(f"\n{'ALL PASS' if not fails else str(len(fails)) + ' FAILURES'}")
 sys.exit(1 if fails else 0)

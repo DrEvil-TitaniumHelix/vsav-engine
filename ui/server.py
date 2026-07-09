@@ -23,10 +23,12 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 import board as board_mod  # noqa: E402
 import gamespec  # noqa: E402
 import gamestate as gs_mod  # noqa: E402
+import strategic as strat_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
 
 GAME_OBJ = None   # gamespec.Game
 TG = None         # gamestate.TacticalGame when the game spec names a scenario
+SG = None         # strategic.StrategicGame when the scenario is mode=strategic
 WORK = None       # working .vsav path
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
 facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
@@ -80,6 +82,16 @@ def unit_view(u):
                      pivoted=tu["pid"] in TG.s["pivoted"],
                      fired=tu["pid"] in TG.s["fired"],
                      acquired=TG.s["acquired"].get(tu["pid"]))
+    if SG:
+        su = SG.s["units"].get(u["id"])
+        if su:
+            v.update(side=su["side"], col=su["col"], row=su["row"],
+                     status="moved" if u["id"] in SG.s["moved"] else done.get(u["id"]))
+            x, y = GAME_OBJ.grid.hex_to_pixel(su["col"], su["row"])
+            v.update(x=x, y=y, hexnum=GAME_OBJ.grid.hexnum(su["col"], su["row"]),
+                     onmap=True)
+        else:
+            v["status"] = "reserve"    # OOA track / markers: outside the gate
     return v
 
 
@@ -158,7 +170,7 @@ def game_descriptor():
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
         grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
                   x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity),
-        sides=[dict(id=s, label=(TG.scenario["game"].get("side_labels", {}) if TG else {}).get(
+        sides=[dict(id=s, label=((TG or SG).scenario["game"].get("side_labels", {}) if (TG or SG) else {}).get(
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
@@ -173,10 +185,48 @@ def api_state():
     if TG:
         out["flow"] = flow_view()
         out["notes"] = TG.scenario["name"]
+    if SG:
+        out["flow"] = SG.flow()
+        out["notes"] = SG.scenario["name"]
     return out
 
 
+def sg_stack_ids(pid):
+    """Movable gate units stacked with pid (same hex, same side)."""
+    u = SG.s["units"].get(pid)
+    if not u:
+        return [pid]
+    return [v["pid"] for v in SG.s["units"].values()
+            if v["side"] == u["side"] and (v["col"], v["row"]) == (u["col"], u["row"])
+            and v["pid"] not in SG.s["moved"]
+            and GAME_OBJ.unit_class(v["slot"]) != "markers"]
+
+
+def api_legal_sg(qs):
+    pid = qs["id"][0]
+    whole = qs.get("whole", ["0"])[0] == "1"
+    lm = SG.legal_moves(pid)
+    if not lm["can_act"]:
+        return dict(ma=0, dests=[], reasons=lm["reasons"])
+    dests = {(d["col"], d["row"]): d for d in lm["dests"]}
+    ma = lm["budget"]
+    if whole:
+        for mid in sg_stack_ids(pid):
+            if mid == pid:
+                continue
+            lm2 = SG.legal_moves(mid)
+            if not lm2["can_act"]:
+                return dict(ma=0, dests=[], reasons=lm2["reasons"])
+            ma = min(ma, lm2["budget"])          # 6.2: slowest unit's MF
+            keep = {(d["col"], d["row"]) for d in lm2["dests"]}
+            dests = {h: d for h, d in dests.items() if h in keep}
+    return dict(ma=ma, dests=sorted(dests.values(), key=lambda d: d["cost"]),
+                reasons=[])
+
+
 def api_legal(qs):
+    if SG:
+        return api_legal_sg(qs)
     g = GAME_OBJ
     pid = qs["id"][0]
     whole = qs.get("whole", ["0"])[0] == "1"
@@ -202,7 +252,43 @@ def api_legal(qs):
     return dict(ma=ma, dests=out)
 
 
+def api_move_sg(body):
+    """Strategic mode: /api/move goes THROUGH the gate — the only door.
+    Illegal proposals are rejected (and logged) with cited reasons."""
+    pid, dest, whole = body["id"], str(body["dest"]), body.get("whole")
+    d = GAME_OBJ.grid.digits
+    col, row = int(dest[:d]), int(dest[d:])
+    ids = sg_stack_ids(pid) if whole else [pid]
+    applied, rejected = [], []
+    for mid in ids:
+        u = SG.s["units"].get(mid)
+        side = u["side"] if u else SG.s["mover"]
+        r = SG.submit(side, {"type": "move", "unit": mid, "dest": [col, row]})
+        if r["verdict"]["legal"]:
+            gu = SG.unit(mid)
+            mirror_move(gu["pid"], gu["col"], gu["row"])
+            applied.append(mid)
+        else:
+            rejected.append({"unit": mid, "reasons": r["verdict"]["reasons"]})
+    out = dict(ok=not rejected, applied=len(applied),
+               rejected=rejected, flow=SG.flow())
+    if rejected:
+        out["error"] = "; ".join(rejected[0]["reasons"])
+    return out
+
+
+def api_end_phase():
+    r = SG.submit(SG.s["mover"], {"type": "end_phase"})
+    out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
+    if not r["verdict"]["legal"]:
+        out["error"] = "; ".join(r["verdict"]["reasons"])
+    done.clear()
+    return out
+
+
 def api_move(body):
+    if SG:
+        return api_move_sg(body)
     b = fresh_board()
     pid, dest, whole = body["id"], body["dest"], body.get("whole")
     me = next(u for u in b.units() if u["id"] == pid)
@@ -242,6 +328,9 @@ def api_reset():
     if os.path.exists(facing_path()):
         os.remove(facing_path())
     facing.clear()
+    done.clear()
+    if SG:
+        SG.new_game()
     fresh_board()
     return dict(ok=True)
 
@@ -326,6 +415,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_new_game(body))
             if self.path == "/api/move":
                 return self._json(api_move(body))
+            if SG and self.path == "/api/end_phase":
+                return self._json(api_end_phase())
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
             if self.path == "/api/face":
@@ -347,8 +438,13 @@ if __name__ == "__main__":
     WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
     if GAME_OBJ.spec.get("scenario"):
         scen = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
-        TG = gs_mod.TacticalGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
-        print(f"tactical mode: {TG.scenario['name']} (log {TG.log_path})")
+        mode = json.load(open(scen, encoding="utf-8")).get("mode")
+        if mode == "strategic":
+            SG = strat_mod.StrategicGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
+            print(f"strategic gate: {SG.scenario['name']} (log {SG.log_path})")
+        else:
+            TG = gs_mod.TacticalGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
+            print(f"tactical mode: {TG.scenario['name']} (log {TG.log_path})")
     # migrate the pre-generalization Arnhem work save (was live\game.vsav)
     legacy = os.path.join(ROOT, "live", "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
