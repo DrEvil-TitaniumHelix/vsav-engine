@@ -71,3 +71,31 @@ text — transcribe from text, cross-check against the map image, validate
 resolution against the rulebook's worked combat examples (H25/H26/I26...).
 Classic AH odds-ratio CRT with A elim / A back 2 / Exchange / D back 2 /
 D elim and soak-off rules.
+
+## TERRAIN: VERIFIED 2026-07-09 (re-run `python build_terrain.py` — 38/38 PASS)
+Full-map classification from the module map art (posterized colors make it
+crisp): 1071 clear / 266 sea / 138 offmap (partial + non-coordinate incl.
+W70/X70 per 5.8) / 133 escarpment / 35 partial-Qattara (play clear, 5.6) /
+33 full-Qattara (impassable) / fortresses H2+G25 / home bases W3+J62.
+Hexsides: 99 coast-road crossings (17.2 red-line test, "Afrika Korps" red
+title text excluded), 30 all-water prohibitions (5.7), 25 Qattara
+prohibitions (5.7) found by center-to-center connectivity severing against
+the flood-filled depression — W62-X62 severed exactly as 5.7 says, W62-X63
+crossable (boundary hook tip ends inside X63). Validated on every rulebook
+terrain/hexside example incl. the full rule-17/18 road/non-road hexside
+table. game.json now carries terrain_file + prohibit rules with citations.
+
+## MOVEMENT RULES — extracted with citations (encoding next)
+- 5.2 MF = hexes moved, any direction; 5.5 no transfer/accumulation
+- 5.4/8.1/8.3: stop on entering enemy ZOC; never through ZOC; no
+  ZOC-to-same-unit's-ZOC first step; supply/Rommel are not combat units
+- 6.1-6.3 stacking 3 combat units, check at end of movement; stack moves
+  at slowest MF
+- 17.1-17.2 coast road: +10 bonus hexes/turn, only through road-bisected
+  hexsides, freely combinable with normal movement; 17.3 I26 two-road hex
+- 18.1-18.5 escarpment: enter=stop, 1 hex/turn through, EXCEPT along road
+  hexsides; one non-road on/off move per turn (worked examples encoded in
+  validate_grid.py chains)
+- ENGINE GAP for Tier 1: per-terrain stop-on-enter, road bonus budget
+  (2D state Dijkstra), per-enemy-unit ZOC first-step rule. Unit MFs blocked
+  on counter transcription (mastermind OCR job 1).
