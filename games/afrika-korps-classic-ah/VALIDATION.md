@@ -1,47 +1,69 @@
-# Afrika Korps — grid & rules validation worksheet (in progress)
+# Afrika Korps — grid & rules validation worksheet
 
 Spec #12 discipline: nothing ships until validated. This file records the
 evidence chain for the sideways-grid mapping and, later, the CRT encoding.
 
-## Grid anchors (rulebook section 1.1, AfrikaKorps_3d_Ed_Rules.pdf)
-| Landmark | Hex | Approx pixel (eyeballed, ±half hex — SNAP TO LATTICE BEFORE USE) |
-|---|---|---|
-| German home base (gray hex) | W3 | (150, 2410) |
-| El Agheila (town O) | W6 | (455, 2425) |
-| Bengasi (fortress) | H2 | (800, 1160) |
-| Tobruch (fortress) | G25 | (3195, 1015) |
-| El Alamein (town O) | L59 | (6420, 1422) |
-| Allied home base (gray hex, Union Jack) | J62 | far right edge, ~(6700, ~1300) TBD |
+## GRID: VERIFIED 2026-07-09 (re-run `python validate_grid.py` — ALL PASS)
 
-Extra rulebook facts for later checks: escarpment example G24; T29 is NOT a
-pass; Qattara example R60; coast road example K61; combat examples cluster
-H23–J28 (adjacency ground truth for the movement/ZOC gate).
+**Geometry** (buildFile sideways HexGrid, axis-swap conversion): pointy-top,
+dx=101.8, dy=88.1256, origin (0, 32), stagger, offset_parity=1.
+Independently confirmed from the printed map grid itself:
+- edge-energy autocorrelation over open desert (x 2000–5000, y 1500–2300):
+  x period 51/102 px (dx with stagger halving), y period 89 px (dy)
+- row-center phase from slant-edge band model: y ≡ 31.4 (mod 88.126) vs
+  buildFile 32.0 — sub-pixel agreement
+- per-row column phase: even rows x ≡ 0, odd rows x ≡ 50.9 (mod 101.8) —
+  exactly buildFile x0=0 / parity 1
+- overlay renders (lattice dots on map crops): every dot dead-center in a
+  printed hex (desert, Tobruch, Agheila, Bengasi, Alamein crops)
 
-## Module grid (buildFile): sideways/pointy, dx=101.8, dy=88.126,
-origin (0,32), stagger, offset_parity=1.
-Numbering: first=H, hType=A (letters), vType=N, hOff=-5, vOff=-12.
+**Naming** (encoded in game.json `grid.naming`): style `letter_diag`,
+row0=5, num0=−10. Semantics: letter = chr('A' + row − 5) (letters increase
+southward; printed alone on the map's EAST edge — I/J/K/L visually confirmed
+at rows 13–16); number = col + (row−5)//2 − 9, constant along SW→NE
+diagonals exactly as rulebook 1.1 describes ("numbers diagonally from
+southwest to northeast"). Matches module numbering hOff=−5 (letters) with
+vOff=−12 up to VASSAL's off-by-convention.
 
-## Findings so far (2026-07-09)
-- Numbers increment along +x within a lettered row (W3→W6 = 3×dx exactly).
-- Letters increment along +y (G Tobruch above H Bengasi... note actually
-  G row is NORTH of H row: letters increase southward).
-- Number is NOT a pure column index: same-letter rows run along the hex
-  grain (diagonal), so number = col + f(row). Preliminary fit
-  N = c + r/2 − 11.5 consistent for W3/W6/G25/L59 with odd r; letter↔r
-  mapping not yet consistent under eyeballed centers (skipped letters on
-  the printed edge — small map shows ...I,K,L..T,W,X — J/U/V may be
-  skipped; must resolve with exact centers).
-- Map edge shows NEGATIVE numbers (−1..−8) near Agheila corner: numbering
-  extends west of 0 — matches vOff=−12-ish offsets. Resolve exactly.
+**Anchors — all exact (validate_grid.py):**
+| Anchor | Source | (col,row) | Evidence |
+|---|---|---|---|
+| W3 German home base | rules 1.1 | (1,27) | gray palm/flag hex located on map image |
+| W6 El Agheila | rules 1.1 | (4,27) | town circle on image |
+| H2 Bengasi fortress | rules 1.1 | (8,12) | cross-hatch hex on image — even-row discriminator that killed the first formula candidate |
+| G25 Tobruch fortress | rules 1.1 | (31,11) | cross-hatch hex on image |
+| L59 El Alamein | rules 1.1 | (63,16) | town circle on image |
+| J62 Allied home base | rules 1.1 | (67,14) | Union Jack hex on image (center within 5px of node) |
+| I63 K64 M65 O66 Q67 S68 U69 | rules 5.8 playable east edge | all col 68 | seven hexes, one column — exactly the easternmost odd-row column |
+| R68 forbidden partial | rules 5.8 | col 69 | the partial column east of it |
 
-## Method (next steps)
-1. Fit exact lattice from the 79 self-positioned setup pieces (Tobruk
-   region-fit method) → exact dx,dy,x0,y0,parity.
-2. Snap the 6 landmark pixels to lattice nodes → exact (c,r) per landmark.
-3. Solve the integer label mapping (letter,number)=f(c,r) over ALL anchors;
-   must be exact on every anchor incl. an even-r one, else STOP.
-4. Encode mapping in game.json; verify adjacency on the H23–J28 combat
-   examples; only then build the movement gate.
+**Adjacency** — every consecutive pair in the rule-18 movement examples is
+adjacent under the engine's neighbor math: G25-H26-I27-J27-J28,
+H24-I25-I26-J27-I27-I28-H28-H29-I30, G22-H23-H24-H25-H26-H27, I26-J27-I26;
+plus the anomalous hexsides E18-F19 and W62-X62 (rules 5/14/22 references).
+
+**South-edge printed labels** ("-3", "-4", … near the Agheila corner) are
+dash+number: the dash is the letter placeholder — rule 5.8 says "neither 70
+nor Y are grid coordinates", i.e. the bottom partial row has no letter; the
+numbers label the SW→NE diagonals and their magnitudes (3,4,5…) match the
+mapping at those columns. NOT negative coordinates (earlier note wrong).
+
+**Dead ends recorded** (don't retry): fitting the lattice from setup-piece
+positions fails — pieces are hand-placed off-center and contaminated by
+turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
+spacing, not the grid). The printed map grid is the ground truth.
+
+## NEXT: movement rules (Tier 1 gate)
+1. Read rules sections: movement (5), stacking (6), supply-for-movement,
+   coast road (10?), escarpment, Qattara — encode MFs + terrain with
+   citations into game.json.
+2. Terrain classification from map art (escarpment brown splash, coast road
+   red line, sea, fortress, home bases) — validate on rulebook examples
+   (G24 escarpment, T29 NOT a pass, R60 Qattara, K61 coast road).
+3. Movement gate + regressions (Arnhem SHA baseline, Tobruk byte-identical,
+   ASL board 3, verify_game on existing logs).
+4. AK has a SUPPLY subsystem (sunk convoys etc.) — read before claiming
+   Tier-2 scope; may cap the tier or need engine expansion.
 
 ## CRT (Tier 2, later)
 The full CRT is printed on the map image (center-top) AND in the rulebook
