@@ -17,8 +17,33 @@ Run:  python ui\\server.py [--game <dir>] [--port 8641]
 """
 import argparse, http.server, json, os, shutil, struct, sys, urllib.parse
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+def _base_dir():
+    """Read-only asset root (games/, ui/, engine/): the PyInstaller one-file
+    bundle when frozen, else the repo checkout."""
+    if getattr(sys, "frozen", False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+ROOT = _base_dir()
+HERE = os.path.join(ROOT, "ui")
+
+
+def _live_dir():
+    """Writable per-game state (work .vsav, JSONL logs, tier/facing sidecars).
+    Must survive app exit and NEVER live inside the read-only bundle, so a
+    packaged build writes to %LOCALAPPDATA%\\TheVassal\\live; from source it
+    stays live\\ in the repo (unchanged)."""
+    if getattr(sys, "frozen", False):
+        base = os.path.join(os.environ.get("LOCALAPPDATA",
+                            os.path.expanduser("~")), "TheVassal", "live")
+    else:
+        base = os.path.join(ROOT, "live")
+    os.makedirs(base, exist_ok=True)
+    return base
+
+
+LIVE = _live_dir()
 sys.path.insert(0, os.path.join(ROOT, "engine"))
 import board as board_mod  # noqa: E402
 import gamespec  # noqa: E402
@@ -76,9 +101,9 @@ def build_gate():
         return
     if SCEN_MODE == "strategic":
         SG = strat_mod.StrategicGame(GAME_OBJ, SCEN_PATH,
-                                     os.path.join(ROOT, "live"), tier=TIER)
+                                     LIVE, tier=TIER)
     else:
-        TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, os.path.join(ROOT, "live"))
+        TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 
 
 def load_facing():
@@ -342,6 +367,68 @@ def api_load_game(body):
                 game=game_descriptor())
 
 
+def game_tables():
+    """Combat tables for the loaded game, transcribed from the rulebook and
+    rendered in the UI (not the module's PNG scans) — the same encoded data the
+    gate resolves combat on. Generic grid schema so the client renders any game:
+      {title, cite, columns[], rows[[...]], legend[{code,text}], notes[]}
+    columns[0] is the row-header label; each row's cell 0 is its header."""
+    g = GAME_OBJ
+    if not g:
+        return []
+    tables = []
+
+    # Strategic CRT (Afrika Korps and kin): odds columns x die rows.
+    combat = g.spec.get("combat")
+    if combat and combat.get("crt"):
+        crt = combat["crt"]
+        cols = ["die \\ odds"] + list(crt["columns"])
+        rows = [[str(die)] + list(cells) for die, cells in crt["rows"].items()]
+        legend = [{"code": k, "text": v} for k, v in crt.get("results", {}).items()]
+        notes = [n for n in (
+            (combat.get("odds") or {}).get("cite"),
+            combat.get("defense_double_cite"),
+            (combat.get("attack_supply") or {}).get("cite"),
+        ) if n]
+        tables.append(dict(title="Combat Results Table", cite=crt.get("cite"),
+                           columns=cols, rows=rows, legend=legend, notes=notes))
+
+    # Tactical to-hit table (Tobruk and kin): weapon rows x range columns.
+    cj = os.path.join(g.dir, "combat.json")
+    if os.path.exists(cj):
+        cd = json.load(open(cj, encoding="utf-8"))
+        weapons = cd.get("weapons", {})
+        users = {}
+        for t in cd.get("afv_types", {}).values():
+            tok = (t.get("counter_token") or "").replace("_", " ")
+            users.setdefault(t.get("weapon"), []).append(tok)
+        maxr = max((len(w.get("hpn_by_range", [])) for w in weapons.values()), default=0)
+        cols = ["weapon  (range →)"] + [str(r) for r in range(1, maxr + 1)]
+        rows = []
+        for wk, w in weapons.items():
+            hp = w.get("hpn_by_range", [])
+            label = wk + (f"  ({', '.join(users[wk])})" if users.get(wk) else "")
+            rows.append([label] + [str(x) for x in hp] + [""] * (maxr - len(hp)))
+        mv = (cd.get("hpn_modifiers") or {}).get("target_moved", 1)
+        cap = (cd.get("fire_initiation") or {}).get("max_unadjusted_hpn", 8)
+        rof = "; ".join(f"{wk} fires {w.get('rof_initial')} "
+                        f"{'die' if (w.get('rof_initial') or 0) == 1 else 'dice'} initially,"
+                        f" {w.get('rof_acquired')} once the target is acquired"
+                        for wk, w in weapons.items())
+        notes = [
+            "A hit needs the sum of the firer's dice (one per shot in its Rate of "
+            "Fire) to reach the number shown at that range [I.F.1].",
+            f"Add +{mv} to the number needed if the target moved this turn [I.F.1.b.2].",
+            f"An AFV may not INITIATE fire where the unadjusted number exceeds {cap} "
+            "unless the target already fired at it or shows its flank/rear [p.5 H].",
+            "Rate of Fire — " + rof + ".",
+        ]
+        tables.append(dict(title="To-Hit Table (number needed, by range in hexes)",
+                           cite="Tobruk rulebook pp.4-5 (module To-Hit chart)",
+                           columns=cols, rows=rows, legend=[], notes=notes))
+    return tables
+
+
 def api_state():
     b = fresh_board()
     units = [unit_view(u) for u in b.units()]
@@ -595,7 +682,7 @@ def load_game(game_dir, tier=None):
 
     GAME_OBJ = gamespec.Game(game_dir)
     gkey = GAME_SLUG = os.path.basename(os.path.normpath(game_dir))
-    WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
+    WORK = os.path.join(LIVE, f"game_{gkey}.vsav")
     if GAME_OBJ.spec.get("scenario"):
         SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
         SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
@@ -618,7 +705,7 @@ def load_game(game_dir, tier=None):
         save_tier()
     build_gate()
     # migrate the pre-generalization Arnhem work save (was live\game.vsav)
-    legacy = os.path.join(ROOT, "live", "game.vsav")
+    legacy = os.path.join(LIVE, "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
         shutil.copy(legacy, WORK)
     load_facing()
@@ -659,7 +746,10 @@ class H(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "max-age=3600")
+        # Game assets (map, counters) share stable URLs across games, so a long
+        # cache makes a game-switch show the PREVIOUS game's map. Revalidate
+        # every time — cheap on localhost, and correctness beats caching here.
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(data)
 
@@ -671,6 +761,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_state())
             if url.path == "/api/games":
                 return self._json(api_games())
+            if url.path == "/api/tables":
+                return self._json(dict(tables=game_tables()))
             if url.path == "/api/legal":
                 return self._json(api_legal(qs))
             if TG and url.path == "/api/game":

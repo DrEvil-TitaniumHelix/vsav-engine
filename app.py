@@ -39,7 +39,7 @@ def main():
     print(f"The Vassal v{server.VERSION} — engine on http://127.0.0.1:{port}/menu",
           flush=True)
     webview.create_window(
-        f"The Vassal  ·  v{server.VERSION}",
+        f"Legality Engine for VASSAL  ·  v{server.VERSION}",
         f"http://127.0.0.1:{port}/menu",
         width=1280, height=860, min_size=(960, 640))
     webview.start()          # blocks until the window is closed
