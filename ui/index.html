@@ -264,8 +264,105 @@ async function refresh() {
   renderFlow();
   renderArrivals();
   renderCombat();
+  renderGuide();   // after the panels: it may mark a panel button as the sole way forward
   renderRules();
   render();
+}
+
+// ---------- guidance banner + sole-way-forward marker ----------
+// Every state says what to do next; when only ONE button can advance the
+// game, FRAME.soleNext gives it the red border (engine rule).
+function renderGuide() {
+  if (!FLOW) {
+    const t = GAME && GAME.tier ? GAME.tier.active : 0;
+    FRAME.setGuide(t > 0
+      ? 'Drag a counter to move it — the gate checks each move. No turn sequence is enforced at this tier.'
+      : 'Free play (Tier 0) — no rules gate: drag any counter anywhere. You are the umpire.');
+    FRAME.soleNext(null);
+    return;
+  }
+  if (FLOW.over) {
+    FRAME.setGuide(`GAME OVER after ${FLOW.turn - 1} turns — <b>Reset game</b> starts a new one.`, true);
+    FRAME.soleNext('resetbtn');
+    return;
+  }
+  const mv = sideShort(FLOW.mover);
+  if (FLOW.mover !== mySide) {
+    if (aiActive) {
+      FRAME.setGuide(document.getElementById('aimode').value === 'step'
+        ? `The AI is playing <b>${mv}</b> — press <b>SPACE</b> to execute each highlighted action.`
+        : `The AI is playing <b>${mv}</b> — sit back, every action animates on its own.`);
+      FRAME.soleNext(null);
+    } else {
+      const ai = GAME && GAME.tier && GAME.tier.active >= 3;
+      FRAME.setGuide(`It's <b>${mv}</b>'s turn, not yours. `
+        + (ai ? `Press <b>▶ Play ${mv}’s turn</b> in the top bar to let the AI play it — or `
+              : ``)
+        + `click <b>${mv}</b> next to “play as:” to play that side yourself.`);
+      FRAME.soleNext(ai ? 'aiplaybtn' : 'side-' + FLOW.mover);
+    }
+    return;
+  }
+  const A = FLOW.arrivals, C = FLOW.combat;
+  if (FLOW.phase === 'movement') {
+    const todo = [];
+    if (A) {
+      if (A.supply && A.supply.can_roll) todo.push('roll the <b>Supply Table</b>');
+      if (A.supply && A.supply.pending && A.placements_open && A.ports.length)
+        todo.push('land your supply at a port');
+      if (A.due && A.due.length && A.placements_open && A.ports.length)
+        todo.push('land your reinforcements');
+      if (A.at_sea && A.at_sea.some(u => u.must_land))
+        todo.push('<b>land your units at sea NOW</b> or they are eliminated');
+    }
+    if (todo.length) {
+      FRAME.setGuide(`<b>Start of your turn</b> — in the top-left panel: ${todo.join('; ')}. Then move your units.`);
+      // the supply roll is the one case with exactly one possible button
+      FRAME.soleNext(todo.length === 1 && A.supply.can_roll
+        ? '#arrivals button[onclick*="roll_supply"]' : null);
+      return;
+    }
+    const left = myActableUnits().length;
+    if (left) {
+      FRAME.setGuide(`<b>Your move</b> — click a unit, then click a highlighted hex. `
+        + `<b>unit ▶</b> (or the N key) jumps to your next unmoved unit — <b>${left}</b> to go. `
+        + `Finished? <b>End player turn</b>.`);
+      FRAME.soleNext(null);
+      return;
+    }
+    FRAME.setGuide(`All units moved — press <b>End player turn</b>`
+      + (C && (C.must_attack.length || C.must_be_attacked.length)
+         ? ` to resolve the battles your moves created` : ``) + `.`);
+    FRAME.soleNext('endphasebtn');
+    return;
+  }
+  if (C && C.phase === 'combat') {
+    if (C.pending_rommel) {
+      FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the left panel [22.4].`);
+      FRAME.soleNext(null);
+      return;
+    }
+    if (C.pending) {
+      const what = { retreat:  'retreat each losing unit with the buttons',
+                     exchange: 'pick which of your involved units to remove',
+                     advance:  'advance into the vacated hex (optional)' }[C.pending.kind]
+                   || C.pending.kind;
+      FRAME.setGuide(`<b>Finish the battle</b> — ${what}, in the left panel.`);
+      FRAME.soleNext(null);
+      return;
+    }
+    if (C.must_attack.length || C.must_be_attacked.length) {
+      FRAME.setGuide(`<b>Combat</b> — units in enemy contact MUST fight [8.4]: click your attackers, `
+        + `then the adjacent enemy defenders, then <b>⚔ Resolve battle</b> in the left panel.`);
+      FRAME.soleNext(null);
+      return;
+    }
+    FRAME.setGuide(`Combat finished — press <b>End player turn</b>.`);
+    FRAME.soleNext('endphasebtn');
+    return;
+  }
+  FRAME.setGuide('');
+  FRAME.soleNext(null);
 }
 
 function renderFlow() {

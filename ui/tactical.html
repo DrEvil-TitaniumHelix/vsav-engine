@@ -104,10 +104,6 @@
              animation:floatup 1.6s ease-out forwards; white-space:nowrap; }
   @keyframes floatup { 0%{opacity:0; margin-top:0;} 12%{opacity:1;}
                        75%{opacity:1;} 100%{opacity:0; margin-top:-90px;} }
-  #banner { position:fixed; top:82px; left:0; right:340px; z-index:45; text-align:center; pointer-events:none; }
-  #banner div { display:inline-block; margin-top:8px; padding:6px 22px; border-radius:16px;
-                background:rgba(25,28,34,.92); color:#eee; font-size:15px; border:1px solid #444; }
-  #banner .over { background:rgba(70,20,15,.95); font-size:20px; padding:12px 30px; }
 </style>
 </head>
 <body>
@@ -159,7 +155,6 @@
   <button class="sidebtn" style="position:absolute; top:10px; right:12px;"
           onclick="document.getElementById('guide').style.display='none'">✕ close</button>
 </div>
-<div id="banner"><div id="bannertext"></div></div>
 <div id="viewport"><div id="world">
   <img class="map"><svg id="overlay"></svg><div id="facewheel"></div>
 </div></div>
@@ -209,7 +204,9 @@ FRAME.initFrame({
     const mine=units.filter(u=>u.side===mySide);
     return mine.length>0&&mine.every(u=>u.moved);
   },
-  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8},{id:'banner',gap:0}],
+  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8}],
+  guideRight: 340,   // the guidance banner centers over the map, not the log
+
 });
 function fitBounds(){
   // zoom to the playable section, not the whole 7000px map
@@ -277,22 +274,29 @@ function render(){
   SG.title=FLOW.segment==='combat'?'alternating fire [I.B.2]':'';
   document.getElementById('vpbrit').textContent=`British ${FLOW.vp.scores.British} VP`;
   document.getElementById('vpaxis').textContent=`Axis ${FLOW.vp.scores.Axis} VP`;
-  const B=document.getElementById('bannertext');
-  if(FLOW.over){ B.className='over';
-    B.textContent=FLOW.winner==='draw'?`GAME OVER — DRAW ${JSON.stringify(FLOW.vp.scores)}`:
-      `GAME OVER — ${sideLabel(FLOW.winner)} WINS  (British ${FLOW.vp.scores.British} : Axis ${FLOW.vp.scores.Axis})`;
-  } else { B.className='';
+  if(FLOW.over){
+    FRAME.setGuide(FLOW.winner==='draw'?`GAME OVER — DRAW ${JSON.stringify(FLOW.vp.scores)}`:
+      `GAME OVER — ${sideLabel(FLOW.winner)} WINS  (British ${FLOW.vp.scores.British} : Axis ${FLOW.vp.scores.Axis})`, true);
+  } else {
     const stepMode=document.getElementById('aimode').value==='step';
-    B.textContent = myPhase() ? (FLOW.segment==='movement'
-        ? `YOUR MOVE — ${sideLabel(mySide)}`
-        : `YOUR SHOT — fire ONE unit (then the enemy answers), or Pass fire to finish`)
-      : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press SPACE to step its actions`
-                 : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`;
+    FRAME.setGuide(myPhase() ? (FLOW.segment==='movement'
+        ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: click a unit, then a destination hex `
+          +`(<b>unit ▶</b> / N finds the next one). Done? <b>End movement</b>.`
+        : `<b>YOUR SHOT</b> — fire ONE unit (then the enemy answers), or <b>Pass fire</b> to finish`)
+      : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press <b>SPACE</b> to step its actions`
+                 : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`);
   }
   document.getElementById('endmove').disabled=!(myPhase()&&FLOW.segment==='movement');
-  FRAME.onRender();   // engine frame: unit-nav visibility + end-turn glow
+  FRAME.onRender();   // engine frame: unit-nav visibility
   document.getElementById('passfire').disabled=!(myPhase()&&FLOW.segment==='combat');
   document.getElementById('aibtn').disabled=FLOW.over||myPhase();
+  // sole-way-forward (engine rule): red border on THE button that advances the game
+  const alive=units.filter(u=>u.side===mySide&&!u.K);
+  const allMoved=alive.length>0&&alive.every(u=>u.moved);
+  FRAME.soleNext(FLOW.over ? 'newgame'
+    : (myPhase()&&FLOW.segment==='movement'&&allMoved) ? 'endmove'
+    : (!myPhase()&&document.getElementById('aimode').value==='step') ? 'aibtn'
+    : null);
 
   const byhex={};
   units.forEach(u=>(byhex[u.hexnum]=byhex[u.hexnum]||[]).push(u));

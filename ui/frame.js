@@ -44,9 +44,57 @@ const FRAME = (() => {
       /* fixed control heights: text changes may never re-center the row */
       .tbrow .sidebtn, .tbrow select { height:30px; box-sizing:border-box;
                                        white-space:nowrap; }
-      .tbrow .chip { height:26px; box-sizing:border-box; line-height:20px; }`;
+      .tbrow .chip { height:26px; box-sizing:border-box; line-height:20px; }
+      /* guidance banner: the always-there "what do I do now" strip, centered
+         under the topbar. Overlay (pointer-events:none) — it never moves a
+         control. One implementation for every screen. */
+      #frameguide { position:fixed; top:90px; left:0; right:0; z-index:44;
+                    text-align:center; pointer-events:none; }
+      #frameguide div { display:inline-block; margin-top:8px; padding:6px 22px;
+                        border-radius:16px; background:rgba(25,28,34,.92);
+                        color:#eee; font-size:15px; border:1px solid #444;
+                        max-width:76%; }
+      #frameguide div.over { background:rgba(70,20,15,.95); font-size:20px;
+                             padding:12px 30px; }
+      #frameguide b { color:#ffd75e; }
+      /* THE sole way forward (Bruce's rule): when only one button can advance
+         the game, it wears a pulsing red border — everything else is just
+         looking around. Applied via FRAME.soleNext(). */
+      .solenext { border:2px solid #ff5040 !important; color:#fff !important;
+                  animation: soleglow 1.1s ease-in-out infinite; }
+      @keyframes soleglow {
+        0%,100% { box-shadow:0 0 0 0 rgba(255,80,64,.0); }
+        50%     { box-shadow:0 0 12px 3px rgba(255,80,64,.7); } }`;
     document.head.appendChild(st);
   })();
+
+  // ---------- guidance banner ----------
+  let guideEl = null;
+  function setGuide(html, over) {   // what should the player do RIGHT NOW?
+    if (!guideEl) {
+      guideEl = document.createElement('div');
+      guideEl.id = 'frameguide';
+      guideEl.appendChild(document.createElement('div'));
+      document.body.appendChild(guideEl);
+      if (H && H.guideRight) guideEl.style.right = H.guideRight + 'px';
+    }
+    const pill = guideEl.firstChild;
+    pill.className = over ? 'over' : '';
+    pill.style.display = html ? '' : 'none';
+    if (pill.innerHTML !== html) pill.innerHTML = html;
+  }
+
+  // ---------- sole-way-forward marker ----------
+  // soleNext(x): x = element | id | CSS selector | null. Exactly one control
+  // may wear the red "this is the only thing to click" border at a time;
+  // null clears it (several options are open — no button is forced).
+  function soleNext(x) {
+    document.querySelectorAll('.solenext').forEach(e => e.classList.remove('solenext'));
+    if (!x) return;
+    const el = typeof x !== 'string' ? x
+             : document.getElementById(x) || document.querySelector(x);
+    if (el) el.classList.add('solenext');
+  }
 
   // ---------- pan & zoom ----------
   function clampPan() {
@@ -82,6 +130,7 @@ const FRAME = (() => {
   function layoutBars() {
     const h = H.topbar.offsetHeight;
     H.viewport.style.top = h + 'px';
+    if (guideEl) guideEl.style.top = h + 'px';
     (H.followTop || []).forEach(({ id, gap }) => {
       const el = document.getElementById(id);
       if (el) el.style.top = (h + (gap || 0)) + 'px';
@@ -104,8 +153,8 @@ const FRAME = (() => {
   function onRender() {
     const n = H.actable().length;
     show('unitnav', n > 0);   // keeps its slot when hidden — nothing shifts
-    const btn = document.getElementById(H.endBtnId);
-    if (btn) btn.classList.toggle('pulse', H.turnDone());
+    // superseded green pulse: the red soleNext border (set by each screen's
+    // guidance state machine) is now the "you're done, end the turn" signal
   }
 
   // ---------- wiring ----------
@@ -139,5 +188,5 @@ const FRAME = (() => {
   }
 
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
-           show };
+           show, setGuide, soleNext };
 })();
