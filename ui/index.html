@@ -74,7 +74,21 @@
   <span id="sidebtns"></span>
   <span id="flowbar" style="display:none; color:#ffd75e; font-weight:600"></span>
   <button class="sidebtn" id="endphasebtn" style="display:none">End player turn</button>
-  <button class="sidebtn" id="aiturnbtn" style="display:none">AI plays this turn</button>
+  <span id="aictl" style="display:none; align-items:center; gap:6px">
+    <span style="color:#9fc27f; font-weight:600">AI</span>
+    <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+      <option value="step" selected>stepped (SPACE)</option>
+      <option value="auto">auto play</option>
+    </select>
+    <span style="font-size:12px">pace</span>
+    <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+      <option value="1200">slow</option>
+      <option value="600" selected>normal</option>
+      <option value="250">fast</option>
+    </select>
+    <button class="sidebtn" id="aiplaybtn">▶ Play AI turn</button>
+    <span id="aithinking" style="display:none; color:#ffd75e">⏳ thinking…</span>
+  </span>
   <span id="progress"></span>
   <span id="note"></span>
   <button class="sidebtn" id="tierbtn" style="display:none"></button>
@@ -203,13 +217,16 @@ async function refresh() {
 
 function renderFlow() {
   const fb = document.getElementById('flowbar'), ep = document.getElementById('endphasebtn');
-  const ai = document.getElementById('aiturnbtn');
+  const ai = document.getElementById('aictl');
   if (!FLOW) { fb.style.display = 'none'; ep.style.display = 'none'; ai.style.display = 'none'; return; }
   fb.style.display = ''; ep.style.display = '';
-  // the AI opponent is a Tier-3 feature: offered at the start of a player turn
-  ai.style.display = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals
-    && GAME && GAME.tier && GAME.tier.active >= 3) ? '' : 'none';
-  ai.textContent = 'AI plays ' + sideLabel(FLOW.mover) + '’s turn';
+  // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
+  // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
+  const aiOK = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals
+    && GAME && GAME.tier && GAME.tier.active >= 3);
+  ai.style.display = aiOK ? 'inline-flex' : 'none';
+  if (aiOK) document.getElementById('aiplaybtn').textContent =
+    aiActive ? '■ stop' : ('▶ Play ' + sideLabel(FLOW.mover) + '’s turn');
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`
     : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideLabel(FLOW.mover)} moves`
@@ -884,21 +901,82 @@ document.getElementById('endphasebtn').onclick = async () => {
   if (r.error) toast('Gate: ' + r.error);
   deselect(); refresh();
 };
-document.getElementById('aiturnbtn').onclick = async (e) => {
-  const btn = e.target; btn.disabled = true; const was = btn.textContent;
-  btn.textContent = 'AI thinking…';
-  const r = await (await fetch('/api/sg_ai_turn', {method:'POST', body:'{}'})).json();
-  btn.disabled = false; btn.textContent = was;
-  if (r.error) toast('Gate: ' + r.error);
-  else if (r.steps) {
-    const bad = r.steps.filter(s => s.verdict && !s.verdict.legal).length;
-    const battles = r.steps.filter(s => s.action && s.action.type === 'battle'
-                                        && s.verdict && s.verdict.legal).length;
-    toast(`AI: ${r.steps.length} actions, ${battles} battles`
-          + (bad ? `, ${bad} rejected by the gate` : ''));
+// ---------- stepped / animated AI (engine-driven, one action at a time) ----------
+// Every StrategicGame with a policy AI gets this from the engine's TurnStepper:
+// /api/ai_step reveals the next action's intent, then executes it. Stepped mode
+// waits for SPACE (grognards approve each move); auto mode plays on a timer until
+// the turn ends — either way you watch the turn unfold counter by counter instead
+// of jump-cutting from turn-start to turn-end.
+let aiBusy = false, aiActive = false, aiNext = null;
+
+function showThinking(on) {
+  document.getElementById('aithinking').style.display = on ? '' : 'none';
+}
+function drawAIIntent(nx) {
+  [...OV.querySelectorAll('.aimark')].forEach(e => e.remove());
+  if (!nx || !nx.action) return;
+  const a = nx.action;
+  const ring = (x, y, color) => {
+    const pg = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    pg.setAttribute('points', hexPts(x, y)); pg.setAttribute('class', 'aimark');
+    pg.setAttribute('fill', 'none'); pg.setAttribute('stroke', color);
+    pg.setAttribute('stroke-width', '6'); OV.appendChild(pg);
+  };
+  const actor = units.find(u => u.id === a.unit
+                 || (a.attackers && a.attackers.includes(u.id)));
+  if (actor) ring(actor.x, actor.y, '#ffd75e');                 // acting unit: yellow
+  (a.defenders || []).forEach(dp => {                            // battle targets: red
+    const d = units.find(u => u.id === dp); if (d) ring(d.x, d.y, '#ff6a5e');
+  });
+}
+async function aiStepOnce() {
+  if (aiBusy) return { done: true };
+  aiBusy = true; showThinking(true);
+  let r;
+  try {
+    r = await (await fetch('/api/ai_step', { method: 'POST', body: '{}' })).json();
+  } catch (e) { aiBusy = false; showThinking(false); toast('AI step failed: ' + e); return { done: true }; }
+  aiBusy = false; showThinking(false);
+  if (r.error) { toast('Gate: ' + r.error); return { done: true }; }
+  if (r.flow) FLOW = r.flow;
+  if (r.step) await refresh();          // an action executed — board reflects it
+  aiNext = r.next; drawAIIntent(aiNext);
+  if (r.step) {
+    const v = r.step.verdict, bad = v && !v.legal;
+    if (bad) toast('Gate rejected: ' + (v.reasons || []).join('; '));
   }
-  deselect(); refresh();
+  if (r.done) { aiNext = null; drawAIIntent(null); await refresh(); }
+  return r;
+}
+async function aiAutoLoop() {
+  if (!aiActive) return;
+  const r = await aiStepOnce();
+  if (r.done || !aiActive) { aiActive = false; renderFlow(); return; }
+  const pace = parseInt(document.getElementById('aipace').value);
+  // pace only between EXECUTED actions; the initial reveal advances immediately
+  setTimeout(aiAutoLoop, r.step ? pace : 0);
+}
+async function startAI() {
+  if (aiActive) { aiActive = false; renderFlow(); return; }   // toggle: stop
+  aiActive = true; renderFlow();
+  document.getElementById('aiplaybtn').blur();   // so SPACE steps, not re-clicks the button
+  if (document.getElementById('aimode').value === 'auto') {
+    aiAutoLoop();
+  } else {
+    await aiStepOnce();                 // reveal the first intent; SPACE advances
+  }
+}
+document.getElementById('aiplaybtn').onclick = startAI;
+document.getElementById('aimode').onchange = () => {
+  if (aiActive && document.getElementById('aimode').value === 'auto') aiAutoLoop();
 };
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space') return;
+  if (!aiActive || aiBusy) return;
+  if (document.getElementById('aimode').value !== 'step') return;
+  e.preventDefault();
+  aiStepOnce().then(r => { if (r.done) { aiActive = false; renderFlow(); } });
+});
 
 refresh();
 </script>
