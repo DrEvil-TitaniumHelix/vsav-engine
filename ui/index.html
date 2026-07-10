@@ -656,6 +656,24 @@ function renderRules() {
       h += `</ul>`;
     }
   }
+  const CR = GAME && GAME.credits;
+  if (CR) {
+    h += `<div style="color:#8fb8d8;font-weight:600;margin-top:8px">Credits</div><ul>`;
+    if (CR.game) {
+      const gm = CR.game;
+      h += `<li><b>${gm.title}</b> — ${gm.publisher}, ${gm.year}.<br>
+            ${gm.design}${gm.development ? '; ' + gm.development : ''}${gm.art ? '; ' + gm.art : ''}
+            <span class="dim">(${gm.source})</span></li>`;
+    }
+    if (CR.module) {
+      const md = CR.module;
+      h += `<li><b>${md.title}</b> — ${md.implementation}.<br>
+            With: ${md.contributors}.<br>
+            <span class="dim">${md.library} (${md.source})</span></li>`;
+    }
+    if (CR.note) h += `<li class="dim">${CR.note}</li>`;
+    h += `</ul>`;
+  }
   const SD = GAME && GAME.source_defects;
   if (SD && SD.list && SD.list.length) {
     h += `<div style="color:#c99ae0;font-weight:600">Defects found in the printed game — and how the engine resolves them</div>

@@ -1117,6 +1117,25 @@
    "cite": "4.1 Axis wins by eliminating all Allied combat units currently on the board, or controlling both fortresses and both home bases for two consecutive Axis player turns (start and end of each); 4.2 Allied mirror + wins by avoiding Axis victory through the last Oct 1942 turn; 4.3 control = occupation by a combat/supply/Rommel unit, home bases additionally free of enemy ZOC at start and end; clarifications 13: 'on the board' excludes units at sea or held off board"
   }
  },
+ "credits": {
+  "game": {
+   "title": "Afrika Korps",
+   "publisher": "The Avalon Hill Game Company",
+   "year": "1964 (3rd edition rules © 1980)",
+   "design": "Charles Roberts (original research & design)",
+   "development": "Thomas N. Shaw (original development); Donald Greenwood (third edition rewrite)",
+   "art": "Rodger MacGowan (rulebook cover art)",
+   "source": "design credits printed on the rulebook back page"
+  },
+  "module": {
+   "title": "Afrika Korps Classic AH 3.0.1 (VASSAL module)",
+   "implementation": "Frank Jordan (module implementation, 2025)",
+   "contributors": "Charles McLellan (3rd edition rulebook); Ed Menzel (Afrika Korps clarifications); Christian Holm Christensen (oblique grid numbering code, movement trails)",
+   "library": "vassalengine.org/library/projects/Afrika_Korps_Classic_Avalon_Hill (maintainers cholmcc, woody8297)",
+   "source": "the module's own Start-text credits page + the module library listing"
+  },
+  "note": "This engine enforces the game's rules against the module's own materials. All game content remains the property of its publisher; all module art and data remain the work of the module authors above. Bring-your-own-module: the module is downloaded by each user from the VASSAL module library, never redistributed here."
+ },
  "unit_types": {
   "provenance": "Unit-type symbols read from the counter faces (NATO symbols, all 61 Allied combat counters visually inspected 2026-07-09: oval = armor, X = infantry, X-over-oval = armored infantry, RECCE box = recce; the 'X' ABOVE each box is the brigade-size marker, not the type). Cross-check: the rulebook's own 7.3 example calls the 3-3-7 'British 7th Armored Infantry' == the X-over-oval symbol on 'A 7 Arm 7'. Needed for substitute type-matching (21.1). Motor battalions carry the plain infantry X - they are infantry, not armored infantry.",
   "armor": [
