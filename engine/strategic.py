@@ -70,7 +70,12 @@ class StrategicGame:
         # replacements, substitutes, AV, victory) is switched off, which is
         # exactly the validated Tier-1 configuration. Tier 0 never reaches
         # this class (no gate at all — the server serves free play).
-        self.tier_earned = 2 if self.combat else 1
+        # Earned tier: 1 = movement/arrivals only; 2 = full combat gate;
+        # 3 = combat gate + a validated policy AI (declared in game.json
+        # `policy_ai`). Tier 3's gate is identical to tier 2 — the AI is an
+        # opponent offered on top, it submits through the same door.
+        self.tier_earned = (
+            (3 if game.spec.get("policy_ai") else 2) if self.combat else 1)
         self.tier = self.tier_earned if tier is None \
             else max(1, min(int(tier), self.tier_earned))
         if self.tier < 2:

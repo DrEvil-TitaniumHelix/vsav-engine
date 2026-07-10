@@ -605,8 +605,11 @@ if __name__ == "__main__":
         SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
         SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
         if SCEN_MODE == "strategic":
-            # mirror the engine's own earned-tier logic (strategic.py)
-            TIER_EARNED = 2 if GAME_OBJ.spec.get("combat") else 1
+            # mirror the engine's own earned-tier logic (strategic.py):
+            # 1 = movement gate, 2 = full combat gate, 3 = + policy AI
+            TIER_EARNED = (
+                (3 if GAME_OBJ.spec.get("policy_ai") else 2)
+                if GAME_OBJ.spec.get("combat") else 1)
             TIER_CHOICES = list(range(TIER_EARNED + 1))
         else:
             # tactical family: validated combat rules + policy AI both ship
