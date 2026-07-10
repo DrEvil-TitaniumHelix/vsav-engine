@@ -129,6 +129,27 @@ def mirror_move(pid, col, row):
     b.write(WORK)
 
 
+def sync_mirror():
+    """Diff-sync the work .vsav against the gate state: any on-map SG unit
+    whose board position differs gets moved (covers captures, retreats,
+    advances, substitutions, replacements, Rommel displacement — every
+    side effect in one sweep)."""
+    if not SG:
+        return
+    b = fresh_board()
+    pos = {u["id"]: (u["col"], u["row"]) for u in b.units()}
+    moved = False
+    for u in SG.s["units"].values():
+        if not SG.on_map(u):
+            continue
+        if pos.get(u["pid"]) not in (None, (u["col"], u["row"])):
+            b.move_piece_by_id(u["pid"],
+                               GAME_OBJ.grid.hexnum(u["col"], u["row"]))
+            moved = True
+    if moved:
+        b.write(WORK)
+
+
 def api_action(body):
     side, action = body["side"], body["action"]
     r = TG.submit(side, action)
@@ -280,8 +301,7 @@ def api_move_sg(body):
         side = u["side"] if u else SG.s["mover"]
         r = SG.submit(side, {"type": "move", "unit": mid, "dest": [col, row]})
         if r["verdict"]["legal"]:
-            gu = SG.unit(mid)
-            mirror_move(gu["pid"], gu["col"], gu["row"])
+            sync_mirror()
             applied.append(mid)
         else:
             rejected.append({"unit": mid, "reasons": r["verdict"]["reasons"]})
@@ -309,24 +329,7 @@ def api_sg_action(body):
     side = body.get("side") or SG.s["mover"]
     r = SG.submit(side, action)
     if r["verdict"]["legal"]:
-        if action.get("type") in ("land_supply", "land_reinforcement", "debark"):
-            c, row = r["result"]["at"]
-            pid = r["result"].get("placed") or r["result"].get("landed") \
-                or str(action.get("unit"))
-            mirror_move(pid, c, row)
-        elif action.get("type") in ("move", "rommel_extend"):
-            u = SG.unit(action["unit"])
-            mirror_move(u["pid"], u["col"], u["row"])
-        elif action.get("type") in ("retreat", "advance", "place_rommel"):
-            pid = str(action.get("unit") or (SG.s["pending_rommel"] or {}).get("unit")
-                      or r["result"].get("placed"))
-            su = SG.s["units"].get(pid)
-            if su and SG.on_map(su):
-                mirror_move(pid, su["col"], su["row"])
-        # hq displacement (22.4) can move Rommel as a side effect of any action
-        for u in SG.s["units"].values():
-            if GAME_OBJ.unit_class(u["slot"]) == "hq" and SG.on_map(u):
-                mirror_move(u["pid"], u["col"], u["row"])
+        sync_mirror()
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
     if not r["verdict"]["legal"]:
         out["error"] = "; ".join(r["verdict"]["reasons"])

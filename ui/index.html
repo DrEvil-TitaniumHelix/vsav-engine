@@ -275,8 +275,23 @@ function renderArrivals() {
     });
     h += `</div>`;
   }
+  const R = A.replacements;
+  if (R && (R.points || R.dead.length)) {
+    h += `<div style="margin-top:6px"><b>Replacements</b> — ${R.points} attack `
+       + `factor(s) banked [20.5]`;
+    if (A.placements_open && A.ports.length) {
+      R.dead.filter(d => d.cost <= R.points).forEach(d => {
+        h += `<div style="margin:2px 0">${d.slot} <span class="dim">(cost ${d.cost})</span> `
+           + A.ports.map(p =>
+             `<button class="sidebtn" onclick='sgAction({type:"replace",unit:"${d.pid}",port:[${p.hex}]})'>${p.name}</button>`).join(' ')
+           + `</div>`;
+      });
+    }
+    h += `</div>`;
+  }
   h += `<div style="margin-top:6px;color:#9aa3ad">selected unit at a port? `
-     + `<button class="sidebtn" onclick='selected ? sgAction({type:"embark",unit:selected.id}) : toast("select a unit first")'>Put out to sea [23.4]</button></div>`;
+     + `<button class="sidebtn" onclick='selected ? sgAction({type:"embark",unit:selected.id}) : toast("select a unit first")'>Put out to sea [23.4]</button>`
+     + ` · selected supply? <button class="sidebtn" onclick='selected && selected.cls==="supply" ? sgAction({type:"destroy_supply",unit:selected.id}) : toast("select one of your supply units")'>Destroy [15.4]</button></div>`;
   box.innerHTML = h; box.style.display = '';
 }
 
@@ -321,15 +336,24 @@ function renderCombat() {
   const C = FLOW && FLOW.combat;
   if (!C || FLOW.over) { box.style.display = 'none'; return; }
   if (C.phase === 'movement') {
-    const obligations = C.must_attack.length || C.must_be_attacked.length;
+    const obligations = C.must_attack.length || C.must_be_attacked.length
+                        || (C.av_offers && C.av_offers.length) || (C.av && C.av.length);
     if (!obligations) { box.style.display = 'none'; return; }
-    box.innerHTML = `<b>${sideLabel(FLOW.mover)} — combat is coming</b><br>
+    let hm = `<b>${sideLabel(FLOW.mover)} — combat is coming</b><br>
       <span class="dim">moving into an enemy ZOC causes combat [7.2]; battles resolve
       after ALL movement [5.3]</span><br>
       must attack: ${C.must_attack.map(u=>u.slot).join(', ') || '—'}<br>
-      must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '—'}<br>
-      <button class="sidebtn" onclick='sgAction({type:"end_movement"})'>End movement — resolve battles [3.2]</button>`;
-    box.style.display = ''; return;
+      must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '—'}<br>`;
+    if (C.av && C.av.length)
+      hm += `<div style="margin-top:4px;color:#e0c34e">AV declared: ${
+             C.av.map(e => e.defenders.map(d=>d.slot).join('+')).join('; ')} —
+             ZOC negated, resolve in the combat portion [9.1]</div>`;
+    (C.av_offers || []).forEach(o => {
+      hm += `<button class="sidebtn" onclick='sgAction({type:"declare_av",defender:"${o.defender}",attackers:${JSON.stringify(o.attackers)},supply:"${o.supply}"})'>
+             ⚡ AUTOMATIC VICTORY vs ${o.slot} @ ${o.hexname} (${o.odds}) [9.1]</button> `;
+    });
+    hm += `<br><button class="sidebtn" onclick='sgAction({type:"end_movement"})'>End movement — resolve battles [3.2]</button>`;
+    box.innerHTML = hm; box.style.display = ''; return;
   }
   let h = `<b>${sideLabel(FLOW.mover)} — combat [3.2/3.4]</b><br>`;
   if (C.pending_rommel) {
@@ -402,6 +426,14 @@ function renderCombat() {
             even alone) is eliminated before any battle:</div>` +
            C.must_attack.map(u =>
              `<button class="sidebtn" onclick='sgAction({type:"forced_elim",unit:"${u.pid}"})'>${u.slot}: forced elim [7.4]</button>`).join(' ');
+    if (C.substitutes && C.substitutes.available.length) {
+      h += `<div style="margin-top:6px"><b>Substitutes</b> [21.1/21.2] — select
+            same-hex units (click them), then:`;
+      C.substitutes.available.forEach(sb => {
+        h += ` <button class="sidebtn" onclick='sgAction({type:"substitute",units:[...atkSel],sub:"${sb.pid}"})'>${sb.slot} (${sb.att})</button>`;
+      });
+      h += `<span class="dim"> · breakdown via the API (stock: ${C.substitutes.stock})</span></div>`;
+    }
     h += `<div style="margin-top:8px"><span class="dim">all obligations discharged?</span>
           use <b>End player turn</b> in the top bar</div>`;
   }

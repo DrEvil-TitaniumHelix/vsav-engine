@@ -1117,6 +1117,30 @@
    "cite": "4.1 Axis wins by eliminating all Allied combat units currently on the board, or controlling both fortresses and both home bases for two consecutive Axis player turns (start and end of each); 4.2 Allied mirror + wins by avoiding Axis victory through the last Oct 1942 turn; 4.3 control = occupation by a combat/supply/Rommel unit, home bases additionally free of enemy ZOC at start and end; clarifications 13: 'on the board' excludes units at sea or held off board"
   }
  },
+ "unit_types": {
+  "provenance": "Unit-type symbols read from the counter faces (NATO symbols, all 61 Allied combat counters visually inspected 2026-07-09: oval = armor, X = infantry, X-over-oval = armored infantry, RECCE box = recce; the 'X' ABOVE each box is the brigade-size marker, not the type). Cross-check: the rulebook's own 7.3 example calls the 3-3-7 'British 7th Armored Infantry' == the X-over-oval symbol on 'A 7 Arm 7'. Needed for substitute type-matching (21.1). Motor battalions carry the plain infantry X - they are infantry, not armored infantry.",
+  "armor": [
+   "A 1 Arm", "A 1 Arm 2", "A 1 Arm 22", "A 10 Arm 23", "A 10 Arm 8",
+   "A 2 Arm 3", "A 32 Arm", "A 7 Arm 4", "A Sub Arm 1", "A Sub Arm 2"
+  ],
+  "armored_infantry": [
+   "A 2 Arm 2 S.G", "A 7 Arm 7", "A 7 Arm 7 S.G"
+  ],
+  "recce": [
+   "A 1 SA Inf 3 Recce", "A 2 SA Inf 7 Recce"
+  ],
+  "default": "infantry",
+  "substitute_slots": {
+   "A Sub Arm 1": "armor", "A Sub Arm 2": "armor",
+   "A Sub Inf 3": "infantry", "A Sub Inf 4": "infantry",
+   "A Sub Inf 5": "infantry", "A Sub Inf 6": "infantry"
+  },
+  "exchange_classes": {
+   "armor": ["armor", "armored_infantry"],
+   "infantry": ["infantry", "recce"]
+  },
+  "cite": "21.1 armor must be exchanged for armor and/or armored infantry; infantry must be exchanged for infantry and/or recce units"
+ },
  "source_defects": {
   "note": "Defects found in the ORIGINAL PUBLISHED GAME (Avalon Hill, 3rd edition rules copyright 1980) during encoding - spec #21: original-bug detection is a core output of the encoding process. Kinds: editing_error, contradiction, undefined_case, broken_reference, ambiguity, map_errata. Authority ladder: official errata > tournament clarification > proven outcome-equivalence > declared umpired. Discovery evidence chain: VALIDATION.md.",
   "list": [
@@ -1172,6 +1196,15 @@
     "defect": "Rule 7.1 lists the ZOC exceptions as 'E18-F19, W62-X62, and fortresses, etc.' - an 'etc.' inside a rules exception list, with the fortress ZOC direction (into the fortress? out of it? both?) never stated in one place.",
     "resolution": "Bidirectional: adjacent units exert no ZOC over a fortress hex (19.5) AND a garrison exerts no ZOC outward - which is exactly why 23.1/23.2 can make attacks around a fortress optional in both directions.",
     "authority": "Cross-reading 7.1 + 19.5 + 23.1/23.2, confirmed by tournament clarifications fig. 9 ('its ZOC does not extend into the fortress'). The missing outward half was live as a wrong pin in our own Tier-1 gate until this cross-read caught it.",
+    "enforced": true
+   },
+   {
+    "id": "capture-vs-min-odds-conflict",
+    "kind": "contradiction",
+    "rules": ["15.21", "15.22", "7.4"],
+    "defect": "The automatic supply capture of 15.21/15.22 triggers on mere adjacency, but 7.4 forbids a unit from attacking at worse than 1-6 - the rules never say which wins when a unit would move adjacent to a lone supply guarded by overwhelming force (a free capture-by-suicide).",
+    "resolution": "7.4 supersedes the automatic capture: the move itself is illegal when it would leave the capturing unit in an enemy ZOC with no legal attack; with support in position the move (and capture) is legal.",
+    "authority": "Tournament clarifications sec. 3 figs 3-4 (Nov 2023). Enforced at move time by the gate's fig-3 guard (solo-attack + support-presence tests; exact joint odds remain with the battle gate).",
     "enforced": true
    },
    {

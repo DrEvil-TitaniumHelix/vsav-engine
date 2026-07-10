@@ -53,11 +53,19 @@ class StrategicGame:
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.schedule = {u["id"]: u for u in self.scenario.get("reserve", [])
                          if "due" in u}
+        # id -> (slot, side) for every piece the scenario knows (replacements
+        # resurrect from the dead list; breakdowns from the exchanged stock)
+        self.catalog = {u["id"]: (u["slot"], u["side"])
+                        for u in self.scenario.get("units", [])}
+        self.catalog.update({u["id"]: (u["slot"], u["side"])
+                             for u in self.scenario.get("reserve", [])})
         self.supply_table = (self.scenario.get("supply_table") or {}).get("windows", [])
         self.supply_max = self.scenario.get("supply_max_on_board", {})
         p = (game.spec.get("ports") or {}).get("list", [])
         self.ports = {tuple(e["hex"]): e for e in p}
         self.combat = game.spec.get("combat")
+        self.repl_cfg = self.scenario.get("replacements")
+        self.sub_cfg = self.scenario.get("substitutes")
         # 4.1/4.2 control-victory objectives: every fortress + home base hex
         self.victory_hexes = []
         if self.combat and game.terrain:
@@ -67,8 +75,9 @@ class StrategicGame:
             self.victory_hexes.sort()
         if os.path.exists(self.state_path):
             self.s = json.load(open(self.state_path, encoding="utf-8"))
-            if "pool" not in self.s or "attacked" not in self.s:
-                self.new_game(seed)       # pre-arrivals/pre-combat state: reset
+            if "pool" not in self.s or "attacked" not in self.s \
+               or "cap_pool" not in self.s:
+                self.new_game(seed)       # older-schema state file: reset
         else:
             self.new_game(seed)
 
@@ -97,9 +106,25 @@ class StrategicGame:
             "attacked": {}, "defended": {}, "fought": [],
             "supplies_used": [], "pending": None, "pending_rommel": None,
             "vic_start_ok": False, "vic_streak": {}, "dead": [],
+            # Tier-2 completion: supply capture 15, isolation 24,
+            # replacements 20, substitutes 21, Automatic Victory 9
+            "cap_pool": {}, "no_sustain": [], "cap_attacks": [],
+            "cap_move": {},
+            "iso": {}, "iso_start": {}, "nosup": {}, "nosup_start": False,
+            "repl": {}, "av": [], "sub_stock": [], "sub_comp": {},
         }
+        for side in self.game.side_order:
+            self.s["cap_pool"][side] = sorted(
+                pid for pid, e in self.reserve.items()
+                if e.get("cls") == "supply" and "Captured" in e["slot"]
+                and e["side"] == side)
+            self.s["repl"][side] = 0
+            self.s["nosup"][side] = 0
         self.s["ports"] = self._controlled_ports(self.first_player)
         self.s["vic_start_ok"] = self._controls_objectives(self.first_player)
+        self.s["iso_start"] = self._iso_snapshot(self.first_player)
+        self.s["nosup_start"] = not self._supply_hexes(self.first_player) \
+            and self.combat is not None
         if os.path.exists(self.log_path):
             os.remove(self.log_path)
         self._log({"event": "init", "mode": "strategic",
@@ -130,7 +155,10 @@ class StrategicGame:
                  "landed_sea", "ports",
                  "attacked", "defended", "fought", "supplies_used",
                  "pending", "pending_rommel", "vic_start_ok", "vic_streak",
-                 "dead")}
+                 "dead", "cap_pool", "no_sustain", "cap_attacks",
+                 "cap_move",
+                 "iso", "iso_start", "nosup", "nosup_start",
+                 "repl", "av", "sub_stock", "sub_comp")}
         blob = json.dumps(core, sort_keys=True)
         return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
@@ -161,9 +189,13 @@ class StrategicGame:
 
     def rules_board(self, exclude_pid=None):
         """Gate units as the movement engine's board (markers, reserve
-        pieces and units at sea are not on the map and never block)."""
+        pieces and units at sea are not on the map and never block).
+        AV'd defenders (9.1) carry zoc_negated: they exert no ZOC and may
+        be moved through, though never ended upon."""
+        neg = self._av_negated() if self.s.get("av") else set()
         return [dict(id=u["pid"], name=u["slot"], side=u["side"],
-                     col=u["col"], row=u["row"])
+                     col=u["col"], row=u["row"],
+                     **({"zoc_negated": True} if u["pid"] in neg else {}))
                 for u in self.s["units"].values()
                 if u["pid"] != exclude_pid and self.on_map(u)]
 
@@ -350,7 +382,7 @@ class StrategicGame:
         occupants include a combat unit (5.4 — lone supply/Rommel do not
         block, they are not combat units)."""
         board = self.rules_board()
-        eblock, _ = self.game._enemy_hexes(board, self.game.enemy(side))
+        eblock, _, _ = self.game._enemy_hexes(board, self.game.enemy(side))
         return eblock
 
     def _trace_reaches(self, from_hex, side, targets, radius=None,
@@ -366,9 +398,11 @@ class StrategicGame:
         one); the 14.2 attack-supply route keeps the strict inclusive
         test and instead carves out the attacked units' own ZOC
         (ignore_zoc_of — 13.2 + clarifications figs. 12/15)."""
+        targets = {tuple(t) for t in targets}
+        if tuple(from_hex) in targets:
+            return True                # stacked with the supply: route length 0
         ezoc = self._ezoc_for(side, ignore_pids=ignore_zoc_of)
         blocked = self._trace_blocked(side)
-        targets = {tuple(t) for t in targets}
         seen = {tuple(from_hex)}
         frontier = [tuple(from_hex)]
         depth = 0
@@ -501,7 +535,7 @@ class StrategicGame:
         board = self.rules_board()
         enemy = self.game.enemy(side)
         ezoc = self.game.zoc_hexes(board, enemy)
-        eblock, _ = self.game._enemy_hexes(board, enemy)
+        eblock, _, _ = self.game._enemy_hexes(board, enemy)
         return board, ezoc, eblock
 
     def _retreat_step_ok(self, cur, nb, ezoc, eblock):
@@ -610,7 +644,7 @@ class StrategicGame:
             friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
             if not friends:
                 continue
-            eblock, _ = self.game._enemy_hexes(board, self.game.enemy(u["side"]))
+            eblock, _, _ = self.game._enemy_hexes(board, self.game.enemy(u["side"]))
             choices = self._closest_hexes(here, friends, ezoc, eblock)
             if not choices:
                 choices = self._closest_hexes(here, friends, set(), eblock)
@@ -700,6 +734,214 @@ class StrategicGame:
                 self.s["dead"].append(str(pid))
                 events.append(f"'{u['slot']}' eliminated — {why}")
 
+    # ------------------------------------------------------------ supply capture 15
+    def _recycle_supply(self, pid, events, why):
+        """A supply unit leaves the board: the physical counter returns to
+        the owner's off-board pool for possible re-entry under the normal
+        generation rules (12.1/12.2 imply counter recycling — the maxima
+        are counter counts; 15.21 says captured originals are 'returned to
+        the opponent for possible reentry')."""
+        u = self.s["units"].pop(str(pid), None)
+        if not u:
+            return
+        pool = "cap_pool" if "Captured" in u["slot"] else "supply_pool"
+        self.s[pool].setdefault(u["side"], []).append(str(pid))
+        if str(pid) in self.s["supplies_used"]:
+            self.s["supplies_used"].remove(str(pid))
+        events.append(f"'{u['slot']}' {why}")
+
+    def _capture_sweep(self, events, capturer, context="movement",
+                       near_hexes=None):
+        """15.21/15.22/15.321: an UNACCOMPANIED enemy supply adjacent to (or
+        under) one of `capturer`'s combat units is captured the instant that
+        adjacency ARISES — the trigger is the capturer's units moving/
+        retreating/advancing/remaining after battle, never static enemy
+        adjacency (15.21 'moves adjacent', 15.211). One-directional per
+        event, so a freshly captured supply is never ping-ponged back by
+        units that merely stand next to it. Exceptions: fortress hexes
+        shield adjacency capture (15.23 — same-hex capture still applies),
+        anomalous hexsides never create adjacency (5.7), and a supply
+        currently sustaining attacks is neither captured nor stopped when
+        overrun (15.22). near_hexes: optionally also capture supplies
+        adjacent to intermediate path hexes (15.22 'during its retreat')."""
+        if not self.combat:
+            return
+        mine = self._combat_units(capturer)
+        enemy = self.game.enemy(capturer)
+        changed = True
+        while changed:
+            changed = False
+            for u in list(self.s["units"].values()):
+                if u["side"] != enemy or not self.on_map(u) \
+                   or self.game.unit_class(u["slot"]) != "supply":
+                    continue
+                if context != "movement" and u["pid"] in self.s["supplies_used"]:
+                    continue                     # 15.22 sustaining exception
+                here = (u["col"], u["row"])
+                if any(b["side"] == enemy and self.on_map(b)
+                       and (b["col"], b["row"]) == here and self._is_combat(b)
+                       for b in self.s["units"].values()):
+                    continue                     # accompanied (Rommel doesn't count, 15.1)
+                on_top = any((e["col"], e["row"]) == here for e in mine)
+                adjacent = any(self._engageable(here, (e["col"], e["row"]))
+                               for e in mine)
+                if near_hexes and not (on_top or adjacent):
+                    adjacent = any(self._engageable(here, tuple(h))
+                                   or tuple(h) == here for h in near_hexes)
+                in_fortress = self.game.hex_terrain(*here) == "fortress"
+                if not (on_top or (adjacent and not in_fortress)):
+                    continue                     # 15.23: fortress blocks adjacency capture
+                self._apply_capture(u, capturer, events, context)
+                changed = True
+                break
+
+    def _escorts_of(self, here, capturer):
+        """Enemy combat units stacked on the captured supply's hex — the
+        'previously accompanying' units of 15.34."""
+        enemy = self.game.enemy(capturer)
+        return [b["pid"] for b in self._combat_units(enemy)
+                if (b["col"], b["row"]) == tuple(here)]
+
+    def _apply_capture(self, u, capturer, events, context):
+        """Flip an unaccompanied supply to the capturing side (15.21).
+        Post-capture rights depend on HOW it was captured:
+          movement (15.21, AV fig 2): moves and sustains freely this turn;
+          battle/capture-attack (15.32x): may move its full MF — even out of
+          the old escort's ZOC (15.33/15.34) — but never sustains this turn;
+          fortress capture-attack (15.23): neither moves nor sustains;
+          retreat/advance (15.22/15.31): accompanies only — no move, no
+          sustain."""
+        here = (u["col"], u["row"])
+        events_note = (f"'{u['slot']}' at {self.game.grid.display_name(*here)} "
+                       f"CAPTURED by {capturer}")
+        self._recycle_supply(u["pid"], [],
+                             "returned to the opponent's pool [15.21]")
+        pool = self.s["cap_pool"].get(capturer, [])
+        if pool:
+            new_pid = pool.pop(0)
+            slot = self.reserve[new_pid]["slot"]
+            self.s["units"][new_pid] = {"pid": new_pid, "slot": slot,
+                                        "side": capturer,
+                                        "col": here[0], "row": here[1]}
+        else:                        # no physical captured counter left:
+            new_pid = u["pid"]       # flip the original in place
+            self.s["units"][new_pid] = dict(u, side=capturer)
+            self.s["supply_pool"][u["side"]].remove(new_pid)
+        if context == "movement":
+            events.append(events_note + " — it may move and sustain attacks "
+                          "this turn [15.21, clarifications figs 1-2]")
+            return
+        if new_pid not in self.s["no_sustain"]:
+            self.s["no_sustain"].append(new_pid)
+        if context == "battle":
+            self.s["cap_move"][new_pid] = list(self._escorts_of(here, capturer))
+            events.append(events_note + " — it may be moved its full MF, "
+                          "even out of the old escort's ZOC, but cannot "
+                          "sustain attacks this turn [15.33, 15.34]")
+        else:                        # fortress attack / retreat / advance
+            self.s["moved"][new_pid] = {"captured": True}
+            events.append(events_note + " — it may not move further nor "
+                          "sustain attacks this turn [15.22, 15.23]")
+
+    # ------------------------------------------------------------ isolation 24
+    def _iso_snapshot(self, side):
+        """Isolation status of every friendly combat unit (24.1; at-sea
+        units are isolated unless a friendly supply is also at sea, 24.4)."""
+        if not self.combat:
+            return {}
+        out = {}
+        supply_at_sea = any(
+            u["side"] == side and not self.on_map(u)
+            and self.game.unit_class(u["slot"]) == "supply"
+            for u in self.s["units"].values())
+        for u in self.s["units"].values():
+            if u["side"] != side or self.game.unit_class(u["slot"]) is not None:
+                continue
+            if not self.on_map(u):
+                out[u["pid"]] = not supply_at_sea
+            else:
+                out[u["pid"]] = self._isolated(u)
+        return out
+
+    def _isolation_end_of_turn(self, side, notes):
+        """24.2: isolated at the start AND end of two consecutive own
+        player turns -> eliminated (clarifications 8: supply at start OR
+        end breaks the count). 24.5: a side with no supply units on board
+        at start and end of two consecutive own turns loses everything."""
+        if not self.combat:
+            return
+        end = self._iso_snapshot(side)
+        iso = self.s["iso"]
+        for pid, isolated_now in end.items():
+            if isolated_now and self.s["iso_start"].get(pid):
+                iso[pid] = iso.get(pid, 0) + 1
+            else:
+                iso.pop(pid, None)
+        doomed = sorted(p for p, n in iso.items() if n >= 2)
+        for pid in doomed:
+            iso.pop(pid, None)
+            self._remove_units([pid], notes,
+                               "isolated at the start and end of two "
+                               "consecutive friendly player turns [24.1, 24.2]")
+        for pid in list(iso):
+            if pid not in self.s["units"]:
+                iso.pop(pid)
+        nosup_end = not self._supply_hexes(side)
+        if nosup_end and self.s["nosup_start"]:
+            self.s["nosup"][side] = self.s["nosup"].get(side, 0) + 1
+        else:
+            self.s["nosup"][side] = 0
+        if self.s["nosup"][side] >= 2 and not self.s["over"]:
+            gone = [u["pid"] for u in self.s["units"].values()
+                    if u["side"] == side]
+            self._remove_units(gone, notes,
+                               "no supply units for two consecutive player "
+                               "turns — all units lost [24.5]")
+            self.s["over"] = True
+            self.s["winner"] = self.game.enemy(side)
+            notes.append(f"{side} had no supply units on board at the start "
+                         f"and end of two consecutive player turns — "
+                         f"{self.s['winner']} WINS [24.5]")
+
+    # ------------------------------------------------------------ replacements 20
+    def _repl_accrue(self, side, notes):
+        """20.2/20.3: earn replacement attack factors at the start of the
+        own player turn for each controlled home base / Tobruch (4.3)."""
+        cfg = self.repl_cfg
+        if not cfg or not self.combat or self.s["turn"] < cfg["start_turn"]:
+            return
+        board = self.rules_board()
+        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        earned = 0
+        rates = cfg["rates"][side]
+        for hx in self.victory_hexes:
+            terr = self.game.hex_terrain(*hx)
+            occ = any(u["side"] == side and self.on_map(u)
+                      and (u["col"], u["row"]) == hx
+                      and self.game.unit_class(u["slot"]) != "markers"
+                      for u in self.s["units"].values())
+            if not occ:
+                continue
+            if terr == "homebase":
+                if hx in ezoc:
+                    continue
+                # only the OWN home base earns (20.2/20.3)
+                port = self.ports.get(hx)
+                if not port or side not in port["usable_by"]:
+                    continue
+                earned += rates.get("homebase", 0)
+            elif terr == "fortress" and tuple(hx) in self.ports:
+                earned += rates.get("fortress_port", 0)   # Tobruch, not Bengasi
+        if earned:
+            self.s["repl"][side] = self.s["repl"].get(side, 0) + earned
+            notes.append(f"{side} earns {earned} replacement factor(s) "
+                         f"[20.2/20.3, from 1 March 1942; accumulated: "
+                         f"{self.s['repl'][side]} (20.5)]")
+
+    # ------------------------------------------------------------ AV 9 plumbing
+    def _av_negated(self):
+        return {p for e in self.s["av"] for p in e["defenders"]}
+
     # ------------------------------------------------------------ verdicts
     def _v(self, ok, *reasons):
         return {"legal": ok, "reasons": list(reasons)}
@@ -739,6 +981,21 @@ class StrategicGame:
             return self._propose_advance(side, action)
         if t == "forced_elim":
             return self._propose_forced_elim(side, action)
+        if t == "destroy_supply":
+            return self._propose_destroy_supply(side, action)
+        if t == "capture_supply":
+            return self._propose_capture_supply(side, action)
+        if t == "replace":
+            return self._propose_replace(side, action)
+        if t == "declare_av":
+            return self._propose_declare_av(side, action)
+        if t == "substitute":
+            return self._propose_substitute(side, action)
+        if t == "breakdown":
+            return self._propose_breakdown(side, action)
+        if t == "move" and self.s["phase"] == "combat" \
+           and str(action.get("unit")) in self.s["cap_move"]:
+            return self._propose_move(side, action)
         if t in ("move", "rommel_extend", "roll_supply", "land_supply",
                  "land_reinforcement", "embark", "debark") \
            and self.s["phase"] != "movement":
@@ -772,7 +1029,42 @@ class StrategicGame:
             names = ", ".join(self.game.grid.display_name(*h) for h in over)
             return self._v(False, f"stacking limit exceeded at {names} — limits "
                                   "bind at the end of movement [6.1, 6.3]")
-        return self._v(True)
+        # 9.2/14.5: every AV must still have a supply within 5 hexes of all
+        # its attackers at the END of the movement portion (the AVed unit's
+        # ZOC is negated by now); a different supply than the declared one
+        # means BOTH are expended
+        rad = (self.combat.get("attack_supply") or {}).get("radius", 5)
+        av_supplies = []
+        for e in self.s["av"]:
+            atk_hexes = [(self.unit(p)["col"], self.unit(p)["row"])
+                         for p in e["attackers"] if p in self.s["units"]]
+
+            def in_range(spid):
+                su = self.s["units"].get(spid)
+                if not su or not self.on_map(su) \
+                   or self.game.unit_class(su["slot"]) != "supply" \
+                   or su["side"] != side or spid in self.s["no_sustain"]:
+                    return False
+                return all(self._trace_reaches(h, side,
+                                               [(su["col"], su["row"])],
+                                               radius=rad)
+                           for h in atk_hexes)
+            if in_range(e["supply"]):
+                av_supplies.append([e["supply"]])
+                continue
+            alt = next((u["pid"] for u in self.s["units"].values()
+                        if u["side"] == side and in_range(u["pid"])), None)
+            if alt is None:
+                names = ", ".join(self.unit(p)["slot"] for p in e["defenders"]
+                                  if p in self.s["units"])
+                return self._v(False,
+                    f"the AV against {names or 'the negated unit'} has no "
+                    f"supply within {rad} hexes of its attackers at the end "
+                    f"of movement — move one into range [9.2, 14.5]")
+            av_supplies.append([e["supply"], alt])
+        v = self._v(True)
+        v["av_supplies"] = av_supplies
+        return v
 
     def _propose_end_phase(self, side):
         over = self.overstacked_hexes(side)
@@ -805,6 +1097,22 @@ class StrategicGame:
         err = self._fortress_sortie_unmet(side)
         if err:
             return err
+        for e in self.s["av"]:
+            for dpid in e["defenders"]:
+                if dpid in self.s["units"] and dpid not in self.s["defended"]:
+                    return self._v(False,
+                        f"the declared AV against "
+                        f"'{self.unit(dpid)['slot']}' has not been resolved — "
+                        f"the AVed unit is removed when the attacker resolves "
+                        f"his attacks [9.1, 9.6]")
+        for ca in self.s["cap_attacks"]:
+            for apid in ca["accomp"]:
+                if apid in self.s["units"] and apid not in self.s["defended"]:
+                    return self._v(False,
+                        f"one unit is 'attacking' the supply, so all other "
+                        f"units in the defender's ZOC must attack "
+                        f"'{self.unit(apid)['slot']}' at legal odds [15.322, "
+                        f"clarifications figs 7/11]")
         return self._v(True)
 
     def _fortress_sortie_unmet(self, side):
@@ -917,6 +1225,10 @@ class StrategicGame:
                     f"a friendly supply unit sustaining it [14.1, 14.6]")
                 vv.update(odds=f"{n}-{d}", column=col, factors=[att, deff])
                 return vv
+            if spid in self.s["no_sustain"]:
+                return self._v(False, "a supply captured this turn during "
+                                      "combat/retreat/advance cannot sustain "
+                                      "attacks [15.22, 15.33]")
             rad = self.combat["attack_supply"]["radius"]
             for a in attackers:
                 if not self._trace_reaches(
@@ -958,6 +1270,470 @@ class StrategicGame:
                                   "units in support may also fix the odds, "
                                   "11.6)")
         return self._v(True)
+
+    # ------------------------------------------------ supply capture/destroy 15
+    def _cap_move_dests(self, u):
+        """Destinations for a combat-captured supply's special move: full MF
+        (15.33), ignoring the ZOC of the units that previously accompanied
+        it (15.34) — every other rule still applies."""
+        ignore = set(self.s["cap_move"].get(u["pid"], []))
+        board = []
+        for b in self.rules_board(exclude_pid=u["pid"]):
+            if b["id"] in ignore:
+                b = dict(b, zoc_negated=True)
+            board.append(b)
+        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
+                  col=u["col"], row=u["row"])
+        return self.game.legal_destinations_t(me, self.budget(u), board)
+
+    def _fig3_guard(self, u, dest):
+        """Clarifications fig 3: a combat unit may not voluntarily move to
+        capture an unaccompanied supply when the move leaves it in an enemy
+        ZOC with no legal attack — 7.4 supersedes the automatic capture of
+        15.21/15.22. (Fig 4: with support adjacent to the covering
+        defenders the move is legal — the support test here is presence,
+        the exact joint odds stay with the battle gate.)"""
+        if not self.combat or not self._is_combat(u):
+            return None
+        enemy = self.game.enemy(u["side"])
+        dest = tuple(dest)
+        would_capture = False
+        for su in self.s["units"].values():
+            if su["side"] != enemy or not self.on_map(su) \
+               or self.game.unit_class(su["slot"]) != "supply":
+                continue
+            sh = (su["col"], su["row"])
+            if any((b["col"], b["row"]) == sh for b in self._combat_units(enemy)):
+                continue
+            if dest == sh or (self._engageable(dest, sh)
+                              and self.game.hex_terrain(*sh) != "fortress"):
+                would_capture = True
+                break
+        if not would_capture:
+            return None
+        board = self.rules_board(exclude_pid=u["pid"])
+        ezoc = self.game.zoc_hexes(board, enemy)
+        if dest not in ezoc:
+            return None
+        fake = dict(u, col=dest[0], row=dest[1])
+        if self._solo_attack_exists(fake):
+            return None
+        covering = [e for e in self._combat_units(enemy)
+                    if self._engageable(dest, (e["col"], e["row"]))]
+        support = any(f["pid"] != u["pid"]
+                      and self._engageable((f["col"], f["row"]),
+                                           (e["col"], e["row"]))
+                      for f in self._combat_units(u["side"])
+                      for e in covering)
+        if support:
+            return None
+        return self._v(False,
+            "this move would capture the supply while leaving the unit in an "
+            "enemy ZOC with no legal attack — a unit cannot voluntarily place "
+            "itself in a forbidden attack position; 7.4 supersedes the "
+            "automatic capture [clarifications sec 3 fig 3]")
+
+    def _propose_destroy_supply(self, side, action):
+        u, err = self._gate_unit(side, action)
+        if err:
+            return err
+        if self.game.unit_class(u["slot"]) != "supply":
+            return self._v(False, "only supply units may be voluntarily "
+                                  "destroyed [15.4]")
+        return self._v(True)
+
+    def _apply_destroy_supply(self, side, action):
+        events = []
+        self._recycle_supply(str(action["unit"]), events,
+                             "voluntarily destroyed by its owner — the counter "
+                             "returns to the off-board pool [15.4]")
+        return {"events": events}
+
+    def _propose_capture_supply(self, side, action):
+        if not self.combat or self.s["phase"] != "combat":
+            return self._v(False, "capturing a defended or fortress supply is "
+                                  "an 'attack' — combat portion only [15.23, "
+                                  "15.322]")
+        u, err = self._gate_unit(side, action)
+        if err:
+            return err
+        if not self._is_combat(u):
+            return self._v(False, "only a combat unit can attack a supply "
+                                  "[15.322]")
+        if u["pid"] in self.s["attacked"]:
+            return self._v(False, "this unit already fought — the capture "
+                                  "'attack' is its battle for the turn [11.8, "
+                                  "15.322, clarifications fig 7]")
+        spid = str(action.get("supply"))
+        su = self.s["units"].get(spid)
+        enemy = self.game.enemy(side)
+        if not su or su["side"] != enemy or not self.on_map(su) \
+           or self.game.unit_class(su["slot"]) != "supply":
+            return self._v(False, "target is not an enemy supply unit on the "
+                                  "map [15.2]")
+        sh = (su["col"], su["row"])
+        if not self._engageable((u["col"], u["row"]), sh):
+            return self._v(False, "the capturing unit must be adjacent [15.23, "
+                                  "15.322, 5.7]")
+        accomp = [b["pid"] for b in self._combat_units(enemy)
+                  if (b["col"], b["row"]) == sh]
+        in_fortress = self.game.hex_terrain(*sh) == "fortress"
+        if accomp and in_fortress:
+            return self._v(False, "the one-unit supply 'attack' cannot be used "
+                                  "against a defended fortress — attack the "
+                                  "garrison itself [15.322 NOTE, 23.1]")
+        if not accomp and not in_fortress:
+            return self._v(False, "an unaccompanied supply outside a fortress "
+                                  "is captured automatically by adjacency "
+                                  "during movement — no attack needed [15.21]")
+        if any(ca["supply"] == spid for ca in self.s["cap_attacks"]):
+            return self._v(False, "one attacking unit at most may be used to "
+                                  "capture a supply [15.322]")
+        v = self._v(True)
+        v["accomp"] = accomp
+        return v
+
+    def _apply_capture_supply(self, side, action, verdict):
+        s = self.s
+        pid, spid = str(action["unit"]), str(action["supply"])
+        su = self.unit(spid)
+        sh = (su["col"], su["row"])
+        in_fortress = self.game.hex_terrain(*sh) == "fortress"
+        events = []
+        s["attacked"][pid] = "capture"
+        s["cap_attacks"].append({"unit": pid, "supply": spid,
+                                 "accomp": verdict["accomp"]})
+        s["pending"] = None
+        self._apply_capture(su, side, events,
+                            "battle" if verdict["accomp"] else "fortress")
+        if in_fortress and not verdict["accomp"]:
+            self.s["pending"] = {"kind": "advance", "battle": "capture",
+                                 "hexes": [list(sh)], "advancers": [pid]}
+            events.append("the capturing unit may advance into the fortress "
+                          "even though no combat unit defended it [16.3]")
+        self._rommel_displacement(events)
+        return {"captured": spid, "events": events,
+                "note": "supply captured by attack — it may not move or "
+                        "sustain attacks this turn [15.23/15.33]"}
+
+    # ------------------------------------------------------------ replacements 20
+    def _propose_replace(self, side, action):
+        cfg = self.repl_cfg
+        if not cfg or not self.combat:
+            return self._v(False, "no replacement rules in this scenario")
+        if self.s["turn"] < cfg["start_turn"]:
+            return self._v(False, f"replacements begin "
+                                  f"{self.turn_label(cfg['start_turn'])} [20.1]")
+        err = self._no_moves_yet("replacement placement", "3.1/3.3, 20.4")
+        if err:
+            return err
+        if self.s["phase"] != "movement":
+            return self._v(False, "placements precede movement [20.4, 19.2]")
+        pid = str(action.get("unit"))
+        if pid not in self.s["dead"]:
+            return self._v(False, "replacements are taken only from units "
+                                  "already eliminated [20.1]")
+        slot, uside = self.catalog.get(pid, (None, None))
+        if uside != side:
+            return self._v(False, "you may replace only your own units [20.1]")
+        if self.game.unit_class(slot) is not None:
+            return self._v(False, "supply and headquarters units are not "
+                                  "replacements — supply arrives under rule 12 "
+                                  "[20.1]")
+        if self._unit_type(slot) is not None and slot in (
+                (self.game.spec.get("unit_types") or {}).get("substitute_slots") or {}):
+            return self._v(False, "substitute units may not be brought onto "
+                                  "the board as replacements [21.6]")
+        cost = self.game.stats(slot)[0]
+        have = self.s["repl"].get(side, 0)
+        if cost > have:
+            return self._v(False, f"'{slot}' costs {cost} replacement "
+                                  f"factor(s); {side} has {have} accumulated "
+                                  f"[20.2/20.3, 20.5]")
+        port = tuple(action.get("port") or ())
+        if not self._port_ok(side, port):
+            return self._v(False, "replacements enter like reinforcements: "
+                                  "Tobruch or your own home base, controlled "
+                                  "at the start of the player turn [20.4, "
+                                  "19.2, 4.3]")
+        v = self._v(True)
+        v["cost"] = cost
+        v["slot"] = slot
+        return v
+
+    def _apply_replace(self, side, action, verdict):
+        s = self.s
+        pid = str(action["unit"])
+        s["repl"][side] -= verdict["cost"]
+        s["dead"].remove(pid)
+        s["units"][pid] = {"pid": pid, "slot": verdict["slot"], "side": side,
+                           "col": action["port"][0], "row": action["port"][1]}
+        events = []
+        self._capture_sweep(events, side, "movement")
+        return {"placed": pid, "slot": verdict["slot"],
+                "at": list(action["port"]), "cost": verdict["cost"],
+                "remaining": s["repl"][side], "events": events,
+                "note": "replacement enters per the reinforcement rules; it "
+                        "may move and fight this turn [20.4, 19.2]"}
+
+    # ------------------------------------------------------------ AV 9
+    def _propose_declare_av(self, side, action):
+        if not self.combat:
+            return self._v(False, "no combat rules encoded for this game")
+        if self.s["phase"] != "movement":
+            return self._v(False, "Automatic Victory is achieved during the "
+                                  "movement portion of the turn [9.1/9.2]")
+        dpid = str(action.get("defender"))
+        du = self.s["units"].get(dpid)
+        enemy = self.game.enemy(side)
+        if not du or du["side"] != enemy or not self._is_combat(du):
+            return self._v(False, "the AV target must be an enemy combat unit "
+                                  "on the map [9.1]")
+        dh = (du["col"], du["row"])
+        defenders = [b["pid"] for b in self._combat_units(enemy)
+                     if (b["col"], b["row"]) == dh]
+        if any(p in self._av_negated() for p in defenders):
+            return self._v(False, "that unit's ZOC is already negated [9.1]")
+        atk_ids = [str(p) for p in (action.get("attackers") or [])]
+        if not atk_ids:
+            return self._v(False, "name the attacking units in position [9.1]")
+        attackers = []
+        frozen = {p for e in self.s["av"] for p in e["attackers"] + e["blockers"]}
+        for pid in atk_ids:
+            u = self.s["units"].get(pid)
+            if not u or u["side"] != side or not self._is_combat(u):
+                return self._v(False, f"attacker '{pid}' is not one of your "
+                                      f"combat units on the map")
+            if pid in frozen:
+                return self._v(False, f"'{u['slot']}' is already committed to "
+                                      f"an AV this turn [9.2/9.3]")
+            if not self._engageable((u["col"], u["row"]), dh):
+                return self._v(False, f"'{u['slot']}' is not adjacent to the "
+                                      f"AV target [9.1, 8.5]")
+            attackers.append(u)
+        blk_ids = [str(p) for p in (action.get("blockers") or [])]
+        for pid in blk_ids:
+            u = self.s["units"].get(pid)
+            if not u or u["side"] != side or not self._is_combat(u):
+                return self._v(False, f"blocker '{pid}' is not one of your "
+                                      f"combat units on the map [9.3]")
+        dus = [self.unit(p) for p in defenders]
+        att, deff = self._battle_factors(attackers, dus)
+        n, d = self.game.odds(att, deff)
+        col = self.game.odds_column(n, d)
+        if col != "auto_elim":
+            if not (d == 1 and n >= 5):
+                return self._v(False, f"odds {att}:{deff} = {n}-{d} — an AV "
+                                      f"needs 7-1, or 5-1 with the defender "
+                                      f"surrounded [9.1]")
+            if self._survival_assignment_exists(defenders):
+                return self._v(False, f"odds are {n}-1 but the defender could "
+                                      f"survive a 'back 2' result — no AV "
+                                      f"below 7-1 unless surrounded [9.1]")
+        spid = str(action.get("supply") or "")
+        su = self.s["units"].get(spid)
+        if not su or su["side"] != side or not self.on_map(su) \
+           or self.game.unit_class(su["slot"]) != "supply":
+            return self._v(False, "an AV must be sustained by a named supply "
+                                  "unit at the instant it is achieved [9.2, "
+                                  "9.6, 14.6]")
+        if spid in self.s["no_sustain"]:
+            return self._v(False, "a supply captured this turn during combat/"
+                                  "retreat/advance cannot sustain attacks "
+                                  "[15.33]")
+        rad = self.combat["attack_supply"]["radius"]
+        for a in attackers:
+            # 9.2 + clarifications sec 10: at the DECLARATION instant the
+            # defender's ZOC still blocks the supply route — no carve-out
+            if not self._trace_reaches((a["col"], a["row"]), side,
+                                       [(su["col"], su["row"])], radius=rad):
+                return self._v(False,
+                    f"'{a['slot']}' cannot trace {rad} ZOC-free hexes to "
+                    f"'{su['slot']}' at the instant of the AV — the target's "
+                    f"own ZOC still blocks until the AV is achieved [9.2, "
+                    f"clarifications sec 10]")
+        v = self._v(True)
+        v["defenders"] = defenders
+        v["odds"] = f"{n}-{d}"
+        return v
+
+    def _apply_declare_av(self, side, action, verdict):
+        s = self.s
+        atk = [str(p) for p in action["attackers"]]
+        blk = [str(p) for p in (action.get("blockers") or [])]
+        entry = {"defenders": verdict["defenders"], "attackers": atk,
+                 "blockers": blk, "supply": str(action["supply"])}
+        s["av"].append(entry)
+        events = []
+        for pid in atk + blk:
+            if pid not in s["moved"]:
+                s["moved"][pid] = {"av_frozen": True}
+        names = ", ".join(self.unit(p)["slot"] for p in verdict["defenders"])
+        events.append(f"AUTOMATIC VICTORY declared at {verdict['odds']} — the "
+                      f"ZOC of {names} is negated for the rest of this turn; "
+                      f"units may move through its hexes and over the unit "
+                      f"itself, but not end on it; the AVing units are frozen "
+                      f"until the combat portion [9.1-9.3]")
+        self._capture_sweep(events, side, "movement")
+        return {"defenders": verdict["defenders"], "odds": verdict["odds"],
+                "events": events}
+
+    # ------------------------------------------------------------ substitutes 21
+    def _unit_type(self, slot):
+        ut = self.game.spec.get("unit_types")
+        if not ut:
+            return None
+        for t in ("armor", "armored_infantry", "recce"):
+            if slot in ut.get(t, []):
+                return t
+        return ut.get("default", "infantry")
+
+    def _sub_window(self, side):
+        cfg = self.sub_cfg
+        if not cfg or not self.combat:
+            return self._v(False, "no substitute rules in this scenario")
+        if side != cfg["side"]:
+            return self._v(False, f"only the {cfg['side']} player has "
+                                  f"substitute counters [21.1]")
+        if self.s["turn"] < cfg["start_turn"]:
+            return self._v(False, f"substitutes become available "
+                                  f"{self.turn_label(cfg['start_turn'])} [21.1]")
+        if self.s["phase"] != "combat" or self.s["fought"] \
+           or self.s["pending"]:
+            return self._v(False, "substitution occurs at the end of the "
+                                  "movement portion, before battles are "
+                                  "resolved [21.2]")
+        return None
+
+    def _propose_substitute(self, side, action):
+        err = self._sub_window(side)
+        if err:
+            return err
+        pids = [str(p) for p in (action.get("units") or [])]
+        if not pids or len(set(pids)) != len(pids):
+            return self._v(False, "name the on-board units being exchanged "
+                                  "[21.1]")
+        units = []
+        for pid in pids:
+            u = self.s["units"].get(pid)
+            if not u or u["side"] != side or not self._is_combat(u):
+                return self._v(False, f"'{pid}' is not one of your combat "
+                                      f"units on the map — substitution may "
+                                      f"not take place at sea or off-board "
+                                      f"[21.6]")
+            units.append(u)
+        hexes = {(u["col"], u["row"]) for u in units}
+        if len(hexes) != 1:
+            return self._v(False, "all units involved in the substitution "
+                                  "must end the movement portion in the same "
+                                  "hex [21.2]")
+        sub_pid = str(action.get("sub"))
+        ut = self.game.spec.get("unit_types") or {}
+        subs = ut.get("substitute_slots") or {}
+        e = self.reserve.get(sub_pid)
+        if not e or e["slot"] not in subs:
+            return self._v(False, "not a substitute counter — only the units "
+                                  "provided specifically as substitutes can "
+                                  "be used [21.7]")
+        if sub_pid in self.s["units"] or sub_pid in self.s["dead"]:
+            return self._v(False, "that substitute counter is not available")
+        stype = subs[e["slot"]]
+        allowed = ut["exchange_classes"][stype]
+        for u in units:
+            if self._unit_type(u["slot"]) not in allowed:
+                return self._v(False,
+                    f"'{u['slot']}' is {self._unit_type(u['slot'])} — a "
+                    f"{stype} substitute exchanges only for "
+                    f"{' or '.join(allowed)} (counter-face symbols) [21.1]")
+        total = sum(self.game.stats(u["slot"])[0] for u in units)
+        sub_att = self.game.stats(e["slot"])[0]
+        if total != sub_att:
+            return self._v(False, f"exchanged units total {total} attack "
+                                  f"factors; the substitute is {sub_att} — "
+                                  f"totals must be the same [21.1]")
+        v = self._v(True)
+        v["hex"] = list(hexes.pop())
+        v["slot"] = e["slot"]
+        return v
+
+    def _apply_substitute(self, side, action, verdict):
+        s = self.s
+        pids = [str(p) for p in action["units"]]
+        mfs = [self.game.stats(self.unit(p)["slot"])[2] for p in pids]
+        for pid in pids:
+            del s["units"][pid]
+            s["sub_stock"].append(pid)
+        sub_pid = str(action["sub"])
+        s["units"][sub_pid] = {"pid": sub_pid, "slot": verdict["slot"],
+                               "side": side,
+                               "col": verdict["hex"][0],
+                               "row": verdict["hex"][1]}
+        s["moved"][sub_pid] = {"substituted": True}
+        s["sub_comp"][sub_pid] = {"units": pids, "max_mf": max(mfs)}
+        return {"formed": verdict["slot"], "at": verdict["hex"],
+                "from": pids,
+                "note": "the substitute may not move this turn but may "
+                        "attack [21.2]"}
+
+    def _propose_breakdown(self, side, action):
+        err = self._sub_window(side)
+        if err:
+            return err
+        sub_pid = str(action.get("sub"))
+        u = self.s["units"].get(sub_pid)
+        ut = self.game.spec.get("unit_types") or {}
+        subs = ut.get("substitute_slots") or {}
+        if not u or u["side"] != side or u["slot"] not in subs:
+            return self._v(False, "only a substitute counter on the map can "
+                                  "be broken down [21.3]")
+        pids = [str(p) for p in (action.get("into") or [])]
+        if not pids or len(set(pids)) != len(pids):
+            return self._v(False, "name the component units [21.3]")
+        stype = subs[u["slot"]]
+        allowed = ut["exchange_classes"][stype]
+        comp = self.s["sub_comp"].get(sub_pid, {})
+        total = 0
+        for pid in pids:
+            if pid not in self.s["sub_stock"]:
+                return self._v(False, "components come from units previously "
+                                      "exchanged away by substitution [21.3]")
+            slot, uside = self.catalog[pid]
+            if uside != side or self._unit_type(slot) not in allowed:
+                return self._v(False, f"'{slot}' is not of the same type "
+                                      f"[21.1, 21.3]")
+            if self.game.stats(slot)[2] > self.game.stats(u["slot"])[2] \
+               and pid not in comp.get("units", []):
+                return self._v(False,
+                    f"'{slot}' moves faster than the substitute — a breakdown "
+                    f"may not generate a faster unit unless it originally "
+                    f"formed this substitute [21.4]")
+            total += self.game.stats(slot)[0]
+        if total > self.game.stats(u["slot"])[0]:
+            return self._v(False, f"components total {total} attack factors — "
+                                  f"more than the substitute's "
+                                  f"{self.game.stats(u['slot'])[0]} [21.4]")
+        if len(pids) > int((self.game.stacking or {}).get("max", 3)):
+            return self._v(False, "the components would exceed the stacking "
+                                  "limit [21.5, 6.1]")
+        return self._v(True)
+
+    def _apply_breakdown(self, side, action):
+        s = self.s
+        sub_pid = str(action["sub"])
+        u = self.unit(sub_pid)
+        hx = [u["col"], u["row"]]
+        del s["units"][sub_pid]
+        s["sub_comp"].pop(sub_pid, None)
+        placed = []
+        for pid in [str(p) for p in action["into"]]:
+            s["sub_stock"].remove(pid)
+            slot, _ = self.catalog[pid]
+            s["units"][pid] = {"pid": pid, "slot": slot, "side": side,
+                               "col": hx[0], "row": hx[1]}
+            s["moved"][pid] = {"breakdown": True}
+            placed.append(slot)
+        return {"broke": u["slot"], "into": placed, "at": hx,
+                "note": "components placed in the substitute's hex [21.3]"}
 
     def _propose_advance(self, side, action):
         pend = self.s["pending"]
@@ -1123,6 +1899,16 @@ class StrategicGame:
         u, err = self._gate_unit(side, action)
         if err:
             return err
+        if self.s["phase"] == "combat" and u["pid"] in self.s["cap_move"]:
+            dest = tuple(action.get("dest") or ())
+            dd = self._cap_move_dests(u)
+            if dest not in dd:
+                return self._v(False, "not a legal destination for the "
+                                      "captured supply [15.33, 15.34]")
+            v = self._v(True)
+            v["cost"] = dd[dest]
+            v["cap_move"] = True
+            return v
         if u["pid"] in self.s["moved"]:
             return self._v(False, "unit has already moved this player turn — "
                                   "movement factors are not transferable nor "
@@ -1141,6 +1927,9 @@ class StrategicGame:
                 return self._v(False, "path must end at dest")
             v = self._check_path_move(u, path, bonus)
             if v["legal"]:
+                err = self._fig3_guard(u, dest)
+                if err:
+                    return err
                 v["cost"] = len(path) - 1
             return v
         dd = self.dests(u)
@@ -1149,6 +1938,9 @@ class StrategicGame:
             return self._v(False, f"not a legal destination for this unit "
                                   f"(MF {ma}) — movement 5.2/5.4, stacking 6.1, "
                                   f"ZOC 7.1/8.1/8.3, roads 17, escarpments 18")
+        err = self._fig3_guard(u, dest)
+        if err:
+            return err
         v = self._v(True)
         v["cost"] = dd[dest]
         return v
@@ -1326,17 +2118,20 @@ class StrategicGame:
             old = [u["col"], u["row"]]
             u["col"], u["row"] = action["dest"]
             s["moved"][u["pid"]] = {"from": old, "cost": verdict.get("cost")}
+            if verdict.get("cap_move"):
+                s["cap_move"].pop(u["pid"], None)
             if action.get("path"):
                 s["paths"][u["pid"]] = [list(h) for h in action["path"]]
             if action.get("rommel_bonus"):
                 s["bonus"][u["pid"]] = int(action["rommel_bonus"])
             events = []
             if self.combat:
+                self._capture_sweep(events, side, "movement")
                 self._rommel_displacement(events)
             return {"from": old, "to": [u["col"], u["row"]],
                     "cost": verdict.get("cost"), "events": events}
         if t == "end_movement":
-            return self._apply_end_movement(side)
+            return self._apply_end_movement(side, verdict)
         if t == "battle":
             return self._apply_battle(side, action, verdict)
         if t == "retreat":
@@ -1347,6 +2142,18 @@ class StrategicGame:
             return self._apply_advance(side, action)
         if t == "forced_elim":
             return self._apply_forced_elim(side, action)
+        if t == "destroy_supply":
+            return self._apply_destroy_supply(side, action)
+        if t == "capture_supply":
+            return self._apply_capture_supply(side, action, verdict)
+        if t == "replace":
+            return self._apply_replace(side, action, verdict)
+        if t == "declare_av":
+            return self._apply_declare_av(side, action, verdict)
+        if t == "substitute":
+            return self._apply_substitute(side, action, verdict)
+        if t == "breakdown":
+            return self._apply_breakdown(side, action)
         if t == "place_rommel":
             u = self.unit(s["pending_rommel"]["unit"])
             u["col"], u["row"] = action["hex"]
@@ -1393,8 +2200,11 @@ class StrategicGame:
             del s["pool"][pid]
             s["units"][pid] = {"pid": pid, "slot": e["slot"], "side": side,
                                "col": action["port"][0], "row": action["port"][1]}
+            events = []
+            if self.combat:
+                self._capture_sweep(events, side, "movement")
             return {"placed": pid, "slot": e["slot"], "at": list(action["port"]),
-                    "due": self.turn_label(e["due"]),
+                    "due": self.turn_label(e["due"]), "events": events,
                     "note": "no movement penalty for entering at a controlled "
                             "port; it may move and fight this turn [19.2]"}
         if t == "embark":
@@ -1413,16 +2223,26 @@ class StrategicGame:
             u.pop("embark_turn", None)
             u["col"], u["row"] = action["port"]
             s["landed_sea"].append(u["pid"])
+            events = []
+            if self.combat:
+                self._capture_sweep(events, side, "movement")
             return {"landed": u["pid"], "at": list(action["port"]),
+                    "events": events,
                     "note": "may move inland this turn; may not go back out "
                             "to sea [23.4, 23.42]"}
         # end_phase
         notes = []
         if self.combat:
-            used = sorted(set(s["supplies_used"]))
-            self._remove_units(used, notes,
-                               "supply used to sustain attacks is removed at "
-                               "the end of the player turn [14.1]")
+            # 24.2/24.5 end-of-turn isolation checks run while consumed
+            # supplies are still on the board (they are removed AT the end,
+            # 14.1 — a wrong auto-elimination is worse than a lenient order)
+            self._isolation_end_of_turn(side, notes)
+            for spid in sorted(set(s["supplies_used"])):
+                self._recycle_supply(spid, notes,
+                                     "used to sustain attacks — removed at "
+                                     "the end of the player turn, the counter "
+                                     "returns to the off-board pool [14.1]")
+            self._check_elimination_victory(notes)
             # 4.1/4.2 control victory: both fortresses + both home bases at
             # the start AND end of two consecutive own player turns
             end_ok = self._controls_objectives(side)
@@ -1458,6 +2278,10 @@ class StrategicGame:
         s["fought"] = []
         s["supplies_used"] = []
         s["pending"] = None
+        s["av"] = []
+        s["cap_attacks"] = []
+        s["no_sustain"] = []
+        s["cap_move"] = {}
         if s["over"]:
             return {"note": f"GAME OVER — {s['winner']} wins." if s["winner"]
                             else "GAME OVER.",
@@ -1469,6 +2293,9 @@ class StrategicGame:
             s["ports"] = self._controlled_ports(other)
             if self.combat:
                 s["vic_start_ok"] = self._controls_objectives(other)
+                s["iso_start"] = self._iso_snapshot(other)
+                s["nosup_start"] = not self._supply_hexes(other)
+                self._repl_accrue(other, notes)
             return {"note": f"{side} player turn over — {other} moves now [3.3]",
                     "events": notes}
         s["turn"] += 1
@@ -1477,6 +2304,9 @@ class StrategicGame:
         s["ports"] = self._controlled_ports(self.first_player)
         if self.combat:
             s["vic_start_ok"] = self._controls_objectives(self.first_player)
+            s["iso_start"] = self._iso_snapshot(self.first_player)
+            s["nosup_start"] = not self._supply_hexes(self.first_player)
+            self._repl_accrue(self.first_player, notes)
         if s["turn"] > self.turns:
             s["over"] = True
             unlanded = sorted(self.schedule[pid]["slot"] for pid in s["pool"])
@@ -1501,10 +2331,17 @@ class StrategicGame:
                 "turn": s["turn"], "over": False, "events": notes}
 
     # ------------------------------------------------------------ combat apply
-    def _apply_end_movement(self, side):
+    def _apply_end_movement(self, side, verdict=None):
         s = self.s
         s["phase"] = "combat"
         events = []
+        for e, sups in zip(s["av"], (verdict or {}).get("av_supplies", [])):
+            for spid in sups:
+                if spid not in s["supplies_used"]:
+                    s["supplies_used"].append(spid)
+            if len(sups) > 1:
+                events.append("the supply sustaining an AV changed during "
+                              "movement — BOTH supplies are expended [14.5]")
         # 11.9: attacking units isolated in enemy ZOC with no supply-free
         # attack are eliminated before combat (clarifications sec. 5)
         board = self.rules_board()
@@ -1612,6 +2449,7 @@ class StrategicGame:
                             "advancers": atk_ids if code == "DB2" else []}
             events.append(f"the {chooser} player (the winner) now retreats "
                           f"each losing unit two hexes [7.5, 7.6]")
+        self._capture_sweep(events, side, "battle")
         self._rommel_displacement(events)
         self._check_elimination_victory(events)
         return res
@@ -1655,6 +2493,9 @@ class StrategicGame:
             if pend.get("advance_after"):
                 self._offer_advance(pend["battle"], pend["advancers"],
                                     pend["vac_hexes"], events)
+        if u["pid"] in s["units"]:       # 15.22: capture along the route too
+            self._capture_sweep(events, u["side"], "retreat",
+                                near_hexes=action.get("path") or [])
         self._rommel_displacement(events)
         self._check_elimination_victory(events)
         return res
@@ -1670,6 +2511,7 @@ class StrategicGame:
             survivors = [p for p in pend["involved"] if p in s["units"]]
             self._offer_advance(pend["battle"], survivors,
                                 pend["vac_hexes"], events)
+        self._capture_sweep(events, side, "battle")
         self._rommel_displacement(events)
         self._check_elimination_victory(events)
         return {"removed": pids, "events": events}
@@ -1685,6 +2527,7 @@ class StrategicGame:
         if not pend["advancers"]:
             s["pending"] = None
         events = []
+        self._capture_sweep(events, side, "advance")
         self._rommel_displacement(events)
         return {"from": old, "to": list(action["hex"]), "events": events,
                 "note": "advance after combat into the vacated hex [16.1, 16.2]"}
@@ -1698,6 +2541,7 @@ class StrategicGame:
                            "eliminated before any battle, no soak-off, no "
                            "blocking ZOC [7.4]")
         s["pending"] = None
+        self._capture_sweep(events, side, "battle")
         self._rommel_displacement(events)
         self._check_elimination_victory(events)
         return {"eliminated": pid, "events": events}
@@ -1719,7 +2563,10 @@ class StrategicGame:
             return {"can_act": False, "reasons": chk["reasons"], "dests": []}
         u = self.s["units"][pid]
         out = {"can_act": True, "reasons": [], "budget": self.budget(u), "dests": []}
-        for (c, r), cost in sorted(self.dests(u).items()):
+        dd = self._cap_move_dests(u) \
+            if self.s["phase"] == "combat" and pid in self.s["cap_move"] \
+            else self.dests(u)
+        for (c, r), cost in sorted(dd.items()):
             x, y = self.game.grid.hex_to_pixel(c, r)
             out["dests"].append(dict(
                 col=c, row=r, x=x, y=y, cost=round(cost, 1),
@@ -1750,7 +2597,22 @@ class StrategicGame:
             pending=(s["supply_pending"] if side == "Axis"
                      else not s["allied_supply_done"]),
             sunk_on=sorted(self._supply_sunk_rolls(s["turn"])))
+        repl = None
+        if self.repl_cfg and self.combat and s["turn"] >= self.repl_cfg["start_turn"]:
+            dead = []
+            for pid in s["dead"]:
+                slot, uside = self.catalog.get(pid, (None, None))
+                if uside != side or self.game.unit_class(slot) is not None:
+                    continue
+                if slot in ((self.game.spec.get("unit_types") or {})
+                            .get("substitute_slots") or {}):
+                    continue
+                dead.append(dict(pid=pid, slot=slot,
+                                 cost=self.game.stats(slot)[0]))
+            repl = dict(points=s["repl"].get(side, 0),
+                        dead=sorted(dead, key=lambda d: d["cost"]))
         return dict(due=due, at_sea=at_sea, ports=ports, supply=supply,
+                    replacements=repl,
                     placements_open=not s["moved"])
 
     def combat_panel(self):
@@ -1793,6 +2655,54 @@ class StrategicGame:
                 pinfo["advancers"] = [dict(pid=p, slot=self.unit(p)["slot"])
                                       for p in pend["advancers"]
                                       if p in s["units"]]
+        av_offers = []
+        if s["phase"] == "movement":
+            frozen = {p for e in s["av"] for p in e["attackers"] + e["blockers"]}
+            for du in self._combat_units(self.game.enemy(side)):
+                if du["pid"] in self._av_negated():
+                    continue
+                dh = (du["col"], du["row"])
+                defenders = [b for b in self._combat_units(self.game.enemy(side))
+                             if (b["col"], b["row"]) == dh]
+                attackers = [a for a in self._combat_units(side)
+                             if a["pid"] not in frozen
+                             and self._engageable((a["col"], a["row"]), dh)]
+                if not attackers:
+                    continue
+                att, deff = self._battle_factors(attackers, defenders)
+                n, d = self.game.odds(att, deff)
+                if self.game.odds_column(n, d) != "auto_elim":
+                    continue                     # panel offers 7-1 only
+                rad = self.combat["attack_supply"]["radius"]
+                sup = next((u["pid"] for u in self.s["units"].values()
+                            if u["side"] == side and self.on_map(u)
+                            and self.game.unit_class(u["slot"]) == "supply"
+                            and u["pid"] not in s["no_sustain"]
+                            and all(self._trace_reaches(
+                                (a["col"], a["row"]), side,
+                                [(u["col"], u["row"])], radius=rad)
+                                for a in attackers)), None)
+                if not sup:
+                    continue
+                av_offers.append(dict(
+                    defender=du["pid"], slot=du["slot"],
+                    hexname=self.game.grid.display_name(*dh),
+                    odds=f"{n}-{d}",
+                    attackers=[a["pid"] for a in attackers],
+                    supply=sup))
+        subs = None
+        if self.sub_cfg and self.combat and side == self.sub_cfg["side"] \
+           and s["turn"] >= self.sub_cfg["start_turn"] \
+           and s["phase"] == "combat" and not s["fought"] and not pinfo:
+            slots = ((self.game.spec.get("unit_types") or {})
+                     .get("substitute_slots") or {})
+            avail = [dict(pid=pid, slot=e["slot"],
+                          att=self.game.stats(e["slot"])[0])
+                     for pid, e in self.reserve.items()
+                     if e["slot"] in slots and pid not in s["units"]
+                     and pid not in s["dead"]]
+            subs = dict(available=sorted(avail, key=lambda a: a["slot"]),
+                        stock=len(s["sub_stock"]))
         return dict(
             phase=s["phase"],
             must_attack=[dict(pid=p, slot=self.unit(p)["slot"])
@@ -1804,7 +2714,14 @@ class StrategicGame:
                            for p in sorted(set(s["supplies_used"]))
                            if p in s["units"]],
             pending=pinfo,
-            pending_rommel=s["pending_rommel"])
+            pending_rommel=s["pending_rommel"],
+            av=[dict(defenders=[dict(pid=p, slot=self.unit(p)["slot"])
+                                for p in e["defenders"] if p in s["units"]])
+                for e in s["av"]],
+            av_offers=av_offers,
+            substitutes=subs,
+            replacements_from=self.repl_cfg and self.turn_label(
+                self.repl_cfg["start_turn"]))
 
     def battle_preview(self, side, atk_ids, def_ids):
         """Odds/column/supply-need preview for a prospective battle (UI

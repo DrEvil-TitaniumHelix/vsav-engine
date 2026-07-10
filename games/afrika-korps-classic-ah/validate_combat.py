@@ -781,6 +781,9 @@ seed = find_seed([1])
 units = [(s, "Axis", h) for s, h in zip(
     ["G 90Inf 55", "G 90Inf 200", "G 164Inf 125", "G 15Pz 115"], VICS)]
 units.append((ALLIED116[0], "Allied", FAR))
+# supplies keep the 24.2/24.5 isolation clocks quiet during the 3 turns
+units.append(("G Supply 1", "Axis", (1, 27)))
+units.append(("A Supply 1", "Allied", FAR2))
 sg, tmp = stage(units, seed, first="Axis", turns=8)
 expect(sg, "Axis", {"type": "end_phase"}, True,
        "Axis holds both fortresses + both home bases at start AND end (streak 1)")
