@@ -909,7 +909,12 @@ class H(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--game", default=gamespec.default_game_dir())
+    # bare `python ui/server.py` must work on a fresh clone: default to the
+    # dev default only when its assets resolve, else the release flagship
+    _default = gamespec.default_game_dir()
+    if not _game_assets_ok(_default):
+        _default = game_dir(RELEASE_GAMES[0])
+    ap.add_argument("--game", default=_default)
     ap.add_argument("--port", type=int, default=8641)
     ap.add_argument("--tier", type=int, default=None,
                     help="run BELOW the earned tier (0=free play, 1=movement "
