@@ -5,9 +5,14 @@
 <title>Claude Plays VASSAL</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#1a1c20; font-family:Segoe UI,sans-serif; }
-  #topbar { position:fixed; top:0; left:0; right:0; height:44px; background:#23262c; color:#ddd;
-            display:flex; align-items:center; gap:14px; padding:0 14px; z-index:50; font-size:14px;
-            box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  #topbar { position:fixed; top:0; left:0; right:0; min-height:44px; background:#23262c; color:#ddd;
+            display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; padding:5px 14px;
+            z-index:50; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  #zoomctl { position:fixed; right:14px; bottom:14px; z-index:48; display:flex; flex-direction:column; gap:6px; }
+  #zoomctl button { width:40px; height:40px; border-radius:8px; border:1px solid #555;
+                    background:#23262cee; color:#ddd; font-size:20px; cursor:pointer;
+                    box-shadow:0 3px 10px rgba(0,0,0,.5); }
+  #zoomctl button:hover { background:#3a6ea5; color:#fff; }
   #topbar b { color:#fff; }
   .sidebtn { padding:4px 12px; border-radius:5px; border:1px solid #555; background:#2c2f36;
              color:#ccc; cursor:pointer; }
@@ -16,6 +21,11 @@
   #note { color:#8a8f98; font-size:12px; }
   #viewport { position:absolute; top:44px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; }
   #world { position:absolute; transform-origin:0 0; }
+  #world.glide { transition: transform .35s ease; }
+  .pulse { animation:pulseglow 1.2s ease-in-out infinite; background:#2c6e3a!important;
+           border-color:#7ce07c!important; color:#fff!important; }
+  @keyframes pulseglow { 0%,100% { box-shadow:0 0 0 0 rgba(120,224,120,0); }
+                         50% { box-shadow:0 0 14px 4px rgba(120,224,120,.6); } }
   #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
   svg#overlay { position:absolute; top:0; left:0; pointer-events:none; }
   .counter { position:absolute; cursor:pointer;
@@ -90,6 +100,10 @@
     <span id="aithinking" style="display:none; color:#ffd75e">⏳ thinking…</span>
   </span>
   <span id="progress"></span>
+  <span id="unitnav" style="display:none">
+    <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
+    <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
+  </span>
   <span id="note"></span>
   <button class="sidebtn" id="tierbtn" style="display:none"></button>
   <button class="sidebtn" id="rulesbtn">Rules</button>
@@ -111,6 +125,11 @@
 <div id="tip"></div>
 <div id="rulespanel"></div>
 <div id="tablespanel"></div>
+<div id="zoomctl">
+  <button id="zin" title="zoom in">+</button>
+  <button id="zout" title="zoom out">−</button>
+  <button id="zfit" title="fit whole map">⛶</button>
+</div>
 <div id="arrivals" style="display:none; position:fixed; top:52px; left:8px; max-width:340px;
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
@@ -131,7 +150,32 @@ let scale = 0.25, panX = 0, panY = 0;
 let units = [], mySide = null, selected = null, legal = null, dragging = null;
 let FLOW = null;                 // strategic-gate flow (turn, mover) when the game is gated
 
-function apply() { W.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`; }
+function clampPan() {
+  // the map may never leave the screen: keep >=120px of it visible on each axis
+  if (!MAPW) return;
+  const m = 120, mw = MAPW * scale, mh = MAPH * scale;
+  panX = Math.min(VP.clientWidth - m, Math.max(m - mw, panX));
+  panY = Math.min(VP.clientHeight - m, Math.max(m - mh, panY));
+}
+function apply() { clampPan(); W.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`; }
+function centerOn(x, y) {          // glide the viewport to a map point (AI steps, unit nav)
+  W.classList.add('glide');
+  panX = VP.clientWidth / 2 - x * scale;
+  panY = VP.clientHeight / 2 - y * scale;
+  apply();
+  setTimeout(() => W.classList.remove('glide'), 400);
+}
+// the topbar wraps at narrow widths — everything below it follows its real height
+const TB = document.getElementById('topbar');
+function layoutBars() {
+  const h = TB.offsetHeight;
+  VP.style.top = h + 'px';
+  ['tierpanel','arrivals','combat','rulespanel','tablespanel'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.top = (h + 8) + 'px';
+  });
+}
+new ResizeObserver(layoutBars).observe(TB);
+window.addEventListener('resize', layoutBars);
 let toastT = null;
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -156,13 +200,21 @@ VP.addEventListener('pointermove', e => {
   if (panDrag) { panX = e.clientX-panDrag.x; panY = e.clientY-panDrag.y; apply(); }
 });
 VP.addEventListener('pointerup', e => { if (dragging) dragEnd(e); panDrag = null; });
+function zoomAt(cx, cy, f) {
+  const ns = Math.min(1.6, Math.max(0.10, scale * f));
+  panX = cx - (cx - panX) * (ns / scale);
+  panY = cy - (cy - panY) * (ns / scale);
+  scale = ns; apply();
+}
 VP.addEventListener('wheel', e => {
   e.preventDefault();
-  const f = e.deltaY < 0 ? 1.15 : 1/1.15, ns = Math.min(1.6, Math.max(0.10, scale*f));
-  panX = e.clientX - (e.clientX-panX)*(ns/scale);
-  panY = e.clientY - (e.clientY-panY)*(ns/scale);
-  scale = ns; apply();
+  zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.15 : 1/1.15);
 }, {passive:false});
+const vpCenter = () => { const r = VP.getBoundingClientRect();
+                         return [r.left + r.width/2, r.top + r.height/2]; };
+document.getElementById('zin').onclick  = () => zoomAt(...vpCenter(), 1.3);
+document.getElementById('zout').onclick = () => zoomAt(...vpCenter(), 1/1.3);
+document.getElementById('zfit').onclick = () => fitMap();
 const toMap = e => { const r = W.getBoundingClientRect();
                      return {x:(e.clientX-r.left)/scale, y:(e.clientY-r.top)/scale}; };
 
@@ -527,8 +579,34 @@ function render() {
   const doneN = mine.filter(u => u.status).length;
   document.getElementById('progress').textContent =
     `${sideLabel(mySide)} movement: ${doneN} / ${mine.length} units done`;
+  // my turn, everyone has acted -> the only thing left is ending the turn: glow it
+  const myMove = FLOW && FLOW.mover === mySide && FLOW.phase === 'movement';
+  document.getElementById('endphasebtn').classList.toggle('pulse',
+    !!myMove && mine.length > 0 && doneN === mine.length);
+  // next/prev unit stepping is offered while I still have units to act
+  document.getElementById('unitnav').style.display =
+    (myMove && doneN < mine.length) ? '' : 'none';
   drawOverlay();
 }
+
+// ---------- next / previous unit to act (buttons + N/B keys) ----------
+let navIdx = -1;
+async function navUnit(dir) {
+  const list = units.filter(u => u.side===mySide && u.onmap && u.ma > 0 && !u.status)
+                    .sort((a,b) => a.hexnum - b.hexnum || (a.id < b.id ? -1 : 1));
+  if (!list.length) { toast('No units left to act — end your turn.'); return; }
+  navIdx = ((navIdx + dir) % list.length + list.length) % list.length;
+  const u = list[navIdx];
+  centerOn(u.x, u.y);
+  await select(u, false);
+}
+document.getElementById('prevunit').onclick = () => navUnit(-1);
+document.getElementById('nextunit').onclick = () => navUnit(1);
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (e.code === 'KeyN') { e.preventDefault(); navUnit(1); }
+  if (e.code === 'KeyB') { e.preventDefault(); navUnit(-1); }
+});
 
 // ---------- hex highlight overlay ----------
 const hexCorners = (x,y) => GAME.grid.orient === 'pointy'
@@ -729,12 +807,25 @@ function renderTierPanel() {
     location.reload();   // tier decides which client the server serves
   });
 }
+// Rules / Tables / Tier share the same top-right slot — open one, close the others
+function soloPanel(id) {
+  let opened = false;
+  ['rulespanel','tablespanel','tierpanel'].forEach(p => {
+    const el = document.getElementById(p);
+    if (p === id) { opened = el.style.display !== 'block';
+                    el.style.display = opened ? 'block' : 'none'; }
+    else el.style.display = 'none';
+  });
+  document.getElementById('rulesbtn').classList.toggle('on',
+    id === 'rulespanel' && opened);
+  document.getElementById('tablesbtn').classList.toggle('on',
+    id === 'tablespanel' && opened);
+  return opened;
+}
 document.getElementById('tierbtn').onclick = () => {
-  const P = document.getElementById('tierpanel');
-  const open = P.style.display === 'block';
-  P.style.display = open ? 'none' : 'block';
+  const opened = soloPanel('tierpanel');
   tierArm = null;
-  if (!open) renderTierPanel();
+  if (opened) renderTierPanel();
   renderTierBtn();
 };
 
@@ -843,11 +934,8 @@ function renderRules() {
   P.innerHTML = h;
 }
 document.getElementById('rulesbtn').onclick = () => {
-  const P = document.getElementById('rulespanel');
-  const open = P.style.display === 'block';
-  P.style.display = open ? 'none' : 'block';
-  document.getElementById('rulesbtn').classList.toggle('on', !open);
-  renderRules();
+  if (soloPanel('rulespanel')) renderRules();
+  renderTierBtn();
 };
 
 // ---------- tables panel (transcribed CRT / to-hit — the data the gate uses) ----------
@@ -886,11 +974,8 @@ async function renderTables() {
   P.innerHTML = h;
 }
 document.getElementById('tablesbtn').onclick = () => {
-  const P = document.getElementById('tablespanel');
-  const open = P.style.display === 'block';
-  P.style.display = open ? 'none' : 'block';
-  document.getElementById('tablesbtn').classList.toggle('on', !open);
-  renderTables();
+  if (soloPanel('tablespanel')) renderTables();
+  renderTierBtn();
 };
 
 // ---------- top bar ----------
@@ -942,6 +1027,12 @@ async function aiStepOnce() {
   if (r.flow) FLOW = r.flow;
   if (r.step) await refresh();          // an action executed — board reflects it
   aiNext = r.next; drawAIIntent(aiNext);
+  if (aiNext && aiNext.action) {        // follow the camera to the acting unit
+    const aid = aiNext.action.unit
+             || (aiNext.action.attackers && aiNext.action.attackers[0]);
+    const au = units.find(u => u.id === aid);
+    if (au && au.onmap) centerOn(au.x, au.y);
+  }
   if (r.step) {
     const v = r.step.verdict, bad = v && !v.legal;
     if (bad) toast('Gate rejected: ' + (v.reasons || []).join('; '));
