@@ -13,7 +13,7 @@ Serves the game's map + counters and exposes the spec-driven engine over HTTP:
 The work save is live\\game_<game>.vsav — VASSAL can open it at any time; the AI
 plays through the same file. All rules semantics come from games/<game>/game.json.
 
-Run:  python ui\server.py [--game <dir>] [--port 8641]
+Run:  python ui\\server.py [--game <dir>] [--port 8641]
 """
 import argparse, http.server, json, os, shutil, struct, sys, urllib.parse
 
@@ -26,6 +26,8 @@ import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
+
+VERSION = "0.1.0-beta"  # shown in-app so a tester's bug report names the build
 
 GAME_OBJ = None   # gamespec.Game
 GAME_SLUG = None  # basename of the loaded game dir (menu key)
@@ -320,7 +322,7 @@ def api_games():
             games.append(m)
         except Exception as e:
             games.append(dict(slug=slug, name=slug, error=str(e)))
-    return dict(games=games, current=cur)
+    return dict(games=games, current=cur, version=VERSION)
 
 
 def api_load_game(body):
@@ -624,6 +626,13 @@ def load_game(game_dir, tier=None):
     return gkey
 
 
+def make_server(port):
+    """Build the HTTP server on 127.0.0.1:port (a game must already be loaded).
+    Caller decides whether to serve_forever() (CLI) or run it in a thread behind
+    a native window (app.py)."""
+    return http.server.ThreadingHTTPServer(("127.0.0.1", port), H)
+
+
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=HERE, **kw)
@@ -753,4 +762,4 @@ if __name__ == "__main__":
     elif SCEN_PATH:
         print(f"tier 0 selected (earned {TIER_EARNED}): free play, no gate")
     print(f"{GAME_OBJ.name} board UI ->  http://localhost:{a.port}   (Ctrl+C to stop)")
-    http.server.ThreadingHTTPServer(("127.0.0.1", a.port), H).serve_forever()
+    make_server(a.port).serve_forever()
