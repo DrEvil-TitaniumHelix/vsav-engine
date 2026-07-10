@@ -10,7 +10,7 @@ Serves the game's map + counters and exposes the spec-driven engine over HTTP:
   GET  /gasset/map             the game's map image
   GET  /gasset/counters/<n>    a counter image
 
-The work save is live\game_<game>.vsav — VASSAL can open it at any time; the AI
+The work save is live\\game_<game>.vsav — VASSAL can open it at any time; the AI
 plays through the same file. All rules semantics come from games/<game>/game.json.
 
 Run:  python ui\server.py [--game <dir>] [--port 8641]
@@ -28,6 +28,7 @@ import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 
 GAME_OBJ = None   # gamespec.Game
+GAME_SLUG = None  # basename of the loaded game dir (menu key)
 TG = None         # gamestate.TacticalGame when the game spec names a scenario
 SG = None         # strategic.StrategicGame when the scenario is mode=strategic
 WORK = None       # working .vsav path
@@ -256,6 +257,87 @@ def game_descriptor():
         source_defects=g.spec.get("source_defects"),
         credits=g.spec.get("credits"),
     )
+
+
+# --- multi-game menu: the release bundles several games behind one engine ---
+# Curated tester menu (order = display order; AK is the flagship). Games not in
+# this list are still loadable via --game / /api/load_game, but the menu shows
+# these. Keep in sync with the release scope.
+RELEASE_GAMES = ["afrika-korps-classic-ah", "tobruk"]
+
+
+def game_client(scen_mode, has_scen):
+    """Which front-end HTML plays this game: strategic + free-play games use the
+    generic index.html; the tactical family (own scenario, AP-fire) uses
+    tactical.html. Mirrors the '/' routing that ships today."""
+    if scen_mode == "strategic":
+        return "index.html"
+    if has_scen:
+        return "tactical.html"
+    return "index.html"
+
+
+def game_meta(slug):
+    """Cheap menu metadata for one game — reads game.json (+ its scenario's mode)
+    only, WITHOUT constructing the engine or touching the loaded-game globals."""
+    gdir = os.path.join(ROOT, "games", slug)
+    spec = json.load(open(os.path.join(gdir, "game.json"), encoding="utf-8"))
+    scen = spec.get("scenario")
+    scen_mode = has_scen = None
+    earned, choices = 0, [0]
+    if scen:
+        has_scen = True
+        scen_mode = json.load(open(os.path.join(gdir, scen),
+                                   encoding="utf-8")).get("mode")
+        if scen_mode == "strategic":
+            earned = (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
+            choices = list(range(earned + 1))
+        else:
+            earned, choices = 3, [0, 3]
+    return dict(slug=slug, name=spec.get("name", slug),
+                mode=scen_mode or ("tactical" if has_scen else "free"),
+                client=game_client(scen_mode, has_scen),
+                tier=dict(earned=earned, choices=choices),
+                blurb=spec.get("blurb") or spec.get("description"))
+
+
+def current_slug():
+    return GAME_SLUG
+
+
+def api_games():
+    """List the games in the tester menu. If a non-menu game is currently
+    loaded (e.g. dev ran --game arnhem), include it so it's still playable."""
+    slugs = list(RELEASE_GAMES)
+    cur = current_slug()
+    if cur and cur not in slugs:
+        slugs.append(cur)
+    games = []
+    for slug in slugs:
+        try:
+            m = game_meta(slug)
+            m["current"] = (slug == cur)
+            games.append(m)
+        except Exception as e:
+            games.append(dict(slug=slug, name=slug, error=str(e)))
+    return dict(games=games, current=cur)
+
+
+def api_load_game(body):
+    """Switch the engine onto another game at runtime (the in-app picker).
+    Loads from disk (per-game state is file-backed), returns the client the
+    menu should navigate to."""
+    slug = body.get("slug")
+    gdir = os.path.join(ROOT, "games", slug or "")
+    if not slug or not os.path.isfile(os.path.join(gdir, "game.json")):
+        return dict(error=f"unknown game: {slug!r}")
+    tier = body.get("tier")
+    try:
+        load_game(gdir, tier=tier)
+    except ValueError as e:
+        return dict(error=str(e))
+    return dict(ok=True, slug=slug, client=game_client(SCEN_MODE, bool(SCEN_PATH)),
+                game=game_descriptor())
 
 
 def api_state():
@@ -489,6 +571,59 @@ def api_reset(body=None):
     return dict(ok=True, tier=TIER)
 
 
+def load_game(game_dir, tier=None):
+    """(Re)initialize the server onto a game — the single door for both the
+    startup path and runtime game-switching. Tears down and rebuilds every
+    module global that describes 'the loaded game', so switching games is just
+    calling this again: per-game state is already file-backed (the work .vsav +
+    JSONL log + tier/facing sidecars live under live\\game_<slug>.*), so a
+    switch is load-from-disk, no new persistence.
+
+    tier: run BELOW the earned tier (0=free play, 1=movement, ...). None = the
+    persisted sidecar, clamped to what the game has earned."""
+    global GAME_OBJ, GAME_SLUG, WORK, SCEN_PATH, SCEN_MODE
+    global TIER, TIER_EARNED, TIER_CHOICES, done, facing
+
+    # reset per-game runtime state so nothing leaks across a switch
+    done = {}
+    facing = {}
+    SCEN_PATH = SCEN_MODE = None
+    TIER_EARNED = 0
+    TIER_CHOICES = [0]
+
+    GAME_OBJ = gamespec.Game(game_dir)
+    gkey = GAME_SLUG = os.path.basename(os.path.normpath(game_dir))
+    WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
+    if GAME_OBJ.spec.get("scenario"):
+        SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
+        SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
+        if SCEN_MODE == "strategic":
+            # mirror the engine's own earned-tier logic (strategic.py):
+            # 1 = movement gate, 2 = full combat gate, 3 = + policy AI
+            TIER_EARNED = (
+                (3 if GAME_OBJ.spec.get("policy_ai") else 2)
+                if GAME_OBJ.spec.get("combat") else 1)
+            TIER_CHOICES = list(range(TIER_EARNED + 1))
+        else:
+            # tactical family: validated combat rules + policy AI both ship
+            TIER_EARNED = 3
+            TIER_CHOICES = [0, 3]
+    TIER = load_tier()
+    if tier is not None:
+        if tier not in TIER_CHOICES:
+            raise ValueError(f"tier {tier} not available (choices: {TIER_CHOICES})")
+        TIER = tier
+        save_tier()
+    build_gate()
+    # migrate the pre-generalization Arnhem work save (was live\game.vsav)
+    legacy = os.path.join(ROOT, "live", "game.vsav")
+    if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
+        shutil.copy(legacy, WORK)
+    load_facing()
+    fresh_board()
+    return gkey
+
+
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=HERE, **kw)
@@ -525,6 +660,8 @@ class H(http.server.SimpleHTTPRequestHandler):
         try:
             if url.path == "/api/state":
                 return self._json(api_state())
+            if url.path == "/api/games":
+                return self._json(api_games())
             if url.path == "/api/legal":
                 return self._json(api_legal(qs))
             if TG and url.path == "/api/game":
@@ -558,8 +695,11 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._file(safe)
         except Exception as e:
             return self._json(dict(error=str(e)))
-        if url.path == "/":
-            self.path = "/tactical.html" if TG else "/index.html"
+        if url.path in ("/", "/menu"):
+            # "/menu" = the game picker (the native app opens here); "/" keeps
+            # its ship-today behavior of dropping straight into the loaded game.
+            self.path = "/menu.html" if url.path == "/menu" else (
+                "/tactical.html" if TG else "/index.html")
         return super().do_GET()
 
     def do_POST(self):
@@ -571,6 +711,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_ai_turn(body))
             if TG and self.path == "/api/new_game":
                 return self._json(api_new_game(body))
+            if self.path == "/api/load_game":
+                return self._json(api_load_game(body))
             if self.path == "/api/move":
                 return self._json(api_move(body))
             if SG and self.path == "/api/end_phase":
@@ -598,30 +740,10 @@ if __name__ == "__main__":
                     help="run BELOW the earned tier (0=free play, 1=movement "
                          "gate, ...); default = the game's earned tier")
     a = ap.parse_args()
-    GAME_OBJ = gamespec.Game(a.game)
-    gkey = os.path.basename(os.path.normpath(a.game))
-    WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
-    if GAME_OBJ.spec.get("scenario"):
-        SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
-        SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
-        if SCEN_MODE == "strategic":
-            # mirror the engine's own earned-tier logic (strategic.py):
-            # 1 = movement gate, 2 = full combat gate, 3 = + policy AI
-            TIER_EARNED = (
-                (3 if GAME_OBJ.spec.get("policy_ai") else 2)
-                if GAME_OBJ.spec.get("combat") else 1)
-            TIER_CHOICES = list(range(TIER_EARNED + 1))
-        else:
-            # tactical family: validated combat rules + policy AI both ship
-            TIER_EARNED = 3
-            TIER_CHOICES = [0, 3]
-    TIER = load_tier()
-    if a.tier is not None:
-        if a.tier not in TIER_CHOICES:
-            sys.exit(f"--tier {a.tier} not available (choices: {TIER_CHOICES})")
-        TIER = a.tier
-        save_tier()
-    build_gate()
+    try:
+        load_game(a.game, tier=a.tier)
+    except ValueError as e:
+        sys.exit(str(e))
     if SG:
         print(f"strategic gate (tier {TIER} of {TIER_EARNED}): "
               f"{SG.scenario['name']} (log {SG.log_path})")
@@ -630,11 +752,5 @@ if __name__ == "__main__":
               f"(log {TG.log_path})")
     elif SCEN_PATH:
         print(f"tier 0 selected (earned {TIER_EARNED}): free play, no gate")
-    # migrate the pre-generalization Arnhem work save (was live\game.vsav)
-    legacy = os.path.join(ROOT, "live", "game.vsav")
-    if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
-        shutil.copy(legacy, WORK)
-    load_facing()
-    fresh_board()
     print(f"{GAME_OBJ.name} board UI ->  http://localhost:{a.port}   (Ctrl+C to stop)")
     http.server.ThreadingHTTPServer(("127.0.0.1", a.port), H).serve_forever()
