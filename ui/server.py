@@ -99,6 +99,8 @@ def unit_view(u):
             else:                      # at sea: mirror keeps the last board spot
                 v.update(status="at sea",
                          must_land=su.get("embark_turn", SG.s["turn"]) < SG.s["turn"])
+        elif u["id"] in SG.s.get("dead", []):
+            v.update(status="eliminated", onmap=False)
         else:
             v["status"] = "reserve"    # OOA track / markers: outside the gate
             e = SG.schedule.get(u["id"])
@@ -314,6 +316,16 @@ def api_sg_action(body):
         elif action.get("type") in ("move", "rommel_extend"):
             u = SG.unit(action["unit"])
             mirror_move(u["pid"], u["col"], u["row"])
+        elif action.get("type") in ("retreat", "advance", "place_rommel"):
+            pid = str(action.get("unit") or (SG.s["pending_rommel"] or {}).get("unit")
+                      or r["result"].get("placed"))
+            su = SG.s["units"].get(pid)
+            if su and SG.on_map(su):
+                mirror_move(pid, su["col"], su["row"])
+        # hq displacement (22.4) can move Rommel as a side effect of any action
+        for u in SG.s["units"].values():
+            if GAME_OBJ.unit_class(u["slot"]) == "hq" and SG.on_map(u):
+                mirror_move(u["pid"], u["col"], u["row"])
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
     if not r["verdict"]["legal"]:
         out["error"] = "; ".join(r["verdict"]["reasons"])
@@ -409,6 +421,10 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_legal(qs))
             if TG and url.path == "/api/game":
                 return self._json(flow_view())
+            if SG and url.path == "/api/battle_preview":
+                atk = [p for p in qs.get("atk", [""])[0].split(",") if p]
+                dfd = [p for p in qs.get("def", [""])[0].split(",") if p]
+                return self._json(SG.battle_preview(SG.s["mover"], atk, dfd))
             if TG and url.path == "/api/legal_moves":
                 return self._json(TG.legal_moves(qs["id"][0]))
             if TG and url.path == "/api/legal_targets":

@@ -78,6 +78,10 @@
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
      box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
+<div id="combat" style="display:none; position:fixed; top:52px; right:8px; max-width:360px;
+     max-height:70vh; overflow:auto; background:#2c2320ee; color:#e8ddd4; font-size:13px;
+     border:1px solid #55423a; border-radius:8px; padding:10px 12px; z-index:30;
+     box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
 <div id="toast"></div>
 
 <script>
@@ -165,8 +169,10 @@ async function refresh() {
   FLOW = s.flow || null;
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
+  if (!combatActive()) clearBattleSel();
   renderFlow();
   renderArrivals();
+  renderCombat();
   renderRules();
   render();
 }
@@ -221,9 +227,9 @@ function pinTip() {          // selected unit's card sits above the action bar
 function hideTip() { if (selected) pinTip(); else TIP.style.display = 'none'; }
 
 // ---------- arrivals / supply / sea panel (strategic gate) ----------
-async function sgAction(action) {
+async function sgAction(action, side) {
   const r = await (await fetch('/api/sg_action', {method:'POST',
-    body: JSON.stringify({action})})).json();
+    body: JSON.stringify({action, side})})).json();
   if (r.error) toast('Gate: ' + r.error);
   else if (r.result && (r.result.result || r.result.note))
     toast(r.result.result || r.result.note);
@@ -274,10 +280,143 @@ function renderArrivals() {
   box.innerHTML = h; box.style.display = '';
 }
 
+// ---------- combat panel (Tier 2: battles through the gate) ----------
+let atkSel = new Set(), defSel = new Set(), PREV = null, supplySel = null;
+function combatActive() {
+  return FLOW && FLOW.combat && FLOW.combat.phase === 'combat' && !FLOW.over;
+}
+function clearBattleSel() { atkSel.clear(); defSel.clear(); PREV = null; supplySel = null; }
+async function previewBattle() {
+  PREV = null;
+  if (atkSel.size && defSel.size) {
+    PREV = await (await fetch(`/api/battle_preview?atk=${[...atkSel].join(',')}&def=${[...defSel].join(',')}`)).json();
+  }
+  renderCombat(); render();
+}
+function toggleBattle(u, stack) {
+  const C = FLOW.combat;
+  if (C.pending || C.pending_rommel) { toast('settle the pending battle first [8.6]'); return; }
+  if (u.cls || !u.onmap || u.status === 'eliminated' || u.status === 'reserve' || u.status === 'at sea') return;
+  // a click toggles the whole same-side combat stack (11.4/11.5 splits stay
+  // legal through the gate/API; the panel just doesn't offer them yet)
+  const mates = (stack || [u]).filter(s => s.side === u.side && !s.cls && s.onmap
+                                      && s.status !== 'eliminated');
+  const set = u.side === FLOW.mover ? atkSel : defSel;
+  const on = set.has(u.id);
+  mates.forEach(m => on ? set.delete(m.id) : set.add(m.id));
+  previewBattle();
+}
+async function resolveBattle() {
+  const a = {type:'battle', attackers:[...atkSel], defenders:[...defSel]};
+  if (supplySel) a.supply = supplySel;
+  clearBattleSel();
+  await sgAction(a);
+}
+function unitById(id) { return units.find(u => u.id === id); }
+function chips(set) {
+  return [...set].map(id => { const u = unitById(id); return u ? u.name : id; }).join(', ') || '—';
+}
+function renderCombat() {
+  const box = document.getElementById('combat');
+  const C = FLOW && FLOW.combat;
+  if (!C || FLOW.over) { box.style.display = 'none'; return; }
+  if (C.phase === 'movement') {
+    const obligations = C.must_attack.length || C.must_be_attacked.length;
+    if (!obligations) { box.style.display = 'none'; return; }
+    box.innerHTML = `<b>${sideLabel(FLOW.mover)} — combat is coming</b><br>
+      <span class="dim">moving into an enemy ZOC causes combat [7.2]; battles resolve
+      after ALL movement [5.3]</span><br>
+      must attack: ${C.must_attack.map(u=>u.slot).join(', ') || '—'}<br>
+      must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '—'}<br>
+      <button class="sidebtn" onclick='sgAction({type:"end_movement"})'>End movement — resolve battles [3.2]</button>`;
+    box.style.display = ''; return;
+  }
+  let h = `<b>${sideLabel(FLOW.mover)} — combat [3.2/3.4]</b><br>`;
+  if (C.pending_rommel) {
+    const pr = C.pending_rommel, u = unitById(pr.unit);
+    h += `<div style="margin-top:6px"><b>${u ? u.name : pr.unit}</b> is alone in an enemy
+          ZOC — place him with the closest friendly combat unit [22.4, 22.42]:<br>`;
+    pr.choices.forEach(hx => {
+      h += `<button class="sidebtn" onclick='sgAction({type:"place_rommel",hex:[${hx}]}, "${u ? u.side : ''}")'>→ ${hx}</button> `;
+    });
+    h += `</div>`;
+    box.innerHTML = h; box.style.display = ''; return;
+  }
+  const P = C.pending;
+  if (P && P.kind === 'retreat') {
+    h += `<div style="margin-top:6px"><b>Retreats</b> — the <b>${sideLabel(P.chooser)}</b> player
+          (the winner) retreats each losing unit two hexes [7.5, 7.6]:</div>`;
+    P.units.forEach(u => {
+      h += `<div style="margin:4px 0"><b>${u.slot}</b><br>`;
+      if (u.options.length)
+        u.options.forEach(o => {
+          h += `<button class="sidebtn" onclick='sgAction({type:"retreat",unit:"${u.pid}",path:${JSON.stringify(o.path)}}, "${P.chooser}")'>→ ${o.name}</button> `;
+        });
+      else
+        h += `<span style="color:#e06c5e">no legal route</span>
+              <button class="sidebtn" onclick='sgAction({type:"retreat",unit:"${u.pid}",eliminate:true}, "${P.chooser}")'>Eliminate [7.61]</button>`;
+      h += `</div>`;
+    });
+  } else if (P && P.kind === 'exchange') {
+    h += `<div style="margin-top:6px"><b>Exchange</b> — the <b>${sideLabel(P.winner)}</b> player removes
+          involved units totaling at least <b>${P.owe}</b> factors [7.5]:<br>`;
+    P.involved.forEach(u => {
+      h += `<label style="display:block"><input type="checkbox" class="exch" value="${u.pid}">
+            ${u.slot} <span class="dim">(${u.factor})</span></label>`;
+    });
+    h += `<button class="sidebtn" onclick='submitExchange("${P.winner}")'>Remove selected</button></div>`;
+  } else if (P && P.kind === 'advance') {
+    h += `<div style="margin-top:6px"><b>Advance after combat</b> — optional, before the next
+          battle [16.1]: vacated ${P.hex_names.join(', ')}<br>`;
+    P.advancers.forEach(u => {
+      P.hexes.forEach((hx, i) => {
+        h += `<button class="sidebtn" onclick='sgAction({type:"advance",unit:"${u.pid}",hex:[${hx}]})'>${u.slot} → ${P.hex_names[i]}</button> `;
+      });
+    });
+    h += `</div>`;
+  } else {
+    h += `<span class="dim">click your units, then enemy units, to build a battle
+          — each attacker must be adjacent to every defender [8.5]</span><br>
+          <b>Attackers:</b> ${chips(atkSel)}<br><b>Defenders:</b> ${chips(defSel)}<br>`;
+    if (PREV) {
+      if (PREV.odds) h += `odds <b>${PREV.odds}</b> (${PREV.factors[0]} vs ${PREV.factors[1]}${PREV.column==='auto_elim' ? ' — automatic elimination, no roll' : ''})<br>`;
+      if (PREV.legal || PREV.needs_supply) {
+        if (PREV.needs_supply) {
+          const sups = units.filter(u => u.cls==='supply' && u.side===FLOW.mover && u.onmap
+                                    && !['eliminated','reserve','at sea'].includes(u.status));
+          h += `1-2 or better needs supply [14.1]: <select id="supsel" onchange="supplySel=this.value">
+                <option value="">— pick supply —</option>` +
+               sups.map(s => `<option value="${s.id}" ${supplySel===s.id?'selected':''}>${s.name}</option>`).join('') +
+               `</select><br>`;
+        }
+        h += `<button class="sidebtn" onclick="resolveBattle()">⚔ Resolve battle</button>`;
+      } else if (PREV.reasons && PREV.reasons.length) {
+        h += `<span style="color:#e08c7c">${PREV.reasons[0]}</span>`;
+      }
+      h += `<br>`;
+    }
+    h += `<div style="margin-top:6px">must attack: ${C.must_attack.map(u=>u.slot).join(', ') || '<span class="dim">all done</span>'}<br>
+          must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '<span class="dim">all done</span>'}</div>`;
+    if (C.must_attack.length && !C.battles_fought)
+      h += `<div style="margin-top:4px" class="dim">a unit with NO legal attack (worse than 1-6
+            even alone) is eliminated before any battle:</div>` +
+           C.must_attack.map(u =>
+             `<button class="sidebtn" onclick='sgAction({type:"forced_elim",unit:"${u.pid}"})'>${u.slot}: forced elim [7.4]</button>`).join(' ');
+    h += `<div style="margin-top:8px"><span class="dim">all obligations discharged?</span>
+          use <b>End player turn</b> in the top bar</div>`;
+  }
+  box.innerHTML = h; box.style.display = '';
+}
+function submitExchange(winner) {
+  const ids = [...document.querySelectorAll('.exch:checked')].map(c => c.value);
+  if (!ids.length) { toast('pick the units to remove'); return; }
+  sgAction({type:'exchange_loss', units: ids}, winner);
+}
+
 function render() {
   document.querySelectorAll('.counter,.badge').forEach(n => n.remove());
   const byhex = {};
-  units.forEach(u => (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u));
+  units.forEach(u => { if (u.status !== 'eliminated') (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u); });
   for (const h in byhex) byhex[h].forEach((u, i) => {
     const el = document.createElement('img');
     el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '');
@@ -287,6 +426,8 @@ function render() {
     el.style.left = (u.x + i*14) + 'px'; el.style.top = (u.y - i*14) + 'px';
     el.style.zIndex = 10 + i;
     el.dataset.id = u.id;
+    if (atkSel.has(u.id)) el.style.outline = '4px solid #e05a4e';
+    else if (defSel.has(u.id)) el.style.outline = '4px solid #4e9de0';
     if (u.facing !== null && u.facing !== undefined && GAME.facing)
       el.style.transform = `rotate(${(GAME.facing.offset_deg||0) + u.facing * GAME.facing.step_deg}deg)`;
     el.addEventListener('pointerenter', ev => { if (!dragging) showTip(u, ev.clientX, ev.clientY); });
@@ -346,6 +487,7 @@ function drawOverlay() {
 // ---------- selection / picker ----------
 function onCounterDown(ev, u, stackUnits) {
   ev.stopPropagation();
+  if (combatActive()) { toggleBattle(u, stackUnits); return; }
   if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
   if (u.side !== mySide || u.status || !u.onmap || u.ma === 0) return;
   const eligible = stackUnits.filter(s => s.side===mySide && !s.status && s.ma>0);

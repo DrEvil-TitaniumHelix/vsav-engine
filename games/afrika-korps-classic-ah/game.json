@@ -924,7 +924,11 @@
    "immune_terrain": [
     "fortress"
    ],
-   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase); 19.5/23.1 adjacent units do not exert a ZOC over a fortress hex"
+   "no_exert_terrain": [
+    "fortress"
+   ],
+   "blocked_by_prohibited_hexsides": true,
+   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase); 19.5/23.1 adjacent units do not exert a ZOC over a fortress hex; 7.1 exceptions + 23.1/23.2 + clarifications fig.9: a unit IN a fortress exerts no ZOC outward (attacks around a fortress are optional both ways); 7.1/5.7: no ZOC across the anomalous E18-F19 / W62-X62 hexsides (units on adjoining hexes may not engage each other in battle)"
   },
   "enemy_hex": {
    "pass_classes": [
@@ -1060,5 +1064,57 @@
    "G Rommel"
   ],
   "note": "markers = Rommel-route/turn-track status counters, no factors printed, exempt from any future movement gate; supply/hq are non-combat units (5.4, 13, 22) - no ZOC, special movement rules pending Tier-1 gate"
+ },
+ "combat": {
+  "provenance": "CRT transcribed from the rulebook back-page text (AfrikaKorps_3d_Ed_Rules.pdf) and independently from the printed map image (mastermind image-only transcription, map_tables_transcription.json) - all 66 cells identical across the two sources; validate_combat.py re-runs the cross-check from the raw sources on every run",
+  "crt": {
+   "columns": ["1-6", "1-5", "1-4", "1-3", "1-2", "1-1", "2-1", "3-1", "4-1", "5-1", "6-1"],
+   "rows": {
+    "1": ["AE", "AE", "AB2", "AB2", "DB2", "DE", "DE", "DE", "DE", "DE", "DE"],
+    "2": ["AE", "AE", "AE", "AB2", "EX", "EX", "EX", "EX", "EX", "DB2", "DB2"],
+    "3": ["AB2", "AB2", "AB2", "AB2", "AB2", "DB2", "DB2", "DB2", "DE", "DE", "DE"],
+    "4": ["AE", "AB2", "AB2", "AB2", "AB2", "AB2", "AB2", "DB2", "DB2", "DB2", "DE"],
+    "5": ["AE", "AE", "AE", "AE", "AE", "AE", "EX", "EX", "DB2", "DE", "DE"],
+    "6": ["AE", "AE", "AE", "AE", "AE", "AE", "AE", "DE", "DE", "DE", "DE"]
+   },
+   "results": {
+    "AE": "A Elim - all attacking units in that attack are eliminated [7.5]",
+    "AB2": "A back 2 - all attacking combat units retreated two hexes by the defender [7.5]",
+    "EX": "Exchange - the side with fewer involved combat factors removes all its units; the other removes involved units totaling at least as much [7.5]",
+    "DB2": "D back 2 - all defending units retreated two hexes by the attacker [7.5]",
+    "DE": "D Elim - all defending units in that attack are eliminated [7.5]"
+   },
+   "cite": "Combat Results Table, rulebook back page + printed on the map; resolve by cross-indexing one die roll with the odds column [7.3]"
+  },
+  "odds": {
+   "rounding": "defender",
+   "auto_elim_above": [6, 1],
+   "min_voluntary": [1, 6],
+   "cite": "7.3 attack:defense ratio, fractions rounded in favor of the defender (7:2 -> 3-1, 2:7 -> 1-4); 7.4 + printed CRT note: odds greater than 6-1 are automatic elimination without a roll (9.1's 7-1 situation); 7.4 no voluntary attack at worse than 1-6, a unit forced to attack worse than 1-6 is eliminated before any other battle without constituting a soak-off or blocking ZOC"
+  },
+  "defense_double_terrain": ["fortress", "escarpment"],
+  "defense_double_cite": "10.2 defense factor doubled on a fortress or escarpment hex, for odds AND exchange losses, regardless of the attacker's terrain; 8.7 attack factors never terrain-affected",
+  "attack_supply": {
+   "required_at_or_better": [1, 2],
+   "radius": 5,
+   "cite": "14.1 no attack at odds of 1-2 or better without a supply unit, the supply is removed at the end of the current player turn; 14.2 all attackers within five hexes of the supply after movement, route free of enemy ZOC and full Qattara hexes, not across the E18-F19/W62-X62 hexsides, inclusive of the supply hex, exclusive of the attacker hex; 14.3 attacks at 1-3 or worse need no supply; 14.4 one supply may sustain any number of attacks; 14.6 the supply sustaining each combat is stated before resolving it; 14.7 defense never needs supply"
+  },
+  "retreat": {
+   "distance": 2,
+   "cite": "7.5/7.6 the WINNER retreats the losing units two hexes, zigzag allowed (may end one hex from origin), through friendly units at maximum stacking, over all playable terrain including escarpments; 7.61 eliminated instead if forced into/through enemy ZOC, out to sea, into the Qattara Depression, off the playable board, or onto a stack it would overstack; 7.62 + clarification 7: the winner may not choose a route causing IMMEDIATE elimination when routes exist that let all retreating units live (retreat into isolation is legal); clarification 9: a unit may not re-enter the hex it fought from nor enter any hex twice; 23.7 fortress units surrounded by enemy ZOC + sea cannot retreat - a back-2 result eliminates them"
+  },
+  "advance": {
+   "into_terrain": ["fortress", "escarpment"],
+   "cite": "16.1 when an attack removes all defending combat units from a fortress or escarpment hex, any surviving attacking units may move into the vacated hex (up to stacking limits) before the next battle is resolved; 16.2 the only move from one ZOC hex of a unit directly to another; 16.3 applies even when the fortress held only a lone supply unit"
+  },
+  "mandatory": {
+   "cite": "7.2 moving into an enemy ZOC causes combat, mover attacks; 8.4 every enemy combat unit whose ZOC covers friendly units must be attacked, every friendly combat unit in an enemy ZOC must attack; 8.5 each attacking unit adjacent to every defending unit in its battle; 8.6 battles resolved one at a time in any order, each retreat/advance executed before the next; 11.3-11.5 the attacker chooses the battle partition; 11.6 soak-offs legal down to 1-6; 11.7 no factor splitting, no defender attacked twice per turn; 11.8 no attacker fights twice per turn; 11.9 an attacking unit isolated in enemy ZOC at the end of the movement portion is eliminated before combat; 23.1 attacking INTO a fortress engages every unit in it; 23.2 fortress units that attack must attack ALL adjacent enemy units"
+  },
+  "rommel": {
+   "cite": "22.4 Rommel cannot be attacked, captured or eliminated; alone in an enemy ZOC or isolated he is placed with the closest Axis combat unit (22.42: not counting untraversable or Allied-ZOC hexes unless there is no alternative; Axis chooses on ties); 7.63 Rommel does not retreat with a defeated attacking stack; clarifications 6: Rommel alone in a fortress cannot be attacked at all"
+  },
+  "victory": {
+   "cite": "4.1 Axis wins by eliminating all Allied combat units currently on the board, or controlling both fortresses and both home bases for two consecutive Axis player turns (start and end of each); 4.2 Allied mirror + wins by avoiding Axis victory through the last Oct 1942 turn; 4.3 control = occupation by a combat/supply/Rommel unit, home bases additionally free of enemy ZOC at start and end; clarifications 13: 'on the board' excludes units at sea or held off board"
+  }
  }
 }
