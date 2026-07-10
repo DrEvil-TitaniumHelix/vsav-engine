@@ -305,10 +305,41 @@ def game_client(scen_mode, has_scen):
     return "index.html"
 
 
+def _game_assets_ok(gdir):
+    """Can this game folder actually serve its art on THIS machine? Dev specs
+    point outside the repo (module extracts); a fresh clone doesn't have those."""
+    gj = os.path.join(gdir, "game.json")
+    if not os.path.isfile(gj):
+        return False
+    try:
+        spec = json.load(open(gj, encoding="utf-8"))
+    except Exception:
+        return False
+    m = (spec.get("assets") or {}).get("map")
+    if not m:
+        return True                     # nothing external to resolve
+    p = m if os.path.isabs(m) else os.path.join(gdir, m)
+    return os.path.exists(p)
+
+
+def game_dir(slug):
+    """Resolve a slug to a runnable game folder. Prefer the dev folder
+    (games/<slug>, full module extracts) when its assets resolve; otherwise the
+    self-contained bundle (games_bundled/<slug>) that ships in the repo, so a
+    fresh clone plays the release games out of the box."""
+    dev = os.path.join(ROOT, "games", slug)
+    if _game_assets_ok(dev):
+        return dev
+    bun = os.path.join(ROOT, "games_bundled", slug)
+    if _game_assets_ok(bun):
+        return bun
+    return dev
+
+
 def game_meta(slug):
     """Cheap menu metadata for one game — reads game.json (+ its scenario's mode)
     only, WITHOUT constructing the engine or touching the loaded-game globals."""
-    gdir = os.path.join(ROOT, "games", slug)
+    gdir = game_dir(slug)
     spec = json.load(open(os.path.join(gdir, "game.json"), encoding="utf-8"))
     scen = spec.get("scenario")
     scen_mode = has_scen = None
@@ -356,7 +387,7 @@ def api_load_game(body):
     Loads from disk (per-game state is file-backed), returns the client the
     menu should navigate to."""
     slug = body.get("slug")
-    gdir = os.path.join(ROOT, "games", slug or "")
+    gdir = game_dir(slug) if slug else ""
     if not slug or not os.path.isfile(os.path.join(gdir, "game.json")):
         return dict(error=f"unknown game: {slug!r}")
     tier = body.get("tier")

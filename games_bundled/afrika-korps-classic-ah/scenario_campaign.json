@@ -1,0 +1,979 @@
+{
+ "name": "Afrika Korps campaign (March 1941 Situation) \u2014 Tier 2 complete",
+ "mode": "strategic",
+ "rules_scope": {
+  "enforced": [
+   "player-turn alternation, Axis first (3.1-3.5); arrivals precede movement (3.1/3.3); all movement precedes combat (5.3), battles resolved one at a time (3.2/3.4, 8.6)",
+   "movement factors & terrain (5.2, 5.6, 5.7, 5.8)",
+   "enemy combat units block on-top/through; lone supply/Rommel do not (5.4, 22.3, 15.22)",
+   "stacking: 3 combat units, checked at end of movement and destinations (2.3, 6.1, 6.3)",
+   "ZOC: stop on entry, no pass-through, same-unit first-step ban, supply exclusion, fortress immunity BOTH ways, no ZOC across the E18-F19/W62-X62 hexsides (7.1, 8.1, 8.3, 13.2, 19.5, 23.1-23.2)",
+   "coast road bonus +10 via road hexsides, I26 two-road exception (17.1-17.3)",
+   "escarpment stop/one-hex + road exceptions, one non-road move (18.1-18.5)",
+   "reinforcement arrivals per the validated Order of Appearance (19.1-19.8, 2.2): controlled port at start of turn, Tobruch/own home base only, later landing allowed, full move on arrival",
+   "supply arrivals: Allied 1/turn max 4 own on board (12.1), Axis Supply Table die roll max 3 own (12.2) \u2014 engine-owned seeded dice; land-or-forfeit (12.4); declining allowed (12.5)",
+   "port control snapshots at start of player turn (4.3: occupation by combat/supply/Rommel; home bases also ZOC-free)",
+   "sea movement Tobruch <-> own home base (23.3-23.5): embark/at-sea/land cycle, control to land, ZOC-or-control to embark, overdue-at-sea elimination (23.42)",
+   "Rommel movement bonus (22.1 + module tournament clarification): up to +2 hexes per unit once per turn, requires Rommel's explicit co-moved path segment; Rommel cannot be attacked/eliminated, displaces to the closest friendly combat unit when alone in enemy ZOC (22.4-22.42); no voluntary lone move into enemy ZOC (22.41)"
+  ],
+  "enforced_tier2": [
+   "COMBAT on the two-source-validated CRT (back of rulebook == printed map, 66 cells): odds rounded in the defender's favor (7.3), >6-1 automatic elimination without a roll, no voluntary attack worse than 1-6 (7.4, 9.1), engine-owned seeded die",
+   "mandatory combat: every unit in enemy ZOC attacks, every enemy with units in its ZOC is attacked, attacker adjacency, no splitting, one battle per unit per turn, legal partitions only (7.2, 8.4-8.5, 11.3-11.8)",
+   "defense doubled on fortress/escarpment (10.2); attack factors never terrain-affected (8.7)",
+   "attack supply: 1-2 or better requires a stated supply within 5 ZOC-free hexes of ALL attackers (route carve-out for the attacked units' own ZOC per 13.2 + tournament clarification figs 12/15); used supply removed at end of the player turn; 1-3 or worse free (14.1-14.7)",
+   "results: A/D Elim, Exchange with terrain-doubled defense factors and at-least-no-more removal, back-2 retreats chosen by the WINNER under 7.61/7.62 (immediate-elimination avoidance, no hex twice, never the battle hex \u2014 tournament clarifications 7/9), fortress no-retreat elimination (23.7)",
+   "advance after combat into vacated fortress/escarpment hexes before the next battle (16.1-16.3)",
+   "pre-combat eliminations: isolated in enemy ZOC with no legal supply-free attack (11.9, 24.1, clarifications sec. 5); forced to attack worse than 1-6 (7.4) \u2014 strictly before any battle",
+   "fortress combat: attacks into a fortress engage every unit in it; fortress sorties must attack all adjacent enemies; attacks around a fortress optional both ways (23.1-23.2)",
+   "victory: elimination of all enemy combat units on the board (clarification 13: at-sea excluded) and two-consecutive-turn control of both fortresses + both home bases (4.1-4.3); Allied win by survival through 15 Oct 1942 (4.2); no-supplies-for-two-turns loss (24.5)",
+   "SUPPLY CAPTURE (15): automatic capture when a combat unit moves adjacent to / onto an unaccompanied enemy supply (15.21, one-directional trigger per 15.211), fortress shielding (15.23, capture by combat-phase 'attack' with advance 16.3), the one-unit capture-attack on accompanied supplies with mandatory escort battles (15.322, clarification figs 6/7/11), retreat/advance pickup (15.22 incl. the sustaining-supply exception), post-capture rights per method (15.21 free / 15.33-15.34 move-only incl. escape from the old escort's ZOC / 15.23 frozen), voluntary destruction (15.4), counter recycling to the off-board pools, and the fig-3 guard: no voluntary move into a hopeless capture position (7.4 supersedes 15.21)",
+   "ISOLATION (24): the 24.1 trace (also used by 11.9), elimination after two consecutive own player turns isolated at start AND end (24.2, clarification 8: mid-turn supply that is gone by turn end does not break the count), at-sea isolation (24.4), and the two-turn no-supplies-on-board game loss (24.5)",
+   "REPLACEMENTS (20, from 1 March 1942 per the printed track): accrual at the start of the own player turn for controlled home base/Tobruch (Axis 1+1, Allied 2+1), accumulation (20.5/20.6), spending attack factors to return eliminated combat units under the reinforcement rules (20.4); substitutes never return as replacements (21.6)",
+   "SUBSTITUTES (21, Allied, from 1 Aug 1942 per the printed track): equal-attack-factor exchange at the end of the movement portion in one hex (21.1/21.2), type matching from the counter-face symbols (armor <-> armor/armored-infantry, infantry <-> infantry/recce \u2014 all 61 Allied counters visually classified), breakdown with the 21.4 factor/MF constraints, stacking 21.5, never at sea/off-board (21.6), only real substitute counters (21.7)",
+   "AUTOMATIC VICTORY (9): declaration during movement at 7-1, or 5-1 with a defender that provably cannot survive a back-2 (9.1), supply trace at the instant with the defender's own ZOC still blocking (9.2 + clarification sec 10), ZOC negation for the rest of the turn with move-over-but-never-onto the AVed unit (9.1), attacker/blocker freeze (9.2/9.3), end-of-movement supply revalidation with the two-supply expenditure (14.5), and mandatory resolution before the turn ends (9.6)"
+  ],
+  "not_enforced": [
+   "corner cases umpired (declared, gate never permits an illegal state): 7.4's voluntary-vs-forced distinction beyond the solo-attack + support-presence tests, the 11.7 fortress twice-attacked exception, 7.61's retreating-player pick of overstack casualties, 21.3's mid-exchange breakdown during combat resolution, 9.4's joined-AV bookkeeping beyond the freeze, Rommel isolation displacement when encircled with friends (22.4 second clause)",
+   "web build (web/) still runs the legacy JS engine \u2014 the AK gate is Python/HTTP only"
+  ]
+ },
+ "supply_table": {
+  "windows": [
+   {
+    "turns": [
+     1,
+     6
+    ],
+    "sunk": [
+     1,
+     2
+    ],
+    "track": "15 Apr 41 wedges 1,2 'to end of June'"
+   },
+   {
+    "turns": [
+     7,
+     16
+    ],
+    "sunk": [
+     1,
+     2,
+     3
+    ],
+    "track": "1 Jul 41 wedges 1,2,3 'to end of November'"
+   },
+   {
+    "turns": [
+     17,
+     38
+    ],
+    "sunk": [
+     1
+    ],
+    "track": "1 Dec 41 wedge 1 'to end of game'"
+   }
+  ],
+  "cite": "12.2 SUPPLY TABLE (rulebook) == printed track wedges 15 Apr 41 / 1 Jul 41 / 1 Dec 41 \u2014 cross-validated in validate_arrivals.py"
+ },
+ "replacements": {
+  "start_turn": 23,
+  "rates": {
+   "Axis": {
+    "homebase": 1,
+    "fortress_port": 1
+   },
+   "Allied": {
+    "homebase": 2,
+    "fortress_port": 1
+   }
+  },
+  "cite": "20.1 starting March 1942 (Time Record 'Begin Replacement Rate' at 1 March 1942, printed '1 1T 2'); 20.2 Axis 1/turn home base + 1/turn Tobruch; 20.3 Allied 2/turn home base + 1/turn Tobruch; control at the beginning of the player turn per 4.3; 20.5 factors accumulate; 20.4 placement per the reinforcement rules; 21.6 substitutes never enter as replacements"
+ },
+ "substitutes": {
+  "start_turn": 33,
+  "side": "Allied",
+  "cite": "21.1 starting August 1942 (Time Record 'Substitute Units now available' at 1 Aug 1942); armor for armor/armored-infantry, infantry for infantry/recce, equal attack factors; 21.2 at the end of the Allied movement portion, same hex, no movement after placement; 21.5 stacking limits before and after; 21.6 not at sea/off board"
+ },
+ "supply_pool": {
+  "Axis": [
+   "1751829780936",
+   "1751829780934"
+  ],
+  "Allied": [
+   "1751829781077",
+   "1751829781075",
+   "1751829781073"
+  ]
+ },
+ "supply_max_on_board": {
+  "Axis": 3,
+  "Allied": 4,
+  "cite": "12.2 / 12.1 own-supply on-board maxima"
+ },
+ "game": {
+  "turns": 38,
+  "first_player": "Axis",
+  "side_labels": {
+   "Axis": "Axis (German-Italian)",
+   "Allied": "Allied (British Commonwealth)"
+  },
+  "turn_labels": [
+   "1 April 1941",
+   "15 April 1941",
+   "1 May 1941",
+   "15 May 1941",
+   "1 June 1941",
+   "15 June 1941",
+   "1 July 1941",
+   "15 July 1941",
+   "1 August 1941",
+   "15 August 1941",
+   "1 September 1941",
+   "15 September 1941",
+   "1 October 1941",
+   "15 October 1941",
+   "1 November 1941",
+   "15 November 1941",
+   "1 December 1941",
+   "15 December 1941",
+   "1 January 1942",
+   "15 January 1942",
+   "1 February 1942",
+   "15 February 1942",
+   "1 March 1942",
+   "15 March 1942",
+   "1 April 1942",
+   "15 April 1942",
+   "1 May 1942",
+   "15 May 1942",
+   "1 June 1942",
+   "15 June 1942",
+   "1 July 1942",
+   "15 July 1942",
+   "1 August 1942",
+   "15 August 1942",
+   "1 September 1942",
+   "15 September 1942",
+   "1 October 1942",
+   "15 October 1942"
+  ],
+  "cite": "3.1-3.5 sequence of play; 2.2-2.3 setup; game span 1.1/4.1"
+ },
+ "units": [
+  {
+   "id": "1751829781091",
+   "slot": "A 7A Inf 2",
+   "side": "Allied",
+   "hex": [
+    53,
+    13
+   ]
+  },
+  {
+   "id": "1751829781092",
+   "slot": "A 7A Inf 1",
+   "side": "Allied",
+   "hex": [
+    53,
+    13
+   ]
+  },
+  {
+   "id": "1751829781094",
+   "slot": "A 2 Arm 2 S.G",
+   "side": "Allied",
+   "hex": [
+    8,
+    12
+   ]
+  },
+  {
+   "id": "1751829781096",
+   "slot": "A 7 Arm 3 I Motor",
+   "side": "Allied",
+   "hex": [
+    21,
+    12
+   ]
+  },
+  {
+   "id": "1751829781097",
+   "slot": "A 2 Arm 3",
+   "side": "Allied",
+   "hex": [
+    21,
+    12
+   ]
+  },
+  {
+   "id": "1751829781099",
+   "slot": "A Supply 1",
+   "side": "Allied",
+   "hex": [
+    31,
+    11
+   ]
+  },
+  {
+   "id": "1751829781100",
+   "slot": "A 9A Inf 20",
+   "side": "Allied",
+   "hex": [
+    31,
+    11
+   ]
+  },
+  {
+   "id": "1751829781102",
+   "slot": "A 22 Gds Inf",
+   "side": "Allied",
+   "hex": [
+    38,
+    13
+   ]
+  },
+  {
+   "id": "1751829781104",
+   "slot": "A Pol Carpathian",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781105",
+   "slot": "A 4 I Inf 5",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781106",
+   "slot": "A 4 I Inf 7",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781107",
+   "slot": "A 4 I Inf 11",
+   "side": "Allied",
+   "hex": [
+    63,
+    16
+   ]
+  },
+  {
+   "id": "1751829781133",
+   "slot": "I Savena",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781134",
+   "slot": "I Bologna",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781135",
+   "slot": "I Brescia",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781136",
+   "slot": "I Pavia",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781137",
+   "slot": "I Trenta",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781138",
+   "slot": "I Ariete",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781139",
+   "slot": "G 21Pz 104",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781140",
+   "slot": "G 21Pz 5",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781141",
+   "slot": "G Supply 1",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781142",
+   "slot": "G 21Pz 3",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  },
+  {
+   "id": "1751829781143",
+   "slot": "G Rommel",
+   "side": "Axis",
+   "hex": [
+    4,
+    27
+   ]
+  }
+ ],
+ "reserve": [
+  {
+   "id": "1751829780929",
+   "slot": "G Supply Captured #",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780930",
+   "slot": "G Supply Captured 5",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780932",
+   "slot": "G Supply Captured 4",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780934",
+   "slot": "G Supply 3",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780936",
+   "slot": "G Supply 2",
+   "side": "Axis",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829780938",
+   "slot": "Marker Game Turn Axis",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829780940",
+   "slot": "A 4 I Inf 23",
+   "side": "Allied",
+   "due": 5
+  },
+  {
+   "id": "1751829780942",
+   "slot": "A 7 Arm 7",
+   "side": "Allied",
+   "due": 5
+  },
+  {
+   "id": "1751829780944",
+   "slot": "A 7 Arm 7 S.G",
+   "side": "Allied",
+   "due": 5
+  },
+  {
+   "id": "1751829780946",
+   "slot": "A 7 Arm 4SA Motor",
+   "side": "Allied",
+   "due": 5
+  },
+  {
+   "id": "1751829780948",
+   "slot": "A 7 Arm 4",
+   "side": "Allied",
+   "due": 5
+  },
+  {
+   "id": "1751829780950",
+   "slot": "A 9A Inf 18",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780952",
+   "slot": "A 2 SA Inf 4",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780954",
+   "slot": "A 50 Inf 69",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780956",
+   "slot": "A 50 Inf 150",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780958",
+   "slot": "A 50 Inf 6SA Motor",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780960",
+   "slot": "A 50 Inf 151",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780962",
+   "slot": "A 2 SA Inf 7 Recce",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780964",
+   "slot": "A 2 SA Inf 6",
+   "side": "Allied",
+   "due": 7
+  },
+  {
+   "id": "1751829780966",
+   "slot": "A 5 I Inf 29",
+   "side": "Allied",
+   "due": 9
+  },
+  {
+   "id": "1751829780968",
+   "slot": "A 5 I Inf 10",
+   "side": "Allied",
+   "due": 9
+  },
+  {
+   "id": "1751829780970",
+   "slot": "A 5 I Inf 9",
+   "side": "Allied",
+   "due": 9
+  },
+  {
+   "id": "1751829780972",
+   "slot": "A 70 Inf 23",
+   "side": "Allied",
+   "due": 9
+  },
+  {
+   "id": "1751829780974",
+   "slot": "A 32 Arm",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780976",
+   "slot": "A 1 Arm",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780978",
+   "slot": "A 1 SA Inf 3 Recce",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780980",
+   "slot": "A 1 Arm 201 Gds",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780982",
+   "slot": "A 2 NZ Inf 6",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780984",
+   "slot": "A 2 NZ Inf 5",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780986",
+   "slot": "A 2 NZ Inf 4",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780988",
+   "slot": "A 1 SA Inf 5",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780990",
+   "slot": "A 1 SA Inf 3",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780992",
+   "slot": "A 1 SA Inf 2",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780994",
+   "slot": "A 1 SA Inf 1",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780996",
+   "slot": "A 1 Arm 22",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829780998",
+   "slot": "A 1 Arm 2",
+   "side": "Allied",
+   "due": 15
+  },
+  {
+   "id": "1751829781000",
+   "slot": "A 51 Inf 2",
+   "side": "Allied",
+   "due": 37
+  },
+  {
+   "id": "1751829781002",
+   "slot": "A 51 Inf 1",
+   "side": "Allied",
+   "due": 37
+  },
+  {
+   "id": "1751829781004",
+   "slot": "A NZ 2 Inf",
+   "side": "Allied",
+   "due": 37
+  },
+  {
+   "id": "1751829781006",
+   "slot": "A 44 Inf 132",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781008",
+   "slot": "A 44 Inf 61",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781010",
+   "slot": "A 8 I Inf 161",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781012",
+   "slot": "A 9A Inf 24",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781014",
+   "slot": "A 10 Arm 23",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781016",
+   "slot": "A 10 Arm 8",
+   "side": "Allied",
+   "due": 33
+  },
+  {
+   "id": "1751829781018",
+   "slot": "A Free Fr Inf",
+   "side": "Allied",
+   "due": 27
+  },
+  {
+   "id": "1751829781020",
+   "slot": "A Jews Inf",
+   "side": "Allied",
+   "due": 27
+  },
+  {
+   "id": "1751829781022",
+   "slot": "A 10 I Inf 25",
+   "side": "Allied",
+   "due": 27
+  },
+  {
+   "id": "1751829781024",
+   "slot": "A 10 I Inf 21",
+   "side": "Allied",
+   "due": 27
+  },
+  {
+   "id": "1751829781026",
+   "slot": "A 8 I Inf 18",
+   "side": "Allied",
+   "due": 27
+  },
+  {
+   "id": "1751829781028",
+   "slot": "I Pistolio",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781030",
+   "slot": "I Centor",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781032",
+   "slot": "G 164Inf 433",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781034",
+   "slot": "G 164Inf 382",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781036",
+   "slot": "G 164Inf 125",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781038",
+   "slot": "G 51 Fj",
+   "side": "Axis",
+   "due": 29
+  },
+  {
+   "id": "1751829781040",
+   "slot": "I Folgere",
+   "side": "Axis",
+   "due": 33
+  },
+  {
+   "id": "1751829781042",
+   "slot": "I Littorio",
+   "side": "Axis",
+   "due": 33
+  },
+  {
+   "id": "1751829781044",
+   "slot": "I Facists",
+   "side": "Axis",
+   "due": 15
+  },
+  {
+   "id": "1751829781046",
+   "slot": "I Sabratha",
+   "side": "Axis",
+   "due": 15
+  },
+  {
+   "id": "1751829781048",
+   "slot": "I Trieste",
+   "side": "Axis",
+   "due": 15
+  },
+  {
+   "id": "1751829781050",
+   "slot": "G 90Inf 361",
+   "side": "Axis",
+   "due": 15
+  },
+  {
+   "id": "1751829781052",
+   "slot": "G 90Inf 580",
+   "side": "Axis",
+   "due": 21
+  },
+  {
+   "id": "1751829781054",
+   "slot": "G 90Inf 200",
+   "side": "Axis",
+   "due": 21
+  },
+  {
+   "id": "1751829781056",
+   "slot": "G 90Inf 55",
+   "side": "Axis",
+   "due": 21
+  },
+  {
+   "id": "1751829781058",
+   "slot": "G 15Pz 33",
+   "side": "Axis",
+   "due": 3
+  },
+  {
+   "id": "1751829781060",
+   "slot": "G 15Pz 8",
+   "side": "Axis",
+   "due": 3
+  },
+  {
+   "id": "1751829781062",
+   "slot": "G 15Pz 115",
+   "side": "Axis",
+   "due": 3
+  },
+  {
+   "id": "1751829781068",
+   "slot": "A Supply Captured #",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781069",
+   "slot": "A Supply Captured 6",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781071",
+   "slot": "A Supply Captured 5",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781073",
+   "slot": "A Supply 4",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781075",
+   "slot": "A Supply 3",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781077",
+   "slot": "A Supply 2",
+   "side": "Allied",
+   "cls": "supply"
+  },
+  {
+   "id": "1751829781079",
+   "slot": "A Sub Inf 6",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781081",
+   "slot": "A Sub Inf 5",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781083",
+   "slot": "A Sub Arm 1",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781085",
+   "slot": "A Sub Arm 2",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781087",
+   "slot": "A Sub Inf 4",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781089",
+   "slot": "A Sub Inf 3",
+   "side": "Allied"
+  },
+  {
+   "id": "1751829781109",
+   "slot": "G RD 10",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781110",
+   "slot": "G RD 9",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781111",
+   "slot": "G RD 8",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781112",
+   "slot": "G RD 7",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781113",
+   "slot": "G RD 6",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781114",
+   "slot": "G RD 5",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781115",
+   "slot": "G RD 4",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781116",
+   "slot": "G RD 3",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781117",
+   "slot": "G RD 2",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781118",
+   "slot": "G RD 1",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781120",
+   "slot": "G RR 11",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781121",
+   "slot": "G RR 10",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781122",
+   "slot": "G RR 9",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781123",
+   "slot": "G RR 8",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781124",
+   "slot": "G RR 7",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781125",
+   "slot": "G RR 6",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781126",
+   "slot": "G RR 5",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781127",
+   "slot": "G RR 4",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781128",
+   "slot": "G RR 3",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781129",
+   "slot": "G RR 2",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781130",
+   "slot": "G RR 1",
+   "side": "Axis",
+   "cls": "markers"
+  },
+  {
+   "id": "1751829781131",
+   "slot": "G RR Start",
+   "side": "Axis",
+   "cls": "markers"
+  }
+ ]
+}

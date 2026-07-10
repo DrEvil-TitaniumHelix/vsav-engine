@@ -7,8 +7,15 @@ records every move so a whole game replays exactly. Ships with **Afrika Korps**
 
 ## Running it (testers)
 
-**Windows:** double-click **`Legality Engine for VASSAL.exe`**. No install, no
-Python, no browser — it opens as its own window.
+**Recommended:** download this repo, open it in PyCharm (or your IDE), launch
+**Claude Code with the Fable model**, and ask it to read `GETTING_STARTED.md`
+and get you started — it sets up, launches, and answers rules questions while
+you play.
+
+**Windows (no Python at all):** double-click **`Legality Engine for VASSAL.exe`**
+— it's in this repo's `dist/` folder and also available as a separate download
+from Bruce's Google Drive. No install, no Python, no browser — it opens as its
+own window.
 
 > ### ⚠️ Windows will probably warn you the first time
 > Because this is a brand-new one-file program that isn't code-signed, Windows

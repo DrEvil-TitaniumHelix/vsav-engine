@@ -22,10 +22,16 @@ CLAUDE.md
 # Python
 __pycache__/
 *.pyc
-dist/
 engine/baseline.json
 
-# PyInstaller build artifacts (bundle game art — never commit to the public repo)
+# PyInstaller intermediates
 /build/
-*.exe
 *.app/
+
+# SHIPPED IN THE REPO (closed dev+tester distribution — Bruce 2026-07-10):
+# games_bundled/ = the release games, self-contained (only the counters the
+# scenario uses, no rulebook scans); dist/ = the prebuilt Windows exe.
+dist/*
+*.exe
+!games_bundled/**
+!dist/Legality Engine for VASSAL.exe

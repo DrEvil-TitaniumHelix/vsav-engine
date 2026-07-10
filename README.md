@@ -115,23 +115,42 @@ engine (pure-stdlib Python) that is **file-format compatible** with VASSAL 3:
   has said a programmatic game-state API arrives in V4 — this is that behavior on V3
   files, today, without touching their code.)
 
-## Quickstart (bring your own module)
+## Quickstart
 
-Python 3.10+. The engine is stdlib-only; `pip install pillow` once for setup's
-map conversion.
+**Recommended path (testers):** download the repo, open the folder in PyCharm
+(or your preferred IDE), launch **Claude Code with the Fable model** in it, and
+ask: *"Read GETTING_STARTED.md and get me started."* Claude sets everything up,
+starts the game, and answers rules questions while you play.
+
+**Manual path** — Python 3.10+, the engine itself is stdlib-only:
 
 ```
 git clone https://github.com/DrEvil-TitaniumHelix/vsav-engine
-# download Tobruk_v1.1.vmod from https://vassalengine.org/wiki/Module:Tobruk
-python engine/setup_module.py tobruk "path/to/Tobruk_v1.1.vmod"
-python ui/server.py --game games/tobruk
-# open http://localhost:8642 — you're British; the AI plays the Italians
+pip install -r requirements.txt     # just pywebview, for the native window
+python app.py                       # window opens → pick a game → play
 ```
+
+or in a plain browser with zero dependencies: `python ui/server.py` and open
+the printed URL. The release games (**Afrika Korps**, **Tobruk**) are
+self-contained in `games_bundled/` — a fresh clone plays out of the box.
+
+**No-Python path:** the prebuilt Windows exe is in the repo at
+`dist/Legality Engine for VASSAL.exe` (also distributed as a separate download
+via Google Drive). Double-click it — see RELEASE_README.md for the SmartScreen
+first-run warning and the Mac build.
 
 Verify any finished (or in-progress) game:
 
 ```
 python engine/verify_game.py live/game_tobruk.log.jsonl -v
+```
+
+Other games (Arnhem, ASL) remain bring-your-own-module:
+
+```
+# download Tobruk_v1.1.vmod from https://vassalengine.org/wiki/Module:Tobruk
+python engine/setup_module.py tobruk "path/to/Tobruk_v1.1.vmod"
+python ui/server.py --game games/tobruk
 ```
 
 ## What's in the repo
@@ -159,13 +178,19 @@ ui/index.html              the v1 movement-legality client
 web/                       v1 serverless browser build (movement only)
 ```
 
-## What's NOT in the repo (bring your own)
+## What ships in the repo vs bring-your-own
 
-**No game assets are included or ever will be.** Maps, counter art, charts, and rules
-are the property of their rights-holders; the modules are hosted **with permission** at
-vassalengine.org — get them there (`setup_module.py` does the rest). This repo is code
-plus data *derived by us from the rules* (tables transcribed and cited, like any rules
-reference), under the same bring-your-own-module guardrail as v1.
+The two **release games** ship self-contained in `games_bundled/` for the closed
+tester group: exactly the map and the counters their scenario uses (sourced from
+the games' VASSAL modules, hosted with permission at vassalengine.org), no
+rulebook scans, no unused art. The combat tables are **our transcriptions** with
+rulebook citations — data, not scans. Full credits for each game's designers,
+publisher, and module authors are in its `game.json` and rendered in the in-game
+Rules panel.
+
+Everything else stays **bring-your-own-module**: other games' folders hold only
+our spec/rules data, and `setup_module.py` ingests the module you download from
+vassalengine.org yourself.
 
 ## Legal
 

@@ -1,0 +1,6 @@
+# Playing in a browser needs NOTHING — the engine is pure-stdlib Python 3.10+.
+# The native app window (python app.py) needs:
+pywebview>=5
+
+# Only needed to package the one-file exe/app (build.ps1 / build.sh):
+# pyinstaller>=6

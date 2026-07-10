@@ -46,6 +46,21 @@ STAGE = os.path.join(HERE, "build", "stage")
 
 def stage_game(slug):
     src = os.path.join(HERE, "games", slug)
+    bundled = os.path.join(HERE, "games_bundled", slug)
+    spec_probe = json.load(open(os.path.join(src, "game.json"), encoding="utf-8"))
+    m = (spec_probe.get("assets") or {}).get("map")
+    if m and not os.path.exists(m if os.path.isabs(m) else os.path.join(src, m)) \
+            and os.path.isdir(bundled):
+        # a clone has no module extracts — the in-repo bundle IS already the
+        # self-contained staged form, so ship it verbatim
+        dst = os.path.join(STAGE, "games", slug)
+        if os.path.exists(dst):
+            shutil.rmtree(dst)
+        shutil.copytree(bundled, dst)
+        size = sum(os.path.getsize(os.path.join(dp, f))
+                   for dp, _, fs in os.walk(dst) for f in fs)
+        print(f"  staged {slug} from games_bundled/ (clone build), {size/1e6:.1f} MB")
+        return dst
     g = gamespec.Game(src)                 # resolves every asset to an abs path
     dst = os.path.join(STAGE, "games", slug)
     assets = os.path.join(dst, "assets")

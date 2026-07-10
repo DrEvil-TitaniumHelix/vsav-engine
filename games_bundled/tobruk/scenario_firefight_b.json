@@ -1,0 +1,37 @@
+{
+  "name": "Firefight B — 'An Even Encounter' (Tobruk, rulebook p.24)",
+  "description": "British Stuart Mk.III x6 vs Italian M13/40 x15 on one mapboard section. Official Avalon Hill firefight: 10 turns, Firefight Victory Point Table, Scenario One rules (movement + AP direct fire). Entry simplified: both sides begin ON their entry edge (British north, Italians south) and turn 1 counts as their entry move — MA-1 remaining, no fire on turn 1 (they moved).",
+  "rules_scope": "Tobruk Scenario One pp.4-5 + Firefight rules p.24. In scope: vehicular movement/facing/pivot/reverse, AP-vs-armor three-question fire, target acquisition, fire initiation doctrine, same-hex fire. Out of scope (declared): crew casualties (p.5.e says ignore in Scenario 1), experimental/optional rules, personnel, artillery.",
+  "game": {
+    "turns": 10,
+    "side_labels": {"Axis": "Axis (Italian)", "British": "British"},
+    "first_player": "Axis",
+    "combat_first_fire": "British",
+    "bounds": {"cols": [3, 20], "rows": [4, 16]},
+    "entry_moved": true,
+    "seed_note": "RNG seed fixed per game in the state file; every roll is logged."
+  },
+  "units": [
+    {"slot": "Stuart Mk.III", "hex": [5, 4],  "facing": 2, "side": "British"},
+    {"slot": "Stuart Mk.III", "hex": [7, 4],  "facing": 2, "side": "British"},
+    {"slot": "Stuart Mk.III", "hex": [9, 4],  "facing": 2, "side": "British"},
+    {"slot": "Stuart Mk.III", "hex": [12, 4], "facing": 3, "side": "British"},
+    {"slot": "Stuart Mk.III", "hex": [14, 4], "facing": 3, "side": "British"},
+    {"slot": "Stuart Mk.III", "hex": [16, 4], "facing": 3, "side": "British"},
+    {"slot": "M13/40", "hex": [4, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [5, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [6, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [7, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [8, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [9, 16],  "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [10, 16], "facing": 0, "side": "Axis"},
+    {"slot": "M13/40", "hex": [11, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [12, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [13, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [14, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [15, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [16, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [17, 16], "facing": 5, "side": "Axis"},
+    {"slot": "M13/40", "hex": [18, 16], "facing": 5, "side": "Axis"}
+  ]
+}

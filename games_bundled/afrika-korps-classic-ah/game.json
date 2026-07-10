@@ -1,0 +1,1408 @@
+{
+ "name": "Afrika Korps Classic AH",
+ "policy_ai": {
+  "kind": "strategic",
+  "engine": "engine/ai_strategic.py",
+  "validated": "games/afrika-korps-classic-ah/validate_ai.py",
+  "note": "Tier-3a: transparent policy AI, submits only through the gate; AI-vs-AI campaigns replay byte-exact through verify_game. Declared-weak (Allied-favored; no 11.6 soak-off search, no replacements/subs/Rommel-bonus in policy)."
+ },
+ "map_name": "Main Map",
+ "board_name": "Board",
+ "save_key": "ca",
+ "grid": {
+  "orient": "pointy",
+  "dx": 101.79999999999785,
+  "dy": 88.12562584220231,
+  "x0": 0.0,
+  "y0": 32.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "naming": {
+   "style": "letter_diag",
+   "row0": 5,
+   "num0": -10
+  },
+  "provenance": "VERIFIED 2026-07-09: sideways axis-swap geometry confirmed against the printed map grid (edge autocorrelation dx=102/51 dy=89, row phase 31.4 vs buildFile 32.0, overlay visual check dead-center); naming letter_diag row0=5 num0=-10 exact on 14 rulebook 1.1/5.8 anchors (W3 W6 H2 G25 L59 J62 + east-edge I63 K64 M65 O66 Q67 S68 U69) + printed east-edge row letters I-L + rule 18 movement-chain adjacency \u2014 see VALIDATION.md + validate_grid.py",
+  "hexnum_digits": 2
+ },
+ "assets": {
+  "map": "assets/AK consolidated map.png",
+  "counters_dir": "assets/counters_dir"
+ },
+ "ui": {
+  "counter_px": 75
+ },
+ "unit_kinds": [
+  "emb2",
+  "footprint",
+  "piece",
+  "report",
+  "sendto"
+ ],
+ "sides": {
+  "order": [
+   "Axis",
+   "Allied"
+  ],
+  "labels": {
+   "Axis": "Axis (German-Italian)",
+   "Allied": "Allied (British Commonwealth)"
+  },
+  "default": "Axis",
+  "detect_tokens": {
+   "Allied": [
+    "A "
+   ],
+   "Axis": [
+    "G ",
+    "I "
+   ]
+  },
+  "note": "Name prefixes from the module: 'A '=Allied 68, 'G '=German 43, 'I '=Italian 13 (Ariete, Pavia, Trieste... all Axis). Allied listed FIRST: Indian units ('A 4 I Inf 23') contain 'I ' and must match 'A ' before Axis tokens; verified zero Axis names contain 'A '. Rules 1.22: Blue=Allied, Red=Axis. Only non-unit piece = 'Marker Game Turn Axis' -> default Axis, harmless."
+ },
+ "stats": {
+  "patterns": [
+   [
+    "G Supply Captured 4",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply Captured 5",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply Captured #",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured 6",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured 5",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply Captured #",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A 1 SA Inf 3 Recce",
+    [
+     1,
+     1,
+     12
+    ]
+   ],
+   [
+    "A 2 SA Inf 7 Recce",
+    [
+     1,
+     1,
+     12
+    ]
+   ],
+   [
+    "A 50 Inf 6SA Motor",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 4SA Motor",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 3 I Motor",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A Pol Carpathian",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 Arm 201 Gds",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 7 S.G",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "A 2 Arm 2 S.G",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "A Free Fr Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 I Inf 21",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 I Inf 25",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 8 I Inf 161",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 23",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 22 Gds Inf",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 11",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 6",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G 164Inf 125",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 1 SA Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 NZ Inf 4",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 1 SA Inf 3",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 8 I Inf 18",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G 164Inf 382",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "G 164Inf 433",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 50 Inf 151",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 29",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 SA Inf 6",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 10",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 44 Inf 132",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 2 SA Inf 4",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 50 Inf 150",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 5",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 4 I Inf 7",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 9A Inf 20",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A Sub Inf 5",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Arm 2",
+    [
+     4,
+     4,
+     10
+    ]
+   ],
+   [
+    "A Sub Arm 1",
+    [
+     4,
+     4,
+     10
+    ]
+   ],
+   [
+    "A Sub Inf 3",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Inf 4",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A Sub Inf 6",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 580",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "G 90Inf 361",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 200",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "A 70 Inf 23",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 5 I Inf 9",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 10 Arm 23",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A 9A Inf 18",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 50 Inf 69",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 44 Inf 61",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 9A Inf 24",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "A 51 Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 51 Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "G Supply 2",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G Supply 3",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A 7A Inf 1",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7A Inf 2",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A Supply 1",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 3",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 4",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Supply 2",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "G 15Pz 115",
+    [
+     3,
+     3,
+     10
+    ]
+   ],
+   [
+    "A 1 Arm 22",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "G 90Inf 55",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Littorio",
+    [
+     4,
+     5,
+     6
+    ]
+   ],
+   [
+    "I Sabratha",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "I Pistolio",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "A 10 Arm 8",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "G 21Pz 104",
+    [
+     3,
+     3,
+     10
+    ]
+   ],
+   [
+    "G Supply 1",
+    [
+     0,
+     0,
+     10
+    ]
+   ],
+   [
+    "A Jews Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A NZ 2 Inf",
+    [
+     1,
+     1,
+     6
+    ]
+   ],
+   [
+    "A 7 Arm 7",
+    [
+     3,
+     3,
+     7
+    ]
+   ],
+   [
+    "A 7 Arm 4",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "A 2 Arm 3",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "G 15Pz 33",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "I Trieste",
+    [
+     3,
+     4,
+     6
+    ]
+   ],
+   [
+    "A 1 Arm 2",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "I Folgere",
+    [
+     1,
+     1,
+     7
+    ]
+   ],
+   [
+    "I Facists",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "I Brescia",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "I Bologna",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "G 15Pz 8",
+    [
+     7,
+     7,
+     10
+    ]
+   ],
+   [
+    "A 32 Arm",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Centor",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "I Ariete",
+    [
+     4,
+     5,
+     6
+    ]
+   ],
+   [
+    "I Trenta",
+    [
+     2,
+     3,
+     4
+    ]
+   ],
+   [
+    "G 21Pz 5",
+    [
+     7,
+     7,
+     10
+    ]
+   ],
+   [
+    "G Rommel",
+    [
+     0,
+     0,
+     12
+    ]
+   ],
+   [
+    "G 21Pz 3",
+    [
+     2,
+     2,
+     12
+    ]
+   ],
+   [
+    "I Savena",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "G 51 Fj",
+    [
+     4,
+     4,
+     7
+    ]
+   ],
+   [
+    "A 1 Arm",
+    [
+     2,
+     2,
+     7
+    ]
+   ],
+   [
+    "I Pavia",
+    [
+     2,
+     3,
+     4
+    ]
+   ]
+  ],
+  "default": [
+   0,
+   0,
+   0
+  ],
+  "provenance": "attack-defense-movement transcribed from counter art by independent OCR pass (C:/VassalIngest/afrika-korps-classic-ah/counter_stats.json, 2026-07-09); validated: all 125 setup pieces resolve via their image file, rulebook cross-checks 7.3 (A 7 Arm 7=3-3-7, I Savena=2-2-4) match, worked-example factors 2-3-4 and 3-4-6 (rule 7.5) exist as printed; supply=0-0-10, Rommel=0-0-12 as printed (movement factors real per rules 13/22)"
+ },
+ "terrain_file": "terrain.json",
+ "movement": {
+  "impassable_terrain": [
+   "sea",
+   "qattara",
+   "offmap"
+  ],
+  "terrain_mp": {
+   "clear": 1.0,
+   "escarpment": 1.0,
+   "qattara_partial": 1.0,
+   "fortress": 1.0,
+   "homebase": 1.0
+  },
+  "default_mp": 1.0,
+  "hexside_rules": [
+   {
+    "feature": "water",
+    "value": true,
+    "effect": "prohibit",
+    "cite": "rule 5.7 all-water hexside (E18-F19 example)"
+   },
+   {
+    "feature": "qattara",
+    "value": true,
+    "effect": "prohibit",
+    "cite": "rule 5.7 Qattara Depression hexside (W62-X62 example)"
+   }
+  ],
+  "zoc": {
+   "exerts": true,
+   "stop_on_enter": true,
+   "same_unit_first_step": true,
+   "exempt_classes": [
+    "markers",
+    "supply",
+    "hq"
+   ],
+   "supply_no_enter": true,
+   "immune_terrain": [
+    "fortress"
+   ],
+   "no_exert_terrain": [
+    "fortress"
+   ],
+   "blocked_by_prohibited_hexsides": true,
+   "cite": "7.1 six adjacent hexes, combat units only (5.4); 8.1 stop on entry; 8.3 no through-ZOC and no same-unit ZOC-to-ZOC first step; 13.2 supply may not enter enemy ZOC by movement (sustain exception is combat-phase); 19.5/23.1 adjacent units do not exert a ZOC over a fortress hex; 7.1 exceptions + 23.1/23.2 + clarifications fig.9: a unit IN a fortress exerts no ZOC outward (attacks around a fortress are optional both ways); 7.1/5.7: no ZOC across the anomalous E18-F19 / W62-X62 hexsides (units on adjoining hexes may not engage each other in battle)"
+  },
+  "enemy_hex": {
+   "pass_classes": [
+    "supply",
+    "hq",
+    "markers"
+   ],
+   "cite": "rule 5.4 may not move on top of or through opponent's COMBAT units - supply and Rommel are not combat units; 22.3 enemy units can move directly on top of a lone Rommel; 15.22 on top of a lone supply unit (capture itself is a Tier-2 consequence)"
+  },
+  "stacking": {
+   "max": 3,
+   "exempt_classes": [
+    "markers",
+    "supply",
+    "hq"
+   ],
+   "cite": "rule 6.1 up to three combat units per hex, supply units and/or Rommel stack above the limit; 6.2 stack moves at slowest MF; 6.3 pass through freely even at maximum, limits bind only at end of movement"
+  },
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    0,
+    69
+   ],
+   "rows": [
+    0,
+    29
+   ]
+  },
+  "note": "Movement gate semantics encoded: 5.2 MF=hexes, terrain_stop=escarpment (18.1-18.3), road_bonus 10 via road hexsides (17.1-17.2), I26 two-road exception (17.3/17.32) via road_through_pairs, ZOC per 7.1/8.1/8.3. Validated against the five rule-17/18 worked path examples - see validate_movement.py.",
+  "terrain_stop": [
+   "escarpment"
+  ],
+  "road_bonus": {
+   "feature": "road",
+   "mp": 10,
+   "cite": "rule 17.1 ten additional hexes on the coast road; 17.2 only through road-bisected hexsides"
+  },
+  "road_through_pairs": {
+   "3113": [
+    [
+     [
+      30,
+      13
+     ],
+     [
+      32,
+      14
+     ]
+    ],
+    [
+     [
+      32,
+      12
+     ],
+     [
+      32,
+      14
+     ]
+    ]
+   ]
+  }
+ },
+ "ingest": {
+  "tool": "engine/ingest.py",
+  "grid_how": "hexgrid",
+  "module_version": "3.0.1"
+ },
+ "setup_save": "assets/Starting positions Trails on.vsav",
+ "scenario": "scenario_campaign.json",
+ "ports": {
+  "list": [
+   {
+    "name": "Tobruch",
+    "hex": [
+     31,
+     11
+    ],
+    "usable_by": [
+     "Axis",
+     "Allied"
+    ]
+   },
+   {
+    "name": "Axis home base (W3)",
+    "hex": [
+     1,
+     27
+    ],
+    "usable_by": [
+     "Axis"
+    ]
+   },
+   {
+    "name": "Allied home base (J62)",
+    "hex": [
+     67,
+     14
+    ],
+    "usable_by": [
+     "Allied"
+    ]
+   }
+  ],
+  "cite": "12.4 supply lands at Tobruch or own home base; 19.2 reinforcements enter at Tobruch and/or own home base; 19.7 + 4.3 note: an opponent's home base is never usable as a port; 23.3 no sea movement in/out of Bengasi (fortress, not a port); 23.4/23.5 sea movement runs Tobruch <-> own home base only; 4.3 control = hex occupied by a combat, supply or Rommel unit, and a home base must additionally be free of enemy ZOC"
+ },
+ "classes": {
+  "markers": [
+   "G RD 1",
+   "G RD 10",
+   "G RD 2",
+   "G RD 3",
+   "G RD 4",
+   "G RD 5",
+   "G RD 6",
+   "G RD 7",
+   "G RD 8",
+   "G RD 9",
+   "G RR 1",
+   "G RR 10",
+   "G RR 11",
+   "G RR 2",
+   "G RR 3",
+   "G RR 4",
+   "G RR 5",
+   "G RR 6",
+   "G RR 7",
+   "G RR 8",
+   "G RR 9",
+   "G RR Start",
+   "Marker Game Turn Axis"
+  ],
+  "supply": [
+   "A Supply 1",
+   "A Supply 2",
+   "A Supply 3",
+   "A Supply 4",
+   "A Supply Captured #",
+   "A Supply Captured 5",
+   "A Supply Captured 6",
+   "G Supply 1",
+   "G Supply 2",
+   "G Supply 3",
+   "G Supply Captured #",
+   "G Supply Captured 4",
+   "G Supply Captured 5"
+  ],
+  "hq": [
+   "G Rommel"
+  ],
+  "note": "markers = Rommel-route/turn-track status counters, no factors printed, exempt from any future movement gate; supply/hq are non-combat units (5.4, 13, 22) - no ZOC, special movement rules pending Tier-1 gate"
+ },
+ "combat": {
+  "provenance": "CRT transcribed from the rulebook back-page text (AfrikaKorps_3d_Ed_Rules.pdf) and independently from the printed map image (mastermind image-only transcription, map_tables_transcription.json) - all 66 cells identical across the two sources; validate_combat.py re-runs the cross-check from the raw sources on every run",
+  "crt": {
+   "columns": [
+    "1-6",
+    "1-5",
+    "1-4",
+    "1-3",
+    "1-2",
+    "1-1",
+    "2-1",
+    "3-1",
+    "4-1",
+    "5-1",
+    "6-1"
+   ],
+   "rows": {
+    "1": [
+     "AE",
+     "AE",
+     "AB2",
+     "AB2",
+     "DB2",
+     "DE",
+     "DE",
+     "DE",
+     "DE",
+     "DE",
+     "DE"
+    ],
+    "2": [
+     "AE",
+     "AE",
+     "AE",
+     "AB2",
+     "EX",
+     "EX",
+     "EX",
+     "EX",
+     "EX",
+     "DB2",
+     "DB2"
+    ],
+    "3": [
+     "AB2",
+     "AB2",
+     "AB2",
+     "AB2",
+     "AB2",
+     "DB2",
+     "DB2",
+     "DB2",
+     "DE",
+     "DE",
+     "DE"
+    ],
+    "4": [
+     "AE",
+     "AB2",
+     "AB2",
+     "AB2",
+     "AB2",
+     "AB2",
+     "AB2",
+     "DB2",
+     "DB2",
+     "DB2",
+     "DE"
+    ],
+    "5": [
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "EX",
+     "EX",
+     "DB2",
+     "DE",
+     "DE"
+    ],
+    "6": [
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "DE",
+     "DE",
+     "DE",
+     "DE"
+    ]
+   },
+   "results": {
+    "AE": "A Elim - all attacking units in that attack are eliminated [7.5]",
+    "AB2": "A back 2 - all attacking combat units retreated two hexes by the defender [7.5]",
+    "EX": "Exchange - the side with fewer involved combat factors removes all its units; the other removes involved units totaling at least as much [7.5]",
+    "DB2": "D back 2 - all defending units retreated two hexes by the attacker [7.5]",
+    "DE": "D Elim - all defending units in that attack are eliminated [7.5]"
+   },
+   "cite": "Combat Results Table, rulebook back page + printed on the map; resolve by cross-indexing one die roll with the odds column [7.3]"
+  },
+  "odds": {
+   "rounding": "defender",
+   "auto_elim_above": [
+    6,
+    1
+   ],
+   "min_voluntary": [
+    1,
+    6
+   ],
+   "cite": "7.3 attack:defense ratio, fractions rounded in favor of the defender (7:2 -> 3-1, 2:7 -> 1-4); 7.4 + printed CRT note: odds greater than 6-1 are automatic elimination without a roll (9.1's 7-1 situation); 7.4 no voluntary attack at worse than 1-6, a unit forced to attack worse than 1-6 is eliminated before any other battle without constituting a soak-off or blocking ZOC"
+  },
+  "defense_double_terrain": [
+   "fortress",
+   "escarpment"
+  ],
+  "defense_double_cite": "10.2 defense factor doubled on a fortress or escarpment hex, for odds AND exchange losses, regardless of the attacker's terrain; 8.7 attack factors never terrain-affected",
+  "attack_supply": {
+   "required_at_or_better": [
+    1,
+    2
+   ],
+   "radius": 5,
+   "cite": "14.1 no attack at odds of 1-2 or better without a supply unit, the supply is removed at the end of the current player turn; 14.2 all attackers within five hexes of the supply after movement, route free of enemy ZOC and full Qattara hexes, not across the E18-F19/W62-X62 hexsides, inclusive of the supply hex, exclusive of the attacker hex; 14.3 attacks at 1-3 or worse need no supply; 14.4 one supply may sustain any number of attacks; 14.6 the supply sustaining each combat is stated before resolving it; 14.7 defense never needs supply"
+  },
+  "retreat": {
+   "distance": 2,
+   "cite": "7.5/7.6 the WINNER retreats the losing units two hexes, zigzag allowed (may end one hex from origin), through friendly units at maximum stacking, over all playable terrain including escarpments; 7.61 eliminated instead if forced into/through enemy ZOC, out to sea, into the Qattara Depression, off the playable board, or onto a stack it would overstack; 7.62 + clarification 7: the winner may not choose a route causing IMMEDIATE elimination when routes exist that let all retreating units live (retreat into isolation is legal); clarification 9: a unit may not re-enter the hex it fought from nor enter any hex twice; 23.7 fortress units surrounded by enemy ZOC + sea cannot retreat - a back-2 result eliminates them"
+  },
+  "advance": {
+   "into_terrain": [
+    "fortress",
+    "escarpment"
+   ],
+   "cite": "16.1 when an attack removes all defending combat units from a fortress or escarpment hex, any surviving attacking units may move into the vacated hex (up to stacking limits) before the next battle is resolved; 16.2 the only move from one ZOC hex of a unit directly to another; 16.3 applies even when the fortress held only a lone supply unit"
+  },
+  "mandatory": {
+   "cite": "7.2 moving into an enemy ZOC causes combat, mover attacks; 8.4 every enemy combat unit whose ZOC covers friendly units must be attacked, every friendly combat unit in an enemy ZOC must attack; 8.5 each attacking unit adjacent to every defending unit in its battle; 8.6 battles resolved one at a time in any order, each retreat/advance executed before the next; 11.3-11.5 the attacker chooses the battle partition; 11.6 soak-offs legal down to 1-6; 11.7 no factor splitting, no defender attacked twice per turn; 11.8 no attacker fights twice per turn; 11.9 an attacking unit isolated in enemy ZOC at the end of the movement portion is eliminated before combat; 23.1 attacking INTO a fortress engages every unit in it; 23.2 fortress units that attack must attack ALL adjacent enemy units"
+  },
+  "rommel": {
+   "cite": "22.4 Rommel cannot be attacked, captured or eliminated; alone in an enemy ZOC or isolated he is placed with the closest Axis combat unit (22.42: not counting untraversable or Allied-ZOC hexes unless there is no alternative; Axis chooses on ties); 7.63 Rommel does not retreat with a defeated attacking stack; clarifications 6: Rommel alone in a fortress cannot be attacked at all"
+  },
+  "victory": {
+   "cite": "4.1 Axis wins by eliminating all Allied combat units currently on the board, or controlling both fortresses and both home bases for two consecutive Axis player turns (start and end of each); 4.2 Allied mirror + wins by avoiding Axis victory through the last Oct 1942 turn; 4.3 control = occupation by a combat/supply/Rommel unit, home bases additionally free of enemy ZOC at start and end; clarifications 13: 'on the board' excludes units at sea or held off board"
+  }
+ },
+ "credits": {
+  "game": {
+   "title": "Afrika Korps",
+   "publisher": "The Avalon Hill Game Company",
+   "year": "1964 (3rd edition rules \u00a9 1980)",
+   "design": "Charles Roberts (original research & design)",
+   "development": "Thomas N. Shaw (original development); Donald Greenwood (third edition rewrite)",
+   "art": "Rodger MacGowan (rulebook cover art)",
+   "source": "design credits printed on the rulebook back page"
+  },
+  "module": {
+   "title": "Afrika Korps Classic AH 3.0.1 (VASSAL module)",
+   "implementation": "Frank Jordan (module implementation, 2025)",
+   "contributors": "Charles McLellan (3rd edition rulebook); Ed Menzel (Afrika Korps clarifications); Christian Holm Christensen (oblique grid numbering code, movement trails)",
+   "library": "vassalengine.org/library/projects/Afrika_Korps_Classic_Avalon_Hill (maintainers cholmcc, woody8297)",
+   "source": "the module's own Start-text credits page + the module library listing"
+  },
+  "note": "This engine enforces the game's rules against the module's own materials. All game content remains the property of its publisher; all module art and data remain the work of the module authors above. Bring-your-own-module: the module is downloaded by each user from the VASSAL module library, never redistributed here."
+ },
+ "unit_types": {
+  "provenance": "Unit-type symbols read from the counter faces (NATO symbols, all 61 Allied combat counters visually inspected 2026-07-09: oval = armor, X = infantry, X-over-oval = armored infantry, RECCE box = recce; the 'X' ABOVE each box is the brigade-size marker, not the type). Cross-check: the rulebook's own 7.3 example calls the 3-3-7 'British 7th Armored Infantry' == the X-over-oval symbol on 'A 7 Arm 7'. Needed for substitute type-matching (21.1). Motor battalions carry the plain infantry X - they are infantry, not armored infantry.",
+  "armor": [
+   "A 1 Arm",
+   "A 1 Arm 2",
+   "A 1 Arm 22",
+   "A 10 Arm 23",
+   "A 10 Arm 8",
+   "A 2 Arm 3",
+   "A 32 Arm",
+   "A 7 Arm 4",
+   "A Sub Arm 1",
+   "A Sub Arm 2"
+  ],
+  "armored_infantry": [
+   "A 2 Arm 2 S.G",
+   "A 7 Arm 7",
+   "A 7 Arm 7 S.G"
+  ],
+  "recce": [
+   "A 1 SA Inf 3 Recce",
+   "A 2 SA Inf 7 Recce"
+  ],
+  "default": "infantry",
+  "substitute_slots": {
+   "A Sub Arm 1": "armor",
+   "A Sub Arm 2": "armor",
+   "A Sub Inf 3": "infantry",
+   "A Sub Inf 4": "infantry",
+   "A Sub Inf 5": "infantry",
+   "A Sub Inf 6": "infantry"
+  },
+  "exchange_classes": {
+   "armor": [
+    "armor",
+    "armored_infantry"
+   ],
+   "infantry": [
+    "infantry",
+    "recce"
+   ]
+  },
+  "cite": "21.1 armor must be exchanged for armor and/or armored infantry; infantry must be exchanged for infantry and/or recce units"
+ },
+ "source_defects": {
+  "note": "Defects found in the ORIGINAL PUBLISHED GAME (Avalon Hill, 3rd edition rules copyright 1980) during encoding - spec #21: original-bug detection is a core output of the encoding process. Kinds: editing_error, contradiction, undefined_case, broken_reference, ambiguity, map_errata. Authority ladder: official errata > tournament clarification > proven outcome-equivalence > declared umpired. Discovery evidence chain: VALIDATION.md.",
+  "list": [
+   {
+    "id": "crt-phantom-7-1-column",
+    "kind": "editing_error",
+    "rules": [
+     "7.4",
+     "9.1",
+     "7.1"
+    ],
+    "defect": "Rule 7.4 says 'Odds greater than 7-1 are treated as 7-1' and 7.1 says units lose their ZOC 'if attacked at 7-1 odds' - but the printed CRT has NO 7-1 column; it tops out at 6-1. The 3rd-edition rewrite references a column that does not exist on the component it resolves against.",
+    "resolution": "Odds greater than 6-1 after rounding are automatic elimination with NO die roll; '7-1' in the rules text names that situation, not a CRT column.",
+    "authority": "The game's own components agree once cross-read: rule 9.1 defines the 7-1/5-1-surrounded automatic-elimination situation, and the note printed beside the map's CRT says 'Odds greater than 6-1 or less than 1-6 mean automatic elimination.' Two-source CRT validation (validate_combat.py) confirms no 7-1 column in either printing.",
+    "enforced": true
+   },
+   {
+    "id": "broken-cross-reference-11-9",
+    "kind": "broken_reference",
+    "rules": [
+     "11.9",
+     "14.3",
+     "14.5",
+     "9.6"
+    ],
+    "defect": "Rule 11.9 cites '(Exception: 14.3 - see the second example under 9.6)' - the worked example it means (the surrounded blue 2-2-6 eliminated before combat) is actually printed under 14.5, not 9.6.",
+    "resolution": "Read as the 14.5 example. No gameplay effect; the 14.3 exception itself (supply-free attacks at 1-3 or worse) is enforced.",
+    "authority": "Textual inspection; the referenced example exists exactly once in the rulebook.",
+    "enforced": true
+   },
+   {
+    "id": "supply-route-vs-13-2-contradiction",
+    "kind": "contradiction",
+    "rules": [
+     "14.2",
+     "13.2"
+    ],
+    "defect": "Rule 14.2 requires the five-hex supply route 'free of enemy ZOC ... inclusive of the hex containing the supply unit', while 13.2 explicitly permits a supply unit to move INTO an enemy ZOC when sustaining an attack against that enemy - read strictly, a supply sustaining from adjacent to the defender always violates 14.2.",
+    "resolution": "The attacked units' own ZOC is ignored when tracing the supply route for the battle against them; every other enemy's ZOC still blocks (including the supply hex itself).",
+    "authority": "Module tournament clarifications figs. 12 and 15 (Nov 2023): fig 15 rules the adjacent-supply attack legal, fig 12 rules an uninvolved unit's ZOC blocking. Both cases validated in the gate (validate_combat.py 3b).",
+    "enforced": true
+   },
+   {
+    "id": "retreat-into-origin-undefined",
+    "kind": "undefined_case",
+    "rules": [
+     "7.6"
+    ],
+    "defect": "Rule 7.6 allows zigzag retreats 'so as to end the retreat only one hex away from the original hex' but never says whether a retreat may re-enter the battle hex itself or visit the same hex twice - undefined for 43 years.",
+    "resolution": "A retreating unit may not re-enter the hex it fought from nor enter any hex twice; if no other legal retreat exists it is eliminated.",
+    "authority": "Tournament clarifications sec. 9 (Nov 2023), citing the common ruling for AH games.",
+    "enforced": true
+   },
+   {
+    "id": "exchange-tie-undefined",
+    "kind": "undefined_case",
+    "rules": [
+     "7.5"
+    ],
+    "defect": "The Exchange result assigns full removal to 'the player with fewer combat factors actually involved' - undefined when the involved factors are EQUAL.",
+    "resolution": "Both sides remove all involved units. Proven outcome-equivalent: under either reading of the tie, the loser removes everything and the winner must then match at least that total from the same involved units, which is everything.",
+    "authority": "Outcome-equivalence proof (both readings converge); gate auto-applies, so no player choice exists to get wrong.",
+    "enforced": true
+   },
+   {
+    "id": "fortress-zoc-etc-ambiguity",
+    "kind": "ambiguity",
+    "rules": [
+     "7.1",
+     "19.5",
+     "23.1",
+     "23.2"
+    ],
+    "defect": "Rule 7.1 lists the ZOC exceptions as 'E18-F19, W62-X62, and fortresses, etc.' - an 'etc.' inside a rules exception list, with the fortress ZOC direction (into the fortress? out of it? both?) never stated in one place.",
+    "resolution": "Bidirectional: adjacent units exert no ZOC over a fortress hex (19.5) AND a garrison exerts no ZOC outward - which is exactly why 23.1/23.2 can make attacks around a fortress optional in both directions.",
+    "authority": "Cross-reading 7.1 + 19.5 + 23.1/23.2, confirmed by tournament clarifications fig. 9 ('its ZOC does not extend into the fortress'). The missing outward half was live as a wrong pin in our own Tier-1 gate until this cross-read caught it.",
+    "enforced": true
+   },
+   {
+    "id": "capture-vs-min-odds-conflict",
+    "kind": "contradiction",
+    "rules": [
+     "15.21",
+     "15.22",
+     "7.4"
+    ],
+    "defect": "The automatic supply capture of 15.21/15.22 triggers on mere adjacency, but 7.4 forbids a unit from attacking at worse than 1-6 - the rules never say which wins when a unit would move adjacent to a lone supply guarded by overwhelming force (a free capture-by-suicide).",
+    "resolution": "7.4 supersedes the automatic capture: the move itself is illegal when it would leave the capturing unit in an enemy ZOC with no legal attack; with support in position the move (and capture) is legal.",
+    "authority": "Tournament clarifications sec. 3 figs 3-4 (Nov 2023). Enforced at move time by the gate's fig-3 guard (solo-attack + support-presence tests; exact joint odds remain with the battle gate).",
+    "enforced": true
+   },
+   {
+    "id": "map-playable-hexes-errata",
+    "kind": "map_errata",
+    "rules": [
+     "5.6",
+     "5.7",
+     "5.8"
+    ],
+    "defect": "The printed map is ambiguous about its own edges: which partial Qattara hexes are playable, which east/south edge partials are out of play, and which hex pairs are non-adjacent across water/depression inlets all needed post-publication enumeration.",
+    "resolution": "Playable Qattara partials (Q59-Q64, R58/R59/R65, S57..X63 list), unplayable east-edge partials (H63..X70), no southern letterless row, non-adjacent pairs E18-F19 / R65-S65 / W61-X62 / W62-X62 - all encoded in terrain.json and the hexside prohibitions.",
+    "authority": "Tournament clarifications sec. 1 ('Playable Hexes'), matching rules 5.6-5.8's examples; validated against the printed map art in build_terrain.py.",
+    "enforced": true
+   }
+  ]
+ }
+}
