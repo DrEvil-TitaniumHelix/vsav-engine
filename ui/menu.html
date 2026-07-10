@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>The Vassal — choose a game</title>
+<style>
+  html,body { margin:0; height:100%; background:#1a1c20; color:#dde3ea;
+              font-family:Segoe UI,sans-serif; }
+  body { display:flex; flex-direction:column; }
+  header { padding:34px 40px 10px; }
+  header h1 { margin:0; font-size:26px; color:#fff; font-weight:600; letter-spacing:.3px; }
+  header .sub { color:#8a8f98; font-size:14px; margin-top:6px; }
+  #wrap { flex:1; overflow:auto; padding:18px 40px 40px; }
+  #cards { display:flex; flex-wrap:wrap; gap:20px; }
+  .card { width:320px; background:#23262c; border:1px solid #3a3f47; border-radius:12px;
+          padding:20px 22px; box-shadow:0 4px 18px rgba(0,0,0,.45);
+          display:flex; flex-direction:column; gap:10px; }
+  .card h2 { margin:0; font-size:19px; color:#fff; }
+  .card .meta { display:flex; gap:8px; flex-wrap:wrap; }
+  .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
+         border:1px solid #4a4f57; color:#b9c2cc; }
+  .tag.tier { background:#243447; border-color:#3a6ea5; color:#9cc4ee; }
+  .tag.cur  { background:#2a3a2a; border-color:#5a8a4a; color:#a8d89a; }
+  .card .blurb { color:#9aa3ad; font-size:13px; line-height:1.5; flex:1; min-height:20px; }
+  .card button { margin-top:6px; padding:10px 0; border:0; border-radius:7px; cursor:pointer;
+                 background:#3a6ea5; color:#fff; font-size:15px; font-weight:600; }
+  .card button:hover { background:#4880bd; }
+  .card button:disabled { background:#3a3f47; color:#8a8f98; cursor:default; }
+  .card.err { border-color:#7a3a3a; }
+  .card.err .blurb { color:#e0a0a0; }
+  footer { padding:14px 40px 22px; color:#6c7178; font-size:12px; border-top:1px solid #2a2d33; }
+  footer b { color:#9aa3ad; font-weight:600; }
+  #loading { color:#8a8f98; font-size:14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>The Vassal</h1>
+  <div class="sub">Choose a game to play. Rules are enforced by the engine; your move history replays exactly.</div>
+</header>
+<div id="wrap">
+  <div id="loading">Loading games…</div>
+  <div id="cards"></div>
+</div>
+<footer>
+  <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <span id="ver">local build</span>
+</footer>
+<script>
+const TIER_LABEL = {0:"Free play", 1:"Movement enforced", 2:"Combat enforced", 3:"Full rules + AI"};
+async function play(slug, card){
+  const btn = card.querySelector("button");
+  btn.disabled = true; btn.textContent = "Loading…";
+  try {
+    const r = await fetch("/api/load_game", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify({slug})});
+    const d = await r.json();
+    if (d.error){ btn.disabled=false; btn.textContent="Play"; alert(d.error); return; }
+    location.href = "/" + (d.client || "index.html");
+  } catch(e){ btn.disabled=false; btn.textContent="Play"; alert("Could not start: "+e); }
+}
+async function load(){
+  let data;
+  try { data = await (await fetch("/api/games")).json(); }
+  catch(e){ document.getElementById("loading").textContent = "Could not reach the engine."; return; }
+  document.getElementById("loading").style.display = "none";
+  const cards = document.getElementById("cards");
+  for (const g of data.games){
+    const card = document.createElement("div");
+    card.className = "card" + (g.error ? " err" : "");
+    if (g.error){
+      card.innerHTML = `<h2>${g.name}</h2><div class="blurb">Unavailable: ${g.error}</div>`;
+      cards.appendChild(card); continue;
+    }
+    const earned = g.tier.earned;
+    const tierTxt = TIER_LABEL[earned] || ("Tier " + earned);
+    card.innerHTML =
+      `<h2>${g.name}</h2>
+       <div class="meta">
+         <span class="tag">${g.mode}</span>
+         <span class="tag tier">${tierTxt}</span>
+         ${g.current ? '<span class="tag cur">last played</span>' : ''}
+       </div>
+       <div class="blurb">${g.blurb || ""}</div>
+       <button>Play</button>`;
+    card.querySelector("button").onclick = () => play(g.slug, card);
+    cards.appendChild(card);
+  }
+}
+load();
+</script>
+</body>
+</html>
