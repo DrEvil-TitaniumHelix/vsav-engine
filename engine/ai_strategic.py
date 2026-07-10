@@ -9,6 +9,15 @@ illegal the gate rejects it, the rejection is logged as proof-of-enforcement,
 and the AI moves on.  Reading engine internals is fine (ai.py reads tg.s the
 same way); only writes go through submit().
 
+Execution model (engine-level, so every game inherits step-through): the
+policy is expressed as a GENERATOR of single gate actions — each phase yields
+one `(side, action, desc)` at a time and receives back the gate's verdict.  A
+driver submits each yielded action; "play the whole turn" (take_turn) drains
+the generator, "step one action" (TurnStepper) advances it once.  Both consume
+the identical generator, so a stepped turn is byte-identical to a whole-turn
+play, and any StrategicGame with a policy AI gets spacebar / animated stepping
+for free.
+
 Policy (honest, not clever — a beta opponent that plays a legal, complete,
 replayable game; it is not a strong player):
   arrivals — Axis rolls for supply and lands it; both sides land due
@@ -38,13 +47,6 @@ no Rommel escort bonus — all optional; skipping them is legal, never wrong.
 
 
 # --------------------------------------------------------------------------- utils
-def _submit(sg, side, action, log, desc):
-    r = sg.submit(side, action)
-    log.append({"side": side, "desc": desc, "action": action,
-                "verdict": r["verdict"], "result": r.get("result")})
-    return r["verdict"]["legal"]
-
-
 class _Dist:
     """Memoized hex distance — hex_distance BFSes the whole board per call."""
     def __init__(self, game):
@@ -170,16 +172,16 @@ def _atk_factor(sg, pid):
 
 
 # --------------------------------------------------------------------------- arrivals
-def _do_arrivals(sg, side, log):
+def _do_arrivals(sg, side):
     ap = sg.arrivals_panel()
     # Axis: roll for supply, then land it; Allied: land its granted supply
     if ap["supply"]["can_roll"]:
-        _submit(sg, side, {"type": "roll_supply"}, log, "rolls for sea supply")
+        yield (side, {"type": "roll_supply"}, "rolls for sea supply")
         ap = sg.arrivals_panel()
     if ap["supply"]["pending"] and ap["ports"]:
         port = _front_port(sg, side, ap["ports"])
-        _submit(sg, side, {"type": "land_supply", "port": port}, log,
-                "lands the supply unit at a controlled port")
+        yield (side, {"type": "land_supply", "port": port},
+               "lands the supply unit at a controlled port")
     # debark sea units that must land this turn (land at the nearest port)
     for su in sg.arrivals_panel()["at_sea"]:
         if not su["must_land"]:
@@ -188,17 +190,17 @@ def _do_arrivals(sg, side, log):
         if not ports:
             break
         port = _front_port(sg, side, ports)
-        _submit(sg, side, {"type": "debark", "unit": su["pid"], "port": port},
-                log, f"lands {su['slot']} from the sea")
+        yield (side, {"type": "debark", "unit": su["pid"], "port": port},
+               f"lands {su['slot']} from the sea")
     # land every due reinforcement at the port nearest the front
     for due in sg.arrivals_panel()["due"]:
         ports = sg.arrivals_panel()["ports"]
         if not ports:
             break
         port = _front_port(sg, side, ports)
-        _submit(sg, side,
-                {"type": "land_reinforcement", "unit": due["pid"], "port": port},
-                log, f"brings up {due['slot']}")
+        yield (side,
+               {"type": "land_reinforcement", "unit": due["pid"], "port": port},
+               f"brings up {due['slot']}")
 
 
 def _front_port(sg, side, ports):
@@ -218,7 +220,7 @@ def _front_port(sg, side, ports):
 
 
 # --------------------------------------------------------------------------- movement
-def _do_movement(sg, side, log, dist):
+def _do_movement(sg, side, dist):
     enemy = sg.game.enemy(side)
     rad = (sg.combat.get("attack_supply") or {}).get("radius", 5) if sg.combat else 0
     sup_hexes = _supply_hex_list(sg, side) if sg.combat else []
@@ -292,13 +294,12 @@ def _do_movement(sg, side, log, dist):
                         break
         if best_atk is not None:
             _, _, dh, fh, mf = best_atk
-            if _submit(sg, side, {"type": "move", "unit": u["pid"],
-                                  "dest": list(dh)}, log,
-                       f"{u['slot']} closes to attack"):
+            if (yield (side, {"type": "move", "unit": u["pid"], "dest": list(dh)},
+                       f"{u['slot']} closes to attack")):
                 committed[fh] = committed.get(fh, 0) + mf
                 counts[cur] = counts.get(cur, 0) - 1
                 counts[dh] = counts.get(dh, 0) + 1
-                _place_rommel_if_pending(sg, log)
+                yield from _place_rommel(sg)
             continue
         if best_adv is not None and (best_adv[0] < cur_d or cur_iso or cur_over):
             # advance toward the objective — or, if currently cut off from
@@ -311,15 +312,15 @@ def _do_movement(sg, side, log, dist):
                 desc = f"{u['slot']} falls back to regain supply"
             else:
                 desc = f"{u['slot']} advances toward the front"
-            if _submit(sg, side, {"type": "move", "unit": u["pid"],
-                                  "dest": list(dh)}, log, desc):
+            if (yield (side, {"type": "move", "unit": u["pid"], "dest": list(dh)},
+                       desc)):
                 counts[cur] = counts.get(cur, 0) - 1
                 counts[dh] = counts.get(dh, 0) + 1
-                _place_rommel_if_pending(sg, log)
+                yield from _place_rommel(sg)
         # else: holding position (connected, no improving safe destination)
 
 
-def _do_supply_movement(sg, side, log, dist):
+def _do_supply_movement(sg, side, dist):
     """Keep supply units alive and connected. Losing the last supply unit
     collapses the whole army (24.5), so supply trails the army only as far as
     it can stay well clear of the enemy (capture, 15.x); the isolation trace
@@ -366,36 +367,37 @@ def _do_supply_movement(sg, side, log, dist):
             tgt = max(cands, key=enemy_gap)  # trapped — flee to the safest hex
             note = f"{su['slot']} pulls back from the enemy"
         if tgt != cur:
-            _submit(sg, side, {"type": "move", "unit": su["pid"],
-                               "dest": list(tgt)}, log, note)
+            yield (side, {"type": "move", "unit": su["pid"], "dest": list(tgt)},
+                   note)
 
 
-def _place_rommel_if_pending(sg, log):
+def _place_rommel(sg):
+    """Yield the place_rommel action if the gate is waiting on one."""
     pr = sg.s.get("pending_rommel")
     if not pr:
         return
     owner = sg.unit(pr["unit"])["side"]
     choices = pr.get("choices") or []
     if choices:
-        _submit(sg, owner, {"type": "place_rommel", "hex": choices[0]}, log,
-                "places the displaced headquarters with its nearest unit")
+        yield (owner, {"type": "place_rommel", "hex": choices[0]},
+               "places the displaced headquarters with its nearest unit")
 
 
 # --------------------------------------------------------------------------- combat
-def _resolve_retreat(sg, panel, log):
+def _resolve_retreat(sg, panel):
     pend = panel["pending"]
     chooser = pend["chooser"]
     for unit in pend["units"]:
         opts = unit["options"]
         if opts:
-            return _submit(sg, chooser,
+            return (yield (chooser,
                            {"type": "retreat", "unit": unit["pid"],
-                            "path": opts[0]["path"]}, log,
-                           f"retreats {unit['slot']}")
-        return _submit(sg, chooser,
+                            "path": opts[0]["path"]},
+                           f"retreats {unit['slot']}"))
+        return (yield (chooser,
                        {"type": "retreat", "unit": unit["pid"],
-                        "eliminate": True}, log,
-                       f"{unit['slot']} has no retreat route — eliminated")
+                        "eliminate": True},
+                       f"{unit['slot']} has no retreat route — eliminated"))
     return False
 
 
@@ -417,15 +419,15 @@ def _minimal_exchange(involved, owe):
     return best[2] if best else [p["pid"] for p in involved]
 
 
-def _resolve_exchange(sg, panel, log):
+def _resolve_exchange(sg, panel):
     pend = panel["pending"]
     pids = _minimal_exchange(pend["involved"], pend["owe"])
-    return _submit(sg, pend["winner"],
-                   {"type": "exchange_loss", "units": pids}, log,
-                   f"pays the exchange ({pend['owe']} factors)")
+    return (yield (pend["winner"],
+                   {"type": "exchange_loss", "units": pids},
+                   f"pays the exchange ({pend['owe']} factors)"))
 
 
-def _do_advances(sg, side, log, dist):
+def _do_advances(sg, side, dist):
     """Optionally advance into vacated fortress/escarpment hexes (16.1).
     Advance a unit when it moves the unit toward its objective."""
     for _ in range(8):
@@ -445,9 +447,9 @@ def _do_advances(sg, side, log, dist):
                 if not sg._engageable((u["col"], u["row"]), hx):
                     continue
                 if dist(hx, obj) <= dist((u["col"], u["row"]), obj):
-                    if _submit(sg, side, {"type": "advance", "unit": a["pid"],
-                                          "hex": list(hx)}, log,
-                               f"advances {u['slot']} onto the vacated hex"):
+                    if (yield (side, {"type": "advance", "unit": a["pid"],
+                                      "hex": list(hx)},
+                               f"advances {u['slot']} onto the vacated hex")):
                         moved = True
                         break
             if moved:
@@ -479,12 +481,13 @@ def _adjacent_enemies(sg, side, hx, undefended_only=True):
             and (not undefended_only or e["pid"] not in sg.s["defended"])]
 
 
-def _declare_battles(sg, side, must_attack, log):
+def _declare_battles(sg, side, must_attack):
     """Discharge 8.4: each of my ZOC-locked units attacks EVERY enemy adjacent
     to it, combined (11.2/11.33) — a lone unit may not split a stack (11.4).
     Co-attackers that are adjacent to every defender join to improve the odds
     (11.1/11.32). Most-constrained unit first so a shared defender is fought by
-    a battle that includes all the units obliged to attack it (11.7/11.31)."""
+    a battle that includes all the units obliged to attack it (11.7/11.31).
+    Yields each battle action; returns whether any battle was made."""
     made = False
     pend = [p for p in must_attack
             if p in sg.s["units"] and p not in sg.s["attacked"]]
@@ -515,18 +518,19 @@ def _declare_battles(sg, side, must_attack, log):
                 continue               # no legal attack — forced_elim handles it
         names = "/".join(sorted({sg.game.grid.display_name(*dh)
                                  for dh in dhexes}))
-        if _submit(sg, sg.s["mover"],
+        if (yield (sg.s["mover"],
                    {"type": "battle", "attackers": attackers,
-                    "defenders": defs, "supply": supply}, log,
+                    "defenders": defs, "supply": supply},
                    f"attacks {names}"
-                   + (" (sustained by supply)" if supply else "")):
+                   + (" (sustained by supply)" if supply else ""))):
             made = True
     return made
 
 
-def _forced_elims(sg, side, must_attack, log):
+def _forced_elims(sg, side, must_attack):
     """7.4: a unit forced to attack that can make no legal attack is removed
-    before any battle is resolved."""
+    before any battle is resolved. Yields each elimination; returns whether any
+    was made."""
     if sg.s["fought"]:
         return False
     made = False
@@ -535,71 +539,137 @@ def _forced_elims(sg, side, must_attack, log):
             continue
         v = sg.propose(side, {"type": "forced_elim", "unit": pid})
         if v["legal"]:
-            _submit(sg, side, {"type": "forced_elim", "unit": pid}, log,
-                    f"{sg.unit(pid)['slot']} cannot attack at legal odds — "
-                    f"eliminated [7.4]")
+            yield (side, {"type": "forced_elim", "unit": pid},
+                   f"{sg.unit(pid)['slot']} cannot attack at legal odds — "
+                   f"eliminated [7.4]")
             made = True
     return made
 
 
-def _do_combat(sg, side, log, dist):
+def _do_combat(sg, side, dist):
     # 7.4 forced eliminations run first, while no battle has been fought
     ma, mb = sg._obligations(side)
-    _forced_elims(sg, side, ma, log)
+    yield from _forced_elims(sg, side, ma)
     for _ in range(500):
         if sg.s["over"]:
             return
-        _place_rommel_if_pending(sg, log)
+        yield from _place_rommel(sg)
         panel = sg.combat_panel()
         pend = panel["pending"]
         if pend and pend["kind"] == "retreat":
-            if not _resolve_retreat(sg, panel, log):
+            if not (yield from _resolve_retreat(sg, panel)):
                 return
             continue
         if pend and pend["kind"] == "exchange":
-            if not _resolve_exchange(sg, panel, log):
+            if not (yield from _resolve_exchange(sg, panel)):
                 return
             continue
         if pend and pend["kind"] == "advance":
-            _do_advances(sg, side, log, dist)
+            yield from _do_advances(sg, side, dist)
         ma, mb = sg._obligations(side)
         if ma or mb:
-            if _declare_battles(sg, side, ma, log):
+            if (yield from _declare_battles(sg, side, ma)):
                 continue
-            if _forced_elims(sg, side, ma, log):
+            if (yield from _forced_elims(sg, side, ma)):
                 continue
             # nothing legal discharges the obligation — surface it via the gate
-            _submit(sg, side, {"type": "end_phase"}, log,
-                    "ends the combat phase")
+            yield (side, {"type": "end_phase"}, "ends the combat phase")
             return
-        _submit(sg, side, {"type": "end_phase"}, log, "ends the player turn")
+        yield (side, {"type": "end_phase"}, "ends the player turn")
         return
 
 
 # --------------------------------------------------------------------------- turn
+def turn_actions(sg):
+    """Generator of the current mover's whole player turn as single gate
+    actions. Each item is (side, action, desc); the driver submits it and
+    sends back the gate's legality verdict. take_turn drains this; TurnStepper
+    advances it one action at a time — identical sequence either way."""
+    side = sg.s["mover"]
+    if sg.s["over"] or sg.s["phase"] != "movement":
+        return
+    dist = _Dist(sg.game)
+    yield from _do_arrivals(sg, side)
+    yield from _do_supply_movement(sg, side, dist)
+    yield from _do_movement(sg, side, dist)
+    yield from _do_supply_movement(sg, side, dist)   # close up behind the new front
+    yield from _place_rommel(sg)
+    if not sg.combat:
+        yield (side, {"type": "end_phase"}, "ends the player turn")
+        return
+    # close movement, then fight
+    if (yield (side, {"type": "end_movement"}, "ends movement")):
+        yield from _do_combat(sg, side, dist)
+    else:
+        # end_movement refused (e.g. an AV needs supply) — end the turn cleanly
+        yield (side, {"type": "end_phase"}, "ends the player turn")
+
+
+def _log_entry(side, action, desc, r):
+    return {"side": side, "desc": desc, "action": action,
+            "verdict": r["verdict"], "result": r.get("result")}
+
+
+def _drive(gen, sg):
+    """Submit every action the generator yields, feeding each verdict back."""
+    log = []
+    try:
+        side, action, desc = gen.send(None)
+        while True:
+            r = sg.submit(side, action)
+            log.append(_log_entry(side, action, desc, r))
+            side, action, desc = gen.send(r["verdict"]["legal"])
+    except StopIteration:
+        pass
+    return log
+
+
 def take_turn(sg):
     """Play the current mover's whole player turn through the gate.  Returns a
     list of log entries (proposal + verdict + result each)."""
-    side = sg.s["mover"]
-    log = []
     if sg.s["over"] or sg.s["phase"] != "movement":
-        return log
-    dist = _Dist(sg.game)
-    _do_arrivals(sg, side, log)
-    _do_supply_movement(sg, side, log, dist)
-    _do_movement(sg, side, log, dist)
-    _do_supply_movement(sg, side, log, dist)   # close up behind the new front
-    _place_rommel_if_pending(sg, log)
-    if not sg.combat:
-        _submit(sg, side, {"type": "end_phase"}, log, "ends the player turn")
-        return log
-    # close movement, then fight
-    if _submit(sg, side, {"type": "end_movement"}, log, "ends movement"):
-        _do_combat(sg, side, log, dist)
-    else:
-        # end_movement refused (e.g. an AV needs supply) — end the turn cleanly
-        _submit(sg, side, {"type": "end_phase"}, log, "ends the player turn")
-    return log
+        return []
+    return _drive(turn_actions(sg), sg)
+
+
+class TurnStepper:
+    """Plays the current mover's turn ONE gate action at a time — the engine
+    hook for spacebar / animated step-through. Drives the same turn_actions
+    generator as take_turn, so a stepped turn is byte-identical to a whole-turn
+    play. peek() shows the action about to be taken (intent preview); step()
+    submits it and advances; done() is True when the turn is complete."""
+
+    def __init__(self, sg):
+        self.sg = sg
+        self.gen = turn_actions(sg)
+        self._next = None
+        try:
+            self._next = self.gen.send(None)
+        except StopIteration:
+            self._next = None
+
+    def done(self):
+        return self._next is None
+
+    def peek(self):
+        if self._next is None:
+            return None
+        side, action, desc = self._next
+        return {"side": side, "action": action, "desc": desc}
+
+    def step(self):
+        """Submit the pending action through the gate; return its log entry and
+        advance. Returns None when the turn is complete."""
+        if self._next is None:
+            return None
+        side, action, desc = self._next
+        r = self.sg.submit(side, action)
+        entry = _log_entry(side, action, desc, r)
+        try:
+            self._next = self.gen.send(r["verdict"]["legal"])
+        except StopIteration:
+            self._next = None
+        return entry
 
 
 def play_game(sg, max_turns=None, on_turn=None):
