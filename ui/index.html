@@ -189,8 +189,9 @@ function renderFlow() {
   const ai = document.getElementById('aiturnbtn');
   if (!FLOW) { fb.style.display = 'none'; ep.style.display = 'none'; ai.style.display = 'none'; return; }
   fb.style.display = ''; ep.style.display = '';
-  // the AI opponent is offered on strategic games at the start of a player turn
-  ai.style.display = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals) ? '' : 'none';
+  // the AI opponent is a Tier-3 feature: offered at the start of a player turn
+  ai.style.display = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals
+    && GAME && GAME.tier && GAME.tier.active >= 3) ? '' : 'none';
   ai.textContent = 'AI plays ' + sideLabel(FLOW.mover) + '’s turn';
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`

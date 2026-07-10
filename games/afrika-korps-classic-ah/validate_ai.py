@@ -10,6 +10,7 @@ after every entry). A wrong or teleporting AI cannot survive the replay.
 
 Run:  python games/afrika-korps-classic-ah/validate_ai.py
 """
+import argparse
 import json
 import os
 import sys
@@ -40,8 +41,23 @@ def check(cond, what):
 # full-length AI-vs-AI soak.
 VAL_MAX_TURNS = 8
 
+# --smoke: a fast single-game pass for ROUTINE regression (UI, unrelated
+# engine changes). It still exercises the whole chain — arrivals, movement,
+# combat through the CRT, and the exact-replay property — but in one seed and
+# a short game, so it finishes in ~1-2 min instead of the ~30-min 5-seed soak.
+# Run the full default (no flag) before committing anything that touches the
+# gate, combat, movement, or the AI itself.
+ap = argparse.ArgumentParser()
+ap.add_argument("--smoke", action="store_true",
+                help="fast single-seed pass (~1-2 min) for routine checks")
+ARGS = ap.parse_args()
+SMOKE = ARGS.smoke
+SEEDS = [1] if SMOKE else [1, 7, 42, 100, 2718]
+MAXT = 5 if SMOKE else VAL_MAX_TURNS   # seed 1 fights a battle by ~turn 3
+MIN_MOVES = 10 if SMOKE else 50
 
-def run_one(seed, tier=None, max_turns=VAL_MAX_TURNS):
+
+def run_one(seed, tier=None, max_turns=MAXT):
     tmp = tempfile.mkdtemp()
     sg = strategic.StrategicGame(g, SCEN, tmp, seed=seed, tier=tier)
     turns, log = ai_strategic.play_game(sg, max_turns=max_turns)
@@ -60,11 +76,11 @@ def run_one(seed, tier=None, max_turns=VAL_MAX_TURNS):
                 verify_ok=ok, verify_msg=msg, tmp=tmp)
 
 
-print("=== Tier-3a: AI-vs-AI full campaigns through the gate ===")
+print("=== Tier-3a: AI-vs-AI %s campaigns through the gate ==="
+      % ("SMOKE" if SMOKE else "full"))
 print(f"scenario: {json.load(open(SCEN, encoding='utf-8'))['name']}\n")
 
 results = []
-SEEDS = [1, 7, 42, 100, 2718]
 for seed in SEEDS:
     r = run_one(seed)
     results.append(r)
@@ -85,8 +101,8 @@ print("\n=== the gate actually fired (proof-of-enforcement is optional but"
       " combat must be exercised somewhere) ===")
 total_battles = sum(len(r["battles"]) for r in results)
 total_moves = sum(len(r["moves"]) for r in results)
-check(total_moves > 50, f"AI issued real movement across the runs "
-                        f"({total_moves} legal moves)")
+check(total_moves > MIN_MOVES, f"AI issued real movement across the runs "
+                               f"({total_moves} legal moves)")
 check(total_battles > 0, f"AI fought at least one battle through the CRT "
                          f"({total_battles} battles across {len(SEEDS)} games)")
 # every rejected proposal must still replay identically (the gate's 'no' is
@@ -97,7 +113,7 @@ check(all(r["verify_ok"] for r in results),
       f"under replay")
 
 print("\n=== Tier-1 mode: the same AI plays a legal reduced game (no combat) ===")
-r1 = run_one(7, tier=1)
+r1 = run_one(1 if SMOKE else 7, tier=1)
 check(r1["sg"].tier == 1, "runs at the selected Tier 1")
 check(r1["verify_ok"],
       f"Tier-1 AI game replays exactly -> {r1['verify_msg'][:70]}")

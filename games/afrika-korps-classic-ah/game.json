@@ -1,5 +1,11 @@
 {
  "name": "Afrika Korps Classic AH",
+ "policy_ai": {
+  "kind": "strategic",
+  "engine": "engine/ai_strategic.py",
+  "validated": "games/afrika-korps-classic-ah/validate_ai.py",
+  "note": "Tier-3a: transparent policy AI, submits only through the gate; AI-vs-AI campaigns replay byte-exact through verify_game. Declared-weak (Allied-favored; no 11.6 soak-off search, no replacements/subs/Rommel-bonus in policy)."
+ },
  "map_name": "Main Map",
  "board_name": "Board",
  "save_key": "ca",
