@@ -188,6 +188,7 @@ def game_descriptor():
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
+        source_defects=g.spec.get("source_defects"),
     )
 
 

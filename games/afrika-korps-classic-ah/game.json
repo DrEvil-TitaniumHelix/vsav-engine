@@ -1116,5 +1116,73 @@
   "victory": {
    "cite": "4.1 Axis wins by eliminating all Allied combat units currently on the board, or controlling both fortresses and both home bases for two consecutive Axis player turns (start and end of each); 4.2 Allied mirror + wins by avoiding Axis victory through the last Oct 1942 turn; 4.3 control = occupation by a combat/supply/Rommel unit, home bases additionally free of enemy ZOC at start and end; clarifications 13: 'on the board' excludes units at sea or held off board"
   }
+ },
+ "source_defects": {
+  "note": "Defects found in the ORIGINAL PUBLISHED GAME (Avalon Hill, 3rd edition rules copyright 1980) during encoding - spec #21: original-bug detection is a core output of the encoding process. Kinds: editing_error, contradiction, undefined_case, broken_reference, ambiguity, map_errata. Authority ladder: official errata > tournament clarification > proven outcome-equivalence > declared umpired. Discovery evidence chain: VALIDATION.md.",
+  "list": [
+   {
+    "id": "crt-phantom-7-1-column",
+    "kind": "editing_error",
+    "rules": ["7.4", "9.1", "7.1"],
+    "defect": "Rule 7.4 says 'Odds greater than 7-1 are treated as 7-1' and 7.1 says units lose their ZOC 'if attacked at 7-1 odds' - but the printed CRT has NO 7-1 column; it tops out at 6-1. The 3rd-edition rewrite references a column that does not exist on the component it resolves against.",
+    "resolution": "Odds greater than 6-1 after rounding are automatic elimination with NO die roll; '7-1' in the rules text names that situation, not a CRT column.",
+    "authority": "The game's own components agree once cross-read: rule 9.1 defines the 7-1/5-1-surrounded automatic-elimination situation, and the note printed beside the map's CRT says 'Odds greater than 6-1 or less than 1-6 mean automatic elimination.' Two-source CRT validation (validate_combat.py) confirms no 7-1 column in either printing.",
+    "enforced": true
+   },
+   {
+    "id": "broken-cross-reference-11-9",
+    "kind": "broken_reference",
+    "rules": ["11.9", "14.3", "14.5", "9.6"],
+    "defect": "Rule 11.9 cites '(Exception: 14.3 - see the second example under 9.6)' - the worked example it means (the surrounded blue 2-2-6 eliminated before combat) is actually printed under 14.5, not 9.6.",
+    "resolution": "Read as the 14.5 example. No gameplay effect; the 14.3 exception itself (supply-free attacks at 1-3 or worse) is enforced.",
+    "authority": "Textual inspection; the referenced example exists exactly once in the rulebook.",
+    "enforced": true
+   },
+   {
+    "id": "supply-route-vs-13-2-contradiction",
+    "kind": "contradiction",
+    "rules": ["14.2", "13.2"],
+    "defect": "Rule 14.2 requires the five-hex supply route 'free of enemy ZOC ... inclusive of the hex containing the supply unit', while 13.2 explicitly permits a supply unit to move INTO an enemy ZOC when sustaining an attack against that enemy - read strictly, a supply sustaining from adjacent to the defender always violates 14.2.",
+    "resolution": "The attacked units' own ZOC is ignored when tracing the supply route for the battle against them; every other enemy's ZOC still blocks (including the supply hex itself).",
+    "authority": "Module tournament clarifications figs. 12 and 15 (Nov 2023): fig 15 rules the adjacent-supply attack legal, fig 12 rules an uninvolved unit's ZOC blocking. Both cases validated in the gate (validate_combat.py 3b).",
+    "enforced": true
+   },
+   {
+    "id": "retreat-into-origin-undefined",
+    "kind": "undefined_case",
+    "rules": ["7.6"],
+    "defect": "Rule 7.6 allows zigzag retreats 'so as to end the retreat only one hex away from the original hex' but never says whether a retreat may re-enter the battle hex itself or visit the same hex twice - undefined for 43 years.",
+    "resolution": "A retreating unit may not re-enter the hex it fought from nor enter any hex twice; if no other legal retreat exists it is eliminated.",
+    "authority": "Tournament clarifications sec. 9 (Nov 2023), citing the common ruling for AH games.",
+    "enforced": true
+   },
+   {
+    "id": "exchange-tie-undefined",
+    "kind": "undefined_case",
+    "rules": ["7.5"],
+    "defect": "The Exchange result assigns full removal to 'the player with fewer combat factors actually involved' - undefined when the involved factors are EQUAL.",
+    "resolution": "Both sides remove all involved units. Proven outcome-equivalent: under either reading of the tie, the loser removes everything and the winner must then match at least that total from the same involved units, which is everything.",
+    "authority": "Outcome-equivalence proof (both readings converge); gate auto-applies, so no player choice exists to get wrong.",
+    "enforced": true
+   },
+   {
+    "id": "fortress-zoc-etc-ambiguity",
+    "kind": "ambiguity",
+    "rules": ["7.1", "19.5", "23.1", "23.2"],
+    "defect": "Rule 7.1 lists the ZOC exceptions as 'E18-F19, W62-X62, and fortresses, etc.' - an 'etc.' inside a rules exception list, with the fortress ZOC direction (into the fortress? out of it? both?) never stated in one place.",
+    "resolution": "Bidirectional: adjacent units exert no ZOC over a fortress hex (19.5) AND a garrison exerts no ZOC outward - which is exactly why 23.1/23.2 can make attacks around a fortress optional in both directions.",
+    "authority": "Cross-reading 7.1 + 19.5 + 23.1/23.2, confirmed by tournament clarifications fig. 9 ('its ZOC does not extend into the fortress'). The missing outward half was live as a wrong pin in our own Tier-1 gate until this cross-read caught it.",
+    "enforced": true
+   },
+   {
+    "id": "map-playable-hexes-errata",
+    "kind": "map_errata",
+    "rules": ["5.6", "5.7", "5.8"],
+    "defect": "The printed map is ambiguous about its own edges: which partial Qattara hexes are playable, which east/south edge partials are out of play, and which hex pairs are non-adjacent across water/depression inlets all needed post-publication enumeration.",
+    "resolution": "Playable Qattara partials (Q59-Q64, R58/R59/R65, S57..X63 list), unplayable east-edge partials (H63..X70), no southern letterless row, non-adjacent pairs E18-F19 / R65-S65 / W61-X62 / W62-X62 - all encoded in terrain.json and the hexside prohibitions.",
+    "authority": "Tournament clarifications sec. 1 ('Playable Hexes'), matching rules 5.6-5.8's examples; validated against the printed map art in build_terrain.py.",
+    "enforced": true
+   }
+  ]
  }
 }

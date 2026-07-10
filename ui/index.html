@@ -624,6 +624,20 @@ function renderRules() {
       h += `</ul>`;
     }
   }
+  const SD = GAME && GAME.source_defects;
+  if (SD && SD.list && SD.list.length) {
+    h += `<div style="color:#c99ae0;font-weight:600">Defects found in the printed game — and how the engine resolves them</div>
+          <div class="dim" style="margin:4px 0 6px">Encoding a game is a formal check of its own
+          rulebook. These are defects of the ORIGINAL published game (editing errors,
+          contradictions, undefined cases), each with the resolution this engine enforces and
+          the authority for that resolution.</div><ul>`;
+    SD.list.forEach(d => {
+      h += `<li><b>${d.defect}</b> <span class="dim">[${d.kind}; rules ${d.rules.join(', ')}]</span><br>
+            <span style="color:#9fc27f">Resolved:</span> ${d.resolution}<br>
+            <span class="dim">Authority: ${d.authority}</span></li>`;
+    });
+    h += `</ul>`;
+  }
   P.innerHTML = h;
 }
 document.getElementById('rulesbtn').onclick = () => {
