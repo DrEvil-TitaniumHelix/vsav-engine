@@ -50,6 +50,21 @@
                 padding:10px 14px; z-index:45; box-shadow:0 6px 24px rgba(0,0,0,.5); }
   #rulespanel ul { margin:4px 0 8px; padding-left:20px; }
   #rulespanel li { margin:3px 0; }
+  #tablespanel { display:none; position:fixed; top:52px; right:8px; width:600px; max-width:60vw;
+                 max-height:82vh; overflow:auto; background:#23262cf5; color:#dde3ea;
+                 font-size:13px; border:1px solid #3a3f47; border-radius:8px;
+                 padding:10px 14px; z-index:46; box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  #tablespanel h3 { margin:10px 0 3px; font-size:14px; color:#fff; }
+  #tablespanel .cite { color:#8a8f98; font-size:11.5px; margin-bottom:6px; }
+  #tablespanel table { border-collapse:collapse; margin:4px 0 6px; font-variant-numeric:tabular-nums; }
+  #tablespanel th, #tablespanel td { border:1px solid #3a3f47; padding:3px 7px; text-align:center; }
+  #tablespanel th { background:#2c2f36; color:#c8d2dc; font-weight:600; }
+  #tablespanel td:first-child, #tablespanel th:first-child { text-align:left; white-space:nowrap; color:#cdd6df; }
+  #tablespanel .legend { margin:2px 0 6px; padding-left:2px; }
+  #tablespanel .legend div { margin:2px 0; }
+  #tablespanel .legend code { color:#ffd75e; font-weight:600; margin-right:6px; }
+  #tablespanel .notes { color:#9aa3ad; font-size:12px; margin:2px 0 4px; padding-left:16px; }
+  #tablespanel .notes li { margin:2px 0; }
 </style>
 </head>
 <body>
@@ -64,6 +79,7 @@
   <span id="note"></span>
   <button class="sidebtn" id="tierbtn" style="display:none"></button>
   <button class="sidebtn" id="rulesbtn">Rules</button>
+  <button class="sidebtn" id="tablesbtn">Tables</button>
   <button class="sidebtn" id="resetbtn">Reset game</button>
 </div>
 <div id="tierpanel" style="display:none; position:fixed; top:52px; right:8px; width:360px;
@@ -79,6 +95,7 @@
 <div id="actions"></div>
 <div id="tip"></div>
 <div id="rulespanel"></div>
+<div id="tablespanel"></div>
 <div id="arrivals" style="display:none; position:fixed; top:52px; left:8px; max-width:340px;
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
@@ -813,6 +830,49 @@ document.getElementById('rulesbtn').onclick = () => {
   P.style.display = open ? 'none' : 'block';
   document.getElementById('rulesbtn').classList.toggle('on', !open);
   renderRules();
+};
+
+// ---------- tables panel (transcribed CRT / to-hit — the data the gate uses) ----------
+function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+async function renderTables() {
+  const P = document.getElementById('tablespanel');
+  if (P.style.display !== 'block') return;
+  P.innerHTML = `<b>Game tables</b><div class="cite">Loading…</div>`;
+  let tables = [];
+  try { tables = (await (await fetch('/api/tables')).json()).tables || []; }
+  catch(e) { P.innerHTML = `<b>Game tables</b><div class="cite">Could not load tables.</div>`; return; }
+  let h = `<b>Game tables</b><div class="cite">Transcribed from the rulebook and cited — the
+           same data the engine resolves combat on, not scanned images.</div>`;
+  if (!tables.length)
+    h += `<div class="dim" style="margin-top:6px">This game has no encoded combat tables
+          (Tier 0/1, or none applicable).</div>`;
+  for (const t of tables) {
+    h += `<h3>${esc(t.title)}</h3>`;
+    if (t.cite) h += `<div class="cite">${esc(t.cite)}</div>`;
+    h += `<div style="overflow-x:auto"><table><thead><tr>`;
+    t.columns.forEach(c => h += `<th>${esc(c)}</th>`);
+    h += `</tr></thead><tbody>`;
+    t.rows.forEach(r => { h += `<tr>`; r.forEach(c => h += `<td>${esc(c)}</td>`); h += `</tr>`; });
+    h += `</tbody></table></div>`;
+    if (t.legend && t.legend.length) {
+      h += `<div class="legend">`;
+      t.legend.forEach(l => h += `<div><code>${esc(l.code)}</code>${esc(l.text)}</div>`);
+      h += `</div>`;
+    }
+    if (t.notes && t.notes.length) {
+      h += `<ul class="notes">`;
+      t.notes.forEach(n => h += `<li>${esc(n)}</li>`);
+      h += `</ul>`;
+    }
+  }
+  P.innerHTML = h;
+}
+document.getElementById('tablesbtn').onclick = () => {
+  const P = document.getElementById('tablespanel');
+  const open = P.style.display === 'block';
+  P.style.display = open ? 'none' : 'block';
+  document.getElementById('tablesbtn').classList.toggle('on', !open);
+  renderTables();
 };
 
 // ---------- top bar ----------

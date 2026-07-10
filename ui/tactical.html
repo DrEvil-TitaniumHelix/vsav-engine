@@ -18,6 +18,20 @@
   .sidebtn.on { background:#3a6ea5; color:#fff; border-color:#6aa0d8; }
   .sidebtn.warn { background:#7a2f22; color:#ffd6cc; border-color:#a05040; }
   .sidebtn:disabled { opacity:.4; cursor:default; }
+  #tablespanel { display:none; position:fixed; top:60px; right:8px; width:600px; max-width:60vw;
+                 max-height:82vh; overflow:auto; background:#1d2025f5; color:#cfd3da;
+                 font-size:13px; border:1px solid #3a3f47; border-radius:8px;
+                 padding:10px 14px; z-index:92; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #tablespanel h3 { margin:10px 0 3px; font-size:14px; color:#fff; }
+  #tablespanel .cite { color:#8a8f98; font-size:11.5px; margin-bottom:6px; }
+  #tablespanel table { border-collapse:collapse; margin:4px 0 6px; font-variant-numeric:tabular-nums; }
+  #tablespanel th, #tablespanel td { border:1px solid #3a3f47; padding:3px 7px; text-align:center; }
+  #tablespanel th { background:#2c2f36; color:#c8d2dc; font-weight:600; }
+  #tablespanel td:first-child, #tablespanel th:first-child { text-align:left; white-space:nowrap; color:#cdd6df; }
+  #tablespanel .legend div { margin:2px 0; }
+  #tablespanel .legend code { color:#ffd75e; font-weight:600; margin-right:6px; }
+  #tablespanel .notes { color:#9aa3ad; font-size:12px; margin:2px 0 4px; padding-left:16px; }
+  #tablespanel .notes li { margin:2px 0; }
   #viewport { position:absolute; top:52px; left:0; right:340px; bottom:0; overflow:hidden; cursor:grab; }
   #world { position:absolute; transform-origin:0 0; }
   #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
@@ -101,9 +115,11 @@
   <button class="sidebtn" id="endmove">End movement</button>
   <button class="sidebtn" id="passfire">Pass fire</button>
   <button class="sidebtn" id="aibtn">AI acts</button>
+  <button class="sidebtn" id="tablesbtn">📊 Tables</button>
   <button class="sidebtn" id="guidebtn">📖 Guide</button>
   <button class="sidebtn warn" id="newgame">New game</button>
 </div>
+<div id="tablespanel"></div>
 <div id="guide" style="display:none; position:fixed; inset:70px 60px; z-index:90; background:#1d2025;
      border:1px solid #556; border-radius:12px; box-shadow:0 10px 50px rgba(0,0,0,.8);
      color:#cfd3da; overflow:hidden; font-size:14px;">
@@ -938,6 +954,41 @@ function openGuide(sec){
   G.style.display='block';
 }
 document.getElementById('guidebtn').onclick=()=>openGuide('The Scenario');
+
+// ---------- tables panel (transcribed to-hit / CRT — the data the gate uses) ----------
+function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+async function renderTables(){
+  const P=document.getElementById('tablespanel');
+  if(P.style.display!=='block') return;
+  P.innerHTML=`<b>Game tables</b><div class="cite">Loading…</div>`;
+  let tables=[];
+  try{ tables=(await (await fetch('/api/tables')).json()).tables||[]; }
+  catch(e){ P.innerHTML=`<b>Game tables</b><div class="cite">Could not load tables.</div>`; return; }
+  let h=`<b>Game tables</b><div class="cite">Transcribed from the rulebook and cited — the
+         same data the engine resolves fire on, not scanned images.</div>`;
+  if(!tables.length) h+=`<div style="margin-top:6px;color:#8a8f98">No encoded tables for this game.</div>`;
+  for(const t of tables){
+    h+=`<h3>${esc(t.title)}</h3>`;
+    if(t.cite) h+=`<div class="cite">${esc(t.cite)}</div>`;
+    h+=`<div style="overflow-x:auto"><table><thead><tr>`;
+    t.columns.forEach(c=>h+=`<th>${esc(c)}</th>`);
+    h+=`</tr></thead><tbody>`;
+    t.rows.forEach(r=>{ h+=`<tr>`; r.forEach(c=>h+=`<td>${esc(c)}</td>`); h+=`</tr>`; });
+    h+=`</tbody></table></div>`;
+    if(t.legend&&t.legend.length){ h+=`<div class="legend">`;
+      t.legend.forEach(l=>h+=`<div><code>${esc(l.code)}</code>${esc(l.text)}</div>`); h+=`</div>`; }
+    if(t.notes&&t.notes.length){ h+=`<ul class="notes">`;
+      t.notes.forEach(n=>h+=`<li>${esc(n)}</li>`); h+=`</ul>`; }
+  }
+  P.innerHTML=h;
+}
+document.getElementById('tablesbtn').onclick=()=>{
+  const P=document.getElementById('tablespanel');
+  const open=P.style.display==='block';
+  P.style.display=open?'none':'block';
+  document.getElementById('tablesbtn').classList.toggle('on',!open);
+  renderTables();
+};
 
 // ---------- top bar ----------
 document.getElementById('endmove').onclick=()=>postAction({type:'end_movement'});

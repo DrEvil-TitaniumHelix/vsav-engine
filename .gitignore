@@ -24,3 +24,8 @@ __pycache__/
 *.pyc
 dist/
 engine/baseline.json
+
+# PyInstaller build artifacts (bundle game art — never commit to the public repo)
+/build/
+*.exe
+*.app/

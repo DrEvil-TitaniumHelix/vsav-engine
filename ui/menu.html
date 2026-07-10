@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>The Vassal — choose a game</title>
+<title>Legality Engine for VASSAL — choose a game</title>
 <style>
   html,body { margin:0; height:100%; background:#1a1c20; color:#dde3ea;
               font-family:Segoe UI,sans-serif; }
@@ -35,7 +35,7 @@
 </head>
 <body>
 <header>
-  <h1>The Vassal</h1>
+  <h1>Legality Engine <span style="color:#8a8f98;font-weight:400">for VASSAL</span></h1>
   <div class="sub">Choose a game to play. Rules are enforced by the engine; your move history replays exactly.</div>
 </header>
 <div id="wrap">
@@ -63,6 +63,7 @@ async function load(){
   try { data = await (await fetch("/api/games")).json(); }
   catch(e){ document.getElementById("loading").textContent = "Could not reach the engine."; return; }
   document.getElementById("loading").style.display = "none";
+  if (data.version) document.getElementById("ver").textContent = "v" + data.version;
   const cards = document.getElementById("cards");
   for (const g of data.games){
     const card = document.createElement("div");
