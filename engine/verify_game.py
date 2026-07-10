@@ -51,7 +51,8 @@ def verify(game_dir, log_path, verbose=False):
     strategic = init.get("mode") == "strategic"
     with tempfile.TemporaryDirectory() as tmp:
         if strategic:
-            tg = strat_mod.StrategicGame(game, scen_path, tmp, seed=init["seed"])
+            tg = strat_mod.StrategicGame(game, scen_path, tmp, seed=init["seed"],
+                                         tier=init.get("tier"))
         else:
             tg = gs_mod.TacticalGame(game, scen_path, tmp, seed=init["seed"])
         # confirm starting positions match the log's init record
