@@ -53,6 +53,78 @@ positions fails — pieces are hand-placed off-center and contaminated by
 turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
 spacing, not the grid). The printed map grid is the ground truth.
 
+## TIER 2 COMPLETE 2026-07-09 (late): supply capture + isolation + replacements + substitutes + AV
+## (re-run `python validate_tier2.py` — ALL PASS; every session replays through verify_game.py)
+
+The last five subsystems are enforced. Evidence highlights:
+
+**SUPPLY CAPTURE (15)** — 15.21 auto-capture on movement adjacency with the
+counter swap and pool return; one-directional trigger (15.21 "moves
+adjacent" + 15.211: static enemy adjacency never captures — the first
+implementation was a state-based sweep that PING-PONGED a 15.322 capture
+back to the old escort standing on it; caught by the validator's own replay
+log). Fortress shielding (15.23; capture only by moving onto it or the
+combat-phase 'attack', with the 16.3 advance). Accompanied supplies: the
+one-unit capture-attack with mandatory escort battles (15.322, figs 6/7/11;
+the capturer is barred from other battles). Retreat/advance pickup (15.22,
+incl. the sustaining-supply exception). Post-capture rights BY METHOD:
+movement captures move+sustain (figs 1-2); combat captures move-only,
+including the 15.34 escape from the old escort's ZOC (implemented as a
+one-shot combat-phase move with exactly that ZOC negated); fortress and
+retreat captures are frozen. 15.4 voluntary destruction. COUNTER RECYCLING:
+consumed/destroyed/captured-away supplies return to the owner's off-board
+pool — without this the Axis would run out of supply counters after three
+sustained attacks (the 12.1/12.2 maxima are physical-counter counts).
+
+**ISOLATION (24)** — two-consecutive-own-turns elimination with start+end
+checks (24.2; clarification 8's land-then-destroy case counts as isolated,
+validated verbatim); at-sea isolation (24.4); the 24.5 no-supplies game
+loss (validated end-to-end: a side stripped of supply for two turns loses
+everything). The end-of-turn isolation check runs BEFORE consumed supplies
+leave the board (they are removed AT the end per 14.1; a wrong
+auto-elimination is worse than a lenient order — documented call).
+Trace-fix en route: a unit STACKED with its supply was counted isolated
+(the BFS never revisits its start hex) — would have starved every W6 stack.
+
+**REPLACEMENTS (20)** — accrual at own-turn start for controlled home base
+(Axis 1 / Allied 2) + Tobruch (1 each) from 1 March 1942 (the printed
+track's 'Begin Replacement Rate', asserted against the label list);
+accumulation 20.5; spending attack factors to resurrect eliminated combat
+units under the reinforcement rules; substitutes barred (21.6).
+
+**SUBSTITUTES (21)** — needed unit TYPES, which the factor transcription
+lacks: all 61 Allied combat counters were read visually (NATO symbols:
+oval=armor, X=infantry, X-over-oval=armored infantry, RECCE box) and
+encoded as game.json unit_types. Cross-check: the rulebook's own 7.3
+example names the 3-3-7 'British 7th Armored Infantry' == the X-over-oval
+on 'A 7 Arm 7'. Motor battalions carry the plain infantry X (infantry, NOT
+armored infantry). Equal-factor exchange at the end of the movement
+portion, type matching both directions, breakdown with the 21.4 factor/MF
+constraints (fast components only if they originally formed the sub).
+
+**AUTOMATIC VICTORY (9)** — declaration during movement at 7-1, or 5-1 with
+a defender that provably cannot survive a back-2 (reuses the 7.62
+survival-assignment search; the 5-1 stage builds a real three-unit ring —
+and the gate REJECTED a live 2-unit 'ring' against Bengasi in the browser
+session because a route genuinely remained open). Supply trace at the
+instant with the defender's own ZOC still blocking (clarifications sec 10,
+rejection validated); ZOC negation via a zoc_negated board flag (pass
+through and OVER the AVed unit, never onto it — legal-destination sets
+checked before/after); attacker + cutoff-blocker freeze (9.2/9.3);
+end-of-movement supply revalidation incl. the 14.5 both-supplies-expended
+replacement case; mandatory resolution before the turn ends (9.6); the AV
+battle resolves without a die at >6-1.
+
+**Umpired corners (declared in rules_scope):** 11.7 fortress twice-attacked
+exception, 7.61 overstack-casualty choice, 21.3 mid-exchange breakdown,
+9.4 joined-AV bookkeeping beyond the freeze, 22.4's isolation-encirclement
+clause for Rommel. Web build still legacy JS (Tier 0).
+
+**Regressions:** all seven AK validators ALL PASS, Arnhem baseline
+fe2a652f identical, Tobruk 17/17, all games load. Source-defect register
+grew to 8 entries (capture-vs-min-odds conflict, resolved by tournament
+clarifications figs 3-4, enforced as the move-time fig-3 guard).
+
 ## TIER 2 COMBAT: VALIDATED 2026-07-09 (re-run `python validate_combat.py` — ALL PASS)
 
 **CRT — two independent sources, all 66 cells identical.** The encoded table

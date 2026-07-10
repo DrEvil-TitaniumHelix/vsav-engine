@@ -259,7 +259,10 @@ class Game:
         """ZOC comes from combat units only when zoc.exempt_classes is set;
         units standing on zoc.no_exert_terrain exert none at all (AK 7.1
         fortress exception + 23.1/23.2: attacks around a fortress are
-        optional in both directions — a garrison exerts no ZOC outward)."""
+        optional in both directions — a garrison exerts no ZOC outward).
+        Units flagged zoc_negated (AK 9.1 Automatic Victory) exert none."""
+        if u.get("zoc_negated"):
+            return False
         exempt = self.zoc_cfg.get("exempt_classes")
         if exempt and self.unit_class(u["name"]) in exempt:
             return False
@@ -375,20 +378,29 @@ class Game:
         return self.hex_terrain(*h) in self.terrain_stop
 
     def _enemy_hexes(self, board, enemy):
-        """(blocked, passable): blocked = enemy-occupied hexes that may never
-        be entered; passable = enemy hexes whose occupants are ALL of
-        enemy_hex.pass_classes (AK 5.4: only COMBAT units block on-top/through;
-        a lone supply or Rommel hex may be entered, 22.3/15.22)."""
+        """(blocked, passable, no_end): blocked = enemy-occupied hexes that
+        may never be entered; passable = enemy hexes whose occupants are ALL
+        of enemy_hex.pass_classes (AK 5.4: only COMBAT units block on-top/
+        through; a lone supply or Rommel hex may be entered, 22.3/15.22) or
+        zoc_negated combat units (AK 9.1 Automatic Victory: attackers may
+        move OVER the AVed unit); no_end ⊆ passable = hexes holding a
+        negated combat unit — passable but never a destination (9.1 'may
+        not end their move directly on top of it')."""
         occ = {}
         for u in board:
             if u["side"] == enemy:
                 occ.setdefault((u["col"], u["row"]), []).append(u)
         if not self.enemy_pass_classes:
-            return set(occ), set()
+            return set(occ), set(), set()
+        def transparent(u):
+            return self.unit_class(u["name"]) in self.enemy_pass_classes \
+                or u.get("zoc_negated")
         blocked = {h for h, us in occ.items()
-                   if any(self.unit_class(u["name"]) not in self.enemy_pass_classes
-                          for u in us)}
-        return blocked, set(occ) - blocked
+                   if any(not transparent(u) for u in us)}
+        passable = set(occ) - blocked
+        no_end = {h for h in passable
+                  if any(u.get("zoc_negated") for u in occ[h])}
+        return blocked, passable, no_end
 
     def _stack_ok(self, unit, h, board):
         """May `unit` END its move in friendly-occupied hex h? Only with a
@@ -445,7 +457,7 @@ class Game:
         pareto frontier of (normal_used, road_used)."""
         enemy = self.enemy(unit["side"])
         fpos = {(u["col"], u["row"]) for u in board if u["side"] != enemy}
-        eblock, epass = self._enemy_hexes(board, enemy)
+        eblock, epass, eno_end = self._enemy_hexes(board, enemy)
         # legacy bool applies only when no class rule is specified: everything
         # enterable, nothing endable
         if not self.enemy_pass_classes \
@@ -455,6 +467,8 @@ class Game:
         def can_end(h):
             if h in eblock or (h in epass and not self.enemy_pass_classes):
                 return False
+            if h in eno_end:
+                return False              # AV'd unit's hex (9.1): over, not on
             if h in fpos and not self._stack_ok(unit, h, board):
                 return False
             return True
@@ -539,7 +553,7 @@ class Game:
         rulebook's worked movement examples verbatim."""
         enemy = self.enemy(unit["side"])
         fpos = {(u["col"], u["row"]) for u in board if u["side"] != enemy}
-        eblock, epass = self._enemy_hexes(board, enemy)
+        eblock, epass, eno_end = self._enemy_hexes(board, enemy)
         if not self.enemy_pass_classes:
             eblock |= epass          # no class rule: every enemy hex blocks
         ezoc = self.zoc_hexes(board, enemy)
@@ -580,6 +594,8 @@ class Game:
             prev, by_road = cur, road_side
         if path[-1] in fpos and not self._stack_ok(unit, path[-1], board):
             return False, "end hex over the stacking limit (6.1/6.3)"
+        if path[-1] in eno_end:
+            return False, "may not end the move on the AVed unit's hex (9.1)"
         return True, f"ok (normal {n_used:g}/{ma}, road {r_used:g}/{road_mp:g})"
 
     def legal_destinations_t(self, unit, ma, board):

@@ -74,7 +74,7 @@ labels = labels[:38]
 assert labels[0] == "1 April 1941" and labels[-1] == "15 October 1942"
 
 scenario = {
-    "name": "Afrika Korps campaign (March 1941 Situation) — Tier 2 combat",
+    "name": "Afrika Korps campaign (March 1941 Situation) — Tier 2 complete",
     "mode": "strategic",
     "rules_scope": {
         "enforced": [
@@ -98,19 +98,32 @@ scenario = {
             "advance after combat into vacated fortress/escarpment hexes before the next battle (16.1-16.3)",
             "pre-combat eliminations: isolated in enemy ZOC with no legal supply-free attack (11.9, 24.1, clarifications sec. 5); forced to attack worse than 1-6 (7.4) — strictly before any battle",
             "fortress combat: attacks into a fortress engage every unit in it; fortress sorties must attack all adjacent enemies; attacks around a fortress optional both ways (23.1-23.2)",
-            "victory: elimination of all enemy combat units on the board (clarification 13: at-sea excluded) and two-consecutive-turn control of both fortresses + both home bases (4.1-4.3); Allied win by survival through 15 Oct 1942 (4.2)",
+            "victory: elimination of all enemy combat units on the board (clarification 13: at-sea excluded) and two-consecutive-turn control of both fortresses + both home bases (4.1-4.3); Allied win by survival through 15 Oct 1942 (4.2); no-supplies-for-two-turns loss (24.5)",
+            "SUPPLY CAPTURE (15): automatic capture when a combat unit moves adjacent to / onto an unaccompanied enemy supply (15.21, one-directional trigger per 15.211), fortress shielding (15.23, capture by combat-phase 'attack' with advance 16.3), the one-unit capture-attack on accompanied supplies with mandatory escort battles (15.322, clarification figs 6/7/11), retreat/advance pickup (15.22 incl. the sustaining-supply exception), post-capture rights per method (15.21 free / 15.33-15.34 move-only incl. escape from the old escort's ZOC / 15.23 frozen), voluntary destruction (15.4), counter recycling to the off-board pools, and the fig-3 guard: no voluntary move into a hopeless capture position (7.4 supersedes 15.21)",
+            "ISOLATION (24): the 24.1 trace (also used by 11.9), elimination after two consecutive own player turns isolated at start AND end (24.2, clarification 8: mid-turn supply that is gone by turn end does not break the count), at-sea isolation (24.4), and the two-turn no-supplies-on-board game loss (24.5)",
+            "REPLACEMENTS (20, from 1 March 1942 per the printed track): accrual at the start of the own player turn for controlled home base/Tobruch (Axis 1+1, Allied 2+1), accumulation (20.5/20.6), spending attack factors to return eliminated combat units under the reinforcement rules (20.4); substitutes never return as replacements (21.6)",
+            "SUBSTITUTES (21, Allied, from 1 Aug 1942 per the printed track): equal-attack-factor exchange at the end of the movement portion in one hex (21.1/21.2), type matching from the counter-face symbols (armor <-> armor/armored-infantry, infantry <-> infantry/recce — all 61 Allied counters visually classified), breakdown with the 21.4 factor/MF constraints, stacking 21.5, never at sea/off-board (21.6), only real substitute counters (21.7)",
+            "AUTOMATIC VICTORY (9): declaration during movement at 7-1, or 5-1 with a defender that provably cannot survive a back-2 (9.1), supply trace at the instant with the defender's own ZOC still blocking (9.2 + clarification sec 10), ZOC negation for the rest of the turn with move-over-but-never-onto the AVed unit (9.1), attacker/blocker freeze (9.2/9.3), end-of-movement supply revalidation with the two-supply expenditure (14.5), and mandatory resolution before the turn ends (9.6)",
         ],
         "not_enforced": [
-            "Automatic Victory ZOC negation during movement (9.1-9.7) — the gate is STRICTER: a 7-1 declared in combat still auto-eliminates, but AV movement-phase pass-through is not yet offered",
-            "supply capture (15): moving/retreating onto or adjacent to an unaccompanied enemy supply does not yet flip it — umpire captures manually; captured-supply counters stay in reserve",
-            "isolation attrition (24.2-24.5): two-turn isolation elimination and the no-supplies game loss are not tracked (the 24.1 supply trace IS used for 11.9)",
-            "replacements (20) and substitute units (21)",
-            "corner cases umpired (declared, gate never permits an illegal state): 7.4's voluntary-vs-forced distinction beyond the solo-attack test (multi-unit support feasibility not searched), the 11.7 fortress twice-attacked exception, 7.61's retreating-player pick of overstack casualties, 15.22 mid-retreat supply pickup",
+            "corner cases umpired (declared, gate never permits an illegal state): 7.4's voluntary-vs-forced distinction beyond the solo-attack + support-presence tests, the 11.7 fortress twice-attacked exception, 7.61's retreating-player pick of overstack casualties, 21.3's mid-exchange breakdown during combat resolution, 9.4's joined-AV bookkeeping beyond the freeze, Rommel isolation displacement when encircled with friends (22.4 second clause)",
+            "web build (web/) still runs the legacy JS engine — the AK gate is Python/HTTP only",
         ],
     },
     "supply_table": {
         "windows": SUPPLY_TABLE,
         "cite": "12.2 SUPPLY TABLE (rulebook) == printed track wedges 15 Apr 41 / 1 Jul 41 / 1 Dec 41 — cross-validated in validate_arrivals.py",
+    },
+    "replacements": {
+        "start_turn": labels.index("1 March 1942") + 1,
+        "rates": {"Axis": {"homebase": 1, "fortress_port": 1},
+                  "Allied": {"homebase": 2, "fortress_port": 1}},
+        "cite": "20.1 starting March 1942 (Time Record 'Begin Replacement Rate' at 1 March 1942, printed '1 1T 2'); 20.2 Axis 1/turn home base + 1/turn Tobruch; 20.3 Allied 2/turn home base + 1/turn Tobruch; control at the beginning of the player turn per 4.3; 20.5 factors accumulate; 20.4 placement per the reinforcement rules; 21.6 substitutes never enter as replacements",
+    },
+    "substitutes": {
+        "start_turn": labels.index("1 August 1942") + 1,
+        "side": "Allied",
+        "cite": "21.1 starting August 1942 (Time Record 'Substitute Units now available' at 1 Aug 1942); armor for armor/armored-infantry, infantry for infantry/recce, equal attack factors; 21.2 at the end of the Allied movement portion, same hex, no movement after placement; 21.5 stacking limits before and after; 21.6 not at sea/off board",
     },
     "supply_pool": supply_pool,
     "supply_max_on_board": {"Axis": 3, "Allied": 4,
