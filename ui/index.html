@@ -61,9 +61,13 @@
   <button class="sidebtn" id="endphasebtn" style="display:none">End player turn</button>
   <span id="progress"></span>
   <span id="note"></span>
+  <button class="sidebtn" id="tierbtn" style="display:none"></button>
   <button class="sidebtn" id="rulesbtn">Rules</button>
   <button class="sidebtn" id="resetbtn">Reset game</button>
 </div>
+<div id="tierpanel" style="display:none; position:fixed; top:52px; right:8px; width:360px;
+     background:#23262cee; color:#dde3ea; font-size:13px; border:1px solid #3a3f47;
+     border-radius:8px; padding:10px 14px; z-index:46; box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
 <div id="viewport">
   <div id="world">
     <img class="map">
@@ -165,8 +169,10 @@ function bootGame(g) {
 async function refresh() {
   const s = await (await fetch('/api/state')).json();
   if (!GAME) bootGame(s.game);
+  else GAME.tier = s.game.tier;      // active tier can change on reset
   units = s.units;
   FLOW = s.flow || null;
+  renderTierBtn();
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   if (!combatActive()) clearBattleSel();
@@ -491,6 +497,7 @@ const hexPts = (x,y) => hexCorners(x,y).map(p => p.join(',')).join(' ');
 function drawOverlay() {
   OV.innerHTML = '';
   if (!legal) return;
+  if (legal.free) return;   // free play: no gate, no highlights — drop anywhere
   // dim everything except legal hexes + origin: evenodd path with hex holes
   let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
   const hole = (x,y) => 'M' + hexCorners(x,y).map(q=>q.join(' ')).join(' L ') + ' Z ';
@@ -521,8 +528,13 @@ function onCounterDown(ev, u, stackUnits) {
   ev.stopPropagation();
   if (combatActive()) { toggleBattle(u, stackUnits); return; }
   if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
-  if (u.side !== mySide || u.status || !u.onmap || u.ma === 0) return;
-  const eligible = stackUnits.filter(s => s.side===mySide && !s.status && s.ma>0);
+  // free play (no gate): any of your pieces is draggable — markers, track
+  // pieces off the playable map, zero-MA units included (VASSAL parity)
+  if (u.side !== mySide || u.status) return;
+  if (FLOW && (!u.onmap || u.ma === 0)) return;
+  const eligible = FLOW
+    ? stackUnits.filter(s => s.side===mySide && !s.status && s.ma>0)
+    : stackUnits.filter(s => s.side===mySide && !s.status);
   if (eligible.length > 1) showPicker(ev, eligible);
   else select(u, false, ev);
 }
@@ -551,6 +563,11 @@ async function select(u, whole, ev) {
   if (legal.reasons && legal.reasons.length && !legal.dests.length) {
     A.innerHTML = `<b>${u.name}</b> — <span style="color:#e08c7c">${legal.reasons.join('; ')}</span>
                    <button class="sidebtn" onclick="deselect()">OK</button>`;
+  } else if (legal.free) {
+    A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — free play:
+                   drag anywhere on the board (you are the umpire).
+                   <button class="sidebtn" onclick="passSel()">Pass</button>
+                   <button class="sidebtn" onclick="deselect()">Cancel</button>`;
   } else {
     A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — MA ${legal.ma}, ${legal.dests.length} legal hexes.
                    Drag to a green hex. <button class="sidebtn" onclick="passSel()">Pass</button>
@@ -632,16 +649,73 @@ async function dragEnd(e) {
   deselect(); refresh();
 }
 
+// ---------- tier selection (engine-level: run at or below the earned tier) ----------
+let tierArm = null;   // choice awaiting its confirming second click
+function renderTierBtn() {
+  const B = document.getElementById('tierbtn'), T = GAME && GAME.tier;
+  if (!T || T.choices.length < 2) { B.style.display = 'none'; return; }
+  B.style.display = '';
+  B.textContent = `Tier ${T.active} of ${T.earned} ▾`;
+  B.classList.toggle('on', document.getElementById('tierpanel').style.display === 'block');
+}
+function renderTierPanel() {
+  const P = document.getElementById('tierpanel'), T = GAME.tier;
+  let h = `<b>Engine enforcement tier</b>
+           <div class="dim" style="margin:4px 0 8px">This game has earned
+           <b>Tier ${T.earned}</b>. You may run it at any tier up to that badge —
+           lower tiers switch validated rule systems OFF and hand them to you,
+           the umpire. Changing tier starts a NEW game.</div>`;
+  T.choices.forEach(c => {
+    const active = c === T.active, armed = tierArm === c;
+    h += `<div class="tierrow" data-t="${c}" style="padding:6px 8px; margin:3px 0;
+            border-radius:6px; cursor:${active?'default':'pointer'};
+            border:1px solid ${active?'#3a6ea5':armed?'#e0a34e':'#3a3f47'};
+            background:${active?'#2b3f55':'#2c2f36'}">
+            ${T.labels[c] || ('Tier ' + c)}
+            ${active ? ' <span style="color:#9fc27f">— ACTIVE</span>'
+                     : armed ? ' <span style="color:#e0a34e">— click again to restart at this tier</span>' : ''}
+          </div>`;
+  });
+  P.innerHTML = h;
+  P.querySelectorAll('.tierrow').forEach(el => el.onclick = async () => {
+    const c = +el.dataset.t;
+    if (c === GAME.tier.active) return;
+    if (tierArm !== c) { tierArm = c; renderTierPanel(); return; }
+    tierArm = null;
+    const r = await (await fetch('/api/reset', {method:'POST',
+      body: JSON.stringify({tier: c})})).json();
+    if (r.error) { toast(r.error); return; }
+    location.reload();   // tier decides which client the server serves
+  });
+}
+document.getElementById('tierbtn').onclick = () => {
+  const P = document.getElementById('tierpanel');
+  const open = P.style.display === 'block';
+  P.style.display = open ? 'none' : 'block';
+  tierArm = null;
+  if (!open) renderTierPanel();
+  renderTierBtn();
+};
+
 // ---------- rules panel (from the scenario's declared rules_scope) ----------
 function renderRules() {
   const P = document.getElementById('rulespanel');
   if (P.style.display !== 'block') return;
   const rs = FLOW && FLOW.rules_scope;
+  const T = GAME && GAME.tier;
   let h = `<b>Rules enforced by the engine</b>`;
+  if (T) h += `<div style="margin:4px 0 2px; color:#8fb8d8">${T.labels[T.active]}
+               ${T.earned > T.active ? ` <span class="dim">(earned: Tier ${T.earned} —
+               switch with the Tier button)</span>` : ''}</div>`;
   if (!rs) {
-    h += `<div class="dim" style="margin-top:6px">Tier 0 — free play. No rules are
-          enforced for this game yet; move pieces as you would at a physical table.
-          You are the umpire.</div>`;
+    h += (T && T.earned > 0)
+      ? `<div class="dim" style="margin-top:6px">You selected Tier 0 — free play by
+         choice. NOTHING is enforced: move any piece anywhere, including the printed
+         tracks, exactly as in VASSAL. You are the umpire. The validated Tier
+         ${T.earned} gate is available from the Tier button (starts a new game).</div>`
+      : `<div class="dim" style="margin-top:6px">Tier 0 — free play. No rules are
+         enforced for this game yet; move pieces as you would at a physical table.
+         You are the umpire.</div>`;
   } else {
     h += `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || GAME.name}.
           Every proposed action passes through the legality gate and is accepted or
@@ -656,6 +730,43 @@ function renderRules() {
       h += `</ul>`;
     }
   }
+  // ---- basic client functions (engine-level; adapts to gate/tier/features)
+  const gated = !!FLOW, hasArr = gated && !!FLOW.arrivals,
+        hasCbt = gated && !!FLOW.combat;
+  h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Using this client</div><ul>`;
+  h += `<li><b>Sides</b> — pick who you're playing with the buttons top-left; switch
+        any time for hot-seat play.</li>`;
+  h += `<li><b>Counters</b> — hover for a unit's stats card; click to select (the card
+        pins bottom-left). Clicking a stack offers each unit or the whole stack.</li>`;
+  h += gated
+    ? `<li><b>Moving</b> — drag the selected counter. Green hexes are the legal
+       destinations the gate computed (numbers = movement points spent); anything
+       else snaps back. Illegal proposals are rejected with the rule citation.</li>`
+    : `<li><b>Moving</b> — drag the selected counter anywhere on the board, printed
+       tracks included, exactly as in VASSAL. Nothing is checked in free play.</li>`;
+  h += `<li><b>Pass</b> — marks the selected unit done without moving.</li>`;
+  if (GAME.facing)
+    h += `<li><b>Facing</b> — right-click a counter to rotate it.</li>`;
+  if (hasArr)
+    h += `<li><b>Arrivals & sea panel</b> (top-left) — supply rolls and landings,
+          reinforcement placement, embark/debark, replacements: every button submits
+          through the gate.</li>`;
+  if (hasCbt)
+    h += `<li><b>Combat panel</b> (top-right, combat phase) — click your units and
+          enemy units to build a battle, watch the live odds preview, then resolve:
+          the engine rolls its own seeded die on the validated CRT and walks you
+          through retreats, exchanges and advances.</li>`;
+  if (gated)
+    h += `<li><b>End player turn</b> — asks the gate to close your turn; it refuses
+          (with citations) while obligations are open.</li>`;
+  if (T && T.choices.length > 1)
+    h += `<li><b>Tier</b> — run the game at any enforcement level up to its earned
+          badge, from Tier 0 free play to the full gate. Changing tier starts a new
+          game.</li>`;
+  h += `<li><b>Reset game</b> — restarts the scenario from its setup.</li>`;
+  h += `<li><b>VASSAL interop</b> — the live save (live\\game_*.vsav) is a real
+        VASSAL save you can open in the desktop app at any time.</li>`;
+  h += `</ul>`;
   const CR = GAME && GAME.credits;
   if (CR) {
     h += `<div style="color:#8fb8d8;font-weight:600;margin-top:8px">Credits</div><ul>`;

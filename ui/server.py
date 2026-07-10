@@ -30,6 +30,11 @@ GAME_OBJ = None   # gamespec.Game
 TG = None         # gamestate.TacticalGame when the game spec names a scenario
 SG = None         # strategic.StrategicGame when the scenario is mode=strategic
 WORK = None       # working .vsav path
+SCEN_PATH = None  # scenario file (None = the game has no gate to offer)
+SCEN_MODE = None  # "strategic" | "tactical" | None
+TIER = 0          # tier the server is RUNNING at (engine-level selection)
+TIER_EARNED = 0   # highest tier the game has earned (spec #13)
+TIER_CHOICES = [0]
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
 facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
                   # VASSAL rotate-state write-through pending a save-diff experiment)
@@ -37,6 +42,39 @@ facing = {}       # piece id -> facing index (sidecar JSON next to the work save
 
 def facing_path():
     return WORK + ".facing.json"
+
+
+def tier_path():
+    return WORK + ".tier.json"
+
+
+def load_tier():
+    """Active tier: persisted sidecar, clamped to what the game has earned."""
+    if os.path.exists(tier_path()):
+        t = json.load(open(tier_path())).get("tier")
+        if t in TIER_CHOICES:
+            return t
+    return TIER_EARNED
+
+
+def save_tier():
+    with open(tier_path(), "w") as f:
+        json.dump({"tier": TIER}, f)
+
+
+def build_gate():
+    """(Re)build the legality gate for the ACTIVE tier — tier selection is an
+    engine-level function: tier 0 = no gate (V3-parity free play, the user is
+    the umpire), tier 1 = movement/arrivals gate, tier 2+ = full gate."""
+    global TG, SG
+    TG = SG = None
+    if not SCEN_PATH or TIER == 0:
+        return
+    if SCEN_MODE == "strategic":
+        SG = strat_mod.StrategicGame(GAME_OBJ, SCEN_PATH,
+                                     os.path.join(ROOT, "live"), tier=TIER)
+    else:
+        TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, os.path.join(ROOT, "live"))
 
 
 def load_facing():
@@ -209,6 +247,11 @@ def game_descriptor():
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
+        tier=dict(active=TIER, earned=TIER_EARNED, choices=TIER_CHOICES,
+                  labels={0: "Tier 0 — free play, you are the umpire",
+                          1: "Tier 1 — movement & arrivals enforced",
+                          2: "Tier 2 — combat enforced (full gate)",
+                          3: "Tier 3 — full gate + AI opponent"}),
         source_defects=g.spec.get("source_defects"),
         credits=g.spec.get("credits"),
     )
@@ -261,9 +304,40 @@ def api_legal_sg(qs):
                 reasons=[])
 
 
+def api_legal_free(qs):
+    """Free play (tier 0 / no gate): every hex on the board image is a valid
+    drop — including off-map areas like printed turn/OOA tracks, exactly as
+    VASSAL itself plays. No costs, no terrain filtering; the user is the
+    umpire (spec #2 V3-parity floor)."""
+    g = GAME_OBJ
+    w, h = png_size(g.assets["map"])
+    out = []
+    c = 0
+    while True:
+        x0, _ = g.grid.hex_to_pixel(c, 0)
+        if x0 > w:
+            break
+        r = 0
+        while True:
+            x, y = g.grid.hex_to_pixel(c, r)
+            if y > h:
+                break
+            if x >= 0 and y >= 0:
+                out.append(dict(col=c, row=r, x=x, y=y,
+                                hexnum=g.grid.hexnum(c, r)))
+            r += 1
+        c += 1
+    pid = qs["id"][0]
+    b = fresh_board()
+    me = next(u for u in b.units() if u["id"] == pid)
+    return dict(ma=g.stats(me["name"])[2], dests=out, free=True)
+
+
 def api_legal(qs):
     if SG:
         return api_legal_sg(qs)
+    if not TG:
+        return api_legal_free(qs)
     g = GAME_OBJ
     pid = qs["id"][0]
     whole = qs.get("whole", ["0"])[0] == "1"
@@ -373,7 +447,16 @@ def api_face(body):
     return dict(ok=True, facing=facing[pid])
 
 
-def api_reset():
+def api_reset(body=None):
+    global TIER
+    t = (body or {}).get("tier")
+    if t is not None:
+        if t not in TIER_CHOICES:
+            return dict(error=f"tier {t} is not available for this game "
+                              f"(earned: {TIER_EARNED})")
+        TIER = t
+        save_tier()
+        build_gate()          # rebuild the gate at the newly selected tier
     if os.path.exists(WORK):
         os.remove(WORK)
     if os.path.exists(facing_path()):
@@ -382,8 +465,10 @@ def api_reset():
     done.clear()
     if SG:
         SG.new_game()
+    if TG:
+        TG.new_game()
     fresh_board()
-    return dict(ok=True)
+    return dict(ok=True, tier=TIER)
 
 
 class H(http.server.SimpleHTTPRequestHandler):
@@ -479,7 +564,7 @@ class H(http.server.SimpleHTTPRequestHandler):
             if self.path == "/api/face":
                 return self._json(api_face(body))
             if self.path == "/api/reset":
-                return self._json(api_reset())
+                return self._json(api_reset(body))
         except Exception as e:
             return self._json(dict(error=str(e)))
         self.send_error(404)
@@ -489,19 +574,39 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--game", default=gamespec.default_game_dir())
     ap.add_argument("--port", type=int, default=8641)
+    ap.add_argument("--tier", type=int, default=None,
+                    help="run BELOW the earned tier (0=free play, 1=movement "
+                         "gate, ...); default = the game's earned tier")
     a = ap.parse_args()
     GAME_OBJ = gamespec.Game(a.game)
     gkey = os.path.basename(os.path.normpath(a.game))
     WORK = os.path.join(ROOT, "live", f"game_{gkey}.vsav")
     if GAME_OBJ.spec.get("scenario"):
-        scen = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
-        mode = json.load(open(scen, encoding="utf-8")).get("mode")
-        if mode == "strategic":
-            SG = strat_mod.StrategicGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
-            print(f"strategic gate: {SG.scenario['name']} (log {SG.log_path})")
+        SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
+        SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
+        if SCEN_MODE == "strategic":
+            # mirror the engine's own earned-tier logic (strategic.py)
+            TIER_EARNED = 2 if GAME_OBJ.spec.get("combat") else 1
+            TIER_CHOICES = list(range(TIER_EARNED + 1))
         else:
-            TG = gs_mod.TacticalGame(GAME_OBJ, scen, os.path.join(ROOT, "live"))
-            print(f"tactical mode: {TG.scenario['name']} (log {TG.log_path})")
+            # tactical family: validated combat rules + policy AI both ship
+            TIER_EARNED = 3
+            TIER_CHOICES = [0, 3]
+    TIER = load_tier()
+    if a.tier is not None:
+        if a.tier not in TIER_CHOICES:
+            sys.exit(f"--tier {a.tier} not available (choices: {TIER_CHOICES})")
+        TIER = a.tier
+        save_tier()
+    build_gate()
+    if SG:
+        print(f"strategic gate (tier {TIER} of {TIER_EARNED}): "
+              f"{SG.scenario['name']} (log {SG.log_path})")
+    elif TG:
+        print(f"tactical mode (tier {TIER}): {TG.scenario['name']} "
+              f"(log {TG.log_path})")
+    elif SCEN_PATH:
+        print(f"tier 0 selected (earned {TIER_EARNED}): free play, no gate")
     # migrate the pre-generalization Arnhem work save (was live\game.vsav)
     legacy = os.path.join(ROOT, "live", "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):

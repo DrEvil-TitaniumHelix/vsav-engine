@@ -14,7 +14,9 @@
    "supply arrivals: Allied 1/turn max 4 own on board (12.1), Axis Supply Table die roll max 3 own (12.2) \u2014 engine-owned seeded dice; land-or-forfeit (12.4); declining allowed (12.5)",
    "port control snapshots at start of player turn (4.3: occupation by combat/supply/Rommel; home bases also ZOC-free)",
    "sea movement Tobruch <-> own home base (23.3-23.5): embark/at-sea/land cycle, control to land, ZOC-or-control to embark, overdue-at-sea elimination (23.42)",
-   "Rommel movement bonus (22.1 + module tournament clarification): up to +2 hexes per unit once per turn, requires Rommel's explicit co-moved path segment; Rommel cannot be attacked/eliminated, displaces to the closest friendly combat unit when alone in enemy ZOC (22.4-22.42); no voluntary lone move into enemy ZOC (22.41)",
+   "Rommel movement bonus (22.1 + module tournament clarification): up to +2 hexes per unit once per turn, requires Rommel's explicit co-moved path segment; Rommel cannot be attacked/eliminated, displaces to the closest friendly combat unit when alone in enemy ZOC (22.4-22.42); no voluntary lone move into enemy ZOC (22.41)"
+  ],
+  "enforced_tier2": [
    "COMBAT on the two-source-validated CRT (back of rulebook == printed map, 66 cells): odds rounded in the defender's favor (7.3), >6-1 automatic elimination without a roll, no voluntary attack worse than 1-6 (7.4, 9.1), engine-owned seeded die",
    "mandatory combat: every unit in enemy ZOC attacks, every enemy with units in its ZOC is attacked, attacker adjacency, no splitting, one battle per unit per turn, legal partitions only (7.2, 8.4-8.5, 11.3-11.8)",
    "defense doubled on fortress/escarpment (10.2); attack factors never terrain-affected (8.7)",

@@ -40,7 +40,7 @@ import random
 
 
 class StrategicGame:
-    def __init__(self, game, scenario_path, live_dir, seed=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
         self.game = game                      # gamespec.Game
         self.scenario = json.load(open(scenario_path, encoding="utf-8"))
         gkey = os.path.basename(os.path.normpath(game.dir))
@@ -64,6 +64,17 @@ class StrategicGame:
         p = (game.spec.get("ports") or {}).get("list", [])
         self.ports = {tuple(e["hex"]): e for e in p}
         self.combat = game.spec.get("combat")
+        # Tier selection (spec #13): a game may be RUN below the tier it has
+        # earned. Tier 1 = movement/arrivals gate only — the entire combat
+        # ruleset (and everything keyed on it: capture, isolation,
+        # replacements, substitutes, AV, victory) is switched off, which is
+        # exactly the validated Tier-1 configuration. Tier 0 never reaches
+        # this class (no gate at all — the server serves free play).
+        self.tier_earned = 2 if self.combat else 1
+        self.tier = self.tier_earned if tier is None \
+            else max(1, min(int(tier), self.tier_earned))
+        if self.tier < 2:
+            self.combat = None
         self.repl_cfg = self.scenario.get("replacements")
         self.sub_cfg = self.scenario.get("substitutes")
         # 4.1/4.2 control-victory objectives: every fortress + home base hex
@@ -78,6 +89,8 @@ class StrategicGame:
             if "pool" not in self.s or "attacked" not in self.s \
                or "cap_pool" not in self.s:
                 self.new_game(seed)       # older-schema state file: reset
+            elif self.s.get("tier", self.tier_earned) != self.tier:
+                self.new_game(seed)       # state was played at another tier
         else:
             self.new_game(seed)
 
@@ -91,7 +104,7 @@ class StrategicGame:
                 "col": u["hex"][0], "row": u["hex"][1],
             }
         self.s = {
-            "seed": seed, "rng_calls": 0, "n": 0,
+            "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
             "turn": 1, "phase": "movement", "mover": self.first_player,
             "moved": {}, "over": False, "winner": None,
             "units": units,
@@ -129,7 +142,8 @@ class StrategicGame:
             os.remove(self.log_path)
         self._log({"event": "init", "mode": "strategic",
                    "scenario": self.scenario["name"],
-                   "rules_scope": self.scenario.get("rules_scope"),
+                   "tier": self.tier,
+                   "rules_scope": self.rules_scope(),
                    "seed": seed, "turns": self.turns,
                    "first_player": self.first_player,
                    "units": [dict(pid=u["pid"], slot=u["slot"], side=u["side"],
@@ -2741,6 +2755,27 @@ class StrategicGame:
             out["needs_supply"] = True
         return out
 
+    def rules_scope(self):
+        """The scenario's declared scope, composed for the ACTIVE tier.
+        Scenarios may split their enforced list into `enforced` (tier-1
+        systems) + `enforced_tier2` (combat systems); at tier 1 the tier-2
+        items are presented honestly as not-enforced-in-this-mode."""
+        rs = self.scenario.get("rules_scope")
+        if not rs:
+            return None
+        t2 = rs.get("enforced_tier2", [])
+        if self.tier >= 2:
+            return dict(rs, enforced=rs.get("enforced", []) + t2,
+                        enforced_tier2=None)
+        note = ("TIER 1 MODE selected (this game has earned Tier "
+                f"{self.tier_earned}) — the validated combat systems below "
+                "are switched OFF; resolve combat yourself, umpire-style:")
+        return dict(rs,
+                    enforced=rs.get("enforced", []),
+                    enforced_tier2=None,
+                    not_enforced=([note] + t2 if t2 else [])
+                    + rs.get("not_enforced", []))
+
     def flow(self):
         s = self.s
         return dict(turn=s["turn"], turns=self.turns,
@@ -2750,8 +2785,9 @@ class StrategicGame:
                     overstacked=[self.game.grid.display_name(*h)
                                  for h in self.overstacked_hexes(s["mover"])],
                     seed=s["seed"], n=s["n"],
+                    tier=self.tier, tier_earned=self.tier_earned,
                     first_player=self.first_player,
                     scenario=self.scenario["name"],
-                    rules_scope=self.scenario.get("rules_scope"),
+                    rules_scope=self.rules_scope(),
                     arrivals=self.arrivals_panel(),
                     combat=self.combat_panel())
