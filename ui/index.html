@@ -5,9 +5,14 @@
 <title>Claude Plays VASSAL</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#1a1c20; font-family:Segoe UI,sans-serif; }
-  #topbar { position:fixed; top:0; left:0; right:0; min-height:44px; background:#23262c; color:#ddd;
-            display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; padding:5px 14px;
-            z-index:50; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  /* Two FIXED rows, no wrapping: every control has a permanent pixel position
+     (Bruce's rule — you must always know where each button is). Turn-state
+     controls hide via visibility (frame.js .holdspace) so their slot never
+     collapses; variable text sits in fixed-width .fixw cells. */
+  #topbar { position:fixed; top:0; left:0; right:0; background:#23262c; color:#ddd;
+            padding:4px 14px; z-index:50; font-size:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,.5); min-width:920px; }
+  .tbrow { display:flex; align-items:center; flex-wrap:nowrap; gap:0 12px; height:37px; }
   #zoomctl { position:fixed; right:14px; bottom:14px; z-index:48; display:flex; flex-direction:column; gap:6px; }
   #zoomctl button { width:40px; height:40px; border-radius:8px; border:1px solid #555;
                     background:#23262cee; color:#ddd; font-size:20px; cursor:pointer;
@@ -17,9 +22,9 @@
   .sidebtn { padding:4px 12px; border-radius:5px; border:1px solid #555; background:#2c2f36;
              color:#ccc; cursor:pointer; }
   .sidebtn.on { background:#3a6ea5; color:#fff; border-color:#6aa0d8; }
-  #progress { margin-left:auto; color:#9fc27f; }
-  #note { color:#8a8f98; font-size:12px; }
-  #viewport { position:absolute; top:44px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; }
+  #progress { color:#9fc27f; width:230px; text-align:right; }
+  #note { color:#8a8f98; font-size:12px; flex:1; min-width:0; }
+  #viewport { position:absolute; top:82px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; }
   #world { position:absolute; transform-origin:0 0; }
   #world.glide { transition: transform .35s ease; }
   .pulse { animation:pulseglow 1.2s ease-in-out infinite; background:#2c6e3a!important;
@@ -79,37 +84,41 @@
 </head>
 <body>
 <div id="topbar">
-  <b id="gamename">…</b>
-  <span>play as:</span>
-  <span id="sidebtns"></span>
-  <span id="flowbar" style="display:none; color:#ffd75e; font-weight:600"></span>
-  <button class="sidebtn" id="endphasebtn" style="display:none">End player turn</button>
-  <span id="aictl" style="display:none; align-items:center; gap:6px">
-    <span style="color:#9fc27f; font-weight:600">AI</span>
-    <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-      <option value="step" selected>stepped (SPACE)</option>
-      <option value="auto">auto play</option>
-    </select>
-    <span style="font-size:12px">pace</span>
-    <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-      <option value="1200">slow</option>
-      <option value="600" selected>normal</option>
-      <option value="250">fast</option>
-    </select>
-    <button class="sidebtn" id="aiplaybtn">▶ Play AI turn</button>
-    <span id="aithinking" style="display:none; color:#ffd75e">⏳ thinking…</span>
-  </span>
-  <span id="progress"></span>
-  <span id="unitnav" style="display:none">
-    <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
-    <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
-  </span>
-  <span id="note"></span>
-  <button class="sidebtn" id="tierbtn" style="display:none"></button>
-  <button class="sidebtn" id="rulesbtn">Rules</button>
-  <button class="sidebtn" id="tablesbtn">Tables</button>
-  <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
-  <button class="sidebtn" id="resetbtn">Reset game</button>
+  <div class="tbrow"><!-- row 1: permanent controls — NOTHING here ever moves -->
+    <b id="gamename" class="fixw" style="max-width:240px">…</b>
+    <span style="white-space:nowrap">play as:</span>
+    <span id="sidebtns" style="white-space:nowrap"></span>
+    <span id="note" class="fixw"></span>
+    <span id="progress" class="fixw"></span>
+    <button class="sidebtn holdspace fixw" id="tierbtn" style="width:120px"></button>
+    <button class="sidebtn" id="rulesbtn">Rules</button>
+    <button class="sidebtn" id="tablesbtn">Tables</button>
+    <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
+    <button class="sidebtn" id="resetbtn">Reset game</button>
+  </div>
+  <div class="tbrow"><!-- row 2: turn-state controls in FIXED slots (visibility-toggled) -->
+    <span id="flowbar" class="fixw holdspace" style="width:300px; color:#ffd75e; font-weight:600"></span>
+    <button class="sidebtn fixw holdspace" id="endphasebtn" style="width:140px">End player turn</button>
+    <span id="aictl" class="holdspace" style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap">
+      <span style="color:#9fc27f; font-weight:600">AI</span>
+      <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+        <option value="step" selected>stepped (SPACE)</option>
+        <option value="auto">auto play</option>
+      </select>
+      <span style="font-size:12px">pace</span>
+      <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+        <option value="1200">slow</option>
+        <option value="600" selected>normal</option>
+        <option value="250">fast</option>
+      </select>
+      <button class="sidebtn fixw" id="aiplaybtn" style="width:170px">▶ Play AI turn</button>
+      <span id="aithinking" class="holdspace" style="color:#ffd75e; white-space:nowrap">⏳ thinking…</span>
+    </span>
+    <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
+      <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
+      <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
+    </span>
+  </div>
 </div>
 <div id="tierpanel" style="display:none; position:fixed; top:52px; right:8px; width:360px;
      background:#23262cee; color:#dde3ea; font-size:13px; border:1px solid #3a3f47;
@@ -260,25 +269,27 @@ async function refresh() {
 }
 
 function renderFlow() {
-  const fb = document.getElementById('flowbar'), ep = document.getElementById('endphasebtn');
-  const ai = document.getElementById('aictl');
-  if (!FLOW) { fb.style.display = 'none'; ep.style.display = 'none'; ai.style.display = 'none'; return; }
-  fb.style.display = ''; ep.style.display = '';
+  const fb = document.getElementById('flowbar');
+  if (!FLOW) { FRAME.show('flowbar', false); FRAME.show('endphasebtn', false);
+               FRAME.show('aictl', false); return; }
+  FRAME.show('flowbar', true); FRAME.show('endphasebtn', true);
   // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
   const aiOK = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals
     && GAME && GAME.tier && GAME.tier.active >= 3);
-  ai.style.display = aiOK ? 'inline-flex' : 'none';
+  FRAME.show('aictl', aiOK);
   if (aiOK) document.getElementById('aiplaybtn').textContent =
-    aiActive ? '■ stop' : ('▶ Play ' + sideLabel(FLOW.mover) + '’s turn');
+    aiActive ? '■ stop' : ('▶ Play ' + sideShort(FLOW.mover) + '’s turn');
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`
-    : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideLabel(FLOW.mover)} moves`
+    : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideShort(FLOW.mover)} moves`
       + (FLOW.overstacked && FLOW.overstacked.length
          ? `  ⚠ overstacked: ${FLOW.overstacked.join(' ')}` : '');
 }
 
 function sideLabel(id) { const s = GAME.sides.find(s => s.id === id); return s ? s.label : id; }
+// short name for the fixed-width topbar slots (full label stays on the side buttons)
+function sideShort(id) { return id; }
 
 // ---------- unit tooltip (hover; pinned while a unit is selected) ----------
 const TIP = document.getElementById('tip');
@@ -569,7 +580,7 @@ function render() {
                                  && u.status !== 'reserve');
   const doneN = mine.filter(u => u.status).length;
   document.getElementById('progress').textContent =
-    `${sideLabel(mySide)} movement: ${doneN} / ${mine.length} units done`;
+    `${sideShort(mySide)} movement: ${doneN} / ${mine.length} units done`;
   FRAME.onRender();     // engine frame: unit-nav visibility + end-turn glow
   drawOverlay();
 }
@@ -738,8 +749,8 @@ async function dragEnd(e) {
 let tierArm = null;   // choice awaiting its confirming second click
 function renderTierBtn() {
   const B = document.getElementById('tierbtn'), T = GAME && GAME.tier;
-  if (!T || T.choices.length < 2) { B.style.display = 'none'; return; }
-  B.style.display = '';
+  if (!T || T.choices.length < 2) { FRAME.show(B, false); return; }
+  FRAME.show(B, true);
   B.textContent = `Tier ${T.active} of ${T.earned} ▾`;
   B.classList.toggle('on', document.getElementById('tierpanel').style.display === 'block');
 }
@@ -962,7 +973,7 @@ document.getElementById('endphasebtn').onclick = async () => {
 let aiBusy = false, aiActive = false, aiNext = null;
 
 function showThinking(on) {
-  document.getElementById('aithinking').style.display = on ? '' : 'none';
+  FRAME.show('aithinking', on);
 }
 function drawAIIntent(nx) {
   [...OV.querySelectorAll('.aimark')].forEach(e => e.remove());

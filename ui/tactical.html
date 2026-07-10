@@ -5,9 +5,14 @@
 <title>Dr Evil's Game Legality Engine v2 — Tobruk</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#16181c; font-family:Segoe UI,sans-serif; }
-  #topbar { position:fixed; top:0; left:0; right:0; min-height:52px; background:#22262c; color:#ddd;
-            display:flex; align-items:center; flex-wrap:wrap; gap:4px 16px; padding:4px 14px;
-            z-index:50; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  /* Two FIXED rows, no wrapping: every control has a permanent pixel position
+     (Bruce's rule — you must always know where each button is). Turn-state
+     controls hide via visibility (frame.js .holdspace) so their slot never
+     collapses; variable text sits in fixed-width .fixw cells. */
+  #topbar { position:fixed; top:0; left:0; right:0; background:#22262c; color:#ddd;
+            padding:4px 14px; z-index:50; font-size:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,.5); min-width:920px; }
+  .tbrow { display:flex; align-items:center; flex-wrap:nowrap; gap:0 12px; height:37px; }
   #world.glide { transition: transform .35s ease; }
   .pulse { animation:pulseglow 1.2s ease-in-out infinite; background:#2c6e3a!important;
            border-color:#7ce07c!important; color:#fff!important; }
@@ -28,7 +33,7 @@
   .sidebtn.on { background:#3a6ea5; color:#fff; border-color:#6aa0d8; }
   .sidebtn.warn { background:#7a2f22; color:#ffd6cc; border-color:#a05040; }
   .sidebtn:disabled { opacity:.4; cursor:default; }
-  #tablespanel { display:none; position:fixed; top:60px; right:8px; width:600px; max-width:60vw;
+  #tablespanel { display:none; position:fixed; top:90px; right:8px; width:600px; max-width:60vw;
                  max-height:82vh; overflow:auto; background:#1d2025f5; color:#cfd3da;
                  font-size:13px; border:1px solid #3a3f47; border-radius:8px;
                  padding:10px 14px; z-index:92; box-shadow:0 6px 24px rgba(0,0,0,.6); }
@@ -42,7 +47,7 @@
   #tablespanel .legend code { color:#ffd75e; font-weight:600; margin-right:6px; }
   #tablespanel .notes { color:#9aa3ad; font-size:12px; margin:2px 0 4px; padding-left:16px; }
   #tablespanel .notes li { margin:2px 0; }
-  #viewport { position:absolute; top:52px; left:0; right:340px; bottom:0; overflow:hidden; cursor:grab; }
+  #viewport { position:absolute; top:82px; left:0; right:340px; bottom:0; overflow:hidden; cursor:grab; }
   #world { position:absolute; transform-origin:0 0; }
   #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
   svg#overlay { position:absolute; top:0; left:0; pointer-events:none; }
@@ -59,7 +64,7 @@
                 border-radius:10px; pointer-events:none; }
   .tring.illegal { cursor:not-allowed; }
   .tring.illegal .lbl { color:#e88; }
-  #sidepanel { position:fixed; top:52px; right:0; width:340px; bottom:0; background:#1d2025;
+  #sidepanel { position:fixed; top:82px; right:0; width:340px; bottom:0; background:#1d2025;
                color:#cfd3da; display:flex; flex-direction:column; border-left:1px solid #333; }
   #scen { padding:8px 12px; font-size:12px; color:#8a8f98; border-bottom:1px solid #333; }
   #lastres { padding:8px 12px; border-bottom:1px solid #333; font-size:13px; max-height:230px; overflow-y:auto; }
@@ -99,7 +104,7 @@
              animation:floatup 1.6s ease-out forwards; white-space:nowrap; }
   @keyframes floatup { 0%{opacity:0; margin-top:0;} 12%{opacity:1;}
                        75%{opacity:1;} 100%{opacity:0; margin-top:-90px;} }
-  #banner { position:fixed; top:52px; left:0; right:340px; z-index:45; text-align:center; pointer-events:none; }
+  #banner { position:fixed; top:82px; left:0; right:340px; z-index:45; text-align:center; pointer-events:none; }
   #banner div { display:inline-block; margin-top:8px; padding:6px 22px; border-radius:16px;
                 background:rgba(25,28,34,.92); color:#eee; font-size:15px; border:1px solid #444; }
   #banner .over { background:rgba(70,20,15,.95); font-size:20px; padding:12px 30px; }
@@ -107,32 +112,36 @@
 </head>
 <body>
 <div id="topbar">
-  <b>DR EVIL'S GAME LEGALITY ENGINE <span style="color:#7ce07c">v2</span></b>
-  <span class="chip" id="turnchip">…</span>
-  <span class="chip" id="segchip">…</span>
-  <span class="chip brit" id="vpbrit">…</span>
-  <span class="chip axis" id="vpaxis">…</span>
-  <span style="margin-left:auto">you play:</span><span id="sidebtns"></span>
-  <label style="font-size:12px">AI <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-    <option value="step" selected>stepped (SPACE)</option>
-    <option value="auto">auto</option>
-    <option value="off">off</option>
-  </select></label>
-  <label style="font-size:12px">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-    <option value="1000">1s</option><option value="2000">2s</option>
-    <option value="3000" selected>3s</option><option value="5000">5s</option>
-  </select></label>
-  <button class="sidebtn" id="endmove">End movement</button>
-  <button class="sidebtn" id="passfire">Pass fire</button>
-  <button class="sidebtn" id="aibtn">AI acts</button>
-  <span id="unitnav" style="display:none">
-    <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
-    <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
-  </span>
-  <button class="sidebtn" id="tablesbtn">📊 Tables</button>
-  <button class="sidebtn" id="guidebtn">📖 Guide</button>
-  <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
-  <button class="sidebtn warn" id="newgame">New game</button>
+  <div class="tbrow"><!-- row 1: permanent controls — NOTHING here ever moves -->
+    <b class="fixw" style="max-width:290px">DR EVIL'S GAME LEGALITY ENGINE <span style="color:#7ce07c">v2</span></b>
+    <span class="chip fixw" id="turnchip" style="width:90px; text-align:center">…</span>
+    <span class="chip brit fixw" id="vpbrit" style="width:100px; text-align:center">…</span>
+    <span class="chip axis fixw" id="vpaxis" style="width:90px; text-align:center">…</span>
+    <button class="sidebtn" id="tablesbtn" style="margin-left:auto">📊 Tables</button>
+    <button class="sidebtn" id="guidebtn">📖 Guide</button>
+    <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
+    <button class="sidebtn warn" id="newgame">New game</button>
+  </div>
+  <div class="tbrow"><!-- row 2: turn-state controls in FIXED slots -->
+    <span class="chip hot fixw" id="segchip" style="width:300px">…</span>
+    <span style="white-space:nowrap">you play:</span><span id="sidebtns" style="white-space:nowrap"></span>
+    <label style="font-size:12px; white-space:nowrap">AI <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+      <option value="step" selected>stepped (SPACE)</option>
+      <option value="auto">auto</option>
+      <option value="off">off</option>
+    </select></label>
+    <label style="font-size:12px; white-space:nowrap">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+      <option value="1000">1s</option><option value="2000">2s</option>
+      <option value="3000" selected>3s</option><option value="5000">5s</option>
+    </select></label>
+    <button class="sidebtn" id="endmove">End movement</button>
+    <button class="sidebtn" id="passfire">Pass fire</button>
+    <button class="sidebtn" id="aibtn">AI acts</button>
+    <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
+      <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
+      <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
+    </span>
+  </div>
 </div>
 <div id="tablespanel"></div>
 <div id="zoomctl">
@@ -200,7 +209,7 @@ FRAME.initFrame({
     const mine=units.filter(u=>u.side===mySide);
     return mine.length>0&&mine.every(u=>u.moved);
   },
-  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8}],
+  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8},{id:'banner',gap:0}],
 });
 function fitBounds(){
   // zoom to the playable section, not the whole 7000px map
@@ -263,8 +272,9 @@ function render(){
   T.textContent=`Turn ${Math.min(FLOW.turn,FLOW.turns)} / ${FLOW.turns}`;
   const segTxt = FLOW.segment==='movement'
     ? `MOVEMENT — ${sideLabel(FLOW.mover)} moving`
-    : `COMBAT — alternating fire [I.B.2] — ${sideLabel(FLOW.initiative)} shoots next`;
-  SG.textContent=segTxt; SG.className='chip hot';
+    : `COMBAT [I.B.2] — ${sideLabel(FLOW.initiative)} fires next`;
+  SG.textContent=segTxt; SG.className='chip hot fixw';
+  SG.title=FLOW.segment==='combat'?'alternating fire [I.B.2]':'';
   document.getElementById('vpbrit').textContent=`British ${FLOW.vp.scores.British} VP`;
   document.getElementById('vpaxis').textContent=`Axis ${FLOW.vp.scores.Axis} VP`;
   const B=document.getElementById('bannertext');

@@ -5,11 +5,18 @@
  * here exists everywhere at once — features are never implemented per-game.
  *
  * Owns: pan clamping, zoom controls (+/−/fit + wheel math), topbar-aware
- * layout (the bar wraps; everything follows its real height), camera glide
- * (centerOn — AI step follow, unit nav), next/previous-unit stepping, and the
- * end-turn glow. Each screen calls initFrame(...) with the handful of hooks
- * that genuinely differ per screen (how to select a unit, which units can
- * still act, what "fit" means, which button glows).
+ * layout, camera glide (centerOn — AI step follow, unit nav),
+ * next/previous-unit stepping, and the end-turn glow. Each screen calls
+ * initFrame(...) with the handful of hooks that genuinely differ per screen
+ * (how to select a unit, which units can still act, what "fit" means, which
+ * button glows).
+ *
+ * FIXED-POSITION DISCIPLINE (Bruce's rule): every control lives at a fixed
+ * pixel position that never changes at runtime. Topbar elements are therefore
+ * never display:none'd — FRAME.show() toggles visibility so a hidden control
+ * keeps its layout slot, and variable-width text sits in fixed-width cells
+ * (the .fixw class). Topbars must not flex-wrap; the window's minimum size
+ * guarantees the row fits.
  *
  * The screen keeps ownership of its pan/zoom state (panX/panY/scale as plain
  * globals) — frame.js reads/writes them through the hooks' get/set to avoid
@@ -18,6 +25,28 @@
 
 const FRAME = (() => {
   let H = null;   // hooks from initFrame
+
+  // ---------- fixed-position discipline ----------
+  // show(): hide/reveal a topbar control WITHOUT surrendering its layout slot,
+  // so nothing around it ever moves. Never use display:none in a topbar.
+  function show(id, on) {
+    const el = typeof id === 'string' ? document.getElementById(id) : id;
+    if (!el) return;
+    el.classList.toggle('holdspace', !on);
+  }
+  // shared frame CSS, injected once so every screen inherits it
+  (() => {
+    const st = document.createElement('style');
+    st.textContent = `
+      .holdspace { visibility:hidden !important; pointer-events:none; }
+      .fixw { display:inline-block; overflow:hidden; text-overflow:ellipsis;
+              white-space:nowrap; vertical-align:middle; }
+      /* fixed control heights: text changes may never re-center the row */
+      .tbrow .sidebtn, .tbrow select { height:30px; box-sizing:border-box;
+                                       white-space:nowrap; }
+      .tbrow .chip { height:26px; box-sizing:border-box; line-height:20px; }`;
+    document.head.appendChild(st);
+  })();
 
   // ---------- pan & zoom ----------
   function clampPan() {
@@ -74,8 +103,7 @@ const FRAME = (() => {
   // ---------- per-render frame state (nav visibility + end-turn glow) ----------
   function onRender() {
     const n = H.actable().length;
-    const nav = document.getElementById('unitnav');
-    if (nav) nav.style.display = n > 0 ? '' : 'none';
+    show('unitnav', n > 0);   // keeps its slot when hidden — nothing shifts
     const btn = document.getElementById(H.endBtnId);
     if (btn) btn.classList.toggle('pulse', H.turnDone());
   }
@@ -103,11 +131,13 @@ const FRAME = (() => {
       if (e.code === 'KeyN') { e.preventDefault(); navUnit(1); }
       if (e.code === 'KeyB') { e.preventDefault(); navUnit(-1); }
     });
-    // the topbar wraps at narrow widths — everything below follows its height
+    // the topbar's height is fixed by design, but keep everything below
+    // following its real height as a safety net (fonts, zoom levels)
     new ResizeObserver(layoutBars).observe(H.topbar);
     window.addEventListener('resize', layoutBars);
     layoutBars();
   }
 
-  return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars };
+  return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
+           show };
 })();

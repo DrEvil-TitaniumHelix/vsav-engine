@@ -41,7 +41,11 @@ def main():
     webview.create_window(
         f"Legality Engine for VASSAL  ·  v{server.VERSION}",
         f"http://127.0.0.1:{port}/menu",
-        width=1280, height=860, min_size=(960, 640))
+        # opens maximized — the fixed no-wrap topbar wants room; the minimum
+        # (generous, to survive Windows display scaling) guarantees the rows
+        # always fit even if the tester shrinks the window, so every control
+        # keeps its permanent position (Bruce's fixed-layout rule)
+        width=1600, height=900, min_size=(1600, 900), maximized=True)
     webview.start()          # blocks until the window is closed
     httpd.shutdown()
 
