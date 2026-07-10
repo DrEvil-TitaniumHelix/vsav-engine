@@ -26,6 +26,21 @@ Run anyway**); details in RELEASE_README.md.
 
 ---
 
+## Co-developers: encode YOUR game
+
+The engine encodes a printed game whole — map, counters, rules, combat tables —
+into a computerized version. To do it for your own game, bring its VASSAL
+module (from vassalengine.org) and its rulebook, then ask Claude:
+
+> *"I have SPI's Blue and Gray. Do the same thing for my game — put Blue and
+> Gray in the engine."*
+
+Claude follows **ENCODING_GUIDE.md** (the full process, with
+`games/afrika-korps-classic-ah/` as the worked reference: ingest → game.json →
+terrain → scenario → cited table transcription → validation → tier badge).
+
+---
+
 ## Notes for the assistant (Claude) helping a new tester
 
 - This is a rules-enforcing wargame engine. The games in the tester menu are
