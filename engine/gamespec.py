@@ -256,9 +256,15 @@ class Game:
         return None
 
     def _exerts_zoc(self, u):
-        """ZOC comes from combat units only when zoc.exempt_classes is set."""
+        """ZOC comes from combat units only when zoc.exempt_classes is set;
+        units standing on zoc.no_exert_terrain exert none at all (AK 7.1
+        fortress exception + 23.1/23.2: attacks around a fortress are
+        optional in both directions — a garrison exerts no ZOC outward)."""
         exempt = self.zoc_cfg.get("exempt_classes")
         if exempt and self.unit_class(u["name"]) in exempt:
+            return False
+        noex = self.zoc_cfg.get("no_exert_terrain")
+        if noex and self.hex_terrain(u["col"], u["row"]) in noex:
             return False
         return True
 
@@ -268,15 +274,44 @@ class Game:
         imm = self.zoc_cfg.get("immune_terrain")
         return bool(imm) and self.hex_terrain(*h) in imm
 
+    def hexside_prohibited(self, a, b):
+        """True if the a-b hexside carries a prohibit rule (AK 5.7 all-water
+        and Qattara hexsides, E18-F19 / W62-X62)."""
+        f = self.side_features(a, b)
+        for rule in self.hexside_rules:
+            if rule["effect"] != "prohibit":
+                continue
+            if f.get(rule["feature"]) != rule["value"]:
+                continue
+            if rule.get("unless") and f.get(rule["unless"]):
+                continue
+            return True
+        return False
+
+    def _zoc_neighbors(self, u):
+        """The hexes a unit's ZOC covers: its six neighbors, minus immune
+        terrain, minus (spec-gated) neighbors across prohibited hexsides —
+        AK 7.1 lists E18-F19 / W62-X62 with the fortresses as ZOC
+        exceptions, and 5.7 says units on those adjoining hexes may not
+        engage each other in battle."""
+        across = self.zoc_cfg.get("blocked_by_prohibited_hexsides", False)
+        src = (u["col"], u["row"])
+        out = set()
+        for nb in self.neighbors(*src):
+            if self._zoc_immune(nb):
+                continue
+            if across and self.hexside_prohibited(src, nb):
+                continue
+            out.add(nb)
+        return out
+
     def zoc_hexes(self, board, enemy_side):
         z = set()
         if not self.zoc_cfg.get("exerts", False):
             return z
         for u in board:
             if u["side"] == enemy_side and self._exerts_zoc(u):
-                for nb in self.neighbors(u["col"], u["row"]):
-                    if not self._zoc_immune(nb):
-                        z.add(nb)
+                z |= self._zoc_neighbors(u)
         return z
 
     def zoc_by_unit(self, board, enemy_side):
@@ -286,8 +321,7 @@ class Game:
             return out
         for u in board:
             if u["side"] == enemy_side and self._exerts_zoc(u):
-                out[u["id"]] = {nb for nb in self.neighbors(u["col"], u["row"])
-                                if not self._zoc_immune(nb)}
+                out[u["id"]] = self._zoc_neighbors(u)
         return out
 
     def legal_destinations(self, unit, ma, board):
@@ -590,6 +624,47 @@ class Game:
                     heapq.heappush(pq, (nc, nb))
         return {h: c for h, c in best.items()
                 if h != start and h not in fpos and h not in epos}
+
+
+    # ------------------------------------------------------------- combat (CRT)
+    @property
+    def combat_cfg(self):
+        return self.spec.get("combat")
+
+    def odds(self, att, deff):
+        """Battle odds after rounding in the defender's favor (AK 7.3:
+        7:2 -> 3-1, 2:7 -> 1-4). Returns (n, d) for n-d odds."""
+        att, deff = float(att), float(deff)
+        if att >= deff:
+            return int(att // deff), 1
+        return 1, int(-(-deff // att))       # ceil
+
+    def odds_column(self, n, d):
+        """CRT column for n-d odds: the column string, 'auto_elim' above the
+        table (AK 7.4/9.1 + printed CRT note: >6-1 eliminates without a
+        roll), or None when worse than the lowest column (no voluntary
+        attack below 1-6, 7.4)."""
+        cb = self.combat_cfg
+        hi = cb["odds"]["auto_elim_above"]
+        lo = cb["odds"]["min_voluntary"]
+        if d == 1 and n > hi[0]:
+            return "auto_elim"
+        if n == 1 and d > lo[1]:
+            return None
+        col = f"{n}-{d}"
+        return col if col in cb["crt"]["columns"] else None
+
+    def crt_result(self, column, die):
+        """Result code for a CRT column and die roll."""
+        cb = self.combat_cfg
+        ci = cb["crt"]["columns"].index(column)
+        return cb["crt"]["rows"][str(die)][ci]
+
+    def defense_factor(self, unit_name, hexpos):
+        """Defense factor, doubled on combat.defense_double_terrain (10.2)."""
+        d = self.stats(unit_name)[1]
+        dbl = (self.combat_cfg or {}).get("defense_double_terrain") or []
+        return d * 2 if self.hex_terrain(*hexpos) in dbl else d
 
 
 def load(game_dir):

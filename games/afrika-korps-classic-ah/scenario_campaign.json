@@ -1,27 +1,36 @@
 {
- "name": "Afrika Korps campaign (March 1941 Situation) \u2014 Tier 1 movement",
+ "name": "Afrika Korps campaign (March 1941 Situation) \u2014 Tier 2 combat",
  "mode": "strategic",
  "rules_scope": {
   "enforced": [
-   "player-turn alternation, Axis first (3.1-3.5); arrivals precede movement (3.1/3.3)",
+   "player-turn alternation, Axis first (3.1-3.5); arrivals precede movement (3.1/3.3); all movement precedes combat (5.3), battles resolved one at a time (3.2/3.4, 8.6)",
    "movement factors & terrain (5.2, 5.6, 5.7, 5.8)",
    "enemy combat units block on-top/through; lone supply/Rommel do not (5.4, 22.3, 15.22)",
    "stacking: 3 combat units, checked at end of movement and destinations (2.3, 6.1, 6.3)",
-   "ZOC: stop on entry, no pass-through, same-unit first-step ban, supply exclusion, fortress immunity (7.1, 8.1, 8.3, 13.2, 19.5)",
+   "ZOC: stop on entry, no pass-through, same-unit first-step ban, supply exclusion, fortress immunity BOTH ways, no ZOC across the E18-F19/W62-X62 hexsides (7.1, 8.1, 8.3, 13.2, 19.5, 23.1-23.2)",
    "coast road bonus +10 via road hexsides, I26 two-road exception (17.1-17.3)",
    "escarpment stop/one-hex + road exceptions, one non-road move (18.1-18.5)",
    "reinforcement arrivals per the validated Order of Appearance (19.1-19.8, 2.2): controlled port at start of turn, Tobruch/own home base only, later landing allowed, full move on arrival",
    "supply arrivals: Allied 1/turn max 4 own on board (12.1), Axis Supply Table die roll max 3 own (12.2) \u2014 engine-owned seeded dice; land-or-forfeit (12.4); declining allowed (12.5)",
    "port control snapshots at start of player turn (4.3: occupation by combat/supply/Rommel; home bases also ZOC-free)",
    "sea movement Tobruch <-> own home base (23.3-23.5): embark/at-sea/land cycle, control to land, ZOC-or-control to embark, overdue-at-sea elimination (23.42)",
-   "Rommel movement bonus (22.1 + module tournament clarification): up to +2 hexes per unit once per turn, requires Rommel's explicit co-moved path segment"
+   "Rommel movement bonus (22.1 + module tournament clarification): up to +2 hexes per unit once per turn, requires Rommel's explicit co-moved path segment; Rommel cannot be attacked/eliminated, displaces to the closest friendly combat unit when alone in enemy ZOC (22.4-22.42); no voluntary lone move into enemy ZOC (22.41)",
+   "COMBAT on the two-source-validated CRT (back of rulebook == printed map, 66 cells): odds rounded in the defender's favor (7.3), >6-1 automatic elimination without a roll, no voluntary attack worse than 1-6 (7.4, 9.1), engine-owned seeded die",
+   "mandatory combat: every unit in enemy ZOC attacks, every enemy with units in its ZOC is attacked, attacker adjacency, no splitting, one battle per unit per turn, legal partitions only (7.2, 8.4-8.5, 11.3-11.8)",
+   "defense doubled on fortress/escarpment (10.2); attack factors never terrain-affected (8.7)",
+   "attack supply: 1-2 or better requires a stated supply within 5 ZOC-free hexes of ALL attackers (route carve-out for the attacked units' own ZOC per 13.2 + tournament clarification figs 12/15); used supply removed at end of the player turn; 1-3 or worse free (14.1-14.7)",
+   "results: A/D Elim, Exchange with terrain-doubled defense factors and at-least-no-more removal, back-2 retreats chosen by the WINNER under 7.61/7.62 (immediate-elimination avoidance, no hex twice, never the battle hex \u2014 tournament clarifications 7/9), fortress no-retreat elimination (23.7)",
+   "advance after combat into vacated fortress/escarpment hexes before the next battle (16.1-16.3)",
+   "pre-combat eliminations: isolated in enemy ZOC with no legal supply-free attack (11.9, 24.1, clarifications sec. 5); forced to attack worse than 1-6 (7.4) \u2014 strictly before any battle",
+   "fortress combat: attacks into a fortress engage every unit in it; fortress sorties must attack all adjacent enemies; attacks around a fortress optional both ways (23.1-23.2)",
+   "victory: elimination of all enemy combat units on the board (clarification 13: at-sea excluded) and two-consecutive-turn control of both fortresses + both home bases (4.1-4.3); Allied win by survival through 15 Oct 1942 (4.2)"
   ],
   "not_enforced": [
-   "combat and everything downstream (3.2/3.4, 7-11, 14-16) \u2014 Tier 2",
-   "supply capture consequences (15) and supply consumption (14) \u2014 Tier 2; supply units move under 13/5.4 only",
-   "isolation (24) \u2014 depends on the supply-line subsystem, Tier 2",
-   "replacements (20) and substitute units (21) \u2014 need eliminated units, meaningless before combat",
-   "victory adjudication (4.1-4.3) \u2014 needs combat; game ends unadjudicated after turn 38 (19.8 unlanded-reinforcement elimination IS applied then)"
+   "Automatic Victory ZOC negation during movement (9.1-9.7) \u2014 the gate is STRICTER: a 7-1 declared in combat still auto-eliminates, but AV movement-phase pass-through is not yet offered",
+   "supply capture (15): moving/retreating onto or adjacent to an unaccompanied enemy supply does not yet flip it \u2014 umpire captures manually; captured-supply counters stay in reserve",
+   "isolation attrition (24.2-24.5): two-turn isolation elimination and the no-supplies game loss are not tracked (the 24.1 supply trace IS used for 11.9)",
+   "replacements (20) and substitute units (21)",
+   "corner cases umpired (declared, gate never permits an illegal state): 7.4's voluntary-vs-forced distinction beyond the solo-attack test (multi-unit support feasibility not searched), the 11.7 fortress twice-attacked exception, 7.61's retreating-player pick of overstack casualties, 15.22 mid-retreat supply pickup"
   ]
  },
  "supply_table": {

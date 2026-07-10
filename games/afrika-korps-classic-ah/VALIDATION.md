@@ -53,6 +53,105 @@ positions fails — pieces are hand-placed off-center and contaminated by
 turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
 spacing, not the grid). The printed map grid is the ground truth.
 
+## TIER 2 COMBAT: VALIDATED 2026-07-09 (re-run `python validate_combat.py` — ALL PASS)
+
+**CRT — two independent sources, all 66 cells identical.** The encoded table
+(game.json `combat.crt`) is re-checked on every validator run against (1) the
+rulebook back-page COMBAT RESULTS TABLE re-parsed live from
+AfrikaKorps_3d_Ed_Rules.pdf, and (2) the mastermind's image-only map
+transcription (map_tables_transcription.json — produced without consulting
+the rulebook, so the sources are independent). 11 odds columns 1-6..6-1 ×
+6 die rows; zero mismatches.
+
+**The "7-1" question RESOLVED (was flagged since the transcription landed):**
+rules text 7.4 says "odds greater than 7-1 are treated as 7-1" while the
+printed CRT tops at 6-1. These agree: 9.1 defines 7-1 (or 5-1 surrounded) as
+the automatic-elimination situation, and the map prints "odds greater than
+6-1 ... mean automatic elimination" beside the CRT. Encoded as: >6-1 after
+rounding = defender eliminated, NO die rolled (validate_combat: rng_calls
+provably unchanged); worse than 1-6 = no voluntary attack, forced units
+eliminated before any battle.
+
+**Rulebook worked examples reproduced through the engine + gate:**
+- 7.3 rounding: 7:2→3-1, 2:7→1-4, and the 3-3-7-vs-Savena battle at 1-1
+  fought end-to-end through submit() with the supply rule enforced
+- 7.5 exchange example 1: seven 1-1-6 vs a DOUBLED 2-3-4 on an escarpment at
+  1-1 → exchange kills the 2-3-4 plus exactly SIX 1-1-6s (five rejected as
+  too few, seven rejected as over-payment, the loser barred from choosing)
+- 7.5 exchange example 2: 3-4-6 vs four 1-1-6 at 1-2 → the 3-4-6 plus
+  exactly THREE 1-1-6s
+- 11.6/7.4 soak-off limits incl. the 1-8-is-illegal diagram case
+- 23.7: a besieged Tobruch garrison (doubled, attacked at the example's own
+  3-1/die-3 row) suffers DB2 with no legal route → eliminated; the emptied
+  fortress then opens advance after combat (16.1)
+- clarifications sec. 5 trapped units: isolated-in-ZOC with no supply-free
+  attack auto-eliminated at end of movement (11.9); with supply in reach the
+  unit survives and the forced-elimination action is gated on a real
+  no-legal-attack test (7.4)
+
+**Combat gate mechanics validated through submit() (~90 checks, 15 staged
+scenarios, EVERY session log replayed through engine/verify_game.py):**
+movement/combat phase split (5.3/3.2: no moves after end_movement, no
+battles before), mandatory-combat obligations both directions (8.4),
+adjacency incl. the 5.7 anomalous-hexside engagement ban, 23.1 attack-into-
+fortress must engage the whole garrison, 23.2 sortie coverage, 11.7/11.8
+one-battle-per-unit, the 11.31-11.33 orphan guard (a battle may not strand
+another unit with nothing left to attack — prevents dead-locking the
+append-only turn), defense doubling 10.2, supply-to-attack 14.1-14.6
+(radius 5 inclusive-of-supply-hex, enemy-ZOC blocking incl. the fig-12
+uninvolved-blocker case, the fig-15 carve-out for the attacked unit's own
+ZOC, consumption at end of player turn), retreats 7.6/7.61/7.62 (winner
+chooses; no hex twice; never the battle hex per clarification 9; immediate-
+elimination avoidance with a full survival-assignment search per
+clarification 7), advance after combat 16.1 into vacated fortress/
+escarpment, victory 4.1-4.3 (eliminate-all with the clarification-13 at-sea
+exclusion; two-consecutive-turn control of all four objective hexes,
+staged and won), Rommel guards (22.41 no voluntary lone move into enemy
+ZOC; 22.4 displacement machinery).
+
+**TWO MORE WRONG-GATE DEFECTS found + fixed en route (nos. 6 and 7 for this
+game):** (1) fortress OUTWARD ZOC — a garrison wrongly exerted ZOC over its
+surrounding hexes, pinning besiegers; 7.1 lists fortresses as ZOC
+exceptions and 23.1/23.2 make attacks around a fortress optional BOTH ways
+(clarifications fig. 9 agrees). Fixed spec-gated (`zoc.no_exert_terrain`).
+(2) ZOC across prohibited hexsides — a unit on E18 wrongly projected ZOC
+into F19 across the all-water hexside; 7.1 excepts exactly those hexsides.
+Fixed spec-gated (`zoc.blocked_by_prohibited_hexsides`). Plus a stacked-
+units bug in the new obligations code itself (dict keyed by hex collapsed
+co-located units), caught during the browser session.
+
+**Interpretation calls (documented, defensible, declared):**
+- 24.1 isolation trace: the target supply's own hex is exempt from the
+  ZOC-free test (the line runs TO the supply). A strict inclusive reading
+  would wrongly auto-kill the fig-15 attacker via 11.9. The 14.2 attack-
+  supply route keeps the strict inclusive test with the figs-12/15
+  carve-out instead. A wrong elimination is worse than a lenient trace.
+- Exchange ties (equal factors): both readings of "the player with fewer"
+  produce the same outcome — both sides remove everything — so the gate
+  auto-applies it; no player choice exists to get wrong.
+- forced_elim requires fought==0 (7.4 "before any other battles" — also
+  keeps a doomed unit's ZOC from influencing earlier retreats, which 7.4
+  explicitly forbids).
+
+**NOT yet enforced (declared in rules_scope, UI-visible):** AV movement
+mechanics 9.1-9.7 (gate stricter — the 7-1 auto-elim itself IS enforced),
+supply capture 15 (retreat/advance over lone enemy supply is allowed as
+movement, the flip is umpired), isolation attrition 24.2-24.5, replacements
+20 / substitutes 21, and the narrow corners listed in rules_scope
+(multi-unit-support feasibility in the 7.4 forced test, 11.7 fortress
+twice-attacked exception, 7.61 overstack-casualty choice, 15.22 mid-retreat
+pickup).
+
+**Browser + API session (2026-07-09):** full Mersa Brega meeting engagement
+driven twice — once over raw HTTP, once by clicking the generic index.html
+combat panel (battle builder with live odds preview, supply picker, retreat
+route buttons straight from the gate's legal-path enumeration, forced-elim
+buttons, obligations tracker). 24/24 log entries replayed through
+verify_game.py afterward, 4 illegal proposals provably inert. Regressions
+all green: Arnhem baseline SHA fe2a652f identical, terrain.json byte-
+identical rebuild, Tobruk 17/17, ASL/Arnhem/Tobruk load, all six AK
+validators ALL PASS.
+
 ## TIER 1 COMPLETE 2026-07-09 (late): arrivals + sea movement + Rommel bonus
 ## (re-run `python validate_arrivals.py` and `python validate_tier1.py`)
 

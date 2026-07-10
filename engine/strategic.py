@@ -57,10 +57,18 @@ class StrategicGame:
         self.supply_max = self.scenario.get("supply_max_on_board", {})
         p = (game.spec.get("ports") or {}).get("list", [])
         self.ports = {tuple(e["hex"]): e for e in p}
+        self.combat = game.spec.get("combat")
+        # 4.1/4.2 control-victory objectives: every fortress + home base hex
+        self.victory_hexes = []
+        if self.combat and game.terrain:
+            for key, v in game.terrain["hexes"].items():
+                if v["t"] in ("fortress", "homebase"):
+                    self.victory_hexes.append((int(key[:2]), int(key[2:])))
+            self.victory_hexes.sort()
         if os.path.exists(self.state_path):
             self.s = json.load(open(self.state_path, encoding="utf-8"))
-            if "pool" not in self.s:      # pre-arrivals state file: reset
-                self.new_game(seed)
+            if "pool" not in self.s or "attacked" not in self.s:
+                self.new_game(seed)       # pre-arrivals/pre-combat state: reset
         else:
             self.new_game(seed)
 
@@ -85,8 +93,13 @@ class StrategicGame:
             "allied_supply_done": False,
             "paths": {}, "bonus": {}, "landed_sea": [],
             "ports": [],
+            # combat phase (3.2/3.4): battle bookkeeping, all verifier-replayed
+            "attacked": {}, "defended": {}, "fought": [],
+            "supplies_used": [], "pending": None, "pending_rommel": None,
+            "vic_start_ok": False, "vic_streak": {}, "dead": [],
         }
         self.s["ports"] = self._controlled_ports(self.first_player)
+        self.s["vic_start_ok"] = self._controls_objectives(self.first_player)
         if os.path.exists(self.log_path):
             os.remove(self.log_path)
         self._log({"event": "init", "mode": "strategic",
@@ -114,7 +127,10 @@ class StrategicGame:
                 ("turn", "phase", "mover", "moved", "over", "winner",
                  "rng_calls", "units", "pool", "supply_pool", "supply_rolled",
                  "supply_pending", "allied_supply_done", "paths", "bonus",
-                 "landed_sea", "ports")}
+                 "landed_sea", "ports",
+                 "attacked", "defended", "fought", "supplies_used",
+                 "pending", "pending_rommel", "vic_start_ok", "vic_streak",
+                 "dead")}
         blob = json.dumps(core, sort_keys=True)
         return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
@@ -157,11 +173,20 @@ class StrategicGame:
     def dests(self, u):
         """Legal destinations for a gate unit via the validated spec engine
         (terrain, roads/escarpments 17/18, ZOC 7/8 incl. fortress immunity
-        19.5, stacking 6, enemy hexes 5.4)."""
+        19.5, stacking 6, enemy hexes 5.4). An hq unit may not voluntarily
+        end alone in an enemy ZOC (22.41: staying put is always an
+        alternative)."""
         me = dict(id=u["pid"], name=u["slot"], side=u["side"],
                   col=u["col"], row=u["row"])
-        return self.game.legal_destinations_t(
+        dd = self.game.legal_destinations_t(
             me, self.budget(u), self.rules_board(exclude_pid=u["pid"]))
+        if self.combat and self.game.unit_class(u["slot"]) == "hq":
+            board = self.rules_board(exclude_pid=u["pid"])
+            ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
+            friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
+            dd = {h: c for h, c in dd.items()
+                  if h not in ezoc or h in friends}
+        return dd
 
     def overstacked_hexes(self, side):
         """Hexes where `side` exceeds the stacking limit (6.1; exempt
@@ -278,9 +303,402 @@ class StrategicGame:
             [tuple(h) for h in path])
         if not ok:
             return self._v(False, f"illegal path: {why}")
+        if self.combat and self.game.unit_class(u["slot"]) == "hq":
+            end = tuple(path[-1])
+            board = self.rules_board(exclude_pid=u["pid"])
+            ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
+            friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
+            if end in ezoc and end not in friends:
+                return self._v(False, "the headquarters unit may not be "
+                                      "purposefully moved into an enemy ZOC "
+                                      "without an accompanying friendly combat "
+                                      "unit [22.41]")
         v = self._v(True)
         v["path_check"] = why
         return v
+
+    # ------------------------------------------------------------ combat helpers
+    def _is_combat(self, u):
+        """A combat unit: on the map and not a marker/supply/hq (5.4)."""
+        return self.on_map(u) and self.game.unit_class(u["slot"]) is None
+
+    def _combat_units(self, side):
+        return [u for u in self.s["units"].values()
+                if u["side"] == side and self._is_combat(u)]
+
+    def _engageable(self, a, b):
+        """Hexes a and b may engage each other: adjacent and not across a
+        prohibited hexside (5.7: units on the E18-F19 / W62-X62 adjoining
+        hexes may not engage each other in battle)."""
+        return b in self.game.neighbors(*a) \
+            and not self.game.hexside_prohibited(a, b)
+
+    def _ezoc_for(self, side, ignore_pids=()):
+        """Enemy ZOC hexes threatening `side`, optionally ignoring the ZOC
+        of specific enemy units (14.2 supply routes ignore the ZOC of the
+        very units being attacked — 13.2 + clarifications fig. 15)."""
+        board = self.rules_board()
+        z = self.game.zoc_by_unit(board, self.game.enemy(side))
+        out = set()
+        for pid, hexes in z.items():
+            if pid not in ignore_pids:
+                out |= hexes
+        return out
+
+    def _trace_blocked(self, side):
+        """Hexes a supply/isolation trace may never pass: enemy hexes whose
+        occupants include a combat unit (5.4 — lone supply/Rommel do not
+        block, they are not combat units)."""
+        board = self.rules_board()
+        eblock, _ = self.game._enemy_hexes(board, self.game.enemy(side))
+        return eblock
+
+    def _trace_reaches(self, from_hex, side, targets, radius=None,
+                       ignore_zoc_of=(), target_zoc_exempt=False):
+        """BFS trace from from_hex (exclusive) toward any hex in `targets`
+        (inclusive): every route hex must be on playable terrain, free of
+        enemy ZOC and enemy combat units, and no step may cross a
+        prohibited hexside (14.2, 24.1). Returns True if some target is
+        within `radius` route hexes (None = unlimited).
+        target_zoc_exempt: the target hex itself may sit in enemy ZOC —
+        used for the 24.1 isolation trace, where the line runs TO the
+        supply unit (a wrong auto-elimination is worse than a lenient
+        one); the 14.2 attack-supply route keeps the strict inclusive
+        test and instead carves out the attacked units' own ZOC
+        (ignore_zoc_of — 13.2 + clarifications figs. 12/15)."""
+        ezoc = self._ezoc_for(side, ignore_pids=ignore_zoc_of)
+        blocked = self._trace_blocked(side)
+        targets = {tuple(t) for t in targets}
+        seen = {tuple(from_hex)}
+        frontier = [tuple(from_hex)]
+        depth = 0
+        while frontier and (radius is None or depth < radius):
+            depth += 1
+            nxt = []
+            for cur in frontier:
+                for nb in self.game.neighbors(*cur):
+                    if nb in seen:
+                        continue
+                    if self.game.hexside_prohibited(cur, nb):
+                        continue
+                    if not self.game.on_map(*nb):
+                        continue
+                    if nb in targets and target_zoc_exempt and nb not in blocked:
+                        return True
+                    if nb in ezoc or nb in blocked:
+                        continue
+                    seen.add(nb)
+                    if nb in targets:
+                        return True
+                    nxt.append(nb)
+            frontier = nxt
+        return False
+
+    def _supply_hexes(self, side):
+        """Hexes of side's on-map supply units (own or captured)."""
+        return [(u["col"], u["row"]) for u in self.s["units"].values()
+                if u["side"] == side and self.on_map(u)
+                and self.game.unit_class(u["slot"]) == "supply"]
+
+    def _isolated(self, u):
+        """24.1: no trace of any length free of enemy ZOC / sea / Qattara /
+        board edge / prohibited hexsides to a friendly supply unit."""
+        sup = self._supply_hexes(u["side"])
+        if not sup:
+            return True
+        return not self._trace_reaches((u["col"], u["row"]), u["side"], sup,
+                                       target_zoc_exempt=True)
+
+    def _adjacent_enemy_combat(self, u):
+        """Enemy combat units this unit could engage (adjacent, engageable)."""
+        enemy = self.game.enemy(u["side"])
+        out = []
+        for e in self._combat_units(enemy):
+            if self._engageable((u["col"], u["row"]), (e["col"], e["row"])):
+                out.append(e)
+        return out
+
+    def _battle_factors(self, attackers, defenders):
+        """(attack total, defense total): attack factors are never terrain
+        affected (8.7); defense doubles on fortress/escarpment (10.2)."""
+        att = sum(self.game.stats(a["slot"])[0] for a in attackers)
+        deff = sum(self.game.defense_factor(d["slot"], (d["col"], d["row"]))
+                   for d in defenders)
+        return att, deff
+
+    def _supply_free_attack_exists(self, u, pool=None):
+        """Can `u`, alone, make some legal attack that needs no supply
+        (odds 1-3 .. 1-6 after rounding, 14.3/7.4) on a subset of the
+        adjacent enemy combat units? Used for 11.9 (trapped units,
+        clarifications sec. 5) and the forced-elimination test."""
+        adj = pool if pool is not None else self._adjacent_enemy_combat(u)
+        if not adj:
+            return False
+        from itertools import combinations
+        att = self.game.stats(u["slot"])[0]
+        for k in range(1, len(adj) + 1):
+            for sub in combinations(adj, k):
+                n, d = self.game.odds(att, sum(
+                    self.game.defense_factor(e["slot"], (e["col"], e["row"]))
+                    for e in sub))
+                if n == 1 and 3 <= d <= 6:
+                    return True
+        return False
+
+    def _solo_attack_exists(self, u):
+        """Any legal solo attack for `u`: supply-free odds (1-3..1-6), or
+        supplied odds (1-2 or better) with a supply unit actually in range
+        of u (14.2). The multi-unit-support test of 11.6 is NOT searched —
+        declared in the scenario's rules_scope."""
+        adj = self._adjacent_enemy_combat(u)
+        if not adj:
+            return False
+        if self._supply_free_attack_exists(u, adj):
+            return True
+        from itertools import combinations
+        att = self.game.stats(u["slot"])[0]
+        sup = self._supply_hexes(u["side"])
+        rad = self.combat["attack_supply"]["radius"]
+        for k in range(1, len(adj) + 1):
+            for sub in combinations(adj, k):
+                n, d = self.game.odds(att, sum(
+                    self.game.defense_factor(e["slot"], (e["col"], e["row"]))
+                    for e in sub))
+                if self.game.odds_column(n, d) is None:
+                    continue
+                if d > 2:                      # supply-free, handled above
+                    continue
+                ids = tuple(e["pid"] for e in sub)
+                if self._trace_reaches((u["col"], u["row"]), u["side"], sup,
+                                       radius=rad, ignore_zoc_of=ids):
+                    return True
+        return False
+
+    def _obligations(self, side):
+        """8.4 both directions: (my combat units in enemy ZOC that have not
+        attacked, enemy combat units whose ZOC covers my combat units and
+        have not been attacked)."""
+        board = self.rules_board()
+        enemy = self.game.enemy(side)
+        mine = [((u["col"], u["row"]), u["pid"]) for u in self._combat_units(side)]
+        my_hexes = {h for h, _ in mine}
+        must_attack, must_be_attacked = [], []
+        zby = self.game.zoc_by_unit(board, enemy)
+        for epid, hexes in zby.items():
+            if my_hexes & hexes:
+                epid_unit = self.s["units"].get(epid)
+                if epid_unit is not None and self._is_combat(epid_unit) \
+                   and epid not in self.s["defended"]:
+                    must_be_attacked.append(epid)
+        allz = set().union(*zby.values()) if zby else set()
+        for h, pid in mine:
+            if h in allz and pid not in self.s["attacked"]:
+                must_attack.append(pid)
+        return sorted(must_attack), sorted(must_be_attacked)
+
+    # ------------------------------------------------------------ retreats
+    def _retreat_env(self, side):
+        board = self.rules_board()
+        enemy = self.game.enemy(side)
+        ezoc = self.game.zoc_hexes(board, enemy)
+        eblock, _ = self.game._enemy_hexes(board, enemy)
+        return board, ezoc, eblock
+
+    def _retreat_step_ok(self, cur, nb, ezoc, eblock):
+        """One retreat step: playable terrain (escarpments allowed, no stop
+        — 7.6), never across a prohibited hexside, never into enemy ZOC or
+        an enemy combat unit's hex (7.61)."""
+        if not self.game.on_map(*nb):
+            return False
+        if self.game.hexside_prohibited(cur, nb):
+            return False
+        if nb in ezoc or nb in eblock:
+            return False
+        return True
+
+    def _retreat_paths(self, u, ezoc, eblock, board):
+        """All legal 2-hex retreat paths for u: zigzag allowed, may not
+        re-enter its own hex nor any hex twice (7.6 + clarifications 9);
+        intermediate hex ignores stacking (7.6), final hex must respect it
+        (7.61). Returns {end_hex: [path, ...]}."""
+        start = (u["col"], u["row"])
+        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
+                  col=u["col"], row=u["row"])
+        out = {}
+        for h1 in self.game.neighbors(*start):
+            if not self._retreat_step_ok(start, h1, ezoc, eblock):
+                continue
+            for h2 in self.game.neighbors(*h1):
+                if h2 == start or h2 == h1:
+                    continue
+                if not self._retreat_step_ok(h1, h2, ezoc, eblock):
+                    continue
+                if not self.game._stack_ok(me, h2, board):
+                    continue
+                out.setdefault(h2, []).append([list(h1), list(h2)])
+        return out
+
+    def _stack_room(self, side, h, board):
+        """Free combat-unit slots at hex h for `side` (6.1)."""
+        st = self.game.stacking
+        if not st:
+            return 99
+        exempt = set(st.get("exempt_classes", []))
+        n = sum(1 for b in board
+                if b["side"] == side and (b["col"], b["row"]) == tuple(h)
+                and self.game.unit_class(b["name"]) not in exempt)
+        return max(0, int(st["max"]) - n)
+
+    def _survival_assignment_exists(self, pids, extra_used=None):
+        """Is there an assignment of legal retreat end-hexes to every unit
+        in pids such that all survive (joint stacking capacity respected)?
+        7.62 + clarifications 7: the winner may not cause an immediate
+        elimination when routes exist that let all retreating units live."""
+        if not pids:
+            return True
+        units = [self.unit(p) for p in pids]
+        side = units[0]["side"]
+        board, ezoc, eblock = self._retreat_env(side)
+        opts = []
+        for u in units:
+            ends = list(self._retreat_paths(u, ezoc, eblock, board))
+            if not ends:
+                return False
+            opts.append(ends)
+        room = {}
+        for ends in opts:
+            for h in ends:
+                if h not in room:
+                    room[h] = self._stack_room(side, h, board)
+        if extra_used:
+            for h in extra_used:
+                if tuple(h) in room:
+                    room[tuple(h)] -= 1
+
+        def rec(i, used):
+            if i == len(opts):
+                return True
+            for h in opts[i]:
+                if used.get(h, 0) < room.get(h, 0):
+                    used[h] = used.get(h, 0) + 1
+                    if rec(i + 1, used):
+                        return True
+                    used[h] -= 1
+            return False
+        return rec(0, {})
+
+    # ------------------------------------------------------------ Rommel 22.4
+    def _rommel_displacement(self, events):
+        """22.4: an hq alone in an enemy ZOC is placed with the closest
+        friendly combat unit (22.42: not counting untraversable or
+        enemy-ZOC hexes unless there is no other way; ties are the owner's
+        choice). Fortress hexes are never in enemy ZOC (19.5), so Rommel
+        alone in Tobruch stays (clarifications 6)."""
+        if self.s["pending_rommel"]:
+            return
+        board = self.rules_board()
+        for u in list(self.s["units"].values()):
+            if not self.on_map(u) or self.game.unit_class(u["slot"]) != "hq":
+                continue
+            here = (u["col"], u["row"])
+            if any(b["side"] == u["side"] and (b["col"], b["row"]) == here
+                   and self.game.unit_class(b["name"]) is None for b in board):
+                continue
+            ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
+            if here not in ezoc:
+                continue
+            friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
+            if not friends:
+                continue
+            eblock, _ = self.game._enemy_hexes(board, self.game.enemy(u["side"]))
+            choices = self._closest_hexes(here, friends, ezoc, eblock)
+            if not choices:
+                choices = self._closest_hexes(here, friends, set(), eblock)
+            if not choices:
+                continue
+            if len(choices) == 1:
+                u["col"], u["row"] = choices[0]
+                events.append(f"'{u['slot']}' was alone in an enemy ZOC — "
+                              f"placed with the closest friendly combat unit "
+                              f"at {self.game.grid.display_name(*choices[0])} "
+                              f"[22.4]")
+            else:
+                self.s["pending_rommel"] = {"unit": u["pid"],
+                                            "choices": [list(c) for c in choices]}
+                events.append(f"'{u['slot']}' is alone in an enemy ZOC with "
+                              f"equidistant friendly combat units — the owner "
+                              f"must choose a placement [22.4, 22.42]")
+
+    def _closest_hexes(self, start, targets, ezoc, eblock):
+        """Hexes in `targets` at minimum BFS distance from start, tracing
+        over playable terrain, avoiding enemy ZOC/combat hexes (22.42)."""
+        seen = {start}
+        frontier = [start]
+        while frontier:
+            found = sorted(h for h in frontier if h in targets and h != start)
+            if found:
+                return found
+            nxt = []
+            for cur in frontier:
+                for nb in self.game.neighbors(*cur):
+                    if nb in seen or not self.game.on_map(*nb):
+                        continue
+                    if self.game.hexside_prohibited(cur, nb):
+                        continue
+                    if nb not in targets and (nb in ezoc or nb in eblock):
+                        continue
+                    seen.add(nb)
+                    nxt.append(nb)
+            frontier = nxt
+        return []
+
+    # ------------------------------------------------------------ victory 4.1-4.3
+    def _controls_objectives(self, side):
+        """4.3 control of every fortress + home base hex: occupied by a
+        combat/supply/Rommel unit; home bases additionally free of enemy
+        ZOC."""
+        if not self.victory_hexes:
+            return False
+        board = self.rules_board()
+        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        for hx in self.victory_hexes:
+            occ = any(u["side"] == side and self.on_map(u)
+                      and (u["col"], u["row"]) == hx
+                      and self.game.unit_class(u["slot"]) != "markers"
+                      for u in self.s["units"].values())
+            if not occ:
+                return False
+            if self.game.hex_terrain(*hx) == "homebase" and hx in ezoc:
+                return False
+        return True
+
+    def _check_elimination_victory(self, events):
+        """4.1/4.2: a side with no combat units on the board loses ('on the
+        board' excludes units at sea, clarifications 13)."""
+        if self.s["over"] or not self.combat:
+            return
+        a, b = self.game.side_order
+        alive = {s: len(self._combat_units(s)) for s in (a, b)}
+        dead = [s for s in (a, b) if alive[s] == 0]
+        if not dead:
+            return
+        self.s["over"] = True
+        if len(dead) == 2:
+            self.s["winner"] = None
+            events.append("both sides have lost every combat unit on the "
+                          "board — no winner adjudicated [4.1/4.2]")
+        else:
+            w = self.game.enemy(dead[0])
+            self.s["winner"] = w
+            events.append(f"all {dead[0]} combat units on the board are "
+                          f"eliminated — {w} wins [4.1/4.2, clarifications 13]")
+
+    def _remove_units(self, pids, events, why):
+        for pid in pids:
+            u = self.s["units"].pop(str(pid), None)
+            if u:
+                self.s["dead"].append(str(pid))
+                events.append(f"'{u['slot']}' eliminated — {why}")
 
     # ------------------------------------------------------------ verdicts
     def _v(self, ok, *reasons):
@@ -292,17 +710,41 @@ class StrategicGame:
             return self._v(False, "game is over")
         if side not in self.game.side_order:
             return self._v(False, f"unknown side '{side}'")
+        # combat sub-actions may belong to the NON-moving player (7.5: the
+        # winner retreats the loser's units / pays exchange losses)
+        if t == "place_rommel":
+            return self._propose_place_rommel(side, action)
+        if self.s["pending_rommel"]:
+            return self._v(False, "the displaced headquarters unit must be "
+                                  "placed first [22.4, 22.42]")
+        if t == "retreat":
+            return self._propose_retreat(side, action)
+        if t == "exchange_loss":
+            return self._propose_exchange_loss(side, action)
+        pend = self.s["pending"]
+        if pend and pend["kind"] in ("retreat", "exchange"):
+            return self._v(False, "a battle is being settled — its retreat/"
+                                  "exchange losses must be executed before "
+                                  "anything else [8.6]")
         if side != self.s["mover"]:
             return self._v(False, f"it is the {self.s['mover']} player turn — "
                                   f"no {side} movement is allowed [3.1/3.3]")
         if t == "end_phase":
-            over = self.overstacked_hexes(side)
-            if over:
-                names = ", ".join(self.game.grid.display_name(*h) for h in over)
-                return self._v(False, f"stacking limit exceeded at {names} — limits "
-                                      "must be adhered to at the conclusion of each "
-                                      "player's movement [2.3, 6.1, 6.3]")
-            return self._v(True)
+            return self._propose_end_phase(side)
+        if t == "end_movement":
+            return self._propose_end_movement(side)
+        if t == "battle":
+            return self._propose_battle(side, action)
+        if t == "advance":
+            return self._propose_advance(side, action)
+        if t == "forced_elim":
+            return self._propose_forced_elim(side, action)
+        if t in ("move", "rommel_extend", "roll_supply", "land_supply",
+                 "land_reinforcement", "embark", "debark") \
+           and self.s["phase"] != "movement":
+            return self._v(False, "the movement portion of the turn is over — "
+                                  "all movement precedes combat resolution "
+                                  "[3.1/3.2, 5.3]")
         if t == "roll_supply":
             return self._propose_roll_supply(side)
         if t == "land_supply":
@@ -318,6 +760,336 @@ class StrategicGame:
         if t != "move":
             return self._v(False, f"unknown action type '{t}'")
         return self._propose_move(side, action)
+
+    # ------------------------------------------------------------ combat proposals
+    def _propose_end_movement(self, side):
+        if not self.combat:
+            return self._v(False, "no combat rules encoded for this game")
+        if self.s["phase"] != "movement":
+            return self._v(False, "movement is already over this player turn")
+        over = self.overstacked_hexes(side)
+        if over:
+            names = ", ".join(self.game.grid.display_name(*h) for h in over)
+            return self._v(False, f"stacking limit exceeded at {names} — limits "
+                                  "bind at the end of movement [6.1, 6.3]")
+        return self._v(True)
+
+    def _propose_end_phase(self, side):
+        over = self.overstacked_hexes(side)
+        if over:
+            names = ", ".join(self.game.grid.display_name(*h) for h in over)
+            return self._v(False, f"stacking limit exceeded at {names} — limits "
+                                  "must be adhered to at the conclusion of each "
+                                  "player's movement [2.3, 6.1, 6.3]")
+        if not self.combat:
+            return self._v(True)
+        must_attack, must_be = self._obligations(side)
+        if self.s["phase"] == "movement":
+            if must_attack or must_be:
+                return self._v(False, "moving into an enemy ZOC causes combat "
+                                      "— all battles must be resolved before "
+                                      "the player turn ends (submit "
+                                      "end_movement, then the battles) "
+                                      "[3.2/3.4, 7.2, 8.4]")
+            return self._v(True)
+        # combat phase: every obligation must be discharged
+        if must_attack:
+            names = ", ".join(self.unit(p)["slot"] for p in must_attack)
+            return self._v(False, f"units in enemy ZOC have not attacked: "
+                                  f"{names} — every combat unit in the ZOC of "
+                                  f"an enemy unit must attack [8.4]")
+        if must_be:
+            names = ", ".join(self.unit(p)["slot"] for p in must_be)
+            return self._v(False, f"enemy units with your units in their ZOC "
+                                  f"were not attacked: {names} [8.4]")
+        err = self._fortress_sortie_unmet(side)
+        if err:
+            return err
+        return self._v(True)
+
+    def _fortress_sortie_unmet(self, side):
+        """23.2: if units in a fortress attacked this turn, they must attack
+        ALL adjacent enemy combat units."""
+        for f in self.s["fought"]:
+            fort_hexes = {tuple(h) for h in f["ahex"].values()
+                          if self.game.hex_terrain(*h) == "fortress"}
+            for fh in fort_hexes:
+                for e in self._combat_units(self.game.enemy(side)):
+                    if self._engageable(fh, (e["col"], e["row"])) \
+                       and e["pid"] not in self.s["defended"]:
+                        return self._v(False,
+                            f"units attacking out of the fortress at "
+                            f"{self.game.grid.display_name(*fh)} must attack "
+                            f"ALL adjacent enemy units — '{e['slot']}' was "
+                            f"not attacked [23.2]")
+        return None
+
+    def _propose_battle(self, side, action):
+        if not self.combat:
+            return self._v(False, "no combat rules encoded for this game")
+        if self.s["phase"] != "combat":
+            return self._v(False, "battles are resolved after all movement — "
+                                  "end movement first [3.2, 5.3, 8.6]")
+        atk_ids = [str(p) for p in (action.get("attackers") or [])]
+        def_ids = [str(p) for p in (action.get("defenders") or [])]
+        if not atk_ids or not def_ids:
+            return self._v(False, "a battle names attackers and defenders")
+        if len(set(atk_ids)) != len(atk_ids) or len(set(def_ids)) != len(def_ids):
+            return self._v(False, "duplicate unit in battle declaration")
+        attackers, defenders = [], []
+        for pid in atk_ids:
+            u = self.s["units"].get(pid)
+            if not u or u["side"] != side or not self._is_combat(u):
+                return self._v(False, f"attacker '{pid}' is not one of your "
+                                      f"combat units on the map [5.4, 7.2]")
+            if pid in self.s["attacked"]:
+                return self._v(False, f"'{u['slot']}' has already fought — no "
+                                      f"attacking unit may fight more than one "
+                                      f"battle per turn [11.8]")
+            attackers.append(u)
+        enemy = self.game.enemy(side)
+        for pid in def_ids:
+            u = self.s["units"].get(pid)
+            if not u or u["side"] != enemy or not self._is_combat(u):
+                return self._v(False, f"defender '{pid}' is not an enemy "
+                                      f"combat unit on the map")
+            if pid in self.s["defended"]:
+                return self._v(False, f"'{u['slot']}' has already been attacked "
+                                      f"— no defending unit may be attacked "
+                                      f"more than once per turn [11.7]")
+            defenders.append(u)
+        for a in attackers:
+            for d in defenders:
+                if not self._engageable((a["col"], a["row"]),
+                                        (d["col"], d["row"])):
+                    return self._v(False,
+                        f"'{a['slot']}' is not adjacent to '{d['slot']}' — "
+                        f"each attacking unit must be adjacent to every "
+                        f"defending unit in its attack [8.5] (5.7: anomalous "
+                        f"hexsides never allow engagement)")
+        # 23.1: attacking into a fortress engages every unit in it
+        for d in defenders:
+            if self.game.hex_terrain(d["col"], d["row"]) == "fortress":
+                for other in self._combat_units(enemy):
+                    if (other["col"], other["row"]) == (d["col"], d["row"]) \
+                       and other["pid"] not in def_ids:
+                        return self._v(False,
+                            f"attacks into a fortress must engage ALL units "
+                            f"in it — '{other['slot']}' is also in "
+                            f"{self.game.grid.display_name(d['col'], d['row'])} "
+                            f"[23.1]")
+        att, deff = self._battle_factors(attackers, defenders)
+        n, d = self.game.odds(att, deff)
+        col = self.game.odds_column(n, d)
+        if col is None:
+            return self._v(False, f"odds {att}:{deff} round to {n}-{d} — no "
+                                  f"unit may voluntarily attack at worse than "
+                                  f"1-6 [7.4, 11.6]")
+        # 11.31/11.33: the battle partition must let EVERY unit in an enemy
+        # ZOC attack — this battle may not consume the last un-attacked
+        # defender adjacent to some other friendly unit (append-only log
+        # has no takebacks; an orphaned unit would dead-lock the turn)
+        defended2 = set(self.s["defended"]) | set(def_ids)
+        attacked2 = set(self.s["attacked"]) | set(atk_ids)
+        ezoc = self.game.zoc_hexes(self.rules_board(), enemy)
+        for f in self._combat_units(side):
+            if f["pid"] in attacked2 or (f["col"], f["row"]) not in ezoc:
+                continue
+            if not any(e["pid"] not in defended2
+                       for e in self._adjacent_enemy_combat(f)):
+                return self._v(False,
+                    f"this battle would leave '{f['slot']}' in an enemy ZOC "
+                    f"with every adjacent enemy already attacked — every "
+                    f"combat unit in an enemy ZOC must attack, so the battle "
+                    f"partition must include it [8.4, 11.31-11.33]")
+        v = self._v(True)
+        v["odds"] = f"{n}-{d}"
+        v["column"] = col
+        v["factors"] = [att, deff]
+        # 14.1/14.2: supply for attacks at 1-2 or better
+        if d <= 2:
+            spid = str(action.get("supply") or "")
+            su = self.s["units"].get(spid)
+            if not su or su["side"] != side or not self.on_map(su) \
+               or self.game.unit_class(su["slot"]) != "supply":
+                vv = self._v(False,
+                    f"odds {n}-{d} are 1-2 or better — the attack must state "
+                    f"a friendly supply unit sustaining it [14.1, 14.6]")
+                vv.update(odds=f"{n}-{d}", column=col, factors=[att, deff])
+                return vv
+            rad = self.combat["attack_supply"]["radius"]
+            for a in attackers:
+                if not self._trace_reaches(
+                        (a["col"], a["row"]), side,
+                        [(su["col"], su["row"])], radius=rad,
+                        ignore_zoc_of=tuple(def_ids)):
+                    return self._v(False,
+                        f"'{a['slot']}' has no {rad}-hex route free of enemy "
+                        f"ZOC and blocking terrain to supply '{su['slot']}' — "
+                        f"ALL units attacking at 1-2 or better must be within "
+                        f"{rad} hexes of the sustaining supply [14.2]")
+            v["supply"] = spid
+        elif action.get("supply"):
+            v["reasons"].append("odds worse than 1-2: no supply needed [14.3]")
+        return v
+
+    def _propose_forced_elim(self, side, action):
+        if not self.combat or self.s["phase"] != "combat":
+            return self._v(False, "forced eliminations happen in the combat "
+                                  "portion of the turn [7.4]")
+        if self.s["fought"]:
+            return self._v(False, "a unit forced to attack at worse than 1-6 "
+                                  "is eliminated BEFORE any other battle is "
+                                  "resolved [7.4]")
+        u, err = self._gate_unit(side, action)
+        if err:
+            return err
+        if not self._is_combat(u):
+            return self._v(False, "only combat units are forced to attack [8.4]")
+        board = self.rules_board()
+        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        if (u["col"], u["row"]) not in ezoc:
+            return self._v(False, "unit is not in an enemy ZOC — it is not "
+                                  "forced to attack [7.2, 8.4]")
+        if self._solo_attack_exists(u):
+            return self._v(False, "this unit can still make a legal attack — "
+                                  "every combat unit in an enemy ZOC must "
+                                  "attack [8.4, 7.4] (note: bringing other "
+                                  "units in support may also fix the odds, "
+                                  "11.6)")
+        return self._v(True)
+
+    def _propose_advance(self, side, action):
+        pend = self.s["pending"]
+        if not pend or pend["kind"] != "advance":
+            return self._v(False, "no advance after combat is available — the "
+                                  "option lapses when the next battle is "
+                                  "resolved [16.1, 8.6]")
+        pid = str(action.get("unit"))
+        if pid not in pend["advancers"]:
+            return self._v(False, "only surviving attacking units of that "
+                                  "battle may advance [16.1]")
+        u = self.s["units"].get(pid)
+        if not u:
+            return self._v(False, "unit no longer on the board")
+        hx = tuple(action.get("hex") or ())
+        if list(hx) not in pend["hexes"]:
+            return self._v(False, "advance is only into the fortress or "
+                                  "escarpment hex vacated by the defender "
+                                  "[16.1]")
+        if not self._engageable((u["col"], u["row"]), hx):
+            return self._v(False, "advancing unit must be adjacent to the "
+                                  "vacated hex [16.1, 8.5]")
+        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
+                  col=u["col"], row=u["row"])
+        if not self.game._stack_ok(me, hx, self.rules_board()):
+            return self._v(False, "advance may not exceed stacking limits "
+                                  "[16.1, 6.1]")
+        return self._v(True)
+
+    def _propose_retreat(self, side, action):
+        pend = self.s["pending"]
+        if not pend or pend["kind"] != "retreat":
+            return self._v(False, "no retreat is pending")
+        if side != pend["chooser"]:
+            return self._v(False, f"the {pend['chooser']} player retreats the "
+                                  f"losing units — the winner chooses the "
+                                  f"route [7.5, 7.6]")
+        pid = str(action.get("unit"))
+        if pid not in pend["units"]:
+            return self._v(False, "that unit is not awaiting retreat from "
+                                  "this battle")
+        u = self.s["units"].get(pid)
+        board, ezoc, eblock = self._retreat_env(u["side"])
+        paths = self._retreat_paths(u, ezoc, eblock, board)
+        remaining = [p for p in pend["units"] if p != pid]
+        if action.get("eliminate"):
+            if self._survival_assignment_exists(pend["units"]):
+                return self._v(False,
+                    "routes exist that let every retreating unit survive — "
+                    "the winner may not choose eliminations while they do "
+                    "[7.61, 7.62 + clarifications 7]")
+            return self._v(True)
+        path = [tuple(h) for h in (action.get("path") or [])]
+        dist = self.combat["retreat"]["distance"]
+        if len(path) != dist:
+            return self._v(False, f"a retreat is exactly {dist} hexes — zigzag "
+                                  f"allowed, ending one hex away is legal "
+                                  f"[7.5, 7.6]")
+        legal = [list(h) for h in path] in paths.get(path[-1], [])
+        if not legal:
+            return self._v(False,
+                "illegal retreat route — each hex must be playable terrain "
+                "free of enemy ZOC and enemy units, no prohibited hexside, "
+                "no hex entered twice, never back into the battle hex, and "
+                "the final hex must respect stacking [7.6, 7.61, "
+                "clarifications 9]")
+        if self._survival_assignment_exists(pend["units"]) and remaining:
+            if not self._survival_assignment_exists(remaining,
+                                                    extra_used=[path[-1]]):
+                return self._v(False,
+                    "this route would force another retreating unit into "
+                    "elimination — the winner must choose routes that let "
+                    "ALL retreating units live when possible [7.62 + "
+                    "clarifications 7]")
+        return self._v(True)
+
+    def _propose_exchange_loss(self, side, action):
+        pend = self.s["pending"]
+        if not pend or pend["kind"] != "exchange":
+            return self._v(False, "no exchange is being settled")
+        if side != pend["winner"]:
+            return self._v(False, f"the {pend['winner']} player owes the "
+                                  f"exchange losses [7.5]")
+        pids = [str(p) for p in (action.get("units") or [])]
+        if not pids or len(set(pids)) != len(pids):
+            return self._v(False, "name the units removed to satisfy the "
+                                  "exchange [7.5]")
+        for pid in pids:
+            if pid not in pend["involved"]:
+                return self._v(False, "exchange losses come only from units "
+                                      "actually involved in that battle [7.5]")
+        total = 0
+        for pid in pids:
+            u = self.unit(pid)
+            total += self._exchange_factor(u, pend["winner_is_attacker"])
+        owe = pend["owe"]
+        if total < owe:
+            return self._v(False, f"removed factors {total} do not reach the "
+                                  f"opponent's {owe} — the exchange removes "
+                                  f"units totaling AT LEAST that [7.5]")
+        for pid in pids:
+            u = self.unit(pid)
+            if total - self._exchange_factor(u, pend["winner_is_attacker"]) >= owe:
+                return self._v(False, f"'{u['slot']}' is not needed to reach "
+                                      f"{owe} — the exchange removes the "
+                                      f"number of units whose factors total "
+                                      f"at least the opponent's, no more "
+                                      f"[7.5]")
+        return self._v(True)
+
+    def _exchange_factor(self, u, as_attacker):
+        """7.5: attacker counts attack factors (never terrain-affected,
+        8.7); defender counts defense at basic or double value per terrain."""
+        if as_attacker:
+            return self.game.stats(u["slot"])[0]
+        return self.game.defense_factor(u["slot"], (u["col"], u["row"]))
+
+    def _propose_place_rommel(self, side, action):
+        pr = self.s["pending_rommel"]
+        if not pr:
+            return self._v(False, "no headquarters placement is pending")
+        u = self.unit(pr["unit"])
+        if u["side"] != side:
+            return self._v(False, f"the {u['side']} player places his own "
+                                  f"headquarters unit [22.42]")
+        hx = list(action.get("hex") or ())
+        if hx not in pr["choices"]:
+            names = ", ".join(self.game.grid.display_name(*h)
+                              for h in pr["choices"])
+            return self._v(False, f"placement must be with one of the closest "
+                                  f"friendly combat units: {names} [22.4, 22.42]")
+        return self._v(True)
 
     def _gate_unit(self, side, action, allow_at_sea=False):
         """Common unit resolution for unit-bearing actions. Returns
@@ -558,8 +1330,30 @@ class StrategicGame:
                 s["paths"][u["pid"]] = [list(h) for h in action["path"]]
             if action.get("rommel_bonus"):
                 s["bonus"][u["pid"]] = int(action["rommel_bonus"])
+            events = []
+            if self.combat:
+                self._rommel_displacement(events)
             return {"from": old, "to": [u["col"], u["row"]],
-                    "cost": verdict.get("cost")}
+                    "cost": verdict.get("cost"), "events": events}
+        if t == "end_movement":
+            return self._apply_end_movement(side)
+        if t == "battle":
+            return self._apply_battle(side, action, verdict)
+        if t == "retreat":
+            return self._apply_retreat(side, action)
+        if t == "exchange_loss":
+            return self._apply_exchange_loss(side, action)
+        if t == "advance":
+            return self._apply_advance(side, action)
+        if t == "forced_elim":
+            return self._apply_forced_elim(side, action)
+        if t == "place_rommel":
+            u = self.unit(s["pending_rommel"]["unit"])
+            u["col"], u["row"] = action["hex"]
+            s["pending_rommel"] = None
+            return {"placed": u["pid"], "at": list(action["hex"]),
+                    "note": "headquarters placed with the chosen closest "
+                            "friendly combat unit [22.4, 22.42]"}
         if t == "rommel_extend":
             u = self.unit(action["unit"])
             old = [u["col"], u["row"]]
@@ -624,6 +1418,24 @@ class StrategicGame:
                             "to sea [23.4, 23.42]"}
         # end_phase
         notes = []
+        if self.combat:
+            used = sorted(set(s["supplies_used"]))
+            self._remove_units(used, notes,
+                               "supply used to sustain attacks is removed at "
+                               "the end of the player turn [14.1]")
+            # 4.1/4.2 control victory: both fortresses + both home bases at
+            # the start AND end of two consecutive own player turns
+            end_ok = self._controls_objectives(side)
+            streak = s["vic_streak"].get(side, 0)
+            streak = streak + 1 if (s["vic_start_ok"] and end_ok) else 0
+            s["vic_streak"][side] = streak
+            if streak >= 2 and not s["over"]:
+                s["over"] = True
+                s["winner"] = side
+                notes.append(f"{side} has controlled both fortresses and both "
+                             f"home bases at the start and end of two "
+                             f"consecutive player turns — {side} WINS "
+                             f"[4.1/4.2, 4.3]")
         if side == "Axis" and s["supply_pending"]:
             s["supply_pending"] = False
             notes.append("arrived Axis supply unit was not landed — forfeited; "
@@ -633,23 +1445,38 @@ class StrategicGame:
                        and u.get("embark_turn", s["turn"]) < s["turn"]]
         for u in lost_at_sea:
             del s["units"][u["pid"]]
+            s["dead"].append(u["pid"])
             notes.append(f"'{u['slot']}' failed to return to a port on the turn "
                          f"following its removal from the board — ELIMINATED [23.42]")
         s["moved"] = {}
         s["paths"] = {}
         s["bonus"] = {}
         s["landed_sea"] = []
+        s["phase"] = "movement"
+        s["attacked"] = {}
+        s["defended"] = {}
+        s["fought"] = []
+        s["supplies_used"] = []
+        s["pending"] = None
+        if s["over"]:
+            return {"note": f"GAME OVER — {s['winner']} wins." if s["winner"]
+                            else "GAME OVER.",
+                    "over": True, "winner": s["winner"], "events": notes}
         other = self.game.enemy(side)
         if side == self.first_player:
             s["mover"] = other
             s["allied_supply_done"] = False
             s["ports"] = self._controlled_ports(other)
+            if self.combat:
+                s["vic_start_ok"] = self._controls_objectives(other)
             return {"note": f"{side} player turn over — {other} moves now [3.3]",
                     "events": notes}
         s["turn"] += 1
         s["mover"] = self.first_player
         s["supply_rolled"] = False
         s["ports"] = self._controlled_ports(self.first_player)
+        if self.combat:
+            s["vic_start_ok"] = self._controls_objectives(self.first_player)
         if s["turn"] > self.turns:
             s["over"] = True
             unlanded = sorted(self.schedule[pid]["slot"] for pid in s["pool"])
@@ -658,13 +1485,222 @@ class StrategicGame:
                 notes.append("reinforcements not in play by the last October "
                              "1942 turn are eliminated [19.8]: "
                              + ", ".join(unlanded))
-            return {"note": "GAME OVER — final turn complete. Victory conditions "
-                            "(4.1/4.2) require combat resolution: not in Tier-1 "
-                            "scope, no winner adjudicated.",
-                    "turn": s["turn"], "over": True, "events": notes}
+            if self.combat:
+                s["winner"] = "Allied" if "Allied" in self.game.side_order else None
+                note = ("GAME OVER — final turn complete. The Allied player "
+                        "wins by avoiding the Axis victory conditions through "
+                        "the last October 1942 turn [4.2].")
+            else:
+                note = ("GAME OVER — final turn complete. Victory conditions "
+                        "(4.1/4.2) require combat resolution: not in Tier-1 "
+                        "scope, no winner adjudicated.")
+            return {"note": note, "turn": s["turn"], "over": True,
+                    "winner": s.get("winner"), "events": notes}
         return {"note": f"game turn complete — {self.turn_label()} begins, "
                         f"{self.first_player} moves first [3.5]",
                 "turn": s["turn"], "over": False, "events": notes}
+
+    # ------------------------------------------------------------ combat apply
+    def _apply_end_movement(self, side):
+        s = self.s
+        s["phase"] = "combat"
+        events = []
+        # 11.9: attacking units isolated in enemy ZOC with no supply-free
+        # attack are eliminated before combat (clarifications sec. 5)
+        board = self.rules_board()
+        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        for u in list(self._combat_units(side)):
+            if (u["col"], u["row"]) not in ezoc:
+                continue
+            if self._isolated(u) and not self._supply_free_attack_exists(u):
+                self._remove_units([u["pid"]], events,
+                                   "isolated in enemy ZOC with no legal "
+                                   "supply-free attack — eliminated before "
+                                   "the combat phase [11.9, 24.1, 14.3]")
+        self._rommel_displacement(events)
+        self._check_elimination_victory(events)
+        must_attack, must_be = self._obligations(side)
+        return {"note": "movement portion over — all battles caused by "
+                        "movement are now resolved one at a time [3.2/3.4, 8.6]",
+                "events": events,
+                "must_attack": must_attack, "must_be_attacked": must_be}
+
+    def _battle_no(self):
+        return len(self.s["fought"])
+
+    def _apply_battle(self, side, action, verdict):
+        s = self.s
+        atk_ids = [str(p) for p in action["attackers"]]
+        def_ids = [str(p) for p in action["defenders"]]
+        attackers = [self.unit(p) for p in atk_ids]
+        defenders = [self.unit(p) for p in def_ids]
+        n = self._battle_no()
+        for pid in atk_ids:
+            s["attacked"][pid] = n
+        for pid in def_ids:
+            s["defended"][pid] = n
+        s["fought"].append({
+            "attackers": atk_ids, "defenders": def_ids,
+            "ahex": {p: [self.unit(p)["col"], self.unit(p)["row"]]
+                     for p in atk_ids},
+            "dhex": {p: [self.unit(p)["col"], self.unit(p)["row"]]
+                     for p in def_ids}})
+        s["pending"] = None                     # a lapsed advance option
+        if verdict.get("supply"):
+            if verdict["supply"] not in s["supplies_used"]:
+                s["supplies_used"].append(verdict["supply"])
+        col = verdict["column"]
+        events = []
+        if col == "auto_elim":
+            roll = None
+            code = "DE"
+            events.append(f"odds {verdict['odds']} are greater than 6-1 — "
+                          f"automatic elimination, no die is rolled [7.4, "
+                          f"9.1, printed CRT note]")
+        else:
+            roll = self.roll_die()
+            code = self.game.crt_result(col, roll)
+        res = {"odds": verdict["odds"], "factors": verdict["factors"],
+               "column": col, "roll": roll, "result": code,
+               "meaning": self.combat["crt"]["results"][code],
+               "battle": n, "events": events}
+        dbl_def_hexes = [list(h) for h in
+                         {tuple(hh) for hh in s["fought"][n]["dhex"].values()
+                          if self.game.hex_terrain(*hh)
+                          in self.combat["advance"]["into_terrain"]}]
+        if code == "AE":
+            self._remove_units(atk_ids, events, "A Elim [7.5]")
+        elif code == "DE":
+            self._remove_units(def_ids, events, "D Elim [7.5]")
+            self._offer_advance(n, atk_ids, dbl_def_hexes, events)
+        elif code == "EX":
+            att, deff = verdict["factors"]
+            if att == deff:
+                self._remove_units(atk_ids + def_ids, events,
+                                   "Exchange with equal factors — both sides "
+                                   "remove all involved units [7.5]")
+                self._offer_advance(n, [], dbl_def_hexes, events)
+            elif att < deff:
+                self._remove_units(atk_ids, events,
+                                   "Exchange — the attacker had fewer "
+                                   "involved factors [7.5]")
+                s["pending"] = {"kind": "exchange", "battle": n,
+                                "winner": self.game.enemy(side),
+                                "winner_is_attacker": False,
+                                "owe": att, "involved": def_ids,
+                                "vac_hexes": [], "advancers": []}
+                events.append(f"the defender removes involved units totaling "
+                              f"at least {att} defense factors [7.5]")
+            else:
+                self._remove_units(def_ids, events,
+                                   "Exchange — the defender had fewer "
+                                   "involved factors [7.5]")
+                s["pending"] = {"kind": "exchange", "battle": n,
+                                "winner": side, "winner_is_attacker": True,
+                                "owe": deff, "involved": atk_ids,
+                                "vac_hexes": dbl_def_hexes,
+                                "advancers": atk_ids}
+                events.append(f"the attacker removes involved units totaling "
+                              f"at least {deff} attack factors [7.5]")
+        elif code in ("AB2", "DB2"):
+            losers = atk_ids if code == "AB2" else def_ids
+            chooser = self.game.enemy(side) if code == "AB2" else side
+            s["pending"] = {"kind": "retreat", "battle": n,
+                            "units": list(losers), "chooser": chooser,
+                            "advance_after": code == "DB2",
+                            "vac_hexes": dbl_def_hexes if code == "DB2" else [],
+                            "advancers": atk_ids if code == "DB2" else []}
+            events.append(f"the {chooser} player (the winner) now retreats "
+                          f"each losing unit two hexes [7.5, 7.6]")
+        self._rommel_displacement(events)
+        self._check_elimination_victory(events)
+        return res
+
+    def _offer_advance(self, battle, advancer_ids, candidate_hexes, events):
+        """16.1: advance is available into vacated fortress/escarpment hexes."""
+        alive = [p for p in advancer_ids if p in self.s["units"]]
+        vac = []
+        for h in candidate_hexes:
+            occ = any(self._is_combat(u) and [u["col"], u["row"]] == list(h)
+                      for u in self.s["units"].values())
+            if not occ:
+                vac.append(list(h))
+        if alive and vac:
+            self.s["pending"] = {"kind": "advance", "battle": battle,
+                                 "hexes": vac, "advancers": alive}
+            names = ", ".join(self.game.grid.display_name(*h) for h in vac)
+            events.append(f"surviving attackers may advance into the vacated "
+                          f"{names} before the next battle [16.1]")
+
+    def _apply_retreat(self, side, action):
+        s = self.s
+        pend = s["pending"]
+        pid = str(action["unit"])
+        events = []
+        u = self.unit(pid)
+        if action.get("eliminate"):
+            self._remove_units([pid], events,
+                               "no retreat route lets it survive — eliminated "
+                               "instead of retreating [7.61]")
+            res = {"eliminated": pid, "events": events}
+        else:
+            old = [u["col"], u["row"]]
+            path = [list(h) for h in action["path"]]
+            u["col"], u["row"] = path[-1]
+            res = {"from": old, "path": path, "events": events,
+                   "note": "retreated two hexes by the winner [7.5, 7.6]"}
+        pend["units"] = [p for p in pend["units"] if p != pid]
+        if not pend["units"]:
+            s["pending"] = None
+            if pend.get("advance_after"):
+                self._offer_advance(pend["battle"], pend["advancers"],
+                                    pend["vac_hexes"], events)
+        self._rommel_displacement(events)
+        self._check_elimination_victory(events)
+        return res
+
+    def _apply_exchange_loss(self, side, action):
+        s = self.s
+        pend = s["pending"]
+        pids = [str(p) for p in action["units"]]
+        events = []
+        self._remove_units(pids, events, "removed to satisfy the exchange [7.5]")
+        s["pending"] = None
+        if pend["winner_is_attacker"]:
+            survivors = [p for p in pend["involved"] if p in s["units"]]
+            self._offer_advance(pend["battle"], survivors,
+                                pend["vac_hexes"], events)
+        self._rommel_displacement(events)
+        self._check_elimination_victory(events)
+        return {"removed": pids, "events": events}
+
+    def _apply_advance(self, side, action):
+        s = self.s
+        pend = s["pending"]
+        pid = str(action["unit"])
+        u = self.unit(pid)
+        old = [u["col"], u["row"]]
+        u["col"], u["row"] = action["hex"]
+        pend["advancers"] = [p for p in pend["advancers"] if p != pid]
+        if not pend["advancers"]:
+            s["pending"] = None
+        events = []
+        self._rommel_displacement(events)
+        return {"from": old, "to": list(action["hex"]), "events": events,
+                "note": "advance after combat into the vacated hex [16.1, 16.2]"}
+
+    def _apply_forced_elim(self, side, action):
+        s = self.s
+        pid = str(action["unit"])
+        events = []
+        self._remove_units([pid], events,
+                           "forced to attack at odds worse than 1-6 — "
+                           "eliminated before any battle, no soak-off, no "
+                           "blocking ZOC [7.4]")
+        s["pending"] = None
+        self._rommel_displacement(events)
+        self._check_elimination_victory(events)
+        return {"eliminated": pid, "events": events}
 
     # ------------------------------------------------------------ queries (UI/AI)
     def legal_moves(self, pid):
@@ -717,6 +1753,77 @@ class StrategicGame:
         return dict(due=due, at_sea=at_sea, ports=ports, supply=supply,
                     placements_open=not s["moved"])
 
+    def combat_panel(self):
+        """Everything the UI needs to drive the combat phase."""
+        if not self.combat:
+            return None
+        s = self.s
+        side = s["mover"]
+        must_attack, must_be = self._obligations(side)
+        pend = s["pending"]
+        pinfo = None
+        if pend:
+            pinfo = dict(kind=pend["kind"], battle=pend.get("battle"))
+            if pend["kind"] == "retreat":
+                pinfo["chooser"] = pend["chooser"]
+                pinfo["units"] = []
+                for p in pend["units"]:
+                    u = self.unit(p)
+                    board, ezoc, eblock = self._retreat_env(u["side"])
+                    paths = self._retreat_paths(u, ezoc, eblock, board)
+                    opts = [dict(end=list(h),
+                                 name=self.game.grid.display_name(*h),
+                                 path=pp[0])
+                            for h, pp in sorted(paths.items())]
+                    pinfo["units"].append(dict(pid=p, slot=u["slot"],
+                                               options=opts))
+            elif pend["kind"] == "exchange":
+                pinfo["winner"] = pend["winner"]
+                pinfo["owe"] = pend["owe"]
+                pinfo["involved"] = [dict(pid=p, slot=self.unit(p)["slot"],
+                                          factor=self._exchange_factor(
+                                              self.unit(p),
+                                              pend["winner_is_attacker"]))
+                                     for p in pend["involved"]
+                                     if p in s["units"]]
+            elif pend["kind"] == "advance":
+                pinfo["hexes"] = pend["hexes"]
+                pinfo["hex_names"] = [self.game.grid.display_name(*h)
+                                      for h in pend["hexes"]]
+                pinfo["advancers"] = [dict(pid=p, slot=self.unit(p)["slot"])
+                                      for p in pend["advancers"]
+                                      if p in s["units"]]
+        return dict(
+            phase=s["phase"],
+            must_attack=[dict(pid=p, slot=self.unit(p)["slot"])
+                         for p in must_attack],
+            must_be_attacked=[dict(pid=p, slot=self.unit(p)["slot"])
+                              for p in must_be],
+            battles_fought=len(s["fought"]),
+            supplies_used=[dict(pid=p, slot=self.unit(p)["slot"])
+                           for p in sorted(set(s["supplies_used"]))
+                           if p in s["units"]],
+            pending=pinfo,
+            pending_rommel=s["pending_rommel"])
+
+    def battle_preview(self, side, atk_ids, def_ids):
+        """Odds/column/supply-need preview for a prospective battle (UI
+        helper: read-only, computed by the same code that gates it)."""
+        v = self._propose_battle(side, {"type": "battle",
+                                        "attackers": atk_ids,
+                                        "defenders": def_ids,
+                                        "supply": None})
+        out = dict(legal=v["legal"], reasons=v["reasons"])
+        if "odds" in v:
+            out.update(odds=v["odds"], column=v["column"],
+                       factors=v["factors"])
+        if v["legal"]:
+            out["needs_supply"] = False
+        elif v["reasons"] and "supply unit sustaining" in v["reasons"][0]:
+            # legal except for the supply declaration
+            out["needs_supply"] = True
+        return out
+
     def flow(self):
         s = self.s
         return dict(turn=s["turn"], turns=self.turns,
@@ -729,4 +1836,5 @@ class StrategicGame:
                     first_player=self.first_player,
                     scenario=self.scenario["name"],
                     rules_scope=self.scenario.get("rules_scope"),
-                    arrivals=self.arrivals_panel())
+                    arrivals=self.arrivals_panel(),
+                    combat=self.combat_panel())
