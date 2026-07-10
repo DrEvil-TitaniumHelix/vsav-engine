@@ -125,6 +125,10 @@
   <button class="sidebtn" id="endmove">End movement</button>
   <button class="sidebtn" id="passfire">Pass fire</button>
   <button class="sidebtn" id="aibtn">AI acts</button>
+  <span id="unitnav" style="display:none">
+    <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
+    <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
+  </span>
   <button class="sidebtn" id="tablesbtn">📊 Tables</button>
   <button class="sidebtn" id="guidebtn">📖 Guide</button>
   <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
@@ -159,6 +163,7 @@
 <div id="actions"></div>
 <div id="picker"></div>
 
+<script src="frame.js"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay'), FW = document.getElementById('facewheel');
@@ -176,30 +181,27 @@ function hexToPixel(col,row){ const g=GAME.grid;
 // P(2d6 >= n) in %
 const P2D6={2:100,3:97,4:92,5:83,6:72,7:58,8:42,9:28,10:17,11:8,12:3};
 
-function clampPan(){
-  // the map may never leave the screen: keep >=120px visible on each axis
-  if(!MAPW)return;
-  const m=120, mw=MAPW*scale, mh=MAPH*scale;
-  panX=Math.min(VP.clientWidth-m, Math.max(m-mw, panX));
-  panY=Math.min(VP.clientHeight-m, Math.max(m-mh, panY));
-}
-function apply(){ clampPan(); W.style.transform=`translate(${panX}px,${panY}px) scale(${scale})`; }
-function centerOn(x,y){            // glide to a map point (AI steps)
-  W.classList.add('glide');
-  panX=VP.clientWidth/2-x*scale; panY=VP.clientHeight/2-y*scale;
-  apply();
-  setTimeout(()=>W.classList.remove('glide'),400);
-}
-// the topbar wraps at narrow widths — viewport and sidepanel follow its height
-const TBAR=document.getElementById('topbar');
-function layoutBars(){
-  const h=TBAR.offsetHeight;
-  VP.style.top=h+'px';
-  const sp=document.getElementById('sidepanel'); if(sp) sp.style.top=h+'px';
-  const tp=document.getElementById('tablespanel'); if(tp) tp.style.top=(h+8)+'px';
-}
-new ResizeObserver(layoutBars).observe(TBAR);
-window.addEventListener('resize',layoutBars);
+// pan/zoom/layout/nav are ENGINE-LEVEL (ui/frame.js) — this screen only supplies hooks
+function apply(){ FRAME.apply(); }
+function centerOn(x,y){ FRAME.centerOn(x,y); }
+FRAME.initFrame({
+  viewport: VP, world: W, topbar: document.getElementById('topbar'),
+  zoomMin: 0.08, zoomMax: 1.8,
+  get: () => ({ panX, panY, scale, mapW: MAPW, mapH: MAPH }),
+  set: o => { if(o.panX!==undefined)panX=o.panX;
+              if(o.panY!==undefined)panY=o.panY;
+              if(o.scale!==undefined)scale=o.scale; },
+  fit: () => fitBounds(),
+  select: u => FLOW.segment==='movement' ? selectMove(u) : selectFire(u),
+  actable: () => actableUnits(),
+  endBtnId: 'endmove',
+  turnDone: () => {
+    if(!FLOW||!myPhase()||FLOW.segment!=='movement')return false;
+    const mine=units.filter(u=>u.side===mySide);
+    return mine.length>0&&mine.every(u=>u.moved);
+  },
+  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8}],
+});
 function fitBounds(){
   // zoom to the playable section, not the whole 7000px map
   if (!FLOW || !GAME) return;
@@ -217,17 +219,7 @@ VP.addEventListener('pointerdown',e=>{ if(e.target.closest('.counter,#facewheel,
 VP.addEventListener('pointermove',e=>{ if(dragging)return dragMove(e);
   if(panDrag){panX=e.clientX-panDrag.x;panY=e.clientY-panDrag.y;apply();} });
 VP.addEventListener('pointerup',e=>{ if(dragging)dragEnd(e); panDrag=null; });
-function zoomAt(cx,cy,f){
-  const ns=Math.min(1.8,Math.max(0.08,scale*f));
-  panX=cx-(cx-panX)*(ns/scale); panY=cy-(cy-panY)*(ns/scale);
-  scale=ns; apply();
-}
-VP.addEventListener('wheel',e=>{ e.preventDefault();
-  zoomAt(e.clientX,e.clientY,e.deltaY<0?1.15:1/1.15); },{passive:false});
-const vpCenter=()=>{const r=VP.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2];};
-document.getElementById('zin').onclick =()=>zoomAt(...vpCenter(),1.3);
-document.getElementById('zout').onclick=()=>zoomAt(...vpCenter(),1/1.3);
-document.getElementById('zfit').onclick=()=>fitBounds();
+// wheel + zoom buttons are wired by FRAME.initFrame above
 const toMap=e=>{const r=W.getBoundingClientRect();return{x:(e.clientX-r.left)/scale,y:(e.clientY-r.top)/scale};};
 
 function bootGame(g){
@@ -288,10 +280,7 @@ function render(){
                  : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`;
   }
   document.getElementById('endmove').disabled=!(myPhase()&&FLOW.segment==='movement');
-  // my movement, every unit has moved -> ending movement is all that's left: glow it
-  const mymov=units.filter(u=>u.side===mySide);
-  document.getElementById('endmove').classList.toggle('pulse',
-    myPhase()&&FLOW.segment==='movement'&&mymov.length>0&&mymov.every(u=>u.moved));
+  FRAME.onRender();   // engine frame: unit-nav visibility + end-turn glow
   document.getElementById('passfire').disabled=!(myPhase()&&FLOW.segment==='combat');
   document.getElementById('aibtn').disabled=FLOW.over||myPhase();
 
@@ -616,6 +605,16 @@ function toastReasons(reasons){
   A.innerHTML=`<b style="color:#e88">ILLEGAL — the gate refused:</b><br>${reasons.join('<br>')}
     <br><button class="sidebtn" onclick="document.getElementById('actions').style.display='none'">ok</button>`;
   A.style.display='block';
+}
+
+// which units can still act this segment — the game-specific half of unit nav
+// (the stepping itself is engine-level, ui/frame.js)
+function actableUnits(){
+  if(!FLOW||FLOW.over||!myPhase())return [];
+  const mine=units.filter(u=>u.side===mySide&&!u.K);
+  return FLOW.segment==='movement'
+    ? mine.filter(u=>!u.moved)
+    : mine.filter(u=>!u.fired&&!u.moved&&!u.F);   // moved units may not fire [I.E.4]
 }
 
 function onCounterDown(ev,u){
