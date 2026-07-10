@@ -1,11 +1,22 @@
 # vsav-engine — Dr Evil's Game Legality Engine for VASSAL (v2)
 
-**v2: from move legality to full gameplay.** A complete, playable wargame scenario —
-Avalon Hill's *Tobruk* (1975), Firefight B — where a human plays against an AI opponent
-in the browser and **neither side is capable of cheating**: every action either player
-proposes passes through the same deterministic legality gate, every die is rolled by the
-gate from a seeded stream, and the whole game is recorded in an append-only log that
-**anyone can independently re-verify**.
+**This system encodes a printed wargame whole — the map, the counters, the
+rules, the combat tables — and makes it a computerized version of the game.**
+Not a digital tabletop where you push pieces and consult the rulebook
+yourself: the game itself, encoded. The map becomes grid geometry and per-hex
+terrain; every counter becomes data with its factors and its art; every rule
+becomes an enforced procedure citing its rulebook section; every combat table
+is transcribed cell by cell and rolled on by the engine. The result plays like
+the printed game because it *is* the printed game, executable.
+
+And **neither side is capable of cheating**: every action either player (human
+or AI) proposes passes through the same deterministic legality gate, every die
+is rolled by the gate from a seeded stream, and the whole game is recorded in
+an append-only log that **anyone can independently re-verify**.
+
+Want your own game encoded the same way? See **ENCODING_GUIDE.md** — clone the
+repo, bring your game's VASSAL module and rulebook, and ask Claude (Fable) to
+"do the same thing for my game."
 
 This is the working answer to *"an AI opponent will cheat and won't even know it's
 cheating."* The AI never adjudicates anything. It proposes; the gate disposes; the log
