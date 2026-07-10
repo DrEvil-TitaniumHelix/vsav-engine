@@ -117,6 +117,7 @@
   <button class="sidebtn" id="aibtn">AI acts</button>
   <button class="sidebtn" id="tablesbtn">📊 Tables</button>
   <button class="sidebtn" id="guidebtn">📖 Guide</button>
+  <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
   <button class="sidebtn warn" id="newgame">New game</button>
 </div>
 <div id="tablespanel"></div>
@@ -153,6 +154,7 @@ let scale=0.25, panX=0, panY=0;
 let units=[], mySide='British', selected=null, legal=null, targets=null, dragging=null;
 let aiBusy=false, rangeInfo=null, rangeCache={}, dragHex=null;
 let aiStep=null;   // {plan:{desc,action}, stage:0 select | 1 intent}  (stage 2 = execute)
+let autoRunning=false;   // auto mode drives advanceAIStep on a timer (per-action, animated)
 function hexToPixel(col,row){ const g=GAME.grid;
   const xoff=(row%2===g.offset_parity)?g.dx/2:0;
   return {x:Math.round(g.x0+col*g.dx+xoff), y:Math.round(g.y0+row*g.dy)}; }
@@ -746,11 +748,24 @@ async function runAI(){
   await refresh();
 }
 function maybeAutoAI(){
-  if(FLOW.over||myPhase()){ aiStep=null; return; }
-  if(document.getElementById('aimode').value!=='auto')return;
-  // movement resolves as one batch — short delay; enemy FIRE is paced by the dial
-  const delay=FLOW.segment==='combat'?parseInt(document.getElementById('aipace').value):800;
-  setTimeout(runAI,delay);
+  if(document.getElementById('aimode').value!=='auto'){ autoRunning=false; return; }
+  if(FLOW.over||myPhase()){ aiStep=null; autoRunning=false; return; }
+  if(autoRunning) return;          // already looping — don't stack timers
+  autoRunning=true; autoTick();
+}
+async function autoTick(){
+  // auto mode = the SAME single-action stepper the SPACE key uses, on a timer,
+  // so every unit visibly moves one at a time (no jump-cut to the end state).
+  if(document.getElementById('aimode').value!=='auto' || FLOW.over || myPhase()){
+    autoRunning=false; aiStep=null; return;
+  }
+  const executing = !!aiStep && aiStep.stage>=1;   // this tick executes an action
+  await advanceAIStep();
+  if(!autoRunning) return;
+  const pace=parseInt(document.getElementById('aipace').value)||800;
+  // pause the full pace AFTER a move/fire lands; flick quickly through the
+  // select/intent reveals so the motion reads as a movie, not a slideshow
+  setTimeout(autoTick, executing ? pace : Math.min(200, pace));
 }
 document.addEventListener('DOMContentLoaded',()=>{
   const p=document.getElementById('aipace'), m=document.getElementById('aimode');
@@ -993,7 +1008,7 @@ document.getElementById('tablesbtn').onclick=()=>{
 // ---------- top bar ----------
 document.getElementById('endmove').onclick=()=>postAction({type:'end_movement'});
 document.getElementById('passfire').onclick=()=>postAction({type:'pass_fire'});
-document.getElementById('aibtn').onclick=runAI;
+document.getElementById('aibtn').onclick=()=>advanceAIStep();   // one action, animated (not a batch jump)
 document.getElementById('newgame').onclick=async()=>{
   if(!confirm('Start a fresh game? The current log is replaced.'))return;
   await fetch('/api/new_game',{method:'POST',body:JSON.stringify({})});
