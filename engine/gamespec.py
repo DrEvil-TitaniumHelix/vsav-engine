@@ -166,6 +166,13 @@ class Game:
 
     # ------------------------------------------------------------- geometry
     def neighbors(self, col, row):
+        # pure function of (col,row) and the fixed grid — memoize (called
+        # pervasively by traces/ZOC/distance; identical outputs, so regressions
+        # are byte-for-byte unchanged)
+        cache = self.__dict__.setdefault("_nb_cache", {})
+        hit = cache.get((col, row))
+        if hit is not None:
+            return hit
         g = self.grid
         x, y = g.hex_to_pixel(col, row)
         if g.orient == "pointy":
@@ -180,6 +187,7 @@ class Game:
         for dx, dy in offs:
             c, r, _ = g.pixel_to_hex(round(x + dx), round(y + dy))
             out.append((c, r))
+        cache[(col, row)] = out
         return out
 
     def hex_distance(self, a, b):

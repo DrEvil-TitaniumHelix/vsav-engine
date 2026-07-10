@@ -25,6 +25,7 @@ import gamespec  # noqa: E402
 import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
+import ai_strategic as sai_mod  # noqa: E402
 
 GAME_OBJ = None   # gamespec.Game
 TG = None         # gamestate.TacticalGame when the game spec names a scenario
@@ -396,6 +397,23 @@ def api_end_phase():
     return out
 
 
+def api_sg_ai_turn(body):
+    """Strategic mode: let the policy AI play one whole player turn for `side`
+    (default: the current mover) THROUGH the gate. Every proposal is logged
+    with its verdict; the board mirror is diff-synced once at the end so real
+    VASSAL and the browser see the result."""
+    side = body.get("side") or SG.s["mover"]
+    if SG.s["over"]:
+        return dict(steps=[], flow=SG.flow(), error="game is over")
+    if SG.s["mover"] != side or SG.s["phase"] != "movement":
+        return dict(steps=[], flow=SG.flow(),
+                    error=f"it is not the start of the {side} player turn")
+    steps = sai_mod.take_turn(SG)
+    sync_mirror()
+    done.clear()
+    return dict(steps=steps, flow=SG.flow())
+
+
 def api_sg_action(body):
     """Strategic mode: any gate action (arrivals, supply roll, sea movement,
     Rommel bonus) goes THROUGH the gate; placements are mirrored into the
@@ -559,6 +577,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_end_phase())
             if SG and self.path == "/api/sg_action":
                 return self._json(api_sg_action(body))
+            if SG and self.path == "/api/sg_ai_turn":
+                return self._json(api_sg_ai_turn(body))
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
             if self.path == "/api/face":

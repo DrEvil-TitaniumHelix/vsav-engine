@@ -59,6 +59,7 @@
   <span id="sidebtns"></span>
   <span id="flowbar" style="display:none; color:#ffd75e; font-weight:600"></span>
   <button class="sidebtn" id="endphasebtn" style="display:none">End player turn</button>
+  <button class="sidebtn" id="aiturnbtn" style="display:none">AI plays this turn</button>
   <span id="progress"></span>
   <span id="note"></span>
   <button class="sidebtn" id="tierbtn" style="display:none"></button>
@@ -185,8 +186,12 @@ async function refresh() {
 
 function renderFlow() {
   const fb = document.getElementById('flowbar'), ep = document.getElementById('endphasebtn');
-  if (!FLOW) { fb.style.display = 'none'; ep.style.display = 'none'; return; }
+  const ai = document.getElementById('aiturnbtn');
+  if (!FLOW) { fb.style.display = 'none'; ep.style.display = 'none'; ai.style.display = 'none'; return; }
   fb.style.display = ''; ep.style.display = '';
+  // the AI opponent is offered on strategic games at the start of a player turn
+  ai.style.display = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals) ? '' : 'none';
+  ai.textContent = 'AI plays ' + sideLabel(FLOW.mover) + '’s turn';
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`
     : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideLabel(FLOW.mover)} moves`
@@ -816,6 +821,21 @@ document.getElementById('resetbtn').onclick = async () => {
 document.getElementById('endphasebtn').onclick = async () => {
   const r = await (await fetch('/api/end_phase', {method:'POST', body:'{}'})).json();
   if (r.error) toast('Gate: ' + r.error);
+  deselect(); refresh();
+};
+document.getElementById('aiturnbtn').onclick = async (e) => {
+  const btn = e.target; btn.disabled = true; const was = btn.textContent;
+  btn.textContent = 'AI thinking…';
+  const r = await (await fetch('/api/sg_ai_turn', {method:'POST', body:'{}'})).json();
+  btn.disabled = false; btn.textContent = was;
+  if (r.error) toast('Gate: ' + r.error);
+  else if (r.steps) {
+    const bad = r.steps.filter(s => s.verdict && !s.verdict.legal).length;
+    const battles = r.steps.filter(s => s.action && s.action.type === 'battle'
+                                        && s.verdict && s.verdict.legal).length;
+    toast(`AI: ${r.steps.length} actions, ${battles} battles`
+          + (bad ? `, ${bad} rejected by the gate` : ''));
+  }
   deselect(); refresh();
 };
 

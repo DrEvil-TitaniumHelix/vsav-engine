@@ -3,6 +3,45 @@
 Spec #12 discipline: nothing ships until validated. This file records the
 evidence chain for the sideways-grid mapping and, later, the CRT encoding.
 
+## TIER 3a — POLICY AI: BUILT + VALIDATED 2026-07-10 (`python validate_ai.py` — ALL PASS)
+
+The engine-owned opponent `engine/ai_strategic.py` plays AK through the ONE
+legality gate (`StrategicGame.submit`) and nothing else — same doctrine as the
+tactical `engine/ai.py`. `validate_ai.py` drives full AI-vs-AI campaigns at
+several seeds plus a Tier-1 game and asserts, for each: the game completes with
+no stall, issues real movement and >=1 CRT battle, and — the core property —
+its log **replays byte-for-byte through `verify_game.py`** (every verdict, die
+and state hash reproduced). Games are bounded to `VAL_MAX_TURNS` to keep the
+suite to minutes; the gate + exact-replay properties hold at any length.
+
+**Two engine defects the AI-vs-AI harness surfaced and fixed (both would hit a
+human, not just the AI):**
+- **Lone-attacker stack split (11.2/11.4).** `_propose_battle` let a SINGLE
+  attacking unit attack a SUBSET of a stacked hex, and `_solo_attack_exists`/
+  `_supply_free_attack_exists` enumerated subsets. A unit forced (8.4) to
+  attack a stack it can't beat then had `forced_elim` wrongly blocked (the gate
+  "saw" a phantom legal subset attack) while it could fight only once (11.8) —
+  the turn deadlocked. Fix: the solo helpers now total the defense of ALL
+  adjacent enemies (11.2/11.33); `_propose_battle` rejects a lone attacker that
+  omits a co-stacked unit (11.2/11.4). 7.4/11.6 elimination now resolves.
+- **land_supply KeyError.** The supply pool holds RECYCLED on-board supply
+  counters (14.1 consumed / 15 captured) whose ids are scenario `units`, not
+  `reserve`; `_apply` looked them up in `reserve` and crashed on re-landing.
+  Fix: resolve the counter from `self.catalog` (units + reserve).
+
+**Policy (declared-weak but honest):** territorial drive to the nearest
+contested victory hex (4.1); supply units kept ALIVE >=6 hexes from the enemy
+(losing the last collapses the army, 24.5; the isolation trace is
+unlimited-length, so safe rear supply still supplies the army); combat units
+never advance into a hex they could not trace supply from (24.1 — a per-turn
+reverse-BFS supply-connected set, validated identical to `sg._isolated`, 0/151
+mismatch) and fall back if isolated (24.2); voluntary contact only at 2-1 or
+better WITH supply in range (a strong attack needs supply, 14.1). Not modelled
+(all optional, skipping is legal): 11.6 soak-off search, replacements 20 /
+substitutes 21, Rommel escort bonus 22.1. Regressions after all changes: 7 AK
+validators ALL PASS, Arnhem baseline SHA fe2a652f6f9c byte-identical, Tobruk
+verify 17/17. Server `/api/sg_ai_turn` + index.html "AI plays <side>'s turn".
+
 ## GRID: VERIFIED 2026-07-09 (re-run `python validate_grid.py` — ALL PASS)
 
 **Geometry** (buildFile sideways HexGrid, axis-swap conversion): pointy-top,
