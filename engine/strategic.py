@@ -475,52 +475,47 @@ class StrategicGame:
         return att, deff
 
     def _supply_free_attack_exists(self, u, pool=None):
-        """Can `u`, alone, make some legal attack that needs no supply
-        (odds 1-3 .. 1-6 after rounding, 14.3/7.4) on a subset of the
-        adjacent enemy combat units? Used for 11.9 (trapped units,
-        clarifications sec. 5) and the forced-elimination test."""
+        """Can `u`, ALONE, make its forced attack with no supply (rounded odds
+        1-3 .. 1-6, 14.3/7.4)? A lone unit must attack every adjacent enemy
+        combat unit COMBINED into one battle — one unit attacking several
+        totals their defense (11.2), and a single unit may not divide a stack
+        (11.4). Used for the 11.9 trapped-unit sweep (clarifications sec. 5)
+        and the forced-elimination test."""
         adj = pool if pool is not None else self._adjacent_enemy_combat(u)
         if not adj:
             return False
-        from itertools import combinations
         att = self.game.stats(u["slot"])[0]
-        for k in range(1, len(adj) + 1):
-            for sub in combinations(adj, k):
-                n, d = self.game.odds(att, sum(
-                    self.game.defense_factor(e["slot"], (e["col"], e["row"]))
-                    for e in sub))
-                if n == 1 and 3 <= d <= 6:
-                    return True
-        return False
+        deff = sum(self.game.defense_factor(e["slot"], (e["col"], e["row"]))
+                   for e in adj)
+        n, d = self.game.odds(att, deff)
+        return n == 1 and 3 <= d <= 6
 
     def _solo_attack_exists(self, u):
-        """Any legal solo attack for `u`: supply-free odds (1-3..1-6), or
-        supplied odds (1-2 or better) with a supply unit actually in range
-        of u (14.2). The multi-unit-support test of 11.6 is NOT searched —
-        declared in the scenario's rules_scope."""
+        """Any legal attack `u` can make ALONE. Its forced attack is against
+        EVERY adjacent enemy combat unit combined into one battle (11.2/11.4:
+        one unit may not split a stack, and totals the defense of all units it
+        attacks; 11.33: it must attack every enemy in whose ZOC it sits).
+        Legal at supply-free odds (1-3..1-6) or at 1-2/better with a supply
+        unit actually in range (14.2). The 11.6 multi-unit-support option is
+        NOT searched — declared in the scenario's rules_scope."""
         adj = self._adjacent_enemy_combat(u)
         if not adj:
             return False
         if self._supply_free_attack_exists(u, adj):
             return True
-        from itertools import combinations
         att = self.game.stats(u["slot"])[0]
+        deff = sum(self.game.defense_factor(e["slot"], (e["col"], e["row"]))
+                   for e in adj)
+        n, d = self.game.odds(att, deff)
+        if self.game.odds_column(n, d) is None:
+            return False                       # worse than 1-6: no legal attack
+        if d > 2:                              # supply-free (already covered)
+            return True
         sup = self._supply_hexes(u["side"])
         rad = self.combat["attack_supply"]["radius"]
-        for k in range(1, len(adj) + 1):
-            for sub in combinations(adj, k):
-                n, d = self.game.odds(att, sum(
-                    self.game.defense_factor(e["slot"], (e["col"], e["row"]))
-                    for e in sub))
-                if self.game.odds_column(n, d) is None:
-                    continue
-                if d > 2:                      # supply-free, handled above
-                    continue
-                ids = tuple(e["pid"] for e in sub)
-                if self._trace_reaches((u["col"], u["row"]), u["side"], sup,
-                                       radius=rad, ignore_zoc_of=ids):
-                    return True
-        return False
+        ids = tuple(e["pid"] for e in adj)
+        return self._trace_reaches((u["col"], u["row"]), u["side"], sup,
+                                   radius=rad, ignore_zoc_of=ids)
 
     def _obligations(self, side):
         """8.4 both directions: (my combat units in enemy ZOC that have not
@@ -1189,6 +1184,21 @@ class StrategicGame:
                         f"each attacking unit must be adjacent to every "
                         f"defending unit in its attack [8.5] (5.7: anomalous "
                         f"hexsides never allow engagement)")
+        # 11.2/11.4: a SINGLE attacking unit may not divide a stacked hex —
+        # one unit attacking several totals their defense into one combined
+        # factor (dividing a stack across battles requires more than one
+        # attacking unit). It must engage every combat unit on each hex it
+        # attacks.
+        if len(attackers) == 1:
+            for d in defenders:
+                for other in self._combat_units(enemy):
+                    if (other["col"], other["row"]) == (d["col"], d["row"]) \
+                       and other["pid"] not in def_ids:
+                        return self._v(False,
+                            f"a single attacking unit may not split the stack "
+                            f"at {self.game.grid.display_name(d['col'], d['row'])}"
+                            f" — one unit attacking several totals their defense "
+                            f"into one combined factor [11.2, 11.4]")
         # 23.1: attacking into a fortress engages every unit in it
         for d in defenders:
             if self.game.hex_terrain(d["col"], d["row"]) == "fortress":
@@ -2198,7 +2208,10 @@ class StrategicGame:
                               "port this turn or forfeit [12.2, 12.4]"}
         if t == "land_supply":
             pid = s["supply_pool"][side].pop(0)
-            slot = self.reserve[pid]["slot"]
+            # the pool holds recycled supply too (14.1 consumed / 15 captured),
+            # whose ids are scenario-deployed units, not reserve entries — so
+            # resolve the counter from the full catalog, not just the reserve
+            slot = self.catalog[pid][0]
             s["units"][pid] = {"pid": pid, "slot": slot, "side": side,
                                "col": action["port"][0], "row": action["port"][1]}
             if side == "Axis":
