@@ -28,12 +28,39 @@ VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
           (0 illegal proposals ever touched the game state)
 ```
 
-v1 (movement legality for Arnhem / Tobruk / ASL) is still here and still works.
+**Two complete games ship in this repo, playable out of the box:** Avalon
+Hill's **Afrika Korps** (the flagship — the full strategic campaign) and
+Avalon Hill's **Tobruk** (a tactical tank firefight). v1 (movement legality
+for Arnhem / ASL) is still here and still works.
 By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
 
-## What v2 adds — the playable proof game
+## Game 1: Afrika Korps (Avalon Hill, 1964) — the flagship
+
+The **entire campaign game, encoded**: the full North Africa map (playable
+Qattara edges and all its printed map errata), every unit counter with its
+factors, the complete 3rd-edition rules as an enforced, cited gate —
+movement, zones of control, stacking, the supply system (landing, capture,
+isolation, army collapse), fortresses, Automatic Victory, replacements,
+substitutes, Rommel — and the CRT transcribed cell by cell and validated
+66/66 against two independent sources plus the rulebook's own worked
+examples.
+
+- **Tier system** — play it your way: Tier 0 free play (you're the umpire),
+  Tier 1 movement enforced, Tier 2 full combat gate, **Tier 3 with an AI
+  opponent** that plays whole campaign turns — stepped action-by-action with
+  the spacebar or animated auto-play.
+- **Seven validators** (`games/afrika-korps-classic-ah/validate_*.py`) are the
+  evidence chain: grid, movement, tier 1, combat, tier 2, arrivals, AI —
+  every one green before any tier badge. `VALIDATION.md` documents it.
+- **A source-defect register**: encoding surfaced eight defects in the
+  *printed* game — editing errors, contradictions, undefined cases, a broken
+  cross-reference, map errata — each recorded in `game.json` with quoted
+  evidence, the enforced resolution, and its authority. The in-game Rules
+  panel renders the register.
+
+## Game 2: Tobruk (Avalon Hill, 1975) — the tactical proof game
 
 **Firefight B — "An Even Encounter"** (*Tobruk* rulebook p.24, an official scenario):
 6 British Stuart Mk.III vs 15 Italian M13/40, 10 turns, open desert, official victory
@@ -179,10 +206,16 @@ engine/make_save.py        builds scenario .vsav files from the module's own Pie
 engine/setup_module.py     one-command setup from a downloaded .vmod
 engine/rules.py            v1 Arnhem CRT · engine/watch.py  human-move watcher
 engine/extract_terrain.py  terrain from map art (v1) · capture_baseline.py  regression
+games_bundled/             the two release games, SELF-CONTAINED (map, counters,
+                           scenario) — a fresh clone plays out of the box
+games/afrika-korps-classic-ah/  the flagship as data: game.json (rules config,
+                           credits, source-defect register), terrain.json,
+                           scenario_campaign.json, seven validators, VALIDATION.md
 games/tobruk/game.json     the game as data: grid, facing, sides, MAs
 games/tobruk/combat.json   to-hit tables, Area Impacted, damage cards — every cell
                            cites its source chart image in the module
 games/tobruk/scenario_firefight_b.json   the scenario as data
+engine/ai_strategic.py     the strategic AI (Afrika Korps campaign turns)
 ui/server.py               HTTP API: state/legal_moves/legal_targets/action/ai_plan/log
 ui/tactical.html           the playable browser client (v2)
 ui/index.html              the v1 movement-legality client
