@@ -32,7 +32,7 @@ def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else free_port()
     # Pre-load the flagship game so /api/state is always valid even before the
     # tester picks; the menu still drives the choice via /api/load_game.
-    first = os.path.join(server.ROOT, "games", server.RELEASE_GAMES[0])
+    first = server.game_dir(server.RELEASE_GAMES[0])
     server.load_game(first)
     httpd = server.make_server(port)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()

@@ -1,0 +1,65 @@
+{
+ "vmod": "C:\\VassalLibrary\\modules\\Afrika_Korps_Classic_Avalon_Hill\\Afrika Korps Classic AH 3.0.1.vmod",
+ "steps": [
+  "extracted 225 entries -> C:\\VassalIngest\\afrika-korps-classic-ah\\extracted",
+  "module: 'Afrika Korps Classic AH' v3.0.1; 213 images staged",
+  "3 PDF(s) bundled (rules material?): AfrikaKorps_3d_Ed_Rules.pdf, Afrika Korps 3.0 Start text.pdf, Afrika Korps Rule Clarifications for Vassal.pdf",
+  "136 piece/card slots (136 with BasicPiece art, 0 blank-image layer pieces VASL-style); 9 prototypes",
+  "main board: 'Board' on map 'Main Map'; 1 other board(s) not converted: Eliminated Pile (map 'Eliminated Pile')",
+  "hex grid from buildFile: pointy dx=101.79999999999785 dy=88.12562584220231 origin=(0.0,32.0) [SIDEWAYS \u2014 unverified mapping]",
+  "map asset: AK consolidated map.png (7026x2625 px)",
+  "setup 'New Game: Pieces in starting positions': 129 pieces, 125 ON the main map (79 self-positioned, 0 in stacks), key 0xca",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\afrika-korps-classic-ah\\game.json",
+  "runtime self-check: engine loads the setup and sees 125 units"
+ ],
+ "problems": [],
+ "verdict": "FULL",
+ "module": "Afrika Korps Classic AH",
+ "version": "3.0.1",
+ "slug": "afrika-korps-classic-ah",
+ "staging": "C:\\VassalIngest\\afrika-korps-classic-ah",
+ "out": "C:\\VassalArnhem\\games\\afrika-korps-classic-ah",
+ "pdfs": [
+  "AfrikaKorps_3d_Ed_Rules.pdf",
+  "Afrika Korps 3.0 Start text.pdf",
+  "Afrika Korps Rule Clarifications for Vassal.pdf"
+ ],
+ "main_map": "Main Map",
+ "main_board": "Board",
+ "grid": {
+  "orient": "pointy",
+  "dx": 101.79999999999785,
+  "dy": 88.12562584220231,
+  "x0": 0.0,
+  "y0": 32.0,
+  "stagger": true,
+  "offset_parity": 1,
+  "provenance": "hexgrid-sideways (axis-swap mapping UNVERIFIED \u2014 validate vs a printed hex before trusting); module numbering: first=H hType=A vType=N hOff=-5 vOff=-12 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\afrika-korps-classic-ah\\extracted\\images\\AK consolidated map.png",
+ "setups": [
+  {
+   "name": "New Game: Pieces in starting positions",
+   "path": "C:\\VassalIngest\\afrika-korps-classic-ah\\setups\\Starting positions Trails on.vsav",
+   "pieces": 129,
+   "positioned": 79,
+   "in_stacks": 0,
+   "on_map": 125,
+   "kinds": {
+    "sendto": 35,
+    "report": 88,
+    "emb2": 1,
+    "piece": 4,
+    "footprint": 1
+   },
+   "key": "ca"
+  }
+ ],
+ "at_start_count": 129,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\afrika-korps-classic-ah\\game.json",
+ "runtime_units": 125
+}
