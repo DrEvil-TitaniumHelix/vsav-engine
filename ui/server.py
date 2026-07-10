@@ -210,6 +210,7 @@ def game_descriptor():
                for s in g.side_order],
         facing=g.facing,
         source_defects=g.spec.get("source_defects"),
+        credits=g.spec.get("credits"),
     )
 
 
