@@ -64,6 +64,7 @@ SCEN_MODE = None  # "strategic" | "tactical" | None
 TIER = 0          # tier the server is RUNNING at (engine-level selection)
 TIER_EARNED = 0   # highest tier the game has earned (spec #13)
 TIER_CHOICES = [0]
+AI_STEP = None    # sai_mod.TurnStepper — one AI action per /api/ai_step call
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
 facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
                   # VASSAL rotate-state write-through pending a save-diff experiment)
@@ -585,6 +586,44 @@ def api_sg_ai_turn(body):
     return dict(steps=steps, flow=SG.flow())
 
 
+def api_ai_step(body):
+    """Advance the strategic AI by ONE action through the gate — the engine-level
+    step-through the UI drives on spacebar (single-step) or a timer (animated
+    whole-turn), so any StrategicGame with a policy AI plays one counter at a
+    time instead of jump-cutting from turn-start to turn-end.
+
+    A freshly created stepper REVEALS the first action's intent without executing
+    (returns step=None, next=<intent>); each later call EXECUTES the pending
+    action and reveals the next. Returns {done, step, next, flow}."""
+    global AI_STEP
+    if not SG:
+        return dict(error="stepped AI is only for strategic games")
+    if SG.s["over"]:
+        AI_STEP = None
+        return dict(done=True, step=None, next=None, flow=SG.flow(),
+                    error="game is over")
+    side = body.get("side") or SG.s["mover"]
+    fresh = (AI_STEP is None or AI_STEP.done()
+             or AI_STEP.sg is not SG
+             or getattr(AI_STEP, "_for", None) != (SG.s["turn"], SG.s["mover"]))
+    if fresh:
+        if SG.s["mover"] != side or SG.s["phase"] != "movement":
+            return dict(done=False, step=None, next=None, flow=SG.flow(),
+                        error=f"it is not the start of the {side} player turn")
+        AI_STEP = sai_mod.TurnStepper(SG)
+        AI_STEP._for = (SG.s["turn"], SG.s["mover"])
+        return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
+                    flow=SG.flow())          # reveal the first intent, execute nothing
+    entry = AI_STEP.step()
+    sync_mirror()
+    done.clear()
+    nxt = AI_STEP.peek()
+    finished = AI_STEP.done()
+    if finished:
+        AI_STEP = None
+    return dict(done=finished, step=entry, next=nxt, flow=SG.flow())
+
+
 def api_sg_action(body):
     """Strategic mode: any gate action (arrivals, supply roll, sea movement,
     Rommel bonus) goes THROUGH the gate; placements are mirrored into the
@@ -637,7 +676,8 @@ def api_face(body):
 
 
 def api_reset(body=None):
-    global TIER
+    global TIER, AI_STEP
+    AI_STEP = None
     t = (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
@@ -671,11 +711,12 @@ def load_game(game_dir, tier=None):
     tier: run BELOW the earned tier (0=free play, 1=movement, ...). None = the
     persisted sidecar, clamped to what the game has earned."""
     global GAME_OBJ, GAME_SLUG, WORK, SCEN_PATH, SCEN_MODE
-    global TIER, TIER_EARNED, TIER_CHOICES, done, facing
+    global TIER, TIER_EARNED, TIER_CHOICES, done, facing, AI_STEP
 
     # reset per-game runtime state so nothing leaks across a switch
     done = {}
     facing = {}
+    AI_STEP = None
     SCEN_PATH = SCEN_MODE = None
     TIER_EARNED = 0
     TIER_CHOICES = [0]
@@ -822,6 +863,8 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_sg_action(body))
             if SG and self.path == "/api/sg_ai_turn":
                 return self._json(api_sg_ai_turn(body))
+            if SG and self.path == "/api/ai_step":
+                return self._json(api_ai_step(body))
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
             if self.path == "/api/face":
