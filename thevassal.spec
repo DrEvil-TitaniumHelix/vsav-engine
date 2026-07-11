@@ -13,7 +13,8 @@ from PyInstaller.utils.hooks import collect_all
 ROOT = os.path.abspath(SPECPATH)
 
 # Keep in sync with server.RELEASE_GAMES — only the tester-facing games ship.
-RELEASE_GAMES = ["afrika-korps-classic-ah", "tobruk"]
+RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga",
+                 "westwall-arnhem", "tobruk"]
 
 # Read-only assets the engine loads at runtime, bundled at the frozen root so
 # server._base_dir() (sys._MEIPASS when frozen) resolves games/ and ui/.
@@ -42,6 +43,7 @@ a = Analysis(
     hiddenimports=[
         "server", "board", "gamespec", "gamestate",
         "strategic", "ai", "ai_strategic",
+        "bluegray", "ai_bluegray", "westwall", "ai_westwall",
     ] + wv_hidden,
     hookspath=[],
     runtime_hooks=[],
