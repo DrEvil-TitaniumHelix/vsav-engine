@@ -51,6 +51,39 @@ delta) exactly like the source-defect register carries citations.
 7. **Reinforcements are tempo.** Entry columns pay road costs [15.0]; feed
    them toward the active objective, not the nearest fight.
 
+## Lessons from Game 1 (Claude-as-Union vs policy, seed 1, 2026-07-11)
+
+Final 116-25 Confederate — margin -91, statistically identical to the
+policy-vs-policy baseline (-90). Verified log (759/759) + regret-mined.
+What the game proved:
+
+1. **The reinforcement entry system is the dominant Union VP leak vs this
+   opponent.** ~35 VP of my losses were reinforcements eaten on or near
+   the south-edge entry hexes; the enemy repeatedly re-tasked whole wings
+   to farm them. Either plan an extraction corridor with covering force,
+   or accept the column stall (blocked head = nothing enters) as
+   protection. Evidence: game log, GT2-GT14 eliminations.
+2. **Exit-blocking has ZERO marginal value against the policy AI** — it
+   only ever exits trains, never combat units. The doctrine kill-shot
+   (LOC void + exit denial) targets a capability this opponent doesn't
+   use. Against humans it stays live; against the policy, those garrisons
+   are better spent contesting occupation hexes. Evidence: 0 Confederate
+   exit attempts in 15 GTs while both exits sat garrisoned.
+3. **Odds-poisoning works.** An empty VP hex ringed by strong stacks
+   never flips: the policy's local-odds check refuses to step in. 0211
+   (20 VP) stayed Union-credited all game with no unit standing on it.
+4. **The 17.32 leash is merciless.** Two XX Corps entrants parked "safe"
+   at 1128 scored as destroyed (+10 enemy) for want of a reachable
+   exit-connected road. Late entrants must march west immediately or not
+   exist.
+5. **Decoys are absurdly profitable.** One 5-strength brigade (147) led
+   30+ CSP in circles for six game turns and got home alive. The policy
+   chases nearest targets unconditionally.
+6. **Mined regrets** (policy-completion baseline, see
+   claude_game_regret.json): the GT1 commitment of the delay line toward
+   1115 carries the game's largest counterfactual swing; the GT2 south
+   scramble of 110/111 was correctly rated a bullet dodged.
+
 ## What the current policy AI does (know your baseline)
 
 The shipped opponent walks each unit toward the nearest enemy-held VP hex,
