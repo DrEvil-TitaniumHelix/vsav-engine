@@ -42,3 +42,5 @@ dist/*
 *.exe
 !games_bundled/**
 /baseline.json
+
+games/*/eval_llm_out/
