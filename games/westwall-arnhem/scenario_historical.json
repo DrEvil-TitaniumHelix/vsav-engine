@@ -1,0 +1,3429 @@
+{
+ "name": "Arnhem - Historical Scenario (10 GTs) [18.1]",
+ "mode": "westwall",
+ "game": {
+  "turns": 10,
+  "first_player": "All",
+  "turn_labels": [
+   "GT 1",
+   "GT 2",
+   "GT 3",
+   "GT 4",
+   "GT 5",
+   "GT 6",
+   "GT 7",
+   "GT 8",
+   "GT 9",
+   "GT 10"
+  ],
+  "gsp": {
+   "All": {
+    "1": 0,
+    "2": 3,
+    "3": 7,
+    "4": 3,
+    "5": 3,
+    "6": 0,
+    "7": 3,
+    "8": 0,
+    "9": 0,
+    "10": 0
+   }
+  },
+  "gsp_cite": "[18.16] Allied Ground Support Points per GT; [14.11] usable only within 3 hexes of an Allied non-airborne unit; [9.14] unused points are lost",
+  "weather": "off",
+  "weather_cite": "[18.17] the Weather Option requires both players' agreement - base Historical Scenario runs without it; airborne arrivals use the fixed 18.13 hexes"
+ },
+ "units": [
+  {
+   "id": "101",
+   "slot": "A Kraft",
+   "img": "A Kraft.png",
+   "side": "Ger",
+   "desig": "Krft",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "hex": [
+    37,
+    22
+   ]
+  },
+  {
+   "id": "102",
+   "slot": "A 2-9SS",
+   "img": "A 2-9SS.png",
+   "side": "Ger",
+   "desig": "2/9SS",
+   "cls": "mech",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 7
+   },
+   "hex": [
+    37,
+    24
+   ]
+  },
+  {
+   "id": "103",
+   "slot": "A 9SS Recon",
+   "img": "A 9SS Recon.png",
+   "side": "Ger",
+   "desig": "9SS Recon",
+   "cls": "recon",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 12
+   },
+   "hex": [
+    33,
+    22
+   ]
+  },
+  {
+   "id": "104",
+   "slot": "A Grsn",
+   "img": "A Grsn.png",
+   "side": "Ger",
+   "desig": "Grsn",
+   "cls": "mech",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 12
+   },
+   "hex": [
+    7,
+    2
+   ]
+  },
+  {
+   "id": "105",
+   "slot": "A 1-406",
+   "img": "A 1-406.png",
+   "side": "Ger",
+   "desig": "1/406",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "hex": [
+    23,
+    25
+   ]
+  },
+  {
+   "id": "106",
+   "slot": "A 2-406",
+   "img": "A 2-406.png",
+   "side": "Ger",
+   "desig": "2/406",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "hex": [
+    20,
+    25
+   ]
+  },
+  {
+   "id": "107",
+   "slot": "A BrDf",
+   "img": "A BrDf.png",
+   "side": "Ger",
+   "desig": "BrDf",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "hex": [
+    26,
+    21
+   ]
+  },
+  {
+   "id": "108",
+   "slot": "A 101 DZ",
+   "img": "A 101 DZ.png",
+   "side": "All",
+   "desig": "101 DZ",
+   "cls": "dz",
+   "stats": {
+    "att": 0,
+    "def": 0,
+    "ma": 0
+   },
+   "hex": [
+    10,
+    7
+   ]
+  },
+  {
+   "id": "109",
+   "slot": "A 82 DZ",
+   "img": "A 82 DZ.png",
+   "side": "All",
+   "desig": "82 DZ",
+   "cls": "dz",
+   "stats": {
+    "att": 0,
+    "def": 0,
+    "ma": 0
+   },
+   "hex": [
+    23,
+    23
+   ]
+  },
+  {
+   "id": "110",
+   "slot": "A 1 DZ",
+   "img": "A 1 DZ.png",
+   "side": "All",
+   "desig": "1 DZ",
+   "cls": "dz",
+   "stats": {
+    "att": 0,
+    "def": 0,
+    "ma": 0
+   },
+   "hex": [
+    39,
+    19
+   ]
+  }
+ ],
+ "reserve": [
+  {
+   "id": "111",
+   "slot": "A 101-502-1",
+   "img": "A 101-502-1.png",
+   "side": "All",
+   "desig": "1/502",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    10,
+    4
+   ]
+  },
+  {
+   "id": "112",
+   "slot": "A 101-502-2",
+   "img": "A 101-502-2.png",
+   "side": "All",
+   "desig": "2/502",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    10,
+    4
+   ]
+  },
+  {
+   "id": "113",
+   "slot": "A 101-502-3",
+   "img": "A 101-502-3.png",
+   "side": "All",
+   "desig": "3/502",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    10,
+    4
+   ]
+  },
+  {
+   "id": "114",
+   "slot": "A 101-506-1",
+   "img": "A 101-506-1.png",
+   "side": "All",
+   "desig": "1/506",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    8,
+    4
+   ]
+  },
+  {
+   "id": "115",
+   "slot": "A 101-506-2",
+   "img": "A 101-506-2.png",
+   "side": "All",
+   "desig": "2/506",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    8,
+    4
+   ]
+  },
+  {
+   "id": "116",
+   "slot": "A 101-506-3",
+   "img": "A 101-506-3.png",
+   "side": "All",
+   "desig": "3/506",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    8,
+    4
+   ]
+  },
+  {
+   "id": "117",
+   "slot": "A 101-501-1",
+   "img": "A 101-501-1.png",
+   "side": "All",
+   "desig": "1/501",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    13,
+    8
+   ]
+  },
+  {
+   "id": "118",
+   "slot": "A 101-501-2",
+   "img": "A 101-501-2.png",
+   "side": "All",
+   "desig": "2/501",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    13,
+    8
+   ]
+  },
+  {
+   "id": "119",
+   "slot": "A 101-501-3",
+   "img": "A 101-501-3.png",
+   "side": "All",
+   "desig": "3/501",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    13,
+    8
+   ]
+  },
+  {
+   "id": "120",
+   "slot": "A 82-508-1",
+   "img": "A 82-508-1.png",
+   "side": "All",
+   "desig": "1/508",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "121",
+   "slot": "A 82-508-2",
+   "img": "A 82-508-2.png",
+   "side": "All",
+   "desig": "2/508",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "122",
+   "slot": "A 82-508-3",
+   "img": "A 82-508-3.png",
+   "side": "All",
+   "desig": "3/508",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "123",
+   "slot": "A 82-505-1",
+   "img": "A 82-505-1.png",
+   "side": "All",
+   "desig": "1/505",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    20,
+    23
+   ]
+  },
+  {
+   "id": "124",
+   "slot": "A 82-505-2",
+   "img": "A 82-505-2.png",
+   "side": "All",
+   "desig": "2/505",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    20,
+    23
+   ]
+  },
+  {
+   "id": "125",
+   "slot": "A 82-505-3",
+   "img": "A 82-505-3.png",
+   "side": "All",
+   "desig": "3/505",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    20,
+    23
+   ]
+  },
+  {
+   "id": "126",
+   "slot": "A 82-504-1",
+   "img": "A 82-504-1.png",
+   "side": "All",
+   "desig": "1/504",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    21,
+    17
+   ]
+  },
+  {
+   "id": "127",
+   "slot": "A 82-504-2",
+   "img": "A 82-504-2.png",
+   "side": "All",
+   "desig": "2/504",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    21,
+    17
+   ]
+  },
+  {
+   "id": "128",
+   "slot": "A 82-504-3",
+   "img": "A 82-504-3.png",
+   "side": "All",
+   "desig": "3/504",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    21,
+    17
+   ]
+  },
+  {
+   "id": "129",
+   "slot": "A 1-1-1",
+   "img": "A 1-1-1.png",
+   "side": "All",
+   "desig": "1/1",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    19
+   ]
+  },
+  {
+   "id": "130",
+   "slot": "A 1-1-2",
+   "img": "A 1-1-2.png",
+   "side": "All",
+   "desig": "2/1",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    19
+   ]
+  },
+  {
+   "id": "131",
+   "slot": "A 1-1-3",
+   "img": "A 1-1-3.png",
+   "side": "All",
+   "desig": "3/1",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    19
+   ]
+  },
+  {
+   "id": "132",
+   "slot": "A 1-1-2S",
+   "img": "A 1-1-2S.png",
+   "side": "All",
+   "desig": "2S/1",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    18
+   ]
+  },
+  {
+   "id": "133",
+   "slot": "A 1-1-7K",
+   "img": "A 1-1-7K.png",
+   "side": "All",
+   "desig": "7K/1",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    18
+   ]
+  },
+  {
+   "id": "134",
+   "slot": "A 1-1-1B",
+   "img": "A 1-1-1B.png",
+   "side": "All",
+   "desig": "1B/1",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    18
+   ]
+  },
+  {
+   "id": "135",
+   "slot": "A 82-1 Arty",
+   "img": "A 82-1 Arty.png",
+   "side": "All",
+   "desig": "1/82",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "136",
+   "slot": "A 1-1Lt",
+   "img": "A 1-1Lt.png",
+   "side": "All",
+   "desig": "1/1Lt",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 1,
+   "arrival": "airborne",
+   "target": [
+    37,
+    18
+   ]
+  },
+  {
+   "id": "137",
+   "slot": "A 1-4-10",
+   "img": "A 1-4-10.png",
+   "side": "All",
+   "desig": "10/4",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 2,
+   "arrival": "airborne",
+   "target": [
+    38,
+    17
+   ]
+  },
+  {
+   "id": "138",
+   "slot": "A 1-4-11",
+   "img": "A 1-4-11.png",
+   "side": "All",
+   "desig": "11/4",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 2,
+   "arrival": "airborne",
+   "target": [
+    38,
+    17
+   ]
+  },
+  {
+   "id": "139",
+   "slot": "A 1-4-156",
+   "img": "A 1-4-156.png",
+   "side": "All",
+   "desig": "156/4",
+   "cls": "para",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 2,
+   "arrival": "airborne",
+   "target": [
+    38,
+    17
+   ]
+  },
+  {
+   "id": "140",
+   "slot": "A 1-2Lt",
+   "img": "A 1-2Lt.png",
+   "side": "All",
+   "desig": "2/1Lt",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 2,
+   "arrival": "airborne",
+   "target": [
+    38,
+    17
+   ]
+  },
+  {
+   "id": "141",
+   "slot": "A 101-327-1",
+   "img": "A 101-327-1.png",
+   "side": "All",
+   "desig": "1/327",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 3,
+   "arrival": "airborne",
+   "target": [
+    10,
+    7
+   ]
+  },
+  {
+   "id": "142",
+   "slot": "A 101-327-2",
+   "img": "A 101-327-2.png",
+   "side": "All",
+   "desig": "2/327",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 3,
+   "arrival": "airborne",
+   "target": [
+    10,
+    7
+   ]
+  },
+  {
+   "id": "143",
+   "slot": "A 101-1 Arty",
+   "img": "A 101-1 Arty.png",
+   "side": "All",
+   "desig": "1/101",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 3,
+   "arrival": "airborne",
+   "target": [
+    10,
+    7
+   ]
+  },
+  {
+   "id": "144",
+   "slot": "A 101-2 Arty",
+   "img": "A 101-2 Arty.png",
+   "side": "All",
+   "desig": "2/101",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "101",
+   "due": 3,
+   "arrival": "airborne",
+   "target": [
+    10,
+    7
+   ]
+  },
+  {
+   "id": "145",
+   "slot": "A 82-2 Arty",
+   "img": "A 82-2 Arty.png",
+   "side": "All",
+   "desig": "2/82",
+   "cls": "ab_artillery",
+   "stats": {
+    "att": 2,
+    "def": 1,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 3,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "146",
+   "slot": "A Pol-1",
+   "img": "A Pol-1.png",
+   "side": "All",
+   "desig": "1/Pol",
+   "cls": "polish",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 5,
+   "arrival": "airborne",
+   "target": [
+    32,
+    20
+   ]
+  },
+  {
+   "id": "147",
+   "slot": "A Pol-2",
+   "img": "A Pol-2.png",
+   "side": "All",
+   "desig": "2/Pol",
+   "cls": "polish",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 5,
+   "arrival": "airborne",
+   "target": [
+    32,
+    20
+   ]
+  },
+  {
+   "id": "148",
+   "slot": "A 82-325-1",
+   "img": "A 82-325-1.png",
+   "side": "All",
+   "desig": "1/325",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 7,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "149",
+   "slot": "A 82-325-2",
+   "img": "A 82-325-2.png",
+   "side": "All",
+   "desig": "2/325",
+   "cls": "glider",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "82",
+   "due": 7,
+   "arrival": "airborne",
+   "target": [
+    22,
+    23
+   ]
+  },
+  {
+   "id": "150",
+   "slot": "A Pol-3",
+   "img": "A Pol-3.png",
+   "side": "All",
+   "desig": "3/Pol",
+   "cls": "polish",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "airborne": true,
+   "division": "1",
+   "due": 7,
+   "arrival": "airborne",
+   "target": [
+    21,
+    18
+   ]
+  },
+  {
+   "id": "151",
+   "slot": "A 5-2I",
+   "img": "A 5-2I.png",
+   "side": "All",
+   "desig": "2I/5",
+   "cls": "armor",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 2,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "152",
+   "slot": "A 32-3I",
+   "img": "A 32-3I.png",
+   "side": "All",
+   "desig": "3I/32",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 2,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "153",
+   "slot": "A 2D-231",
+   "img": "A 2D-231.png",
+   "side": "All",
+   "desig": "2D/231",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 2,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "154",
+   "slot": "A 55",
+   "img": "A 55.png",
+   "side": "All",
+   "desig": "55",
+   "cls": "sp_artillery",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10,
+    "barrage": 4,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 2,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "155",
+   "slot": "A Engineers",
+   "img": "A Engineers.png",
+   "side": "All",
+   "desig": "Engineers",
+   "cls": "engineer",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 2,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "156",
+   "slot": "A 15-19",
+   "img": "A 15-19.png",
+   "side": "All",
+   "desig": "15/19",
+   "cls": "sp_artillery",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 10,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "157",
+   "slot": "A 44",
+   "img": "A 44.png",
+   "side": "All",
+   "desig": "44",
+   "cls": "sp_artillery",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 10,
+    "barrage": 2,
+    "fpf": 1,
+    "range": 4
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "158",
+   "slot": "A 5-1C",
+   "img": "A 5-1C.png",
+   "side": "All",
+   "desig": "1C/5",
+   "cls": "armor",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "159",
+   "slot": "A 5-2G",
+   "img": "A 5-2G.png",
+   "side": "All",
+   "desig": "2G/5",
+   "cls": "armor",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "160",
+   "slot": "A 32",
+   "img": "A 32.png",
+   "side": "All",
+   "desig": "32",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "161",
+   "slot": "A 129",
+   "img": "A 129.png",
+   "side": "All",
+   "desig": "129",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "162",
+   "slot": "A 153",
+   "img": "A 153.png",
+   "side": "All",
+   "desig": "153",
+   "cls": "artillery",
+   "stats": {
+    "att": 4,
+    "def": 2,
+    "ma": 6,
+    "barrage": 4,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 3,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "163",
+   "slot": "A 130",
+   "img": "A 130.png",
+   "side": "All",
+   "desig": "130",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 7
+   },
+   "due": 4,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "164",
+   "slot": "A 214",
+   "img": "A 214.png",
+   "side": "All",
+   "desig": "214",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 7
+   },
+   "due": 4,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "165",
+   "slot": "A 94",
+   "img": "A 94.png",
+   "side": "All",
+   "desig": "94",
+   "cls": "artillery",
+   "stats": {
+    "att": 4,
+    "def": 2,
+    "ma": 6,
+    "barrage": 4,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 5,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "166",
+   "slot": "A 112",
+   "img": "A 112.png",
+   "side": "All",
+   "desig": "112",
+   "cls": "artillery",
+   "stats": {
+    "att": 4,
+    "def": 2,
+    "ma": 6,
+    "barrage": 4,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 5,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "167",
+   "slot": "A 179",
+   "img": "A 179.png",
+   "side": "All",
+   "desig": "179",
+   "cls": "artillery",
+   "stats": {
+    "att": 4,
+    "def": 2,
+    "ma": 6,
+    "barrage": 4,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 5,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "168",
+   "slot": "A 29-3",
+   "img": "A 29-3.png",
+   "side": "All",
+   "desig": "3/29",
+   "cls": "armor",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 8,
+   "arrival": "column",
+   "entry": [
+    [
+     1,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "id": "169",
+   "slot": "A 1-vT",
+   "img": "A 1-vT.png",
+   "side": "Ger",
+   "desig": "1/vT",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     7
+    ],
+    [
+     39,
+     8
+    ],
+    [
+     39,
+     9
+    ],
+    [
+     39,
+     10
+    ],
+    [
+     39,
+     11
+    ],
+    [
+     39,
+     12
+    ],
+    [
+     39,
+     13
+    ],
+    [
+     39,
+     14
+    ],
+    [
+     39,
+     15
+    ],
+    [
+     39,
+     16
+    ]
+   ]
+  },
+  {
+   "id": "170",
+   "slot": "A 2-vT",
+   "img": "A 2-vT.png",
+   "side": "Ger",
+   "desig": "2/vT",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     7
+    ],
+    [
+     39,
+     8
+    ],
+    [
+     39,
+     9
+    ],
+    [
+     39,
+     10
+    ],
+    [
+     39,
+     11
+    ],
+    [
+     39,
+     12
+    ],
+    [
+     39,
+     13
+    ],
+    [
+     39,
+     14
+    ],
+    [
+     39,
+     15
+    ],
+    [
+     39,
+     16
+    ]
+   ]
+  },
+  {
+   "id": "171",
+   "slot": "A 1-9SS",
+   "img": "A 1-9SS.png",
+   "side": "Ger",
+   "desig": "1/9SS",
+   "cls": "mech",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 10
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "172",
+   "slot": "A 3-9SS",
+   "img": "A 3-9SS.png",
+   "side": "Ger",
+   "desig": "3/9SS",
+   "cls": "mech",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "173",
+   "slot": "A 1-10SS Arty",
+   "img": "A 1-10SS Arty.png",
+   "side": "Ger",
+   "desig": "1/10SS Arty",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7,
+    "barrage": 3,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "174",
+   "slot": "A 10SS Recon",
+   "img": "A 10SS Recon.png",
+   "side": "Ger",
+   "desig": "10SS Recon",
+   "cls": "recon",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 12
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "175",
+   "slot": "A 1-59",
+   "img": "A 1-59.png",
+   "side": "Ger",
+   "desig": "1/59",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "176",
+   "slot": "A 2-59",
+   "img": "A 2-59.png",
+   "side": "Ger",
+   "desig": "2/59",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 1,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "177",
+   "slot": "A 3-vT",
+   "img": "A 3-vT.png",
+   "side": "Ger",
+   "desig": "3/vT",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 2,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     7
+    ],
+    [
+     39,
+     8
+    ],
+    [
+     39,
+     9
+    ],
+    [
+     39,
+     10
+    ],
+    [
+     39,
+     11
+    ],
+    [
+     39,
+     12
+    ],
+    [
+     39,
+     13
+    ],
+    [
+     39,
+     14
+    ],
+    [
+     39,
+     15
+    ],
+    [
+     39,
+     16
+    ]
+   ]
+  },
+  {
+   "id": "178",
+   "slot": "A 2107 P",
+   "img": "A 2107 P.png",
+   "side": "Ger",
+   "desig": "2107 P",
+   "cls": "armor",
+   "stats": {
+    "att": 5,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 2,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "179",
+   "slot": "A 2107 M",
+   "img": "A 2107 M.png",
+   "side": "Ger",
+   "desig": "2107 M",
+   "cls": "mech",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 10
+   },
+   "due": 2,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "180",
+   "slot": "A 1-6P",
+   "img": "A 1-6P.png",
+   "side": "Ger",
+   "desig": "1/6PT",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     1,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     4,
+     25
+    ],
+    [
+     5,
+     26
+    ],
+    [
+     6,
+     25
+    ],
+    [
+     7,
+     26
+    ],
+    [
+     8,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "181",
+   "slot": "A 2-6P",
+   "img": "A 2-6P.png",
+   "side": "Ger",
+   "desig": "2/6PT",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     1,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     4,
+     25
+    ],
+    [
+     5,
+     26
+    ],
+    [
+     6,
+     25
+    ],
+    [
+     7,
+     26
+    ],
+    [
+     8,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "182",
+   "slot": "A 180",
+   "img": "A 180.png",
+   "side": "Ger",
+   "desig": "180",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     1,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     4,
+     25
+    ],
+    [
+     5,
+     26
+    ],
+    [
+     6,
+     25
+    ],
+    [
+     7,
+     26
+    ],
+    [
+     8,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "183",
+   "slot": "A 9SS Arty",
+   "img": "A 9SS Arty.png",
+   "side": "Ger",
+   "desig": "9SS Arty",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7,
+    "barrage": 3,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     39,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "184",
+   "slot": "A 2-10SS",
+   "img": "A 2-10SS.png",
+   "side": "Ger",
+   "desig": "2/10SS",
+   "cls": "mech",
+   "stats": {
+    "att": 3,
+    "def": 4,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "185",
+   "slot": "A Hnke",
+   "img": "A Hnke.png",
+   "side": "Ger",
+   "desig": "Hnke",
+   "cls": "armor",
+   "stats": {
+    "att": 4,
+    "def": 3,
+    "ma": 10
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     1,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     4,
+     25
+    ],
+    [
+     5,
+     26
+    ],
+    [
+     6,
+     25
+    ],
+    [
+     7,
+     26
+    ],
+    [
+     8,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "186",
+   "slot": "A Wltr",
+   "img": "A Wltr.png",
+   "side": "Ger",
+   "desig": "Wltr",
+   "cls": "artillery",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     1,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     4,
+     25
+    ],
+    [
+     5,
+     26
+    ],
+    [
+     6,
+     25
+    ],
+    [
+     7,
+     26
+    ],
+    [
+     8,
+     25
+    ]
+   ]
+  },
+  {
+   "id": "187",
+   "slot": "A 1-1P",
+   "img": "A 1-1P.png",
+   "side": "Ger",
+   "desig": "1/1PT",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     17,
+     26
+    ],
+    [
+     18,
+     25
+    ],
+    [
+     19,
+     26
+    ],
+    [
+     20,
+     25
+    ],
+    [
+     21,
+     26
+    ],
+    [
+     22,
+     25
+    ],
+    [
+     23,
+     26
+    ],
+    [
+     24,
+     25
+    ],
+    [
+     25,
+     26
+    ],
+    [
+     26,
+     25
+    ],
+    [
+     27,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "188",
+   "slot": "A 2-1PT",
+   "img": "A 2-1PT.png",
+   "side": "Ger",
+   "desig": "2/1PT",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7
+   },
+   "due": 3,
+   "arrival": "edge",
+   "entry": [
+    [
+     17,
+     26
+    ],
+    [
+     18,
+     25
+    ],
+    [
+     19,
+     26
+    ],
+    [
+     20,
+     25
+    ],
+    [
+     21,
+     26
+    ],
+    [
+     22,
+     25
+    ],
+    [
+     23,
+     26
+    ],
+    [
+     24,
+     25
+    ],
+    [
+     25,
+     26
+    ],
+    [
+     26,
+     25
+    ],
+    [
+     27,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "189",
+   "slot": "A 1-10SS",
+   "img": "A 1-10SS.png",
+   "side": "Ger",
+   "desig": "1/10SS",
+   "cls": "mech",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 10
+   },
+   "due": 4,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "190",
+   "slot": "A 2-10SS Arty",
+   "img": "A 2-10SS Arty.png",
+   "side": "Ger",
+   "desig": "2/10SS Arty",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7,
+    "barrage": 3,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 4,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "191",
+   "slot": "A 1-Hber",
+   "img": "A 1-Hber.png",
+   "side": "Ger",
+   "desig": "1/Hbr",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 5,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "192",
+   "slot": "A 2-Hber",
+   "img": "A 2-Hber.png",
+   "side": "Ger",
+   "desig": "2/Hbr",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 5,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "193",
+   "slot": "A Hbr",
+   "img": "A Hbr.png",
+   "side": "Ger",
+   "desig": "Hbr",
+   "cls": "mech",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 10
+   },
+   "due": 5,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "194",
+   "slot": "A Hber Arty",
+   "img": "A Hber Arty.png",
+   "side": "Ger",
+   "desig": "Hber Arty",
+   "cls": "artillery",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 7,
+    "barrage": 2,
+    "fpf": 2,
+    "range": 7
+   },
+   "due": 5,
+   "arrival": "edge",
+   "entry": [
+    [
+     7,
+     1
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "195",
+   "slot": "A 3-10SS",
+   "img": "A 3-10SS.png",
+   "side": "Ger",
+   "desig": "3/10SS",
+   "cls": "mech",
+   "stats": {
+    "att": 3,
+    "def": 4,
+    "ma": 7
+   },
+   "due": 5,
+   "arrival": "edge",
+   "entry": [
+    [
+     33,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "196",
+   "slot": "A 1-6",
+   "img": "A 1-6.png",
+   "side": "Ger",
+   "desig": "1/6",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 7,
+   "arrival": "edge",
+   "entry": [
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "197",
+   "slot": "A 2-6",
+   "img": "A 2-6.png",
+   "side": "Ger",
+   "desig": "2/6",
+   "cls": "infantry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 7,
+   "arrival": "edge",
+   "entry": [
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "198",
+   "slot": "A 1-2",
+   "img": "A 1-2.png",
+   "side": "Ger",
+   "desig": "1/2",
+   "cls": "infantry",
+   "stats": {
+    "att": 1,
+    "def": 2,
+    "ma": 7
+   },
+   "due": 7,
+   "arrival": "edge",
+   "entry": [
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "199",
+   "slot": "A Jngw",
+   "img": "A Jngw.png",
+   "side": "Ger",
+   "desig": "Jngw",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 3,
+    "ma": 7
+   },
+   "due": 8,
+   "arrival": "edge",
+   "entry": [
+    [
+     9,
+     1
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     1
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     17,
+     1
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     1
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ]
+  }
+ ],
+ "vp": {
+  "allied_per_german_unit_eliminated": 1,
+  "german_per_allied_unit_destroyed": 5,
+  "waal_per_unit_per_turn": 5,
+  "rijn_per_unit_end": 10,
+  "german_per_loc_fail_per_turn": 3,
+  "waal_zone": [
+   "2721",
+   "2724",
+   "2725",
+   "2819",
+   "2820",
+   "2821",
+   "2822",
+   "2823",
+   "2824",
+   "2825",
+   "2917",
+   "2918",
+   "2919",
+   "2920",
+   "2921",
+   "2922",
+   "2923",
+   "2924",
+   "2925",
+   "2926",
+   "3015",
+   "3016",
+   "3017",
+   "3018",
+   "3019",
+   "3020",
+   "3021",
+   "3022",
+   "3023",
+   "3024",
+   "3025",
+   "3106",
+   "3107",
+   "3108",
+   "3109",
+   "3110",
+   "3111",
+   "3112",
+   "3113",
+   "3114",
+   "3115",
+   "3116",
+   "3117",
+   "3118",
+   "3119",
+   "3120",
+   "3121",
+   "3122",
+   "3123",
+   "3124",
+   "3125",
+   "3126",
+   "3206",
+   "3207",
+   "3208",
+   "3209",
+   "3210",
+   "3211",
+   "3212",
+   "3213",
+   "3214",
+   "3215",
+   "3216",
+   "3217",
+   "3218",
+   "3219",
+   "3220",
+   "3221",
+   "3222",
+   "3223",
+   "3224",
+   "3225",
+   "3306",
+   "3307",
+   "3308",
+   "3309",
+   "3310",
+   "3311",
+   "3312",
+   "3313",
+   "3314",
+   "3315",
+   "3316",
+   "3317",
+   "3318",
+   "3319",
+   "3320",
+   "3321",
+   "3322",
+   "3323",
+   "3324",
+   "3325",
+   "3326",
+   "3406",
+   "3407",
+   "3408",
+   "3409",
+   "3410",
+   "3411",
+   "3412",
+   "3413",
+   "3414",
+   "3415",
+   "3416",
+   "3417",
+   "3418",
+   "3419",
+   "3420",
+   "3421",
+   "3422",
+   "3423",
+   "3424",
+   "3425",
+   "3506",
+   "3507",
+   "3508",
+   "3509",
+   "3510",
+   "3511",
+   "3512",
+   "3513",
+   "3514",
+   "3515",
+   "3516",
+   "3517",
+   "3518",
+   "3519",
+   "3520",
+   "3521",
+   "3522",
+   "3523",
+   "3524",
+   "3525",
+   "3526",
+   "3606",
+   "3607",
+   "3608",
+   "3609",
+   "3610",
+   "3611",
+   "3612",
+   "3613",
+   "3614",
+   "3615",
+   "3616",
+   "3617",
+   "3618",
+   "3619",
+   "3620",
+   "3621",
+   "3622",
+   "3623",
+   "3624",
+   "3625",
+   "3706",
+   "3707",
+   "3708",
+   "3709",
+   "3710",
+   "3711",
+   "3712",
+   "3713",
+   "3714",
+   "3715",
+   "3716",
+   "3717",
+   "3718",
+   "3719",
+   "3720",
+   "3721",
+   "3722",
+   "3723",
+   "3724",
+   "3725",
+   "3726",
+   "3806",
+   "3807",
+   "3808",
+   "3809",
+   "3810",
+   "3811",
+   "3812",
+   "3813",
+   "3814",
+   "3815",
+   "3816",
+   "3817",
+   "3818",
+   "3820",
+   "3821",
+   "3822",
+   "3823",
+   "3824",
+   "3825",
+   "3906",
+   "3907",
+   "3908",
+   "3909",
+   "3910",
+   "3911",
+   "3912",
+   "3913",
+   "3914",
+   "3915",
+   "3916",
+   "3917",
+   "3918",
+   "3919",
+   "3920",
+   "3921",
+   "3922",
+   "3923",
+   "3924",
+   "3925",
+   "3926"
+  ],
+  "rijn_zone": [
+   "3412",
+   "3413",
+   "3414",
+   "3418",
+   "3423",
+   "3424",
+   "3425",
+   "3511",
+   "3512",
+   "3513",
+   "3514",
+   "3515",
+   "3516",
+   "3517",
+   "3518",
+   "3519",
+   "3520",
+   "3521",
+   "3522",
+   "3523",
+   "3524",
+   "3525",
+   "3526",
+   "3609",
+   "3610",
+   "3611",
+   "3612",
+   "3613",
+   "3614",
+   "3615",
+   "3616",
+   "3617",
+   "3618",
+   "3619",
+   "3620",
+   "3621",
+   "3622",
+   "3623",
+   "3624",
+   "3625",
+   "3706",
+   "3707",
+   "3708",
+   "3709",
+   "3710",
+   "3711",
+   "3712",
+   "3713",
+   "3714",
+   "3715",
+   "3716",
+   "3717",
+   "3718",
+   "3719",
+   "3720",
+   "3721",
+   "3722",
+   "3723",
+   "3724",
+   "3725",
+   "3726",
+   "3806",
+   "3807",
+   "3808",
+   "3809",
+   "3810",
+   "3811",
+   "3812",
+   "3813",
+   "3814",
+   "3815",
+   "3816",
+   "3817",
+   "3818",
+   "3820",
+   "3821",
+   "3822",
+   "3823",
+   "3824",
+   "3825",
+   "3906",
+   "3907",
+   "3908",
+   "3909",
+   "3910",
+   "3911",
+   "3912",
+   "3913",
+   "3914",
+   "3915",
+   "3916",
+   "3917",
+   "3918",
+   "3919",
+   "3920",
+   "3921",
+   "3922",
+   "3923",
+   "3924",
+   "3925",
+   "3926"
+  ],
+  "levels": [
+   [
+    3.0,
+    "German Strategic"
+   ],
+   [
+    2.01,
+    "German Tactical"
+   ],
+   [
+    2.0,
+    "Draw"
+   ],
+   [
+    1.01,
+    "Allied Tactical"
+   ],
+   [
+    0.0,
+    "Allied Strategic"
+   ]
+  ],
+  "cite": "[17.1] VP schedule; [17.2] geographical VPs need a LOC; [17.35] LOC judged at the end of each German player-turn; [17.4] victory ratio German:Allied; zones computed by river-course flood fill (Waal course 2726-3005, Neder Rijn course 3706-3424)"
+ },
+ "loc": {
+  "ground_exit": [
+   [
+    1,
+    5
+   ],
+   [
+    1,
+    6
+   ]
+  ],
+  "airborne_max": 7,
+  "cite": "[17.31] ground LOC to 0105/0106 (trail locks to road/trail, road locks to road); [17.32] airborne LOC <= 7 hexes to the divisional DZ counter; [17.33] blocked by enemy units/ZOC, friends negate ZOC; [17.34] never through unbridged river or stream hexsides; [17.36] Polish and German units exempt"
+ },
+ "rules_scope": {
+  "enforced": [
+   "Terrain costs: clear 1 / mixed 2 / woods 2 / broken 3 / rough 4 / town-city 1 MP [Terrain Key/5.21], cumulative hexside costs [5.21]",
+   "Roads 1/2 MP, trails 1 MP through their hexsides regardless of hex terrain [5.22/5.23]",
+   "Rivers prohibited except bridges and ferries (+3 MP); streams/canals +3 MP unless bridged [Terrain Key]",
+   "Vehicle classes (armored/recon/mechanized/SP artillery) never enter rough, broken or woods hexes and never cross river/stream hexsides except through road/trail hexsides; eliminated when forced to retreat in violation [5.24]",
+   "No entering enemy-occupied hexes [5.12]; MA never exceeded, no accumulation [5.13]",
+   "STACKING PROHIBITED at phase end [5.31]; free friendly pass-through [5.31/5.32]; the Engineer assault stack [13.24] and DZ counters [15.35] excepted",
+   "Rigid ZOC: stop on entry [6.0], no extra MP [6.12], never exit an EZOC by movement [5.14/6.13]; ZOC never through non-bridge river hexsides, ferries are non-bridge [6.33]",
+   "Reinforcements: printed schedule [18.13-18.15]; road-rate column entry [15.13]; blocked-hex alternates [15.22]; withholding [15.23]",
+   "Airborne arrivals: within one hex of the printed hex, one unit per hex, EZOC allowed, occupied hexes forbidden (eliminated if forced), MA 3 on the arrival GT [15.31-15.33]",
+   "DZ counters: no ZOC/strength, free stacking, overrunnable, never destroyed [15.35]",
+   "German map exit and same-edge re-entry (west 0601-2301, east 0126-2726) [15.4]",
+   "Bridge demolition: canal+rail bridges, German option at first Allied adjacency, die 1-2, one attempt ever; highway bridges never [12.x]; engine-owned seeded die",
+   "Engineer: canal-bridge repair [13.1]; airborne/glider river crossing [13.2]; assault stack on the Stream CRT line [13.24]; no Allied retreat across rivers / out of the Engineer hex, no German advance across rivers [13.25]; replacement at 0105/0106 [13.3]",
+   "Turn sequence: Allied first player, movement then combat, 10 GTs [4.1/18.17]"
+  ],
+  "enforced_tier2": [
+   "Mandatory combat: every adjacent enemy attacked, every adjacent friendly attacks [7.0/7.11/7.12/7.21]; multi-hex adjacency [7.23]; once per phase each way [7.14]",
+   "Integrated differential CRT: attack+barrage+GSP minus defense+FPF, defender's terrain row, die 1-6 [7.0/7.61]; bounds clamp [7.61 notes]",
+   "Never voluntarily reduce a differential [7.52]",
+   "Defender's best terrain [7.44/7.45]; stream hexside benefit only when ALL attackers cross streams [7.42]; bridge line when all attackers cross a bridge [7.61]",
+   "Retreats 1-4 hexes away from the combat position, EZOC blocked after the first hex, prohibited hexsides never, partial retreat = elimination [7.7]; displacement chains [7.8]",
+   "Advance after combat along the Path of Retreat, any number of victorious adjacent participants, immediate, never forced [7.9]",
+   "City hexes: retreat reduction by two at owner's option (D3 min 1, D4 min 2; not airborne artillery; negated when surrounded except Allied airborne/glider); Town CRT line [11.1/11.2]",
+   "Artillery: barrage in range without LOS [8.1/8.61]; combined attacks [8.2]; mandatory adjacent participation, results suffered [8.3]; river-adjacency exception [8.34]; FPF under the 8.41 conditions, once per GT [8.46]; pure-artillery attacks only D2-D4/De apply [8.15]; max two artillery per combat [14.12]",
+   "Allied GSP as barrage/FPF within 3 hexes of a non-airborne Allied unit [9.0/14.11/18.16]",
+   "Victory: VP schedule, LOC traces at the end of each German player-turn, Waal/Rijn geographical awards, victory-level ratio [17.x]"
+  ],
+  "umpired": [
+   "Weather Option 16.0 (off by default in the Historical Scenario [18.17]; Scenario II not offered)",
+   "The printed map's railway LINES are decorative (rail bridges are enforced); the validated legacy road/trail extraction may carry railway ink as trail on a few sides (list in terrain provenance) - movement there can be one class cheaper than strictly printed",
+   "5.15 touched-piece etiquette (table rule, meaningless under a gate)"
+  ]
+ }
+}

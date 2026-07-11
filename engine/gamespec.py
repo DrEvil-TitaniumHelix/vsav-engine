@@ -305,6 +305,22 @@ class Game:
             return True
         return False
 
+    def zoc_side_blocked(self, a, b):
+        """True when zoc.blocked_by_side_features bars ZOC across the a-b
+        hexside (Westwall 6.33: ZOC never extends through non-bridge river
+        hexsides — ferries are non-bridge). Spec-gated; absent = never."""
+        rules = self.zoc_cfg.get("blocked_by_side_features")
+        if not rules:
+            return False
+        f = self.side_features(a, b)
+        for rule in rules:
+            if f.get(rule["feature"]) != rule["value"]:
+                continue
+            if rule.get("unless") and f.get(rule["unless"]):
+                continue
+            return True
+        return False
+
     def _zoc_neighbors(self, u):
         """The hexes a unit's ZOC covers: its six neighbors, minus immune
         terrain, minus (spec-gated) neighbors across prohibited hexsides —
@@ -318,6 +334,8 @@ class Game:
             if self._zoc_immune(nb):
                 continue
             if across and self.hexside_prohibited(src, nb):
+                continue
+            if self.zoc_side_blocked(src, nb):
                 continue
             out.add(nb)
         return out
