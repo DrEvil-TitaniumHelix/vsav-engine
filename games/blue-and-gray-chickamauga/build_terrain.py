@@ -188,9 +188,13 @@ for key in sorted(playable):
             feat["creek"] = True
         if sk in PINNED_BRIDGES:
             feat["bridge"] = True
+            feat["crossing"] = True    # creek prohibit-unless-crossing
+            feat["road"] = True        # the road continues over every bridge (map art)
             feat["name"] = PINNED_BRIDGES[sk]
         elif sk in PINNED_FORDS:
             feat["ford"] = True
+            feat["crossing"] = True
+            feat["trail"] = True       # all six fords carry the trail's dashes (map art)
         if "creek" not in feat:
             ink, comp = side_ink(c, r, c2, r2)
             if ink >= 78 and comp >= 90:

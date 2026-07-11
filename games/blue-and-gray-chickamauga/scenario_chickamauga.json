@@ -1,0 +1,1415 @@
+{
+ "name": "Chickamauga - The Last Victory (campaign, 15 GTs)",
+ "game": {
+  "turns": 15,
+  "first_player": "Union",
+  "night_turns": [
+   9
+  ],
+  "turn_labels": [
+   "GT 1",
+   "GT 2",
+   "GT 3",
+   "GT 4",
+   "GT 5",
+   "GT 6",
+   "GT 7",
+   "GT 8",
+   "GT 9 (Night)",
+   "GT 10",
+   "GT 11",
+   "GT 12",
+   "GT 13",
+   "GT 14",
+   "GT 15"
+  ]
+ },
+ "units": [
+  {
+   "id": "1-1-xiv",
+   "slot": "1/1/XIV c",
+   "side": "Union",
+   "img": "1-1-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    13,
+    17
+   ]
+  },
+  {
+   "id": "2-1-xiv",
+   "slot": "2/1/XIV c",
+   "side": "Union",
+   "img": "2-1-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    13,
+    19
+   ]
+  },
+  {
+   "id": "3-1-xiv",
+   "slot": "3/1/XIV c",
+   "side": "Union",
+   "img": "3-1-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    13,
+    18
+   ]
+  },
+  {
+   "id": "1-3-xiv",
+   "slot": "1/3/XIV c",
+   "side": "Union",
+   "img": "1-3-xiv c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    14,
+    13
+   ]
+  },
+  {
+   "id": "2-3-xiv",
+   "slot": "2/3/XIV c",
+   "side": "Union",
+   "img": "2-3-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    14,
+    14
+   ]
+  },
+  {
+   "id": "3-3-xiv",
+   "slot": "3/3/XIV c",
+   "side": "Union",
+   "img": "3-3-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    13,
+    15
+   ]
+  },
+  {
+   "id": "wilder",
+   "slot": "Wilder c",
+   "side": "Union",
+   "img": "wilder c.png",
+   "str": 8,
+   "cls": "inf",
+   "hex": [
+    10,
+    22
+   ]
+  },
+  {
+   "id": "2-4-xiv",
+   "slot": "2/4/XIV c",
+   "side": "Union",
+   "img": "2-4-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    8,
+    22
+   ]
+  },
+  {
+   "id": "1-2-cavalry",
+   "slot": "1/2 Cavalry c",
+   "side": "Union",
+   "img": "1-2 cav c.png",
+   "str": 5,
+   "cls": "cav",
+   "hex": [
+    20,
+    11
+   ]
+  },
+  {
+   "id": "1-1-xxi",
+   "slot": "1/1/XXI c",
+   "side": "Union",
+   "img": "1-1-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    11,
+    27
+   ]
+  },
+  {
+   "id": "3-1-xxi",
+   "slot": "3/1/XXI c",
+   "side": "Union",
+   "img": "3-1-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    12,
+    27
+   ]
+  },
+  {
+   "id": "1-1-res",
+   "slot": "1/1/Res c",
+   "side": "Union",
+   "img": "1-1-res c.png",
+   "str": 6,
+   "cls": "inf",
+   "hex": [
+    3,
+    2
+   ]
+  },
+  {
+   "id": "2-1-res",
+   "slot": "2/1/Res c",
+   "side": "Union",
+   "img": "2-1-res c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    4,
+    2
+   ]
+  },
+  {
+   "id": "2-2-res",
+   "slot": "2/2/Res c",
+   "side": "Union",
+   "img": "2-2-res c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    15,
+    5
+   ]
+  },
+  {
+   "id": "wood",
+   "slot": "Wood c",
+   "side": "Confederate",
+   "img": "wood c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    20,
+    26
+   ]
+  },
+  {
+   "id": "polk",
+   "slot": "Polk c",
+   "side": "Confederate",
+   "img": "polk c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    20,
+    27
+   ]
+  },
+  {
+   "id": "fulton",
+   "slot": "Fulton c",
+   "side": "Confederate",
+   "img": "fulton c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    20,
+    22
+   ]
+  },
+  {
+   "id": "brown",
+   "slot": "Brown c",
+   "side": "Confederate",
+   "img": "brown c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    17,
+    26
+   ]
+  },
+  {
+   "id": "bates",
+   "slot": "Bates c",
+   "side": "Confederate",
+   "img": "bates c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    18,
+    25
+   ]
+  },
+  {
+   "id": "clayton",
+   "slot": "Clayton c",
+   "side": "Confederate",
+   "img": "clayton c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    19,
+    26
+   ]
+  },
+  {
+   "id": "gracie",
+   "slot": "Gracie c",
+   "side": "Confederate",
+   "img": "gracie c.png",
+   "str": 7,
+   "cls": "inf",
+   "hex": [
+    15,
+    26
+   ]
+  },
+  {
+   "id": "trigg",
+   "slot": "Trigg c",
+   "side": "Confederate",
+   "img": "trigg c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    15,
+    27
+   ]
+  },
+  {
+   "id": "kelly",
+   "slot": "Kelly c",
+   "side": "Confederate",
+   "img": "kelly c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    16,
+    26
+   ]
+  },
+  {
+   "id": "gregg",
+   "slot": "Gregg c",
+   "side": "Confederate",
+   "img": "gregg c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    25,
+    17
+   ]
+  },
+  {
+   "id": "mcnair",
+   "slot": "McNair c",
+   "side": "Confederate",
+   "img": "mcnair c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    23,
+    17
+   ]
+  },
+  {
+   "id": "kershaw",
+   "slot": "Kershaw c",
+   "side": "Confederate",
+   "img": "kershaw c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    17,
+    21
+   ]
+  },
+  {
+   "id": "humphrey",
+   "slot": "Humphrey c",
+   "side": "Confederate",
+   "img": "hmphry c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    19,
+    21
+   ]
+  },
+  {
+   "id": "law",
+   "slot": "Law c",
+   "side": "Confederate",
+   "img": "law c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    18,
+    21
+   ]
+  },
+  {
+   "id": "robertson",
+   "slot": "Robertson c",
+   "side": "Confederate",
+   "img": "robertsn c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    23,
+    16
+   ]
+  },
+  {
+   "id": "anderson",
+   "slot": "Anderson c",
+   "side": "Confederate",
+   "img": "andersn c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    17,
+    22
+   ]
+  },
+  {
+   "id": "benning",
+   "slot": "Benning",
+   "side": "Confederate",
+   "img": "benning c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    19,
+    22
+   ]
+  },
+  {
+   "id": "jackson",
+   "slot": "Jackson c",
+   "side": "Confederate",
+   "img": "jackson c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    18,
+    20
+   ]
+  },
+  {
+   "id": "maney",
+   "slot": "Maney c",
+   "side": "Confederate",
+   "img": "maney c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    19,
+    20
+   ]
+  },
+  {
+   "id": "smith",
+   "slot": "Smith c",
+   "side": "Confederate",
+   "img": "smith c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    16,
+    20
+   ]
+  },
+  {
+   "id": "wright",
+   "slot": "Wright c",
+   "side": "Confederate",
+   "img": "wright c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    17,
+    20
+   ]
+  },
+  {
+   "id": "strahl",
+   "slot": "Strahl c",
+   "side": "Confederate",
+   "img": "strahl c.png",
+   "str": 3,
+   "cls": "inf",
+   "hex": [
+    20,
+    20
+   ]
+  },
+  {
+   "id": "3-artillery",
+   "slot": "3 Artillery c",
+   "side": "Confederate",
+   "img": "3 arty c.png",
+   "str": 5,
+   "cls": "arty",
+   "hex": [
+    21,
+    20
+   ]
+  },
+  {
+   "id": "gist",
+   "slot": "Gist c",
+   "side": "Confederate",
+   "img": "gist c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    20,
+    17
+   ]
+  },
+  {
+   "id": "ector",
+   "slot": "Ector c",
+   "side": "Confederate",
+   "img": "ector c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    21,
+    18
+   ]
+  },
+  {
+   "id": "wilson",
+   "slot": "Wilson c",
+   "side": "Confederate",
+   "img": "wilson c.png",
+   "str": 5,
+   "cls": "inf",
+   "hex": [
+    22,
+    18
+   ]
+  },
+  {
+   "id": "liddell",
+   "slot": "Liddell c",
+   "side": "Confederate",
+   "img": "liddell c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    24,
+    22
+   ]
+  },
+  {
+   "id": "walthall",
+   "slot": "Walthall c",
+   "side": "Confederate",
+   "img": "walthall c.png",
+   "str": 4,
+   "cls": "inf",
+   "hex": [
+    24,
+    21
+   ]
+  },
+  {
+   "id": "armstrong",
+   "slot": "Armstrong c",
+   "side": "Confederate",
+   "img": "armstrng c.png",
+   "str": 3,
+   "cls": "cav",
+   "hex": [
+    22,
+    12
+   ]
+  },
+  {
+   "id": "davidson",
+   "slot": "Davidson c",
+   "side": "Confederate",
+   "img": "davidson c.png",
+   "str": 3,
+   "cls": "cav",
+   "hex": [
+    24,
+    11
+   ]
+  },
+  {
+   "id": "forrest",
+   "slot": "Forrest c",
+   "side": "Confederate",
+   "img": "forrest c.png",
+   "str": 6,
+   "cls": "cav",
+   "hex": [
+    20,
+    15
+   ]
+  },
+  {
+   "id": "scott",
+   "slot": "Scott c",
+   "side": "Confederate",
+   "img": "scott c.png",
+   "str": 6,
+   "cls": "cav",
+   "hex": [
+    23,
+    14
+   ]
+  }
+ ],
+ "reserve": [
+  {
+   "id": "1-2-xiv",
+   "slot": "1/2/XIV c",
+   "side": "Union",
+   "img": "1-2-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-2-xiv",
+   "slot": "2/2/XIV c",
+   "side": "Union",
+   "img": "2-2-xiv c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-2-xiv",
+   "slot": "3/2/XIV c",
+   "side": "Union",
+   "img": "3-2-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "xiv-artillery",
+   "slot": "XIV Artillery c",
+   "side": "Union",
+   "img": "xiv art c.png",
+   "str": 3,
+   "cls": "arty",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-4-xiv",
+   "slot": "3/4/XIV c",
+   "side": "Union",
+   "img": "3-4-xiv c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "1-2-xxi",
+   "slot": "1/2/XXI c",
+   "side": "Union",
+   "img": "1-2-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-2-xxi",
+   "slot": "2/2/XXI c",
+   "side": "Union",
+   "img": "2-2-xxi c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-2-xxi",
+   "slot": "3/2/XXI c",
+   "side": "Union",
+   "img": "3-2-xxi c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "1-3-xxi",
+   "slot": "1/3/XXI c",
+   "side": "Union",
+   "img": "1-3-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-3-xxi",
+   "slot": "2/3/XXI c",
+   "side": "Union",
+   "img": "2-3-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-3-xxi",
+   "slot": "3/3/XXI c",
+   "side": "Union",
+   "img": "3-3-xxi c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "xxi-artillery",
+   "slot": "XXI Artillery c",
+   "side": "Union",
+   "img": "xxi art c.png",
+   "str": 3,
+   "cls": "arty",
+   "due": 2,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-1-xx",
+   "slot": "2/1/XX c",
+   "side": "Union",
+   "img": "2-1-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-1-xx",
+   "slot": "3/1/XX c",
+   "side": "Union",
+   "img": "3-1-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "1-2-xx",
+   "slot": "1/2/XX c",
+   "side": "Union",
+   "img": "1-2-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-2-xx",
+   "slot": "2/2/XX c",
+   "side": "Union",
+   "img": "2-2-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-2-xx",
+   "slot": "3/2/XX c",
+   "side": "Union",
+   "img": "3-2-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "1-3-xx",
+   "slot": "1/3/XX c",
+   "side": "Union",
+   "img": "1-3-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-3-xx",
+   "slot": "2/3/XX c",
+   "side": "Union",
+   "img": "2-3-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-3-xx",
+   "slot": "3/3/XX c",
+   "side": "Union",
+   "img": "3-3-xx c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "xx-artillery",
+   "slot": "XX Artillery c",
+   "side": "Union",
+   "img": "xx art c.png",
+   "str": 3,
+   "cls": "arty",
+   "due": 5,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "1-1-cavalry",
+   "slot": "1/1 Cavalry c",
+   "side": "Union",
+   "img": "1-1 cav c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 6,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "3-1-cavalry",
+   "slot": "3/1 Cavalry c",
+   "side": "Union",
+   "img": "3-1 cav c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 6,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-1-cavalry",
+   "slot": "2/1 Cavalry c",
+   "side": "Union",
+   "img": "2-1 cav c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 6,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "union-supply-train",
+   "slot": "Union Supply Train c",
+   "side": "Union",
+   "img": "train c.png",
+   "str": 1,
+   "cls": "train",
+   "due": 7,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "2-2-cavalry",
+   "slot": "2/2 Cavalry c",
+   "side": "Union",
+   "img": "2-2 cav c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 8,
+   "entry": [
+    [
+     7,
+     28
+    ],
+    [
+     10,
+     27
+    ]
+   ]
+  },
+  {
+   "id": "deshler",
+   "slot": "Deshler c",
+   "side": "Confederate",
+   "img": "deshler c.png",
+   "str": 5,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "helm",
+   "slot": "Helm c",
+   "side": "Confederate",
+   "img": "helm c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "adams",
+   "slot": "Adams c",
+   "side": "Confederate",
+   "img": "ams c.png",
+   "str": 4,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "stovall",
+   "slot": "Stovall c",
+   "side": "Confederate",
+   "img": "Stovall c.png",
+   "str": 3,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "2-artillery",
+   "slot": "2 Artillery c",
+   "side": "Confederate",
+   "img": "2 arty c.png",
+   "str": 4,
+   "cls": "arty",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "deas",
+   "slot": "Deas c",
+   "side": "Confederate",
+   "img": "deas c.png",
+   "str": 6,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "anderson6",
+   "slot": "Anderson6 c",
+   "side": "Confederate",
+   "img": "anderson6 c.png",
+   "str": 6,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "manigault",
+   "slot": "Manigault c",
+   "side": "Confederate",
+   "img": "manigault c.png",
+   "str": 6,
+   "cls": "inf",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "1-artillery",
+   "slot": "1 Artillery c",
+   "side": "Confederate",
+   "img": "1 arty c.png",
+   "str": 3,
+   "cls": "arty",
+   "due": 2,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "crews",
+   "slot": "Crews c",
+   "side": "Confederate",
+   "img": "crews c.png",
+   "str": 3,
+   "cls": "cav",
+   "due": 5,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "russell",
+   "slot": "Russell c",
+   "side": "Confederate",
+   "img": "russell c.png",
+   "str": 2,
+   "cls": "cav",
+   "due": 5,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "morgan",
+   "slot": "Morgan c",
+   "side": "Confederate",
+   "img": "morgan c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 5,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "harrison",
+   "slot": "Harrison c",
+   "side": "Confederate",
+   "img": "harrison c.png",
+   "str": 5,
+   "cls": "cav",
+   "due": 5,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  },
+  {
+   "id": "rodney",
+   "slot": "Rodney c",
+   "side": "Confederate",
+   "img": "rodney c.png",
+   "str": 4,
+   "cls": "cav",
+   "due": 8,
+   "entry": [
+    [
+     16,
+     27
+    ],
+    [
+     19,
+     28
+    ]
+   ]
+  }
+ ],
+ "vp": {
+  "per_enemy_csp_eliminated": 1,
+  "exit_per_csp": {
+   "Union": 1,
+   "Confederate": 10
+  },
+  "confederate_train_fail": 10,
+  "occupation": {
+   "union": {
+    "1920": 10,
+    "2311": 20
+   },
+   "confederate": {
+    "0211": 20,
+    "0502": 20
+   },
+   "either": {
+    "0822": 5,
+    "1108": 5,
+    "1115": 5
+   }
+  },
+  "start_occupation": {
+   "union": [
+    "0211",
+    "0502",
+    "0822",
+    "1108",
+    "1115"
+   ],
+   "confederate": [
+    "1920",
+    "2311"
+   ]
+  },
+  "loc_confederate": "road trace 0101/0111 to the eastern edge free of Union units at game end [17.31]",
+  "loc_union_path": 10,
+  "cite": "[17.1] VP schedule; [17.2] occupation; [17.3] lines of communication"
+ },
+ "rules_scope": {
+  "enforced": [
+   "Movement Allowance 6 MP, all units [5.0]",
+   "Terrain costs: clear 1 / forest 3 / rough 3 / forest+rough 6 MP [9.0 TEC]",
+   "Roads 1 MP through road hexsides regardless of terrain [5.22]; trails cap the cost at 2 MP (1 in clear) [5.23]",
+   "Creek hexsides impassable except bridges (free) and fords (+1 MP) [5.25]",
+   "No entering enemy-occupied hexes [5.12]; no skipping hexes [5.16]; no MP accumulation [5.15]",
+   "Stacking: max two units per hex at phase end [5.32]; free friendly pass-through [5.31/5.33]",
+   "ZOC: all six adjacent hexes [6.0/6.6]; entering an EZOC ends movement [6.0]; a unit in an EZOC may NOT move during the Movement Phase [5.13/6.3]; ZOC never crosses non-bridge/ford creek hexsides [6.6]",
+   "Reinforcements: printed schedule, southern-edge entry hexes, column entry costs, delay when both entry hexes are occupied [15.0-15.5]",
+   "Exit at 0101/0111 for 1 MP; exited units are out permanently [16.1-16.7]",
+   "Night GT 9: no combat of any kind; no entering EZOC [10.0-10.2]",
+   "Train: roads/trails only, never stacks, blocks its hex, no ZOC [18.2]",
+   "Turn sequence: Union first player, movement then combat, 15 GTs [4.0/14.3/15.53]"
+  ],
+  "enforced_tier2": [
+   "Mandatory combat: every adjacent enemy attacked, every adjacent friendly participates [7.0/7.11/7.12/7.23]",
+   "CRT 1d6, odds rounded down for the defender, >6-1 as 6-1, <1-5 as 1-5 [7.0/7.6]",
+   "Voluntary odds reduction before the roll [7.9]",
+   "Defending stacks fight as one total [7.21]; co-stacked attackers combine [7.22]; multi-hex combat adjacency [7.24/7.25]",
+   "Combat results Ae/De/Ex/Ar/Dr with printed-strength exchange [7.6]",
+   "Retreat 1 hex out of EZOC, owner's choice, elimination when no hex is open [7.7]; displacement chains [7.8]",
+   "Advance after combat: one victorious unit, optional, immediate [7.75/7.76]",
+   "Defender doubled in rough/forest+rough [9.0]; doubled behind bridge/ford hexsides when all attackers cross them [9.0]",
+   "Artillery: bombardment at 2-3 hexes, LOS blocked by forest/forest+rough, bombarding artillery immune to results, mandatory normal combat when adjacent [8.0-8.5]",
+   "Victory Points: eliminations, exits (with the Confederate LOC road trace), occupation hexes, Union 10-hex path check, the Train's 10 VP [17.0-17.3, 18.0]"
+  ],
+  "umpired": [
+   "Attack Effectiveness (optional rule 11.0 - not used, as published default)",
+   "Ford+trail cost composition: encoded as trail cap + 1 MP (see source_defects ford-trail-cost-composition)",
+   "5.17 touched-piece etiquette (table rule, meaningless under a gate)"
+  ]
+ }
+}
