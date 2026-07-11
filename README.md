@@ -255,8 +255,9 @@ python ui/server.py --game games/tobruk
 One command runs the whole suite:
 
 ```
-python run_all.py          # every game's validators, one PASS/FAIL summary
-python run_all.py --fast   # skip the slow multi-seed AI campaigns
+python run_all.py             # every game's validators, one PASS/FAIL summary
+python run_all.py --fast      # skip the slow multi-seed AI campaigns
+python run_all.py --ai-smoke  # AI validators in 1-seed smoke mode (what CI runs)
 python run_all.py --game westwall-arnhem   # one game only
 ```
 
