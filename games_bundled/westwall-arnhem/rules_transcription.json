@@ -1,0 +1,274 @@
+{
+ "game": "Arnhem - Operation Market-Garden, September 1944 (SPI Westwall quad, 1976)",
+ "sources": {
+  "standard_rules": "Westwall Standard Rules folder (SPI 1976) - OCR sidecar C:/VassalLibrary/_meta/ocr/'Westwall_ Four Battles to Germany__WestWallStdRules.txt' (32.4k chars, complete 1.0-9.14), scanned PDF in C:/VassalLibrary/launchbox/Manuals/VASSAL/'Westwall_ Four Battles to Germany'/",
+  "exclusive_rules": "Arnhem Exclusive Rules (same folder, OCR sidecar __WestWallQuad.txt chars 33452-63962, complete 10.0-18.26 + design credits + printed CRT)",
+  "crt_source_2": "C:/VassalIngest/westwall/map_tables_transcription.json - mastermind's independent image-only transcription of the printed CRT + Terrain Key (2026-07-09)",
+  "counters": "C:/VassalIngest/westwall/counter_stats_by_image.json (mastermind factor->image binding) + full 95-counter contact-sheet visual pass 2026-07-11 (The Vassal) - every front-state counter read by eye; 18 fired-state artillery images are flip sides",
+  "module": "Westwall Quad.vmod, extracted at C:/VassalIngest/westwall/extracted/ - board 'Arnhem' img 'Base Layer(1).png', HexGrid dx=96 dy=119 x0=60 y0=60 (= hand-validated legacy values), setup 'Arnhem Historical.vsav' (save key 0xA3)"
+ },
+ "crt": {
+  "cite": "[7.61] Integrated Combat Results Table (printed in the Exclusive Rules folder; identical for all four Westwall battles)",
+  "type": "differential, terrain-integrated: differential = total attacking strength (attack + barrage + GSP) minus total defending strength (defense + FPF); the DEFENDER's terrain row maps the differential to a result column; die 1-6 x column -> result",
+  "terrain_rows": {
+   "rough": ["-2", "-1", "0", "+1", "+2,3", "+4,5", "+6-8", "+9-11", "+12"],
+   "broken_town_woods_stream": ["-3", "-2", "-1", "0", "+1", "+2,3", "+4,5", "+6-8", "+9-11", "+12"],
+   "grove_bridge": ["-5", "-4,3", "-2", "-1", "0", "+1", "+2,3", "+4,5", "+6-8", "+9-11", "+12"],
+   "clear_mixed": ["-7", "-6,5", "-4,3", "-2", "-1", "0", "+1", "+2,3", "+4,5", "+6-8", "+9-11", "+12"]
+  },
+  "die_rows": {
+   "1": ["A1", "A1", "A1", "Br", "D1", "D2", "D2", "D2", "D2", "D3", "D4", "De"],
+   "2": ["A1", "A1", "A1", "A1", "Br", "D1", "D2", "D2", "D2", "D2", "D3", "D4"],
+   "3": ["A1", "A1", "A1", "A1", "A1", "Br", "D1", "D2", "D2", "D2", "D2", "D3"],
+   "4": ["A2", "A1", "A1", "A1", "A1", "Br", "Br", "D1", "D2", "D2", "D2", "D2"],
+   "5": ["A2", "A2", "A1", "A1", "A1", "A1", "Br", "Br", "D1", "D2", "D2", "D2"],
+   "6": ["Ae", "Ae", "A2", "A1", "A1", "A1", "A1", "Br", "Br", "Br", "D2", "D2"]
+  },
+  "results": {
+   "Ae": "Attacker Eliminated - all attacking units eliminated; defender may advance [7.62]",
+   "A1": "Attacker retreats 1 hex [7.62]",
+   "A2": "Attacker retreats 2 hexes [7.62]",
+   "Br": "Both retreat one hex, DEFENDER FIRST (a surrounded defender is eliminated) [7.62]",
+   "D1": "Defender retreats 1 hex", "D2": "Defender retreats 2 hexes",
+   "D3": "Defender retreats 3 hexes", "D4": "Defender retreats 4 hexes",
+   "De": "Defender Eliminated - all defending units eliminated; attacker may advance [7.62]"
+  },
+  "bounds": "attacks below the lowest differential resolve at the lowest; above +12 resolve as +12 (printed CRT notes)",
+  "worked_example": "[7.0] PROCEDURE example: 13 points attacking 4 points in a Town hex = +9, resolved at +9-11 on the Town line; die 5 -> D1",
+  "two_source_note": "OCR text of the printed table and the mastermind image transcription agree on all 12x6 result cells, all 4 terrain rows' brackets, both bounds notes, and the diagonal one-column-per-die-row shift; also identical to engine/rules.py (validated 2026-07-03)"
+ },
+ "terrain_effects_chart": {
+  "cite": "Terrain Key printed on the mapsheet (mastermind transcription; matches Standard Rules 5.2 cases)",
+  "hex_mp": {"clear": 1, "mixed": 2, "woods": 2, "broken": 3, "rough": 4, "town": 1, "city": 1},
+  "hexside": {
+   "river": "PROHIBITED (unless bridge) [Terrain Key; 6.33]",
+   "canal": "PROHIBITED (unless bridge) - demolished canal/rail bridge hexsides are 'treated as a normal Canal or River hexside' [12.13], i.e. prohibited",
+   "stream": "+3 MP (unless bridge) [Terrain Key]",
+   "ferry": "+3 MP; ferries are NON-BRIDGE hexsides: no ZOC or attacks across them [Terrain Key; 6.33]",
+   "bridge_highway": "no additional MP; never demolishable [12.15]",
+   "bridge_rail": "no additional MP; demolishable [12.11-12.15], never repairable [12.16]",
+   "bridge_canal": "no additional MP; demolishable, repairable by the Allied Engineer only [12.16/13.1]",
+   "road": "1/2 MP road hex to adjacent road hex through a road hexside, regardless of hex terrain [5.22]",
+   "trail": "1 MP trail hex to adjacent trail hex through a trail hexside, regardless of hex terrain [5.23]"
+  }
+ },
+ "movement": {
+  "sequence": "[4.1] GT = First Player-Turn (Movement Phase then Combat Phase) then Second Player-Turn then GT marker advance; Allied player is First Player [18.17]",
+  "basic": "[5.0/5.21] 1 MP per clear hex, terrain per TEC, hexside costs are IN ADDITION to hex costs, costs cumulative [5.21]; may not enter without sufficient MP for hex + hexside [5.25]; MA never exceeded, no accumulation/transfer [5.13]",
+  "enemy_hex": "[5.12] never enter a hex containing an enemy unit",
+  "zoc_exit": "[5.14/6.13] a unit may NEVER exit an enemy-controlled hex during any Movement Phase - only retreat/advance as a combat result, or removal of the exerting unit",
+  "vehicle_classes": "[5.24] armored, reconnaissance, mechanized and self-propelled artillery units may never enter a rough, broken or forest (woods) hex, or pass through a river or stream hexside, EXCEPT through road or trail hexsides; if forced to retreat in violation they are eliminated instead",
+  "stacking": "[5.31] a friendly unit may move THROUGH friendly hexes at no cost but may not END the Movement or Combat Phase stacked - STACKING IS PROHIBITED (sole exceptions: one airborne/glider unit with the Engineer 13.24; DZ counters stack freely 15.35)",
+  "supply": "[5.16] there are no supply rules; isolation has no effect",
+  "zoc": "[6.0] six surrounding hexes; all units must cease movement on entering an enemy-controlled hex; [6.11] exerted at all times by all units; [6.12] no extra MP to enter; [6.31] into all terrain except hexsides prohibited to all unit types; [6.32] vehicle-class ZOCs DO extend into broken/rough/woods and those units may attack into them; [6.33] ZOC never extends through non-bridge river hexsides (ferries are non-bridge); ZOC does extend across non-bridge stream hexsides",
+  "city_is_town": "[11.0] City hexes are treated exactly like Town hexes except the 11.1 retreat-reduction benefit"
+ },
+ "combat": {
+  "mandatory": "[7.0] combat between adjacent opposing units is mandatory; [7.11] every non-phasing unit with a phasing unit adjacent must be attacked; [7.12] all phasing units ending movement in an EZOC must attack, and all adjacent friendly units participate; [7.21] a phasing unit in the ZOC of more than one enemy must attack all those not engaged by some other attacking unit; [7.14] each unit attacks once and is attacked once per Combat Phase; [7.15] non-artillery only attack adjacent; [6.33] non-artillery may never attack across non-bridge river hexsides",
+  "multi_hex": "[7.22/7.23] units in different hexes may combine against a single hex if all attackers are adjacent to (or in range of) it; single combat vs multiple defenders requires ALL attacking units adjacent to ALL defending units (barraging artillery exempt)",
+  "unity": "[7.3] attack/defense strengths are unitary - never divided among combats",
+  "terrain": "[7.41] defender only benefits from terrain; [7.42] stream hexside benefit only if ALL attackers attack across stream hexsides; [7.44] most advantageous terrain applies; [7.45] multiple defenders on different terrain lines - all benefit from the line most favorable to the defender",
+  "diversionary": "[7.51] poor-differential holding attacks legal; [7.52] the differential of an attack may NEVER be voluntarily reduced",
+  "retreats": "[7.7] owning player moves his units the indicated number of hexes away from the combat position, immediately; eliminated if unable; [7.71] first hex may leave an EZOC, thereafter never enter one; friendly units do NOT negate EZOC for retreats; [7.72] never across prohibited hexsides (incl. 5.24 class prohibitions); [7.73] through vacant hexes where possible, displacing friends only if no other route; [7.74] must end the full indicated distance away - a partial retreat eliminates the unit in the last hex reached",
+  "displacement": "[7.81] displaced friend moves one hex as if retreating, chains allowed [7.82]; if displacement would eliminate the displaced unit the RETREATING unit is eliminated instead; displaced artillery that has not yet fired may not fire this phase; a hex the phasing player intended to barrage may not be attacked after a retreating unit displaces into it [7.82-second]",
+  "advance": "[7.91] retreating/eliminated enemies leave a Path of Retreat; ANY OR ALL victorious adjacent participating units may advance along it; [7.92] may stop anywhere along it; [7.93] ignore EZOC; [7.94] non-adjacent artillery never advances; [7.95] may not stray from the path; [7.96] exercised immediately, before any other combat resolution, never forced; advanced units may neither attack nor be attacked that phase; [7.97] example: a 3-hex retreat may be followed by up to three victorious units",
+  "city": "[11.1] units occupying/entering/retreating into City hexes reduce all remaining retreat results by TWO hexes: D1/D2/Br/A1/A2 may become no-effect at the owner's option; D3 retreats at least 1, D4 at least 2; eliminations unaffected; airborne artillery receives NO reduction; [11.2] when surrounded (all six adjacent hexes enemy-occupied or enemy-controlled) only Allied airborne and glider units keep the benefit; attacks on city hexes use the Town CRT line"
+ },
+ "artillery": {
+  "factors": "[2.31/2.32] artillery: Barrage Strength - FPF Strength - Range Allowance / Defense Strength - Movement Allowance; range excludes firer's hex, includes target's [8.12/2.32]",
+  "barrage": "[8.11] may attack non-adjacent enemies within range, never forced; NO Line of Sight restrictions [8.61]; [8.13] barraging attacks a single hex except in combined attacks; [8.14] barraging artillery suffers no combat results; [8.15] attacks solely by artillery and/or GSP: only D2, D3, D4, De affect the defender",
+  "combined": "[8.21/8.22] barrage may join adjacent attacks (combined attack); needs range to only one of the defending hexes",
+  "adjacent": "[8.31] artillery adjacent to an enemy MUST participate in an attack using its Barrage Strength; [8.33] suffers all combat results when adjacent; [8.34] artillery adjacent only across river hexsides is not forced, may barrage others, and suffers no results when attacking across a river hexside",
+  "fpf": "[8.41] non-phasing artillery may add FPF to ONE friendly defending unit if: not successfully attacked this Combat Phase, no adverse result in the previous Combat Phase, not displaced, not adjacent to an enemy (except across a river); [8.42] range counted to the FRIENDLY unit's hex; [8.43] FPF adds to the defense strength; [8.44] the artillery neither benefits nor suffers from the result; [8.45] no FPF for a defender attacked solely by artillery/GSP; [8.46] each artillery unit uses FPF once per GAME-TURN; [8.0] a unit may use Barrage AND FPF in the same Game-Turn",
+  "defense": "[8.5] attacked artillery defends with its Defense Strength",
+  "terrain": "[8.62] defenders get full HEX terrain benefit vs artillery; hexside benefits only against combined attacks whose non-artillery components all attack across the hexside type",
+  "arnhem_restrictions": "[14.11] only the Allied player receives GSP, usable as Barrage or FPF only within THREE hexes of an Allied NON-AIRBORNE unit; [14.12] no more than TWO artillery units per single combat for either barrage or FPF (no limit on GSP)"
+ },
+ "ground_support": "[9.0] GSP allotted per Game-Turn by the scenario; function exactly as artillery (barrage when phasing, FPF when not); [9.11] 1 GSP = 1 strength point; [9.12] split freely between targets; [9.13] unlimited range (14.11 overrides for Arnhem: within 3 hexes of a non-airborne Allied unit); [9.14] never accumulated - unused points are lost",
+ "bridge_demolition": {
+  "cite": "[12.0-12.17]",
+  "trigger": "at the instant the FIRST Allied unit moves into a hex of which a Canal or Railroad Bridge forms a side, the German player MAY (his option, never forced) attempt demolition - immediately, no matter what the phase [12.11/12.12]",
+  "roll": "die 1-2 demolishes [12.12]; failure = the bridge is intact for the REST OF THE GAME, no further attempt ever [12.14]",
+  "effect": "demolished bridge hexside becomes a normal Canal or River hexside immediately [12.13]",
+  "scope": "only Canal and Railroad bridges; Highway bridges over rivers NEVER demolishable [12.15]; all bridges' movement effects identical [12.15]",
+  "repair": "only Canal bridges, only by the Allied Engineer [12.16]; railroad bridges never repaired",
+  "bookkeeping": "[12.17] players record demolished bridges - the engine state carries this"
+ },
+ "engineer": {
+  "cite": "[13.0-13.3]",
+  "repair": "[13.1] Engineer stationary adjacent to a demolished Canal Bridge hexside, free of EZOC, for one entire GERMAN player-turn -> repaired for the rest of the game; may repair as many bridges as it is adjacent to in that turn",
+  "crossing": "[13.21] Engineer adjacent to a River hexside, expending no MP that Allied player-turn and free of EZOC, lets AIRBORNE AND GLIDER units (not airborne artillery [13.23]) cross the river through its hex in that or subsequent Movement Phases; [13.22] crossing unit passes through the Engineer's hex to the hex across the river (or vice versa), paying terrain cost, no river hexside charge; [13.23] may cross into an enemy-controlled hex",
+  "assault": "[13.24] ONE airborne/glider unit may end the Movement Phase stacked with the Engineer and MUST attack one adjacent enemy across an adjacent river hexside, resolved on the STREAM line; if unable to advance across the river after combat it is eliminated (special exception to no-stacking and no-attack-across-river)",
+  "retreat_bar": "[13.25] Allied units never retreat after combat through ANY river hexside or out of the Engineer's hex (eliminated instead); German units never advance after combat across a river hexside",
+  "replacement": "[13.3] eliminated Engineer re-enters on the following Allied Movement Phase at 0105 or 0106; the destroyed unit counts for German VP"
+ },
+ "reinforcements": {
+  "cite": "[15.0-15.4]",
+  "ground_entry": "[15.11-15.13] entry hex costs per Terrain Key; road-entry columns pay road rate for hypothetical off-map road hexes: lead unit 1/2 MP, second 1, third 1.5, ... (worked example 15.13); [15.14] may arrive any time during the Movement Phase, then move normally",
+  "blocked": "[15.21] never enter an enemy-occupied hex; may enter an EZOC but stop there; [15.22] if and only if the scheduled hex is enemy-occupied or friendly-occupied-in-EZOC, enter at the nearest unblocked mapedge hex toward the nearest friendly unit; [15.23/15.24] may be withheld to a later turn but must use the scheduled hex or 15.22 alternate; [15.25] off-map reinforcements have no effect on play",
+  "airborne": "[15.31] listed as arriving within ONE hex of a specified hex, allied player's choice, ONE UNIT PER HEX; may arrive in an EZOC; arrival in an enemy-occupied hex = eliminated; [15.32] MA is 3 on the arrival turn (considered to have expended 4 MP); [15.33] may not land on ANY occupied hex (friendly or enemy) - eliminated if forced; [15.34] delay only under the (optional) Weather rules",
+  "dz_counters": "[15.35] DZ counters are not units: no ZOC, no strength, both sides move through/stack freely, never destroyed, may be overrun; they anchor airborne LOC [17.32]; [15.36] Historical Scenario: placed on the specified hexes",
+  "german_exit": "[15.4] only the German player exits; pays the exit-hex-terrain-equivalent MP for the imaginary off-map hex; [15.41] west edge between 0601 and 2301 inclusive, east edge between 0126 and 2726 inclusive; [15.42] exited units return as reinforcements on any subsequent GT on the SAME edge segment they left by; [15.43] exit only in the German Movement Phase; exit by combat result = eliminated"
+ },
+ "weather": "[16.0] OPTIONAL in the Historical Scenario (18.17: only if both players agree) - NOT USED in this encoding; the base Historical Scenario uses the fixed 18.13 arrival hexes and the fixed 18.16 GSP allotment",
+ "victory": {
+  "cite": "[17.0-17.4]",
+  "allied_vp": "[17.11] 1 VP per German unit eliminated; 5 VP per non-airborne non-glider unit north of the Waal (2726-3005) at the END OF EACH GT with a LOC; 10 VP per non-airborne non-glider unit north of the Neder Rijn (3706-3424) at the END OF THE GAME with a LOC off the map",
+  "german_vp": "[17.12] 5 VP per Allied unit destroyed; 3 VP at the end of each GERMAN player-turn per Allied unit unable to trace a LOC [17.35]",
+  "loc_ground": "[17.31] non-airborne Allied units trace contiguous hexes off the south edge at 0105/0106; once the line enters a trail hex all remaining hexes connect by road or trail hexsides; once it enters a road hex, by road hexsides only",
+  "loc_airborne": "[17.32] airborne units (all that entered as airborne reinforcements, except Polish) trace max SEVEN hexes to the DZ counter matching their DIVISIONAL designation, any terrain",
+  "loc_common": "[17.33] never into/through enemy units or EZOC; friendly units DO negate EZOC for LOC; [17.34] never through unbridged river or stream hexsides",
+  "exempt": "[17.36] Polish and all German units are never subject to LOC",
+  "levels": "[17.4] ratio German VP : Allied VP - >=3.0 German Strategic; 2.01-2.99 German Tactical; 2.0 Draw; 1.0-1.99 Allied Tactical; <=1.0 Allied Strategic"
+ },
+ "scenario_historical": {
+  "cite": "[18.1] Scenario I: Historical Scenario; Allied is First Player, 10 Game-Turns [18.17]",
+  "german_initial": [
+   {"desig": "Krft", "hex": "3722", "factors": "3-3-7", "class": "infantry"},
+   {"desig": "2/9SS", "hex": "3724", "factors": "4-4-7", "class": "mech", "note": "OCR printed '2/98' - counter art reads 2/9SS 4-4-7 mech"},
+   {"desig": "9SS Recon", "hex": "3322", "factors": "2-2-12", "class": "recon"},
+   {"desig": "Grsn", "hex": "0702", "factors": "2-2-12", "class": "mech"},
+   {"desig": "1/406", "hex": "2325", "factors": "2-2-7", "class": "infantry"},
+   {"desig": "2/406", "hex": "2025", "factors": "2-2-7", "class": "infantry"},
+   {"desig": "BrDf", "hex": "2621", "factors": "2-2-7", "class": "infantry"}
+  ],
+  "dz_counters": [
+   {"desig": "101 DZ", "hex": "1007"}, {"desig": "82 DZ", "hex": "2323"}, {"desig": "1 DZ", "hex": "3919"}
+  ],
+  "allied_airborne": {
+   "cite": "[18.13] placed within one hex of the listed hex, one unit per hex [15.31]",
+   "gt1": [
+    {"units": ["1/502", "2/502", "3/502"], "target": "1004", "factors": "2-2-7", "division": "101"},
+    {"units": ["1/506", "2/506", "3/506"], "target": "0804", "factors": "2-2-7", "division": "101"},
+    {"units": ["1/501", "2/501", "3/501"], "target": "1308", "factors": "2-2-7", "division": "101"},
+    {"units": ["1/508", "2/508", "3/508"], "target": "2223", "factors": "2-2-7", "division": "82"},
+    {"units": ["1/505", "2/505", "3/505"], "target": "2023", "factors": "2-2-7", "division": "82"},
+    {"units": ["1/504", "2/504", "3/504"], "target": "2117", "factors": "2-2-7", "division": "82"},
+    {"units": ["1/1", "2/1", "3/1"], "target": "3719", "factors": "2-2-7", "division": "1"},
+    {"units": ["2S/1", "7K/1", "1B/1"], "target": "3718", "factors": "2-2-7", "division": "1", "class": "glider"},
+    {"units": ["1/82"], "target": "2223", "factors": "2-1-4/1-7", "division": "82", "class": "ab_artillery"},
+    {"units": ["1/1Lt"], "target": "3718", "factors": "2-1-4/1-7", "division": "1", "class": "ab_artillery"}
+   ],
+   "gt2": [
+    {"units": ["10/4", "11/4", "156/4"], "target": "3817", "factors": "2-2-7", "division": "1"},
+    {"units": ["2/1Lt"], "target": "3817", "factors": "2-1-4/1-7", "division": "1", "class": "ab_artillery"}
+   ],
+   "gt3": [
+    {"units": ["1/327", "2/327"], "target": "1007", "factors": "2-3-7", "division": "101", "class": "glider"},
+    {"units": ["1/101", "2/101"], "target": "1007", "factors": "2-1-4/1-7", "division": "101", "class": "ab_artillery"},
+    {"units": ["2/82"], "target": "2223", "factors": "2-1-4/1-7", "division": "82", "class": "ab_artillery"}
+   ],
+   "gt5": [
+    {"units": ["1/Pol", "2/Pol"], "target": "3220", "factors": "2-2-7", "division": "1", "class": "polish"}
+   ],
+   "gt7": [
+    {"units": ["1/325", "2/325"], "target": "2223", "factors": "2-3-7", "division": "82", "class": "glider", "note": "OCR printed '2/235' - counter art reads 2/325"},
+    {"units": ["3/Pol"], "target": "2118", "factors": "2-2-7", "division": "1", "class": "polish"}
+   ]
+  },
+  "allied_ground": {
+   "cite": "[18.14] enter at 0105 or 0106 (see 15.1)",
+   "gt2": [
+    {"desig": "2I/5", "factors": "4-3-10", "class": "armor", "note": "OCR '21/5' = 2I/5 (2nd Irish Guards), counter-verified"},
+    {"desig": "3I/32", "factors": "3-3-7", "note": "OCR '31/32' = 3I/32, counter-verified"},
+    {"desig": "2D/231", "factors": "3-3-7"},
+    {"desig": "55", "factors": "4-2-7/3-10", "class": "sp_artillery"},
+    {"desig": "Engineers", "factors": "3-3-10", "class": "engineer"}
+   ],
+   "gt3": [
+    {"desig": "15/19", "factors": "2-1-4/3-10", "class": "sp_artillery"},
+    {"desig": "44", "factors": "2-1-4/3-10", "class": "sp_artillery"},
+    {"desig": "1C/5", "factors": "4-3-10", "class": "armor", "note": "OCR '1C/S' = 1C/5 (1st Coldstream Guards)"},
+    {"desig": "2G/5", "factors": "4-3-10", "class": "armor"},
+    {"desig": "32", "factors": "5-5-7"},
+    {"desig": "129", "factors": "5-5-7"},
+    {"desig": "153", "factors": "4-2-7/2-6", "class": "artillery"}
+   ],
+   "gt4": [
+    {"desig": "130", "factors": "5-5-7"}, {"desig": "214", "factors": "5-5-7"}
+   ],
+   "gt5": [
+    {"desig": "94", "factors": "4-2-7/2-6", "class": "artillery"},
+    {"desig": "112", "factors": "4-2-7/2-6", "class": "artillery"},
+    {"desig": "179", "factors": "4-2-7/2-6", "class": "artillery"}
+   ],
+   "gt8": [
+    {"desig": "3/29", "factors": "4-3-10", "class": "armor"}
+   ]
+  },
+  "german_reinforcements": {
+   "cite": "[18.15] enter on or between the listed mapedge hexes",
+   "gt1": [
+    {"desig": "1/vT", "factors": "3-3-7", "entry": "3907-3916"},
+    {"desig": "2/vT", "factors": "3-3-7", "entry": "3907-3916"},
+    {"desig": "1/9SS", "factors": "5-5-10", "class": "mech", "entry": "3925", "note": "OCR 'S-5-10' = 5-5-10, counter-verified"},
+    {"desig": "3/9SS", "factors": "4-4-7", "class": "mech", "entry": "3925"},
+    {"desig": "1/10SS Arty", "factors": "3-2-7/3-7", "class": "artillery", "entry": "3326", "note": "schedule prints '1/10S' on the artillery line"},
+    {"desig": "10SS Recon", "factors": "2-2-12", "class": "recon", "entry": "3326", "note": "schedule prints '10S' 2-2-12"},
+    {"desig": "1/59", "factors": "3-3-7", "entry": "0701-0901"},
+    {"desig": "2/59", "factors": "3-3-7", "entry": "0701-0901"}
+   ],
+   "gt2": [
+    {"desig": "3/vT", "factors": "3-3-7", "entry": "3907-3916"},
+    {"desig": "2107 P", "factors": "5-3-10", "class": "armor", "entry": "0726", "note": "schedule: '5-3-10 Hex: 2107 (0726)' - the armor variant, counter-verified"},
+    {"desig": "2107 M", "factors": "4-4-10", "class": "mech", "entry": "0726", "note": "schedule: '4-4-10 Hex: 2107 (0726)' - the mech variant, counter-verified"}
+   ],
+   "gt3": [
+    {"desig": "1/6PT", "factors": "2-3-7", "entry": "0126-0825", "note": "counter prints 1/6P"},
+    {"desig": "2/6PT", "factors": "2-3-7", "entry": "0126-0825", "note": "counter prints 2/6P"},
+    {"desig": "180", "factors": "2-3-7", "entry": "0126-0825"},
+    {"desig": "9SS Arty", "factors": "3-2-7/3-7", "class": "artillery", "entry": "3925", "note": "schedule prints '9S' on the artillery line"},
+    {"desig": "2/10SS", "factors": "3-4-7", "class": "mech", "entry": "3326"},
+    {"desig": "Hnke", "factors": "4-3-10", "class": "armor", "entry": "0126-0825"},
+    {"desig": "Wltr", "factors": "2-2-7/2-7", "class": "artillery", "entry": "0126-0825"},
+    {"desig": "1/1PT", "factors": "2-2-7", "entry": "1726-2726", "note": "counter prints 1/1P"},
+    {"desig": "2/1PT", "factors": "2-2-7", "entry": "1726-2726", "note": "counter prints 2/1P"}
+   ],
+   "gt4": [
+    {"desig": "1/10SS", "factors": "4-4-10", "class": "mech", "entry": "3326"},
+    {"desig": "2/10SS Arty", "factors": "3-2-7/3-7", "class": "artillery", "entry": "3326"}
+   ],
+   "gt5": [
+    {"desig": "1/Hbr", "factors": "2-3-7", "entry": "0701-2301"},
+    {"desig": "2/Hbr", "factors": "2-3-7", "entry": "0701-2301"},
+    {"desig": "Hbr", "factors": "5-5-10", "class": "mech", "entry": "0701-2301"},
+    {"desig": "Hber Arty", "factors": "2-2-7/2-7", "class": "artillery", "entry": "0701-2301"},
+    {"desig": "3/10SS", "factors": "3-4-7", "class": "mech", "entry": "3326"}
+   ],
+   "gt7": [
+    {"desig": "1/6", "factors": "3-3-7", "entry": "0901-2301"},
+    {"desig": "2/6", "factors": "3-3-7", "entry": "0901-2301"},
+    {"desig": "1/2", "factors": "1-2-7", "entry": "0901-2301"}
+   ],
+   "gt8": [
+    {"desig": "Jngw", "factors": "2-3-7", "entry": "0901-2301"}
+   ]
+  },
+  "allied_gsp": {"1": 0, "2": 3, "3": 7, "4": 3, "5": 3, "6": 0, "7": 3, "8": 0, "9": 0, "10": 0, "cite": "[18.16]"}
+ },
+ "module_deviations_worksheet": [
+  "The module's 'Arnhem Historical' setup PRE-PLACES the GT1 airborne reinforcements STACKED on their 18.13 target hexes (e.g. 1/502+2/502+3/502 all in 1004) - the printed rules drop them as GT1 reinforcements, player-placed within one hex of the target, ONE PER HEX [15.31], and stacking is prohibited [5.31]. Our scenario holds them as GT1 airborne reinforcements per the rules.",
+  "The module setup also pre-places 1/82 at 2223 (stacked with the 508 battalions) and 1/1Lt at 3718 - same deviation, same handling.",
+  "The module setup parks all later-turn reinforcements in map-margin holding boxes (rows 00-02, cols 30-37); our scenario carries them in the reserve pool with due turns instead.",
+  "Piece display names collide ('A 1', 'A 2' appear on many counters) - image filenames are the unique keys; German pieces have NO side prefix distinct from Allied ('A ' = Arnhem battle prefix, both sides)."
+ ],
+ "binding_corrections": {
+  "note": "counter_stats_by_image.json entries corrected after the 2026-07-11 contact-sheet pass (all 95 front images read by eye; mastermind's ambiguous_bind flags honored per the 2026-07-09 brief)",
+  "corrections": [
+   {"image": "A 1-1Lt.png", "was": "1/1 inf 2-2-7", "is": "1/1Lt AIRBORNE ARTILLERY 2-1-4/1-7 (British)"},
+   {"image": "A 1-1 Lt Fire.png", "was": "1/1 inf 2-2-7", "is": "1/1Lt airborne artillery, fired side"},
+   {"image": "A 1-2Lt.png", "was": "2/1 inf 2-2-7", "is": "2/1Lt AIRBORNE ARTILLERY 2-1-4/1-7 (British)"},
+   {"image": "A 1-2 Lt Fire.png", "was": "2/1 inf 2-2-7", "is": "2/1Lt airborne artillery, fired side"},
+   {"image": "A 1-2.png", "was": "2/1 British 2-2-7", "is": "1/2 GERMAN infantry 1-2-7 (GT7 reinforcement)"},
+   {"image": "A 2107 M.png", "was": "2107 5-3-10", "is": "2107 (M) mechanized 4-4-10"},
+   {"image": "A 1-6P.png", "was": "1/6 3-3-7", "is": "1/6PT German infantry 2-3-7"},
+   {"image": "A 2-6P.png", "was": "2/6 3-3-7", "is": "2/6PT German infantry 2-3-7"},
+   {"image": "A 2-1PT.png", "was": "ambiguous side", "is": "2/1PT GERMAN infantry 2-2-7 (Balkenkreuz on art)"},
+   {"image": "A 1-1P.png", "was": "1/1 ambiguous", "is": "1/1PT GERMAN infantry 2-2-7"},
+   {"image": "A Engineers.png", "was": "marker, no factors", "is": "the Allied ENGINEER unit 3-3-10 [13.0/18.14] - a real combat unit with special functions, counter-verified (British, engineer symbol)"},
+   {"image": "A 55.png", "was": "2-1-4/3-10", "is": "55 SP artillery 4-2-7/3-10 - counter-verified (top line reads 4-2-7), matches the 18.14 GT2 schedule"},
+   {"image": "A 15-19.png", "was": "factors '3-10' (top line dropped)", "is": "15/19 SP artillery 2-1-4/3-10 - counter-verified, matches the 18.14 GT3 schedule"}
+  ],
+  "confirmed_harmless_ties": "A 1-1-1/A 1-1-2/A 1-1-2S (British 1 Para Bde + S.Staffs, all 2-2-7), A 1-4-10 (10/4 2-2-7), A 2107 P (5-3-10 armor), A 1-6/A 2-6 (1/6 & 2/6 3-3-7)"
+ }
+}

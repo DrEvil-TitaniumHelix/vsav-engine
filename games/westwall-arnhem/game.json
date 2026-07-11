@@ -1,5 +1,11 @@
 {
  "name": "Arnhem - Operation Market-Garden (SPI Westwall quad, 1976)",
+ "policy_ai": {
+  "kind": "westwall",
+  "engine": "engine/ai_westwall.py",
+  "validated": "games/westwall-arnhem/validate_ai.py",
+  "note": "Tier-3: transparent policy AI, submits only through the gate; 5-seed AI-vs-AI campaigns complete all 10 GTs (~100 battles each) and replay byte-exact through verify_game. Declared-weak (no German map-exit play, no Engineer assault stacks, no diversionary attacks, no multi-turn plans). Outcomes are strongly German-favored across seeds: the printed VP schedule (3 VP per Allied LOC failure per turn, 5 VP per Allied unit destroyed vs 1 per German) punishes the simple Allied corridor policy hard; the historical result was also a German win. Both seats run the same policy - beta-fine per the AK/B&G precedent."
+ },
  "map_name": "Main Map",
  "board_name": "Arnhem",
  "save_key": "a3",
