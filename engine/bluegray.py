@@ -711,6 +711,9 @@ class BlueGrayGame:
         ezoc = self.game.zoc_hexes(board, enemy)
         epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
         src = (u["col"], u["row"])
+        # units that already retreated in the CURRENT battle's displacement
+        # chain (7.82) - they cannot be displaced a second time (cycle guard)
+        chain = (self.s.get("pending") or {}).get("chain", [])
         open_h, disp_h = [], []
         for nb in self.game.neighbors(*src):
             if not self.game.on_map(*nb) or not self._crossable(src, nb):
@@ -734,8 +737,12 @@ class BlueGrayGame:
                 continue
             elif len(friends) < int(self.game.stacking["max"]):
                 open_h.append(nb)
-            else:
+            elif any(v["pid"] not in chain for v in friends):
                 disp_h.append(nb)
+            # else: every occupant was already displaced in THIS battle's
+            # chain - displacing again would cycle forever. A chain that
+            # cannot reach an open hex ends in elimination, not recursion
+            # [7.81/7.82]; the hex is simply not a retreat path.
         return open_h, disp_h
 
     def _propose_retreat(self, side, action):
@@ -1105,16 +1112,22 @@ class BlueGrayGame:
             ev += self._eliminate([pid], "no retreat open [7.72]")
         else:
             # displacement (7.8): friendly full stack - displaced unit must
-            # itself retreat; chains resolved as further pendings
+            # itself retreat; chains resolved as further pendings. A unit
+            # already in this battle's chain is never displaced again
+            # (7.81/7.82 cycle guard - _retreat_hexes excludes such hexes,
+            # this pick mirrors it).
             friends = [v for v in s["units"].values()
                        if v["pid"] != pid and (v["col"], v["row"]) == dest
                        and v["side"] == u["side"]]
             if len(friends) >= int(self.game.stacking["max"]):
-                disp = friends[0]
+                chain = p.setdefault("chain", [])
+                disp = next((v for v in friends if v["pid"] not in chain),
+                            friends[0])
                 p["units"].append(disp["pid"])
                 ev.append({"displaced": disp["slot"], "by": u["slot"]})
             u["col"], u["row"] = dest
             s["retreated_phase"].append(pid)
+            p.setdefault("chain", []).append(pid)
             ev.append({"retreat": u["slot"], "to": list(dest)})
         p["units"].remove(pid)
         if not p["units"]:
