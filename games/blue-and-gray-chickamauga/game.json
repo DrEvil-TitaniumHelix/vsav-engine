@@ -37,7 +37,8 @@
   "report",
   "sendto",
   "rotate",
-  "markmoved"
+  "markmoved",
+  "prototype"
  ],
  "sides": {
   "order": [
@@ -51,11 +52,86 @@
   "default": "Confederate",
   "detect_tokens": {
    "Union": [
-    "/",
-    "Union Supply Train",
-    "XIV Artillery",
-    "XX Artillery",
-    "XXI Artillery"
+    "1-1 cav c",
+    "1-1-res c",
+    "1-1-xiv c",
+    "1-1-xxi c",
+    "1-2 cav c",
+    "1-2-xiv c",
+    "1-2-xx c",
+    "1-2-xxi c",
+    "1-3-xiv c",
+    "1-3-xx c",
+    "1-3-xxi c",
+    "1/1 Cavalry c",
+    "1/1/Res c",
+    "1/1/XIV c",
+    "1/1/XXI c",
+    "1/2 Cavalry c",
+    "1/2/XIV c",
+    "1/2/XX c",
+    "1/2/XXI c",
+    "1/3/XIV c",
+    "1/3/XX c",
+    "1/3/XXI c",
+    "2-1 cav c",
+    "2-1-res c",
+    "2-1-xiv c",
+    "2-1-xx c",
+    "2-2 cav c",
+    "2-2-res c",
+    "2-2-xiv c",
+    "2-2-xx c",
+    "2-2-xxi c",
+    "2-3-xiv c",
+    "2-3-xx c",
+    "2-3-xxi c",
+    "2-4-xiv c",
+    "2/1 Cavalry c",
+    "2/1/Res c",
+    "2/1/XIV c",
+    "2/1/XX c",
+    "2/2 Cavalry c",
+    "2/2/Res c",
+    "2/2/XIV c",
+    "2/2/XX c",
+    "2/2/XXI c",
+    "2/3/XIV c",
+    "2/3/XX c",
+    "2/3/XXI c",
+    "2/4/XIV c",
+    "3-1 cav c",
+    "3-1-xiv c",
+    "3-1-xx c",
+    "3-1-xxi c",
+    "3-2-xiv c",
+    "3-2-xx c",
+    "3-2-xxi c",
+    "3-3-xiv c",
+    "3-3-xx c",
+    "3-3-xxi c",
+    "3-4-xiv c",
+    "3/1 Cavalry c",
+    "3/1/XIV c",
+    "3/1/XX c",
+    "3/1/XXI c",
+    "3/2/XIV c",
+    "3/2/XX c",
+    "3/2/XXI c",
+    "3/3/XIV c",
+    "3/3/XX c",
+    "3/3/XXI c",
+    "3/4/XIV c",
+    "Union Supply Train c",
+    "Wilder c",
+    "XIV Artillery c",
+    "XX Artillery c",
+    "XXI Artillery c",
+    "train c",
+    "wilder c",
+    "xiv art c",
+    "xx art c",
+    "xxi art c"
    ]
   },
   "note": "Union units carry brigade/division/corps designations with '/' (2.4) plus the named corps artillery and the Train; Confederate units are commander names (2.4) - they fall through to the default. Scenario units carry explicit sides; tokens are the Tier-0/ingest fallback."
@@ -191,6 +267,22 @@
     ]
    ],
    [
+    "anderson6 c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "manigault c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
     "Anderson c",
     [
      4,
@@ -224,6 +316,118 @@
    ],
    [
     "Walthall c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "armstrng c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "davidson c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "harrison c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "robertsn c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "walthall c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1-1 cav c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1-1-res c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "1-1-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1-1-xxi c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1-2 cav c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1-2-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1-2-xxi c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1-3-xiv c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1-3-xxi c",
     [
      4,
      4,
@@ -287,6 +491,86 @@
     ]
    ],
    [
+    "2-1 cav c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-1-res c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-1-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-2 cav c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-2-res c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-2-xiv c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-2-xxi c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-3-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-3-xxi c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-4-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
     "2/1/Res c",
     [
      4,
@@ -344,6 +628,70 @@
    ],
    [
     "2/4/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-1 cav c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3-1-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-1-xxi c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3-2-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-2-xxi c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-3-xiv c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-3-xxi c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3-4-xiv c",
     [
      5,
      5,
@@ -471,6 +819,118 @@
     ]
    ],
    [
+    "andersn c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "benning c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "clayton c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "deshler c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "forrest c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "jackson c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "kershaw c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "liddell c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "russell c",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "xiv art c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "xxi art c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "1 arty c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "1-2-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1-3-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
     "1/2/XX c",
     [
      5,
@@ -480,6 +940,38 @@
    ],
    [
     "1/3/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2 arty c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2-1-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-2-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2-3-xx c",
     [
      5,
      5,
@@ -504,6 +996,38 @@
    ],
    [
     "2/3/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3 arty c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-1-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-2-xx c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3-3-xx c",
     [
      5,
      5,
@@ -607,6 +1131,94 @@
     ]
    ],
    [
+    "fulton c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "gracie c",
+    [
+     7,
+     7,
+     6
+    ]
+   ],
+   [
+    "hmphry c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "mcnair c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "morgan c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "rodney c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "strahl c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "wilder c",
+    [
+     8,
+     8,
+     6
+    ]
+   ],
+   [
+    "wilson c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "wright c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "xx art c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
     "Adams c",
     [
      4,
@@ -703,6 +1315,94 @@
     ]
    ],
    [
+    "bates c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "brown c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "crews c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "ector c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "gregg c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "kelly c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "maney c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "scott c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "smith c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "train c",
+    [
+     0,
+     1,
+     6
+    ]
+   ],
+   [
+    "trigg c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
     "Deas c",
     [
      6,
@@ -743,7 +1443,63 @@
     ]
    ],
    [
+    "deas c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "gist c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "helm c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "polk c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "wood c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
     "Law c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "ams c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "law c",
     [
      4,
      4,
@@ -848,35 +1604,57 @@
   "cite": "[16.1] exit via 0101 and 0111 along the roads leading off the map (RESOLVED from map art - the printed rules' '0110' is a rules/map mismatch, see source_defects); [16.2] exiting consumes 1 MP; [16.3] exited units never return; [16.6] no exit as a retreat - the unit is eliminated instead; [16.7] unlimited units per exit hex"
  },
  "scenario": "scenario_chickamauga.json",
+ "setup_save": "setup.vsav",
  "classes": {
   "train": [
-   "Union Supply Train c"
+   "Union Supply Train c",
+   "train c"
   ],
   "artillery": [
+   "1 Artillery c",
+   "1 arty c",
+   "2 Artillery c",
+   "2 arty c",
+   "3 Artillery c",
+   "3 arty c",
    "XIV Artillery c",
    "XX Artillery c",
    "XXI Artillery c",
-   "1 Artillery c",
-   "2 Artillery c",
-   "3 Artillery c"
+   "xiv art c",
+   "xx art c",
+   "xxi art c"
   ],
   "cavalry": [
-   "1/2 Cavalry c",
+   "1-1 cav c",
+   "1-2 cav c",
    "1/1 Cavalry c",
+   "1/2 Cavalry c",
+   "2-1 cav c",
+   "2-2 cav c",
    "2/1 Cavalry c",
-   "3/1 Cavalry c",
    "2/2 Cavalry c",
+   "3-1 cav c",
+   "3/1 Cavalry c",
    "Armstrong c",
+   "Crews c",
    "Davidson c",
    "Forrest c",
-   "Scott c",
-   "Crews c",
-   "Russell c",
-   "Morgan c",
    "Harrison c",
-   "Rodney c"
+   "Morgan c",
+   "Rodney c",
+   "Russell c",
+   "Scott c",
+   "armstrng c",
+   "crews c",
+   "davidson c",
+   "forrest c",
+   "harrison c",
+   "morgan c",
+   "rodney c",
+   "russell c",
+   "scott c"
   ],
-  "note": "artillery = the six bombardment-capable units (19.12: three per side); cavalry listed for completeness (moves identically at MA 6 in the original; the 4/6 split is Stafford's revision); train = the special Union rear-echelon unit (18.0). Everything else is infantry."
+  "note": "generated by make_scenario.py in both name spaces (gate slot names + board image basenames); artillery = the six bombardment units [19.12], train = 18.0, everything else infantry (cavalry move identically at MA 6 in the original)"
  },
  "combat": {
   "provenance": "CRT transcribed independently from the 1975 rules folder scan (p8 [7.6]) and the Decision Games Deluxe reprint text (p5) - all 60 cells identical across the two printings; validate_combat.py re-runs the cross-check from rules_transcription.json on every run",

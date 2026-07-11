@@ -84,6 +84,12 @@ def build(game, scenario, out_path):
     pid = 1000000000001
     byhex = defaultdict(list)
     for u in scenario["units"]:
+        # scenario may pin the piece id (numeric only — board.py's PIECE_RE):
+        # lets a gate's unit pids equal the .vsav piece ids for mirror syncing
+        upid = None
+        if "id" in u:
+            assert str(u["id"]).isdigit(), f"piece id must be numeric: {u['id']}"
+            upid = str(u["id"])
         if "gpid" in u:
             rec = by_gpid[str(u["gpid"])]
         else:
@@ -103,7 +109,7 @@ def build(game, scenario, out_path):
         # coords. BasicPiece state is the LAST state token, so rfind is safe
         # (placeDM traits contain earlier "null;0;0;false" lookalikes); the
         # gpid field after y may be empty (VASL squads) — keep the tail as-is.
-        placed = "+/" + str(pid) + "/" + body[len("+/null/"):]
+        placed = "+/" + (upid or str(pid)) + "/" + body[len("+/null/"):]
         i = placed.rfind("null;0;0;")
         if i < 0:
             raise ValueError(f"no placeable BasicPiece state in slot {rec['name']}")
@@ -113,7 +119,7 @@ def build(game, scenario, out_path):
         if "img" in u or "name" in u:
             placed = set_basic_piece(placed, u.get("img"), u.get("name"), rec["name"])
         cmds.append(placed)
-        byhex[(x, y)].append(pid)
+        byhex[(x, y)].append(upid or str(pid))
         pid += 1
     sid = pid
     for (x, y), members in byhex.items():

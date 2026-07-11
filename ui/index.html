@@ -435,6 +435,28 @@ async function sgAction(action, side) {
 }
 function renderArrivals() {
   const box = document.getElementById('arrivals');
+  if (FLOW && FLOW.mode === 'bluegray' && !FLOW.over) {
+    const B = FLOW.bluegray || {};
+    const showR = FLOW.phase === 'movement' && ((B.due||[]).length || (B.exit_ready||[]).length || B.night);
+    if (!showR) { box.style.display = 'none'; return; }
+    let h = `<b>${sideLabel(FLOW.mover)} — reinforcements & exits</b><br>`;
+    if (B.night) h += `<span style="color:#7ec4e0">NIGHT turn — no combat, no entering enemy ZOCs [10.0]</span><br>`;
+    (B.due || []).forEach(d => {
+      h += `<div style="margin:2px 0">${d.slot} <i style="color:#9aa3ad">(GT ${d.due})</i> `;
+      d.entry.forEach(hx => {
+        h += `<button class="sidebtn" onclick='sgAction({type:"reinforce",unit:"${d.pid}",hex:[${hx}]})'>enter ${String(hx[0]).padStart(2,"0")}${String(hx[1]).padStart(2,"0")}</button> `;
+      });
+      h += `</div>`;
+    });
+    if ((B.due || []).length)
+      h += `<span class="dim">column entry: 1st unit 1 MP, 2nd 2 MP… [15.0]</span><br>`;
+    (B.exit_ready || []).forEach(u => {
+      h += `<div style="margin:2px 0">${u.slot} is on an exit hex
+            <button class="sidebtn" onclick='sgAction({type:"exit",unit:"${u.pid}"})'>Exit the map [16.1]</button></div>`;
+    });
+    box.innerHTML = h; box.style.display = '';
+    return;
+  }
   const A = FLOW && FLOW.arrivals;
   if (!A || FLOW.over) { box.style.display = 'none'; return; }
   const S = A.supply;
@@ -506,13 +528,18 @@ async function previewBattle() {
   }
   renderCombat(); render();
 }
+function bgCombatant(u) {
+  // which classed units still fight: B&G artillery/cavalry are combat units
+  // (only the Train is not); AK's classed units (markers/supply/hq) are not
+  return FLOW && FLOW.mode === 'bluegray' ? u.cls !== 'train' : !u.cls;
+}
 function toggleBattle(u, stack) {
   const C = FLOW.combat;
   if (C.pending || C.pending_rommel) { toast('settle the pending battle first [8.6]'); return; }
-  if (u.cls || !u.onmap || u.status === 'eliminated' || u.status === 'reserve' || u.status === 'at sea') return;
+  if (!bgCombatant(u) || !u.onmap || u.status === 'eliminated' || u.status === 'reserve' || u.status === 'at sea') return;
   // a click toggles the whole same-side combat stack (11.4/11.5 splits stay
   // legal through the gate/API; the panel just doesn't offer them yet)
-  const mates = (stack || [u]).filter(s => s.side === u.side && !s.cls && s.onmap
+  const mates = (stack || [u]).filter(s => s.side === u.side && bgCombatant(s) && s.onmap
                                       && s.status !== 'eliminated');
   const set = u.side === FLOW.mover ? atkSel : defSel;
   const on = set.has(u.id);
@@ -589,12 +616,25 @@ function renderCombat() {
     h += `<button class="sidebtn" onclick='submitExchange("${P.winner}")'>Remove selected</button></div>`;
   } else if (P && P.kind === 'advance') {
     h += `<div style="margin-top:6px"><b>Advance after combat</b> — optional, before the next
-          battle [16.1]: vacated ${P.hex_names.join(', ')}<br>`;
+          battle [${FLOW.mode === 'bluegray' ? '7.75' : '16.1'}]: vacated ${P.hex_names.join(', ')}<br>`;
     P.advancers.forEach(u => {
       P.hexes.forEach((hx, i) => {
-        h += `<button class="sidebtn" onclick='sgAction({type:"advance",unit:"${u.pid}",hex:[${hx}]})'>${u.slot} → ${P.hex_names[i]}</button> `;
+        h += `<button class="sidebtn" onclick='sgAction({type:"advance",unit:"${u.pid}",hex:[${hx}]}, "${P.chooser || FLOW.mover}")'>${u.slot} → ${P.hex_names[i]}</button> `;
       });
     });
+    if (P.can_decline)
+      h += `<button class="sidebtn" onclick='sgAction({type:"advance",decline:true}, "${P.chooser || FLOW.mover}")'>Decline (no advance)</button>`;
+    h += `</div>`;
+  } else if (P && P.kind === 'train_retreat') {
+    h += `<div style="margin-top:6px"><b>${P.slot}</b> is adjacent to a Confederate unit —
+          it must automatically retreat [18.11]:<br>`;
+    if (P.options.length)
+      P.options.forEach(o => {
+        h += `<button class="sidebtn" onclick='sgAction({type:"train_retreat",dest:[${o.hex}]}, "${P.chooser}")'>→ ${o.name}</button> `;
+      });
+    else
+      h += `<span style="color:#e06c5e">no road/trail hex is open</span>
+            <button class="sidebtn" onclick='sgAction({type:"train_retreat",dest:null}, "${P.chooser}")'>Destroyed [18.23]</button>`;
     h += `</div>`;
   } else {
     h += `<span class="dim">click your units, then enemy units, to build a battle
