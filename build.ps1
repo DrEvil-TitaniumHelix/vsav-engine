@@ -1,4 +1,4 @@
-# build.ps1 — one-command Windows build for The Vassal.
+﻿# build.ps1 — one-command Windows build for The Vassal.
 # Produces dist\The Vassal.exe (single file, double-click to run).
 #
 # Prereqs (one time):  pip install pywebview pyinstaller
