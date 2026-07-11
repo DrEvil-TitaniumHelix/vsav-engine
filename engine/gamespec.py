@@ -229,12 +229,14 @@ class Game:
     def move_cost(self, a, b):
         """MP cost to enter hex b from adjacent hex a, or None if prohibited.
         Hexside rules fire in spec order: prohibit short-circuits, the first
-        matching override sets the base cost, adds accumulate; otherwise the
-        base is the destination hex's terrain cost."""
+        matching override sets the base cost, adds accumulate, caps clamp the
+        terrain base downward (B&G 5.23 trail: 2 MP into forest/rough, plain
+        terrain cost when cheaper); otherwise the base is the destination
+        hex's terrain cost."""
         if not self.on_map(*b):
             return None
         f = self.side_features(a, b)
-        base, add = None, 0.0
+        base, add, cap = None, 0.0, None
         for rule in self.hexside_rules:
             if f.get(rule["feature"]) != rule["value"]:
                 continue
@@ -247,9 +249,13 @@ class Game:
                 base = float(rule["mp"])
             elif effect == "add":
                 add += float(rule["mp"])
+            elif effect == "cap":
+                cap = float(rule["mp"]) if cap is None else min(cap, float(rule["mp"]))
         if base is None:
             t = self.hex_terrain(*b)
             base = float(self.terrain_mp[t]) if t in self.terrain_mp else self.default_mp
+            if cap is not None:
+                base = min(base, cap)
         return base + add
 
     # ------------------------------------------------------------- ZOC & movement

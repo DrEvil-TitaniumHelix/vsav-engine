@@ -1,0 +1,1086 @@
+{
+ "name": "Blue & Gray: Chickamauga (SPI 1975)",
+ "map_name": "Main Map",
+ "board_name": "Chickamauga",
+ "save_key": "26",
+ "grid": {
+  "orient": "flat",
+  "dx": 95.1,
+  "dy": 120.0,
+  "x0": 7.0,
+  "y0": 48.0,
+  "stagger": true,
+  "stagger_sign": -1,
+  "odd_row_carry": 0,
+  "hexnum_digits": 2,
+  "provenance": "VERIFIED 2026-07-10: module buildFile HexGrid params; formula validated against ALL 45 at-start piece positions in 'Chickamauga Start.vsav' resolving to the 1975 deployment chart hexes (32/32 CSA, 13/14 Union; the 2 Union deviations are module setup bugs, not grid errors) - see validate_grid.py"
+ },
+ "buildfile": "../../../VassalBlueGray/extracted/buildFile",
+ "moduledata": "../../../VassalBlueGray/extracted/moduledata",
+ "assets": {
+  "map": "../../../VassalBlueGray/extracted/images/Chickamauga.png",
+  "counters_dir": "../../../VassalBlueGray/extracted/images"
+ },
+ "ui": {
+  "counter_px": 84
+ },
+ "unit_kinds": [
+  "emb2",
+  "footprint",
+  "piece",
+  "report",
+  "sendto",
+  "rotate",
+  "markmoved"
+ ],
+ "sides": {
+  "order": [
+   "Union",
+   "Confederate"
+  ],
+  "labels": {
+   "Union": "Union (Army of the Cumberland)",
+   "Confederate": "Confederate (Army of Tennessee)"
+  },
+  "default": "Confederate",
+  "detect_tokens": {
+   "Union": [
+    "/",
+    "Union Supply Train",
+    "XIV Artillery",
+    "XX Artillery",
+    "XXI Artillery"
+   ]
+  },
+  "note": "Union units carry brigade/division/corps designations with '/' (2.4) plus the named corps artillery and the Train; Confederate units are commander names (2.4) - they fall through to the default. Scenario units carry explicit sides; tokens are the Tier-0/ingest fallback."
+ },
+ "stats": {
+  "patterns": [
+   [
+    "Union Supply Train c",
+    [
+     0,
+     1,
+     6
+    ]
+   ],
+   [
+    "XIV Artillery c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "XXI Artillery c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "XX Artillery c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "1 Artillery c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "1/1 Cavalry c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1/2 Cavalry c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2 Artillery c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/1 Cavalry c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/2 Cavalry c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3 Artillery c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/1 Cavalry c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Anderson6 c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "Armstrong c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Manigault c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "Robertson c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Anderson c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Davidson c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Harrison c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Humphrey c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Walthall c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1/1/Res c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "1/1/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1/1/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1/2/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1/2/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1/3/XIV c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "1/3/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/1/Res c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/1/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/2/Res c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/2/XIV c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/2/XXI c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/3/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/3/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "2/4/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/1/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/1/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3/2/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/2/XXI c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/3/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/3/XXI c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "3/4/XIV c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Clayton c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Deshler c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Forrest c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "Jackson c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Kershaw c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Liddell c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Russell c",
+    [
+     2,
+     2,
+     6
+    ]
+   ],
+   [
+    "Stovall c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "1/2/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "1/3/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/1/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/2/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "2/3/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/1/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/2/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "3/3/XX c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Fulton c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Gracie c",
+    [
+     7,
+     7,
+     6
+    ]
+   ],
+   [
+    "McNair c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Morgan c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Rodney c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Strahl c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Wilder c",
+    [
+     8,
+     8,
+     6
+    ]
+   ],
+   [
+    "Wilson c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Wright c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Adams c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Bates c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Benning",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Brown c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Crews c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Ector c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Gregg c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Kelly c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Maney c",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "Scott c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "Smith c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Trigg c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Deas c",
+    [
+     6,
+     6,
+     6
+    ]
+   ],
+   [
+    "Gist c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Helm c",
+    [
+     4,
+     4,
+     6
+    ]
+   ],
+   [
+    "Polk c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Wood c",
+    [
+     5,
+     5,
+     6
+    ]
+   ],
+   [
+    "Law c",
+    [
+     4,
+     4,
+     6
+    ]
+   ]
+  ],
+  "default": [
+   0,
+   0,
+   6
+  ],
+  "provenance": "Populated by make_scenario.py from the 1975 Initial Deployment + Reinforcement Charts (scan p5-p6 [14.1/14.2/15.51/15.52]): combat strength att=def (single printed factor, 2.4), Movement Allowance 6 for ALL units ([5.0] 'The Movement Allowance of all units is six Movement Points'; deluxe agrees; Stafford's 4/6 split is his revision, not the original). Train = [0,1,6] (18.11 may never attack, 18.12 defense strength one)."
+ },
+ "terrain_file": "terrain.json",
+ "movement": {
+  "impassable_terrain": [
+   "offmap"
+  ],
+  "terrain_mp": {
+   "clear": 1.0,
+   "forest": 3.0,
+   "rough": 3.0,
+   "forest_rough": 6.0
+  },
+  "default_mp": 1.0,
+  "hexside_rules": [
+   {
+    "feature": "creek",
+    "value": true,
+    "effect": "prohibit",
+    "unless": "crossing",
+    "cite": "[5.25] units may never cross Creek hexsides; they may cross Creeks only by moving through Bridge or Ford hexsides (terrain.json marks both with 'crossing')"
+   },
+   {
+    "feature": "road",
+    "value": true,
+    "effect": "override",
+    "mp": 1.0,
+    "cite": "[5.22] road hex to adjacent road hex through a road hexside = 1 MP regardless of other terrain in the hex (bridges carry the road across the creek at the same 1 MP; [5.25] no additional cost for a Bridge hexside)"
+   },
+   {
+    "feature": "trail",
+    "value": true,
+    "effect": "cap",
+    "mp": 2.0,
+    "cite": "[5.23] trail hex to adjacent trail hex through a trail hexside = 2 MP if the hex entered contains forest and/or rough, 1 MP if clear (TEC: 'Ignore Trails in Clear Terrain') - encoded as base-cost cap at 2"
+   },
+   {
+    "feature": "ford",
+    "value": true,
+    "effect": "add",
+    "mp": 1.0,
+    "cite": "[5.25] movement through a Ford hexside costs one additional MP"
+   }
+  ],
+  "zoc": {
+   "exerts": true,
+   "stop_on_enter": true,
+   "locked_at_start": true,
+   "blocked_by_prohibited_hexsides": true,
+   "exempt_classes": [
+    "train"
+   ],
+   "cite": "[6.0] all units must cease movement on entering an Enemy-Controlled hex; [5.13]/[6.3] a unit may NEVER exit an EZOC hex during any Movement Phase - only retreat/advance as a combat result or removal of the exerting unit (locked_at_start); [6.6] ZOCs never extend through non-Bridge non-Ford Creek hexsides (creek sides carry the prohibit rule, bridge/ford sides carry 'crossing' and stay open); [6.2] no extra MP to enter; [18.25] the Train has no ZOC"
+  },
+  "stacking": {
+   "max": 2,
+   "exempt_classes": [],
+   "cite": "[5.32] a maximum of two units, regardless of strength or unit type, may be stacked in a single hex; [5.31] free pass-through of friendly hexes; [5.33] unlimited pass-through per phase. The Train unit never stacks at all and blocks even friendly pass-through - enforced by the gate, [18.21/18.22]"
+  },
+  "pass_through_friendly": true,
+  "bounds": {
+   "cols": [
+    1,
+    26
+   ],
+   "rows": [
+    1,
+    28
+   ]
+  },
+  "night": {
+   "turns": [
+    9
+   ],
+   "cite": "[10.0] shaded GT on the Turn Record Track (GT 9, map-verified); [10.1] no combat of any kind, no bombardment; [10.2] units may not ENTER an EZOC during a Night GT (and per 5.13 can never exit one by movement) - gate-enforced"
+  }
+ },
+ "exit": {
+  "hexes": [
+   [
+    1,
+    1
+   ],
+   [
+    1,
+    11
+   ]
+  ],
+  "mp": 1,
+  "cite": "[16.1] exit via 0101 and 0111 along the roads leading off the map (RESOLVED from map art - the printed rules' '0110' is a rules/map mismatch, see source_defects); [16.2] exiting consumes 1 MP; [16.3] exited units never return; [16.6] no exit as a retreat - the unit is eliminated instead; [16.7] unlimited units per exit hex"
+ },
+ "scenario": "scenario_chickamauga.json",
+ "classes": {
+  "train": [
+   "Union Supply Train c"
+  ],
+  "artillery": [
+   "XIV Artillery c",
+   "XX Artillery c",
+   "XXI Artillery c",
+   "1 Artillery c",
+   "2 Artillery c",
+   "3 Artillery c"
+  ],
+  "cavalry": [
+   "1/2 Cavalry c",
+   "1/1 Cavalry c",
+   "2/1 Cavalry c",
+   "3/1 Cavalry c",
+   "2/2 Cavalry c",
+   "Armstrong c",
+   "Davidson c",
+   "Forrest c",
+   "Scott c",
+   "Crews c",
+   "Russell c",
+   "Morgan c",
+   "Harrison c",
+   "Rodney c"
+  ],
+  "note": "artillery = the six bombardment-capable units (19.12: three per side); cavalry listed for completeness (moves identically at MA 6 in the original; the 4/6 split is Stafford's revision); train = the special Union rear-echelon unit (18.0). Everything else is infantry."
+ },
+ "combat": {
+  "provenance": "CRT transcribed independently from the 1975 rules folder scan (p8 [7.6]) and the Decision Games Deluxe reprint text (p5) - all 60 cells identical across the two printings; validate_combat.py re-runs the cross-check from rules_transcription.json on every run",
+  "crt": {
+   "columns": [
+    "1-5",
+    "1-4",
+    "1-3",
+    "1-2",
+    "1-1",
+    "2-1",
+    "3-1",
+    "4-1",
+    "5-1",
+    "6-1"
+   ],
+   "rows": {
+    "1": [
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "De",
+     "De",
+     "De",
+     "De"
+    ],
+    "2": [
+     "Ar",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "De",
+     "De"
+    ],
+    "3": [
+     "Ar",
+     "Ar",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "De"
+    ],
+    "4": [
+     "Ae",
+     "Ar",
+     "Ar",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr"
+    ],
+    "5": [
+     "Ae",
+     "Ae",
+     "Ar",
+     "Ar",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Ex",
+     "Ex",
+     "Dr"
+    ],
+    "6": [
+     "Ae",
+     "Ae",
+     "Ae",
+     "Ae",
+     "Ar",
+     "Ar",
+     "Ex",
+     "Ex",
+     "Ex",
+     "Ex"
+    ]
+   },
+   "results": {
+    "Ae": "Attacker Eliminated - all attacking units removed [7.6]",
+    "De": "Defender Eliminated - all defending units removed [7.6]",
+    "Ex": "Exchange - all defenders eliminated; the attacker eliminates participating units whose total PRINTED strength >= the defenders' total printed strength (bombarding artillery participated but is immune to results 8.15 and cannot be chosen) [7.6]",
+    "Ar": "Attacker Retreats - all attacking units retreat one hex [7.7] (bombarding artillery immune, may take it voluntarily [8.16])",
+    "Dr": "Defender Retreats - all defending units retreat one hex [7.7]"
+   },
+   "cite": "[7.6] Combat Results Table, 1d6 cross-indexed with the odds column"
+  },
+  "odds": {
+   "rounding": "defender",
+   "clamp_high": [
+    6,
+    1
+   ],
+   "clamp_low": [
+    1,
+    5
+   ],
+   "cite": "[7.0] ratio rounded down always in favor of the defender (13:4 -> 3-1); CRT note: attacks greater than 6-1 are treated as 6-1, attacks worse than 1-5 are treated as 1-5 (both still ROLL - unlike AK there is no automatic elimination); [7.9] the attacker may voluntarily announce lower odds before rolling"
+  },
+  "defense_double_terrain": [
+   "rough",
+   "forest_rough"
+  ],
+  "defense_double_cite": "[9.0 TEC] defender doubled in Rough and Forest&Rough hexes; [7.4] the increase is a multiple, effects NOT cumulative - the single best benefit applies",
+  "defense_double_hexside": {
+   "features": [
+    "bridge",
+    "ford"
+   ],
+   "cite": "[9.0 TEC + deluxe 9.0 clarification] defender doubled when ALL adjacent attacking units attack across Bridge or Ford hexsides (non-adjacent bombarding artillery does not affect this); a unit attacked SOLELY by bombarding artillery is doubled when the LOS crosses a Ford/Bridge/Creek hexside or an impassable hex"
+  },
+  "artillery": {
+   "range": [
+    2,
+    3
+   ],
+   "los_blocking_terrain": [
+    "forest",
+    "forest_rough"
+   ],
+   "cite": "[8.0] artillery bombards non-adjacent units 2-3 hexes distant (range counts the target hex, not the firer's [8.12]); [8.41] in an EZOC artillery MUST join a normal attack and may not bombard; [8.13] bombardment hits a single hex ([8.14] stacked artillery must share the target); [8.15] bombarding artillery suffers no combat results; [8.2] combined attacks add bombarding strength to adjacent friends, within range of any one defending hex [8.22]; [8.3] LOS center-to-center, blocked by intervening Forest / Forest&Rough (rough alone does not block [8.33], target and firer hexes never block [8.34], units never block [8.35]); hexside-congruent LOS blocked only if BOTH adjacent hexes block [8.32]; [8.45] may bombard across a creek hexside even when the target is the only adjacent enemy; [8.51] artillery never adds defensive strength to another unit"
+  },
+  "mandatory": {
+   "cite": "[7.0] combat between adjacent opposing units is mandatory; [7.11] every enemy unit with friendly units in its ZOC must be attacked; [7.12] every phasing unit in an EZOC at the end of movement must attack, and every friendly unit adjacent to an enemy must participate; [7.23] a unit in the ZOC of more than one enemy must attack all not engaged by others; [7.13] any number of attackers from the six adjacent hexes plus artillery in range; [7.14] each unit attacks once, each defender is attacked once per phase; [7.21] a defending stack is attacked as a single total strength; [7.22] attackers stacked together attack as one; [7.24/7.25] multi-hex combat requires all attackers adjacent to all defenders (bombarding artillery exempt); adjacency across a non-bridge/ford creek hexside is NOT contact (no ZOC [6.6], attacks only across bridges/fords [9.0 TEC])"
+  },
+  "retreat": {
+   "distance": 1,
+   "cite": "[7.71] owner retreats his units one hex out of all EZOCs, direction owner's choice, stack may split; [7.72] never into prohibited hexes/hexsides or EZOC - if no hex is open the unit is ELIMINATED; [7.73] may stack (within limits) with a friendly stack not in an EZOC, or displace [7.8]; [7.74] a retreated unit adds nothing to a later bombardment defense but suffers the result; [7.8] displacement: moved-back friendly unit retreats likewise, chains allowed, displaced-to-elimination eliminates the retreating unit instead, displaced artillery not yet fired may not fire this phase, 1-for-1 per stack, only when no other path exists"
+  },
+  "advance": {
+   "cite": "[7.75] when a hex is vacated as a result of combat ONE victorious participating unit may advance into it, regardless of EZOC, immediately, before any other combat resolution; never forced; max one hex; after advancing it may neither attack nor be attacked that phase; [7.76] only one unit advances even if two hexes were vacated"
+  },
+  "victory": {
+   "cite": "[17.0] most Victory Points at the end of GT 15 wins; 1 VP per enemy CSP eliminated; Union 1 VP per own CSP exited, Confederate 10 VP per own CSP exited (LOC condition 17.31); Confederate +10 VP if the Union Train fails to exit; end-of-game occupation VPs (Union: 1920=10, 2311=20; Confederate: 0211=20, 0502=20; either: 0822/1108/1115=5 each, start ownership per 17.23); [17.32] Union units unable to trace a 10-hex path to a road exiting 0101/0111 at game end count as destroyed"
+  },
+  "train": {
+   "cite": "[18.11] the Train may never attack; adjacent to a Confederate unit in the Union Combat Phase it must automatically retreat (no Confederate advance after); [18.12] defense strength 1; [18.21/18.22] never stacks, no unit moves through its hex, it moves through no one; [18.23] MA 6 along Roads/Trails ONLY - forced retreat to a non-road/trail hex destroys it; [18.24] may displace and be displaced; [18.25] no ZOC, Confederates are never required to attack it"
+  }
+ },
+ "credits": {
+  "game": {
+   "title": "Blue & Gray: Chickamauga - The Last Victory, 20 September 1863",
+   "publisher": "Simulations Publications, Inc. (SPI), 1975",
+   "design": "Irad B. Hardy, III (game design)",
+   "development": "Irad B. Hardy, III; John Michael Young (systems design and game development)",
+   "art": "Redmond A. Simonsen (physical systems design and graphics)",
+   "production": "Manfred F. Milkuhn, Larry Catalano, Kevin Zucker, Linda Mosca",
+   "source": "DESIGN CREDITS, 1975 Exclusive Rules folder p8; identical in the Decision Games Blue & Gray Deluxe reprint p26",
+   "reprint": "Decision Games' Blue & Gray Deluxe Edition (rules reprint with official errata) served as the primary transcription source"
+  },
+  "module": {
+   "title": "Blue and Gray Complete 1.0 (VASSAL module - B&G I and II with Drive on Richmond and Vicksburg)",
+   "implementation": "the module's authors (no credits page in the module; library listing at vassalengine.org/library Blue & Gray: Four American Civil War Battles)",
+   "source": "moduledata: 'Blue and Gray Complete' v1.0",
+   "note": "Module setup deviations from the printed deployment chart are recorded in rules_transcription.json (module_deviations_worksheet) and corrected to the printed chart in this scenario."
+  },
+  "note": "This engine enforces the printed game's rules against the module's own materials. All game content remains the property of its publisher; module art remains the work of the module authors. Bring-your-own-module: users download the module from the VASSAL module library."
+ },
+ "source_defects": {
+  "note": "Defects found in the ORIGINAL PUBLISHED GAME (SPI 1975) during encoding - spec #21. Authority ladder: official errata > tournament/publisher clarification > proven outcome-equivalence > declared umpired.",
+  "list": [
+   {
+    "id": "exit-hex-0110-vs-0111",
+    "kind": "map_errata",
+    "rules": [
+     "16.1",
+     "17.31",
+     "17.32"
+    ],
+    "defect": "The exclusive rules name the exit hexes as '0101 and 0110' three separate times, but the printed map's road exits the west edge through 0111 - hex 0110 is clear terrain with no road. Rule 16.1 itself says units 'are presumed to move along the roads leading off the map'.",
+    "resolution": "Exit hexes are 0101 and 0111 (the road hexes); the 17.31/17.32 LOC traces use the same pair.",
+    "authority": "The original map art (verified on the 1975 scan and the module's faithful redraw) + the Decision Games Deluxe reprint, which corrects the text to '0101 and 0111'.",
+    "enforced": true
+   },
+   {
+    "id": "ford-trail-cost-composition",
+    "kind": "ambiguity",
+    "rules": [
+     "5.23",
+     "5.25",
+     "9.0"
+    ],
+    "defect": "Every ford on the Chickamauga map lies where a printed trail crosses the creek, yet the rules never say whether the trail's 2-MP benefit (5.23) applies on the same step as the ford's +1 MP (5.25); 5.25's worked example (ford into forest = 4 MP) describes a ford with no trail.",
+    "resolution": "Compositional: the step pays the trail-capped base plus the ford surcharge (ford into forest hex along the trail = 2+1 = 3 MP; into clear = 1+1 = 2 MP). The map prints the trail dashes crossing the ford hexside, so 5.23's 'through a trail hexside' condition is met literally.",
+    "authority": "Declared interpretation from map evidence (no official ruling found). The alternative (terrain price + 1) costs one more MP on two hexsides of the map; flagged for umpire awareness in rules_scope.",
+    "enforced": true
+   },
+   {
+    "id": "csa-exit-vp-asymmetry",
+    "kind": "ambiguity",
+    "rules": [
+     "17.11"
+    ],
+    "defect": "The VP schedule awards the Confederate player 10 VP per exited CSP against the Union's 1 VP per CSP, with no cap - read literally, exiting the whole Confederate army (~140 CSP = 1400 VP) dwarfs every other award, though it hands the field to the Union.",
+    "resolution": "Enforced literally as printed (10 VP per Confederate CSP exited, LOC condition 17.31 required). The asymmetry is intentional per the designer's notes (the Confederate exit toward Chattanooga IS the historical strategic prize); play balance rests on the LOC requirement and on abandoning the occupation/elimination VPs.",
+    "authority": "Printed schedule enforced verbatim; designer's notes [20.0] confirm the Chattanooga exit as the Confederate objective.",
+    "enforced": true
+   }
+  ]
+ }
+}
