@@ -1,0 +1,3266 @@
+{
+"provenance": {
+"generated": "2026-07-10 overnight run: image classification of module Chickamauga.png (faithful redraw of 1975 map, spot-verified against original scan)",
+"method": "color masks; per-hex disc vote; creek by edge-band coverage >=0.55; line crossings: solid >=0.78 -> road/bridge, 0.34-0.78 -> trail/ford",
+"semantics": {
+"clear": "1 MP [9.0]",
+"forest": "3 MP, blocks LOS [9.0/8.33]",
+"rough": "3 MP, defender doubled [9.0]",
+"forest_rough": "6 MP, defender doubled, blocks LOS [9.0/8.33]",
+"offmap": "unplayable / printed boxes",
+"sides.creek": "prohibited move+attack+ZOC except bridge/ford [5.25/6.6/7.x]",
+"sides.bridge": "creek crossing, no extra MP; defender x2 if all attackers cross [9.0]",
+"sides.ford": "creek crossing, +1 MP; defender x2 if all attackers cross [9.0]",
+"sides.road": "1 MP negates hex terrain when entered via road hexside [5.22]",
+"sides.trail": "2 MP into forest/rough hex, 1 MP into clear [5.23]"
+}
+},
+"hexes": {
+"0101": {
+"t": "clear"
+},
+"0102": {
+"t": "forest"
+},
+"0103": {
+"t": "forest"
+},
+"0104": {
+"t": "forest"
+},
+"0105": {
+"t": "forest"
+},
+"0106": {
+"t": "clear"
+},
+"0107": {
+"t": "clear"
+},
+"0108": {
+"t": "clear"
+},
+"0109": {
+"t": "clear"
+},
+"0110": {
+"t": "clear"
+},
+"0111": {
+"t": "clear"
+},
+"0112": {
+"t": "forest_rough"
+},
+"0113": {
+"t": "forest_rough"
+},
+"0114": {
+"t": "forest_rough"
+},
+"0115": {
+"t": "forest_rough"
+},
+"0116": {
+"t": "forest_rough"
+},
+"0117": {
+"t": "forest"
+},
+"0118": {
+"t": "forest_rough"
+},
+"0119": {
+"t": "forest_rough"
+},
+"0120": {
+"t": "forest_rough"
+},
+"0121": {
+"t": "forest_rough"
+},
+"0122": {
+"t": "forest_rough"
+},
+"0123": {
+"t": "forest_rough"
+},
+"0124": {
+"t": "forest_rough"
+},
+"0125": {
+"t": "forest_rough"
+},
+"0126": {
+"t": "forest_rough"
+},
+"0127": {
+"t": "forest_rough"
+},
+"0128": {
+"t": "forest_rough"
+},
+"0201": {
+"t": "clear"
+},
+"0202": {
+"t": "forest"
+},
+"0203": {
+"t": "forest"
+},
+"0204": {
+"t": "forest"
+},
+"0205": {
+"t": "clear"
+},
+"0206": {
+"t": "forest"
+},
+"0207": {
+"t": "forest_rough"
+},
+"0208": {
+"t": "forest_rough"
+},
+"0209": {
+"t": "forest_rough"
+},
+"0210": {
+"t": "forest_rough"
+},
+"0211": {
+"t": "clear"
+},
+"0212": {
+"t": "forest_rough"
+},
+"0213": {
+"t": "clear"
+},
+"0214": {
+"t": "clear"
+},
+"0215": {
+"t": "clear"
+},
+"0216": {
+"t": "clear"
+},
+"0217": {
+"t": "forest_rough"
+},
+"0218": {
+"t": "forest_rough"
+},
+"0219": {
+"t": "forest_rough"
+},
+"0220": {
+"t": "forest_rough"
+},
+"0221": {
+"t": "forest_rough"
+},
+"0222": {
+"t": "forest_rough"
+},
+"0223": {
+"t": "forest_rough"
+},
+"0224": {
+"t": "forest_rough"
+},
+"0225": {
+"t": "forest_rough"
+},
+"0226": {
+"t": "forest_rough"
+},
+"0227": {
+"t": "forest_rough"
+},
+"0228": {
+"t": "offmap"
+},
+"0301": {
+"t": "forest"
+},
+"0302": {
+"t": "clear"
+},
+"0303": {
+"t": "forest"
+},
+"0304": {
+"t": "clear"
+},
+"0305": {
+"t": "clear"
+},
+"0306": {
+"t": "forest_rough"
+},
+"0307": {
+"t": "forest_rough"
+},
+"0308": {
+"t": "forest_rough"
+},
+"0309": {
+"t": "forest"
+},
+"0310": {
+"t": "clear"
+},
+"0311": {
+"t": "clear"
+},
+"0312": {
+"t": "clear"
+},
+"0313": {
+"t": "forest_rough"
+},
+"0314": {
+"t": "forest_rough"
+},
+"0315": {
+"t": "forest_rough"
+},
+"0316": {
+"t": "forest"
+},
+"0317": {
+"t": "clear"
+},
+"0318": {
+"t": "forest_rough"
+},
+"0319": {
+"t": "forest_rough"
+},
+"0320": {
+"t": "forest_rough"
+},
+"0321": {
+"t": "forest_rough"
+},
+"0322": {
+"t": "forest"
+},
+"0323": {
+"t": "forest_rough"
+},
+"0324": {
+"t": "forest_rough"
+},
+"0325": {
+"t": "forest_rough"
+},
+"0326": {
+"t": "forest_rough"
+},
+"0327": {
+"t": "forest_rough"
+},
+"0328": {
+"t": "forest_rough"
+},
+"0401": {
+"t": "clear"
+},
+"0402": {
+"t": "clear"
+},
+"0403": {
+"t": "clear"
+},
+"0404": {
+"t": "forest_rough"
+},
+"0405": {
+"t": "forest_rough"
+},
+"0406": {
+"t": "forest_rough"
+},
+"0407": {
+"t": "forest"
+},
+"0408": {
+"t": "forest"
+},
+"0409": {
+"t": "forest"
+},
+"0410": {
+"t": "forest_rough"
+},
+"0411": {
+"t": "forest_rough"
+},
+"0412": {
+"t": "clear"
+},
+"0413": {
+"t": "forest_rough"
+},
+"0414": {
+"t": "forest"
+},
+"0415": {
+"t": "forest"
+},
+"0416": {
+"t": "forest"
+},
+"0417": {
+"t": "clear"
+},
+"0418": {
+"t": "forest_rough"
+},
+"0419": {
+"t": "forest_rough"
+},
+"0420": {
+"t": "forest_rough"
+},
+"0421": {
+"t": "forest_rough"
+},
+"0422": {
+"t": "forest"
+},
+"0423": {
+"t": "forest_rough"
+},
+"0424": {
+"t": "forest_rough"
+},
+"0425": {
+"t": "forest_rough"
+},
+"0426": {
+"t": "forest_rough"
+},
+"0427": {
+"t": "forest_rough"
+},
+"0428": {
+"t": "offmap"
+},
+"0501": {
+"t": "forest_rough"
+},
+"0502": {
+"t": "clear"
+},
+"0503": {
+"t": "forest_rough"
+},
+"0504": {
+"t": "forest_rough"
+},
+"0505": {
+"t": "forest"
+},
+"0506": {
+"t": "clear"
+},
+"0507": {
+"t": "forest"
+},
+"0508": {
+"t": "forest"
+},
+"0509": {
+"t": "clear"
+},
+"0510": {
+"t": "forest_rough"
+},
+"0511": {
+"t": "forest"
+},
+"0512": {
+"t": "forest"
+},
+"0513": {
+"t": "forest_rough"
+},
+"0514": {
+"t": "forest_rough"
+},
+"0515": {
+"t": "forest"
+},
+"0516": {
+"t": "forest_rough"
+},
+"0517": {
+"t": "forest"
+},
+"0518": {
+"t": "clear"
+},
+"0519": {
+"t": "forest_rough"
+},
+"0520": {
+"t": "forest_rough"
+},
+"0521": {
+"t": "forest_rough"
+},
+"0522": {
+"t": "forest_rough"
+},
+"0523": {
+"t": "forest"
+},
+"0524": {
+"t": "clear"
+},
+"0525": {
+"t": "clear"
+},
+"0526": {
+"t": "clear"
+},
+"0527": {
+"t": "clear"
+},
+"0528": {
+"t": "forest"
+},
+"0601": {
+"t": "clear"
+},
+"0602": {
+"t": "clear"
+},
+"0603": {
+"t": "clear"
+},
+"0604": {
+"t": "forest_rough"
+},
+"0605": {
+"t": "forest"
+},
+"0606": {
+"t": "forest"
+},
+"0607": {
+"t": "forest"
+},
+"0608": {
+"t": "clear"
+},
+"0609": {
+"t": "forest_rough"
+},
+"0610": {
+"t": "forest"
+},
+"0611": {
+"t": "forest_rough"
+},
+"0612": {
+"t": "clear"
+},
+"0613": {
+"t": "forest_rough"
+},
+"0614": {
+"t": "forest_rough"
+},
+"0615": {
+"t": "forest"
+},
+"0616": {
+"t": "forest_rough"
+},
+"0617": {
+"t": "forest"
+},
+"0618": {
+"t": "clear"
+},
+"0619": {
+"t": "forest_rough"
+},
+"0620": {
+"t": "forest_rough"
+},
+"0621": {
+"t": "forest_rough"
+},
+"0622": {
+"t": "clear"
+},
+"0623": {
+"t": "clear"
+},
+"0624": {
+"t": "clear"
+},
+"0625": {
+"t": "forest_rough"
+},
+"0626": {
+"t": "forest_rough"
+},
+"0627": {
+"t": "forest"
+},
+"0628": {
+"t": "offmap"
+},
+"0701": {
+"t": "clear"
+},
+"0702": {
+"t": "clear"
+},
+"0703": {
+"t": "forest_rough"
+},
+"0704": {
+"t": "clear"
+},
+"0705": {
+"t": "forest_rough"
+},
+"0706": {
+"t": "forest_rough"
+},
+"0707": {
+"t": "forest"
+},
+"0708": {
+"t": "forest"
+},
+"0709": {
+"t": "forest"
+},
+"0710": {
+"t": "forest_rough"
+},
+"0711": {
+"t": "forest"
+},
+"0712": {
+"t": "forest_rough"
+},
+"0713": {
+"t": "clear"
+},
+"0714": {
+"t": "forest_rough"
+},
+"0715": {
+"t": "clear"
+},
+"0716": {
+"t": "forest"
+},
+"0717": {
+"t": "forest_rough"
+},
+"0718": {
+"t": "forest_rough"
+},
+"0719": {
+"t": "clear"
+},
+"0720": {
+"t": "forest_rough"
+},
+"0721": {
+"t": "forest_rough"
+},
+"0722": {
+"t": "clear"
+},
+"0723": {
+"t": "clear"
+},
+"0724": {
+"t": "forest"
+},
+"0725": {
+"t": "clear"
+},
+"0726": {
+"t": "clear"
+},
+"0727": {
+"t": "clear"
+},
+"0728": {
+"t": "clear"
+},
+"0801": {
+"t": "forest"
+},
+"0802": {
+"t": "forest"
+},
+"0803": {
+"t": "forest_rough"
+},
+"0804": {
+"t": "clear"
+},
+"0805": {
+"t": "clear"
+},
+"0806": {
+"t": "forest"
+},
+"0807": {
+"t": "forest_rough"
+},
+"0808": {
+"t": "forest_rough"
+},
+"0809": {
+"t": "clear"
+},
+"0810": {
+"t": "forest_rough"
+},
+"0811": {
+"t": "forest"
+},
+"0812": {
+"t": "forest_rough"
+},
+"0813": {
+"t": "clear"
+},
+"0814": {
+"t": "forest"
+},
+"0815": {
+"t": "forest"
+},
+"0816": {
+"t": "rough"
+},
+"0817": {
+"t": "rough"
+},
+"0818": {
+"t": "clear"
+},
+"0819": {
+"t": "clear"
+},
+"0820": {
+"t": "clear"
+},
+"0821": {
+"t": "clear"
+},
+"0822": {
+"t": "clear"
+},
+"0823": {
+"t": "clear"
+},
+"0824": {
+"t": "forest"
+},
+"0825": {
+"t": "forest"
+},
+"0826": {
+"t": "forest"
+},
+"0827": {
+"t": "forest"
+},
+"0828": {
+"t": "offmap"
+},
+"0901": {
+"t": "forest"
+},
+"0902": {
+"t": "forest"
+},
+"0903": {
+"t": "forest"
+},
+"0904": {
+"t": "forest_rough"
+},
+"0905": {
+"t": "forest_rough"
+},
+"0906": {
+"t": "clear"
+},
+"0907": {
+"t": "forest_rough"
+},
+"0908": {
+"t": "forest"
+},
+"0909": {
+"t": "forest_rough"
+},
+"0910": {
+"t": "clear"
+},
+"0911": {
+"t": "forest_rough"
+},
+"0912": {
+"t": "forest"
+},
+"0913": {
+"t": "forest"
+},
+"0914": {
+"t": "clear"
+},
+"0915": {
+"t": "forest_rough"
+},
+"0916": {
+"t": "forest"
+},
+"0917": {
+"t": "clear"
+},
+"0918": {
+"t": "rough"
+},
+"0919": {
+"t": "clear"
+},
+"0920": {
+"t": "clear"
+},
+"0921": {
+"t": "clear"
+},
+"0922": {
+"t": "rough"
+},
+"0923": {
+"t": "rough"
+},
+"0924": {
+"t": "forest"
+},
+"0925": {
+"t": "clear"
+},
+"0926": {
+"t": "clear"
+},
+"0927": {
+"t": "forest"
+},
+"0928": {
+"t": "forest"
+},
+"1001": {
+"t": "forest"
+},
+"1002": {
+"t": "forest"
+},
+"1003": {
+"t": "forest"
+},
+"1004": {
+"t": "forest_rough"
+},
+"1005": {
+"t": "forest_rough"
+},
+"1006": {
+"t": "forest"
+},
+"1007": {
+"t": "forest"
+},
+"1008": {
+"t": "forest"
+},
+"1009": {
+"t": "forest_rough"
+},
+"1010": {
+"t": "forest_rough"
+},
+"1011": {
+"t": "forest"
+},
+"1012": {
+"t": "forest_rough"
+},
+"1013": {
+"t": "rough"
+},
+"1014": {
+"t": "clear"
+},
+"1015": {
+"t": "clear"
+},
+"1016": {
+"t": "clear"
+},
+"1017": {
+"t": "clear"
+},
+"1018": {
+"t": "clear"
+},
+"1019": {
+"t": "clear"
+},
+"1020": {
+"t": "clear"
+},
+"1021": {
+"t": "clear"
+},
+"1022": {
+"t": "clear"
+},
+"1023": {
+"t": "forest"
+},
+"1024": {
+"t": "clear"
+},
+"1025": {
+"t": "clear"
+},
+"1026": {
+"t": "clear"
+},
+"1027": {
+"t": "forest"
+},
+"1028": {
+"t": "offmap"
+},
+"1101": {
+"t": "forest"
+},
+"1102": {
+"t": "forest"
+},
+"1103": {
+"t": "clear"
+},
+"1104": {
+"t": "forest"
+},
+"1105": {
+"t": "forest"
+},
+"1106": {
+"t": "forest"
+},
+"1107": {
+"t": "forest"
+},
+"1108": {
+"t": "clear"
+},
+"1109": {
+"t": "clear"
+},
+"1110": {
+"t": "clear"
+},
+"1111": {
+"t": "clear"
+},
+"1112": {
+"t": "forest"
+},
+"1113": {
+"t": "rough"
+},
+"1114": {
+"t": "clear"
+},
+"1115": {
+"t": "clear"
+},
+"1116": {
+"t": "clear"
+},
+"1117": {
+"t": "forest"
+},
+"1118": {
+"t": "forest"
+},
+"1119": {
+"t": "rough"
+},
+"1120": {
+"t": "clear"
+},
+"1121": {
+"t": "clear"
+},
+"1122": {
+"t": "clear"
+},
+"1123": {
+"t": "clear"
+},
+"1124": {
+"t": "forest"
+},
+"1125": {
+"t": "forest_rough"
+},
+"1126": {
+"t": "rough"
+},
+"1127": {
+"t": "clear"
+},
+"1128": {
+"t": "forest"
+},
+"1201": {
+"t": "forest"
+},
+"1202": {
+"t": "forest"
+},
+"1203": {
+"t": "clear"
+},
+"1204": {
+"t": "clear"
+},
+"1205": {
+"t": "clear"
+},
+"1206": {
+"t": "clear"
+},
+"1207": {
+"t": "clear"
+},
+"1208": {
+"t": "clear"
+},
+"1209": {
+"t": "clear"
+},
+"1210": {
+"t": "forest"
+},
+"1211": {
+"t": "clear"
+},
+"1212": {
+"t": "clear"
+},
+"1213": {
+"t": "clear"
+},
+"1214": {
+"t": "clear"
+},
+"1215": {
+"t": "forest"
+},
+"1216": {
+"t": "forest"
+},
+"1217": {
+"t": "forest"
+},
+"1218": {
+"t": "clear"
+},
+"1219": {
+"t": "forest"
+},
+"1220": {
+"t": "forest"
+},
+"1221": {
+"t": "forest"
+},
+"1222": {
+"t": "forest"
+},
+"1223": {
+"t": "clear"
+},
+"1224": {
+"t": "forest"
+},
+"1225": {
+"t": "clear"
+},
+"1226": {
+"t": "clear"
+},
+"1227": {
+"t": "clear"
+},
+"1228": {
+"t": "offmap"
+},
+"1301": {
+"t": "forest"
+},
+"1302": {
+"t": "forest"
+},
+"1303": {
+"t": "clear"
+},
+"1304": {
+"t": "clear"
+},
+"1305": {
+"t": "clear"
+},
+"1306": {
+"t": "clear"
+},
+"1307": {
+"t": "clear"
+},
+"1308": {
+"t": "forest"
+},
+"1309": {
+"t": "forest"
+},
+"1310": {
+"t": "forest"
+},
+"1311": {
+"t": "forest"
+},
+"1312": {
+"t": "forest"
+},
+"1313": {
+"t": "forest_rough"
+},
+"1314": {
+"t": "forest_rough"
+},
+"1315": {
+"t": "forest_rough"
+},
+"1316": {
+"t": "forest"
+},
+"1317": {
+"t": "rough"
+},
+"1318": {
+"t": "rough"
+},
+"1319": {
+"t": "forest"
+},
+"1320": {
+"t": "clear"
+},
+"1321": {
+"t": "forest"
+},
+"1322": {
+"t": "forest"
+},
+"1323": {
+"t": "forest"
+},
+"1324": {
+"t": "forest"
+},
+"1325": {
+"t": "clear"
+},
+"1326": {
+"t": "clear"
+},
+"1327": {
+"t": "rough"
+},
+"1328": {
+"t": "forest"
+},
+"1401": {
+"t": "forest"
+},
+"1402": {
+"t": "forest"
+},
+"1403": {
+"t": "forest"
+},
+"1404": {
+"t": "clear"
+},
+"1405": {
+"t": "forest"
+},
+"1406": {
+"t": "forest"
+},
+"1407": {
+"t": "clear"
+},
+"1408": {
+"t": "forest"
+},
+"1409": {
+"t": "forest"
+},
+"1410": {
+"t": "forest"
+},
+"1411": {
+"t": "forest"
+},
+"1412": {
+"t": "forest"
+},
+"1413": {
+"t": "forest_rough"
+},
+"1414": {
+"t": "forest_rough"
+},
+"1415": {
+"t": "forest"
+},
+"1416": {
+"t": "forest"
+},
+"1417": {
+"t": "clear"
+},
+"1418": {
+"t": "clear"
+},
+"1419": {
+"t": "forest"
+},
+"1420": {
+"t": "forest"
+},
+"1421": {
+"t": "forest"
+},
+"1422": {
+"t": "forest"
+},
+"1423": {
+"t": "forest"
+},
+"1424": {
+"t": "clear"
+},
+"1425": {
+"t": "forest"
+},
+"1426": {
+"t": "forest"
+},
+"1427": {
+"t": "forest"
+},
+"1428": {
+"t": "offmap"
+},
+"1501": {
+"t": "forest"
+},
+"1502": {
+"t": "forest"
+},
+"1503": {
+"t": "clear"
+},
+"1504": {
+"t": "forest"
+},
+"1505": {
+"t": "clear"
+},
+"1506": {
+"t": "forest"
+},
+"1507": {
+"t": "clear"
+},
+"1508": {
+"t": "clear"
+},
+"1509": {
+"t": "clear"
+},
+"1510": {
+"t": "clear"
+},
+"1511": {
+"t": "forest"
+},
+"1512": {
+"t": "forest"
+},
+"1513": {
+"t": "forest"
+},
+"1514": {
+"t": "forest"
+},
+"1515": {
+"t": "forest"
+},
+"1516": {
+"t": "forest"
+},
+"1517": {
+"t": "clear"
+},
+"1518": {
+"t": "forest"
+},
+"1519": {
+"t": "clear"
+},
+"1520": {
+"t": "forest"
+},
+"1521": {
+"t": "forest"
+},
+"1522": {
+"t": "forest"
+},
+"1523": {
+"t": "forest"
+},
+"1524": {
+"t": "forest"
+},
+"1525": {
+"t": "forest"
+},
+"1526": {
+"t": "clear"
+},
+"1527": {
+"t": "clear"
+},
+"1528": {
+"t": "forest"
+},
+"1601": {
+"t": "forest"
+},
+"1602": {
+"t": "clear"
+},
+"1603": {
+"t": "forest"
+},
+"1604": {
+"t": "forest"
+},
+"1605": {
+"t": "forest"
+},
+"1606": {
+"t": "clear"
+},
+"1607": {
+"t": "forest"
+},
+"1608": {
+"t": "forest"
+},
+"1609": {
+"t": "clear"
+},
+"1610": {
+"t": "clear"
+},
+"1611": {
+"t": "clear"
+},
+"1612": {
+"t": "forest"
+},
+"1613": {
+"t": "forest"
+},
+"1614": {
+"t": "forest"
+},
+"1615": {
+"t": "forest"
+},
+"1616": {
+"t": "forest"
+},
+"1617": {
+"t": "forest"
+},
+"1618": {
+"t": "forest"
+},
+"1619": {
+"t": "forest"
+},
+"1620": {
+"t": "forest"
+},
+"1621": {
+"t": "forest"
+},
+"1622": {
+"t": "forest"
+},
+"1623": {
+"t": "forest"
+},
+"1624": {
+"t": "forest"
+},
+"1625": {
+"t": "clear"
+},
+"1626": {
+"t": "clear"
+},
+"1627": {
+"t": "clear"
+},
+"1628": {
+"t": "offmap"
+},
+"1701": {
+"t": "forest"
+},
+"1702": {
+"t": "clear"
+},
+"1703": {
+"t": "clear"
+},
+"1704": {
+"t": "clear"
+},
+"1705": {
+"t": "clear"
+},
+"1706": {
+"t": "clear"
+},
+"1707": {
+"t": "clear"
+},
+"1708": {
+"t": "forest"
+},
+"1709": {
+"t": "clear"
+},
+"1710": {
+"t": "forest"
+},
+"1711": {
+"t": "forest_rough"
+},
+"1712": {
+"t": "forest_rough"
+},
+"1713": {
+"t": "forest"
+},
+"1714": {
+"t": "forest"
+},
+"1715": {
+"t": "forest"
+},
+"1716": {
+"t": "clear"
+},
+"1717": {
+"t": "forest"
+},
+"1718": {
+"t": "clear"
+},
+"1719": {
+"t": "forest"
+},
+"1720": {
+"t": "forest"
+},
+"1721": {
+"t": "forest"
+},
+"1722": {
+"t": "forest"
+},
+"1723": {
+"t": "forest"
+},
+"1724": {
+"t": "forest"
+},
+"1725": {
+"t": "forest"
+},
+"1726": {
+"t": "clear"
+},
+"1727": {
+"t": "clear"
+},
+"1728": {
+"t": "clear"
+},
+"1801": {
+"t": "clear"
+},
+"1802": {
+"t": "clear"
+},
+"1803": {
+"t": "clear"
+},
+"1804": {
+"t": "forest"
+},
+"1805": {
+"t": "forest"
+},
+"1806": {
+"t": "forest"
+},
+"1807": {
+"t": "forest"
+},
+"1808": {
+"t": "forest"
+},
+"1809": {
+"t": "clear"
+},
+"1810": {
+"t": "forest_rough"
+},
+"1811": {
+"t": "forest_rough"
+},
+"1812": {
+"t": "forest"
+},
+"1813": {
+"t": "forest"
+},
+"1814": {
+"t": "forest"
+},
+"1815": {
+"t": "forest"
+},
+"1816": {
+"t": "forest"
+},
+"1817": {
+"t": "clear"
+},
+"1818": {
+"t": "forest"
+},
+"1819": {
+"t": "forest"
+},
+"1820": {
+"t": "forest"
+},
+"1821": {
+"t": "forest"
+},
+"1822": {
+"t": "forest"
+},
+"1823": {
+"t": "forest"
+},
+"1824": {
+"t": "forest"
+},
+"1825": {
+"t": "forest"
+},
+"1826": {
+"t": "forest"
+},
+"1827": {
+"t": "forest"
+},
+"1828": {
+"t": "offmap"
+},
+"1901": {
+"t": "clear"
+},
+"1902": {
+"t": "clear"
+},
+"1903": {
+"t": "clear"
+},
+"1904": {
+"t": "forest"
+},
+"1905": {
+"t": "clear"
+},
+"1906": {
+"t": "forest"
+},
+"1907": {
+"t": "forest"
+},
+"1908": {
+"t": "forest"
+},
+"1909": {
+"t": "clear"
+},
+"1910": {
+"t": "clear"
+},
+"1911": {
+"t": "forest"
+},
+"1912": {
+"t": "forest"
+},
+"1913": {
+"t": "forest"
+},
+"1914": {
+"t": "forest"
+},
+"1915": {
+"t": "forest"
+},
+"1916": {
+"t": "forest"
+},
+"1917": {
+"t": "forest"
+},
+"1918": {
+"t": "clear"
+},
+"1919": {
+"t": "forest"
+},
+"1920": {
+"t": "clear"
+},
+"1921": {
+"t": "clear"
+},
+"1922": {
+"t": "clear"
+},
+"1923": {
+"t": "forest"
+},
+"1924": {
+"t": "forest"
+},
+"1925": {
+"t": "forest"
+},
+"1926": {
+"t": "forest"
+},
+"1927": {
+"t": "forest"
+},
+"1928": {
+"t": "clear"
+},
+"2001": {
+"t": "clear"
+},
+"2002": {
+"t": "clear"
+},
+"2003": {
+"t": "forest"
+},
+"2004": {
+"t": "forest"
+},
+"2005": {
+"t": "clear"
+},
+"2006": {
+"t": "forest"
+},
+"2007": {
+"t": "clear"
+},
+"2008": {
+"t": "forest"
+},
+"2009": {
+"t": "forest"
+},
+"2010": {
+"t": "clear"
+},
+"2011": {
+"t": "clear"
+},
+"2012": {
+"t": "forest"
+},
+"2013": {
+"t": "forest"
+},
+"2014": {
+"t": "forest"
+},
+"2015": {
+"t": "forest"
+},
+"2016": {
+"t": "forest"
+},
+"2017": {
+"t": "clear"
+},
+"2018": {
+"t": "clear"
+},
+"2019": {
+"t": "forest"
+},
+"2020": {
+"t": "forest"
+},
+"2021": {
+"t": "forest"
+},
+"2022": {
+"t": "clear"
+},
+"2023": {
+"t": "clear"
+},
+"2024": {
+"t": "clear"
+},
+"2025": {
+"t": "clear"
+},
+"2026": {
+"t": "clear"
+},
+"2027": {
+"t": "clear"
+},
+"2028": {
+"t": "offmap"
+},
+"2101": {
+"t": "clear"
+},
+"2102": {
+"t": "clear"
+},
+"2103": {
+"t": "clear"
+},
+"2104": {
+"t": "forest"
+},
+"2105": {
+"t": "clear"
+},
+"2106": {
+"t": "clear"
+},
+"2107": {
+"t": "clear"
+},
+"2108": {
+"t": "forest"
+},
+"2109": {
+"t": "forest"
+},
+"2110": {
+"t": "forest"
+},
+"2111": {
+"t": "clear"
+},
+"2112": {
+"t": "clear"
+},
+"2113": {
+"t": "clear"
+},
+"2114": {
+"t": "clear"
+},
+"2115": {
+"t": "forest"
+},
+"2116": {
+"t": "clear"
+},
+"2117": {
+"t": "forest"
+},
+"2118": {
+"t": "forest"
+},
+"2119": {
+"t": "forest"
+},
+"2120": {
+"t": "forest"
+},
+"2121": {
+"t": "clear"
+},
+"2122": {
+"t": "clear"
+},
+"2123": {
+"t": "clear"
+},
+"2124": {
+"t": "forest"
+},
+"2125": {
+"t": "forest"
+},
+"2126": {
+"t": "forest"
+},
+"2127": {
+"t": "forest"
+},
+"2128": {
+"t": "forest"
+},
+"2201": {
+"t": "clear"
+},
+"2202": {
+"t": "clear"
+},
+"2203": {
+"t": "clear"
+},
+"2204": {
+"t": "forest"
+},
+"2205": {
+"t": "clear"
+},
+"2206": {
+"t": "forest"
+},
+"2207": {
+"t": "clear"
+},
+"2208": {
+"t": "forest"
+},
+"2209": {
+"t": "forest"
+},
+"2210": {
+"t": "forest"
+},
+"2211": {
+"t": "clear"
+},
+"2212": {
+"t": "clear"
+},
+"2213": {
+"t": "forest"
+},
+"2214": {
+"t": "forest"
+},
+"2215": {
+"t": "forest"
+},
+"2216": {
+"t": "clear"
+},
+"2217": {
+"t": "forest"
+},
+"2218": {
+"t": "forest"
+},
+"2219": {
+"t": "forest"
+},
+"2220": {
+"t": "forest"
+},
+"2221": {
+"t": "clear"
+},
+"2222": {
+"t": "forest"
+},
+"2223": {
+"t": "clear"
+},
+"2224": {
+"t": "forest"
+},
+"2225": {
+"t": "offmap"
+},
+"2226": {
+"t": "offmap"
+},
+"2227": {
+"t": "offmap"
+},
+"2228": {
+"t": "offmap"
+},
+"2301": {
+"t": "clear"
+},
+"2302": {
+"t": "clear"
+},
+"2303": {
+"t": "clear"
+},
+"2304": {
+"t": "forest"
+},
+"2305": {
+"t": "forest"
+},
+"2306": {
+"t": "clear"
+},
+"2307": {
+"t": "forest"
+},
+"2308": {
+"t": "forest"
+},
+"2309": {
+"t": "forest"
+},
+"2310": {
+"t": "forest"
+},
+"2311": {
+"t": "clear"
+},
+"2312": {
+"t": "clear"
+},
+"2313": {
+"t": "forest"
+},
+"2314": {
+"t": "forest"
+},
+"2315": {
+"t": "forest"
+},
+"2316": {
+"t": "clear"
+},
+"2317": {
+"t": "forest"
+},
+"2318": {
+"t": "forest"
+},
+"2319": {
+"t": "forest"
+},
+"2320": {
+"t": "clear"
+},
+"2321": {
+"t": "forest"
+},
+"2322": {
+"t": "forest"
+},
+"2323": {
+"t": "forest"
+},
+"2324": {
+"t": "forest"
+},
+"2325": {
+"t": "offmap"
+},
+"2326": {
+"t": "offmap"
+},
+"2327": {
+"t": "offmap"
+},
+"2328": {
+"t": "offmap"
+},
+"2401": {
+"t": "clear"
+},
+"2402": {
+"t": "clear"
+},
+"2403": {
+"t": "clear"
+},
+"2404": {
+"t": "clear"
+},
+"2405": {
+"t": "forest"
+},
+"2406": {
+"t": "forest"
+},
+"2407": {
+"t": "forest"
+},
+"2408": {
+"t": "forest"
+},
+"2409": {
+"t": "forest"
+},
+"2410": {
+"t": "clear"
+},
+"2411": {
+"t": "clear"
+},
+"2412": {
+"t": "forest"
+},
+"2413": {
+"t": "forest"
+},
+"2414": {
+"t": "forest"
+},
+"2415": {
+"t": "clear"
+},
+"2416": {
+"t": "clear"
+},
+"2417": {
+"t": "forest"
+},
+"2418": {
+"t": "forest"
+},
+"2419": {
+"t": "clear"
+},
+"2420": {
+"t": "forest"
+},
+"2421": {
+"t": "forest"
+},
+"2422": {
+"t": "forest"
+},
+"2423": {
+"t": "forest"
+},
+"2424": {
+"t": "forest"
+},
+"2425": {
+"t": "offmap"
+},
+"2426": {
+"t": "offmap"
+},
+"2427": {
+"t": "offmap"
+},
+"2428": {
+"t": "offmap"
+},
+"2501": {
+"t": "clear"
+},
+"2502": {
+"t": "clear"
+},
+"2503": {
+"t": "clear"
+},
+"2504": {
+"t": "forest"
+},
+"2505": {
+"t": "forest"
+},
+"2506": {
+"t": "forest"
+},
+"2507": {
+"t": "forest"
+},
+"2508": {
+"t": "clear"
+},
+"2509": {
+"t": "clear"
+},
+"2510": {
+"t": "forest"
+},
+"2511": {
+"t": "forest"
+},
+"2512": {
+"t": "clear"
+},
+"2513": {
+"t": "forest"
+},
+"2514": {
+"t": "forest"
+},
+"2515": {
+"t": "clear"
+},
+"2516": {
+"t": "clear"
+},
+"2517": {
+"t": "clear"
+},
+"2518": {
+"t": "forest"
+},
+"2519": {
+"t": "clear"
+},
+"2520": {
+"t": "clear"
+},
+"2521": {
+"t": "clear"
+},
+"2522": {
+"t": "forest"
+},
+"2523": {
+"t": "forest"
+},
+"2524": {
+"t": "forest"
+},
+"2525": {
+"t": "offmap"
+},
+"2526": {
+"t": "offmap"
+},
+"2527": {
+"t": "offmap"
+},
+"2528": {
+"t": "offmap"
+},
+"2601": {
+"t": "offmap"
+},
+"2602": {
+"t": "offmap"
+},
+"2603": {
+"t": "offmap"
+},
+"2604": {
+"t": "offmap"
+},
+"2605": {
+"t": "offmap"
+},
+"2606": {
+"t": "offmap"
+},
+"2607": {
+"t": "offmap"
+},
+"2608": {
+"t": "offmap"
+},
+"2609": {
+"t": "offmap"
+},
+"2610": {
+"t": "offmap"
+},
+"2611": {
+"t": "offmap"
+},
+"2612": {
+"t": "offmap"
+},
+"2613": {
+"t": "offmap"
+},
+"2614": {
+"t": "offmap"
+},
+"2615": {
+"t": "offmap"
+},
+"2616": {
+"t": "offmap"
+},
+"2617": {
+"t": "offmap"
+},
+"2618": {
+"t": "offmap"
+},
+"2619": {
+"t": "offmap"
+},
+"2620": {
+"t": "offmap"
+},
+"2621": {
+"t": "offmap"
+},
+"2622": {
+"t": "offmap"
+},
+"2623": {
+"t": "offmap"
+},
+"2624": {
+"t": "offmap"
+},
+"2625": {
+"t": "offmap"
+},
+"2626": {
+"t": "offmap"
+},
+"2627": {
+"t": "offmap"
+},
+"2628": {
+"t": "offmap"
+}
+},
+"sides": {
+"0101|0201": {
+"road": true
+},
+"0106|0206": {
+"trail": true
+},
+"0106|0205": {
+"road": true
+},
+"0106|0107": {
+"road": true
+},
+"0106|0207": {
+"trail": true
+},
+"0107|0207": {
+"trail": true
+},
+"0107|0206": {
+"trail": true
+},
+"0107|0108": {
+"road": true
+},
+"0107|0208": {
+"road": true
+},
+"0108|0208": {
+"trail": true
+},
+"0108|0207": {
+"trail": true
+},
+"0108|0109": {
+"road": true
+},
+"0108|0209": {
+"road": true
+},
+"0109|0209": {
+"trail": true
+},
+"0109|0208": {
+"trail": true
+},
+"0109|0110": {
+"road": true
+},
+"0109|0210": {
+"road": true
+},
+"0110|0210": {
+"trail": true
+},
+"0110|0209": {
+"trail": true
+},
+"0110|0111": {
+"road": true
+},
+"0110|0211": {
+"trail": true
+},
+"0111|0211": {
+"road": true
+},
+"0111|0210": {
+"trail": true
+},
+"0205|0305": {
+"road": true
+},
+"0211|0212": {
+"road": true
+},
+"0212|0312": {
+"trail": true
+},
+"0212|0213": {
+"road": true
+},
+"0213|0313": {
+"trail": true
+},
+"0213|0214": {
+"road": true
+},
+"0214|0314": {
+"trail": true
+},
+"0214|0215": {
+"road": true
+},
+"0215|0315": {
+"road": true
+},
+"0215|0216": {
+"road": true
+},
+"0216|0316": {
+"trail": true
+},
+"0302|0402": {
+"road": true
+},
+"0302|0403": {
+"trail": true
+},
+"0303|0404": {
+"road": true
+},
+"0304|0403": {
+"road": true
+},
+"0304|0305": {
+"road": true
+},
+"0305|0404": {
+"trail": true
+},
+"0309|0310": {
+"road": true
+},
+"0309|0410": {
+"trail": true
+},
+"0310|0409": {
+"trail": true
+},
+"0310|0311": {
+"road": true
+},
+"0310|0411": {
+"trail": true
+},
+"0311|0410": {
+"trail": true
+},
+"0311|0312": {
+"road": true
+},
+"0312|0412": {
+"road": true
+},
+"0315|0415": {
+"trail": true
+},
+"0317|0417": {
+"road": true
+},
+"0401|0501": {
+"trail": true
+},
+"0402|0502": {
+"road": true
+},
+"0402|0403": {
+"road": true
+},
+"0502|0602": {
+"road": true
+},
+"0502|0601": {
+"road": true
+},
+"0504|0603": {
+"road": true
+},
+"0505|0506": {
+"road": true
+},
+"0506|0605": {
+"trail": true
+},
+"0512|0613": {
+"trail": true
+},
+"0513|0612": {
+"road": true
+},
+"0518|0618": {
+"road": true
+},
+"0523|0524": {
+"trail": true
+},
+"0523|0624": {
+"trail": true
+},
+"0524|0625": {
+"trail": true
+},
+"0525|0624": {
+"trail": true
+},
+"0525|0626": {
+"trail": true
+},
+"0526|0625": {
+"trail": true
+},
+"0526|0527": {
+"trail": true
+},
+"0526|0627": {
+"trail": true
+},
+"0527|0626": {
+"trail": true
+},
+"0602|0603": {
+"road": true
+},
+"0603|0703": {
+"trail": true
+},
+"0614|0714": {
+"trail": true
+},
+"0702|0801": {
+"road": true
+},
+"0704|0804": {
+"road": true
+},
+"0713|0813": {
+"road": true
+},
+"0714|0813": {
+"trail": true
+},
+"0715|0815": {
+"trail": true
+},
+"0719|0819": {
+"road": true
+},
+"0719|0818": {
+"trail": true
+},
+"0720|0820": {
+"trail": true
+},
+"0724|0823": {
+"trail": true
+},
+"0724|0725": {
+"road": true
+},
+"0724|0825": {
+"road": true
+},
+"0725|0824": {
+"trail": true
+},
+"0725|0726": {
+"road": true
+},
+"0725|0826": {
+"road": true
+},
+"0726|0825": {
+"trail": true
+},
+"0726|0727": {
+"road": true
+},
+"0726|0827": {
+"road": true
+},
+"0727|0826": {
+"trail": true
+},
+"0727|0728": {
+"road": true
+},
+"0728|0827": {
+"road": true
+},
+"0804|0805": {
+"road": true
+},
+"0805|0905": {
+"trail": true
+},
+"0817|0917": {
+"trail": true
+},
+"0819|0820": {
+"road": true
+},
+"0820|0920": {
+"trail": true
+},
+"0820|0821": {
+"road": true
+},
+"0821|0921": {
+"trail": true
+},
+"0821|0822": {
+"road": true
+},
+"0822|0922": {
+"road": true
+},
+"0822|0823": {
+"road": true
+},
+"0823|0923": {
+"trail": true
+},
+"0906|1006": {
+"trail": true
+},
+"0913|1014": {
+"trail": true
+},
+"0914|1014": {
+"road": true
+},
+"0914|1013": {
+"road": true
+},
+"0914|1015": {
+"trail": true
+},
+"0917|1016": {
+"trail": true
+},
+"0920|1019": {
+"trail": true
+},
+"0922|1021": {
+"road": true
+},
+"0923|0924": {
+"trail": true
+},
+"0924|1024": {
+"road": true
+},
+"0924|1023": {
+"trail": true
+},
+"1013|1113": {
+"road": true
+},
+"1014|1015": {
+"road": true
+},
+"1015|1016": {
+"road": true
+},
+"1017|1117": {
+"road": true
+},
+"1017|1018": {
+"road": true
+},
+"1018|1118": {
+"trail": true
+},
+"1018|1019": {
+"road": true
+},
+"1019|1119": {
+"road": true
+},
+"1019|1020": {
+"road": true
+},
+"1020|1120": {
+"road": true
+},
+"1020|1021": {
+"road": true
+},
+"1021|1121": {
+"trail": true
+},
+"1024|1025": {
+"road": true
+},
+"1025|1125": {
+"trail": true
+},
+"1025|1026": {
+"road": true
+},
+"1026|1126": {
+"trail": true
+},
+"1027|1127": {
+"trail": true
+},
+"1103|1203": {
+"road": true
+},
+"1107|1207": {
+"road": true
+},
+"1113|1213": {
+"road": true
+},
+"1114|1213": {
+"road": true
+},
+"1114|1115": {
+"road": true
+},
+"1115|1215": {
+"trail": true
+},
+"1115|1116": {
+"road": true
+},
+"1116|1117": {
+"trail": true
+},
+"1119|1218": {
+"road": true
+},
+"1119|1120": {
+"road": true
+},
+"1120|1121": {
+"road": true
+},
+"1121|1122": {
+"road": true
+},
+"1122|1123": {
+"road": true
+},
+"1123|1124": {
+"road": true
+},
+"1123|1224": {
+"road": true
+},
+"1124|1223": {
+"trail": true
+},
+"1124|1225": {
+"road": true
+},
+"1125|1225": {
+"road": true
+},
+"1125|1224": {
+"road": true
+},
+"1125|1226": {
+"road": true
+},
+"1126|1225": {
+"road": true
+},
+"1126|1127": {
+"road": true
+},
+"1127|1226": {
+"road": true
+},
+"1127|1128": {
+"creek": true
+},
+"1128|1227": {
+"creek": true
+},
+"1203|1303": {
+"road": true
+},
+"1203|1204": {
+"road": true
+},
+"1204|1304": {
+"trail": true
+},
+"1204|1205": {
+"road": true
+},
+"1205|1305": {
+"trail": true
+},
+"1205|1206": {
+"road": true
+},
+"1206|1306": {
+"trail": true
+},
+"1206|1207": {
+"road": true
+},
+"1207|1307": {
+"road": true
+},
+"1207|1208": {
+"road": true
+},
+"1208|1308": {
+"trail": true
+},
+"1208|1209": {
+"road": true
+},
+"1209|1309": {
+"trail": true
+},
+"1210|1211": {
+"road": true
+},
+"1211|1311": {
+"trail": true
+},
+"1211|1212": {
+"road": true
+},
+"1212|1312": {
+"trail": true
+},
+"1212|1213": {
+"road": true
+},
+"1213|1313": {
+"trail": true
+},
+"1216|1217": {
+"trail": true
+},
+"1217|1317": {
+"trail": true
+},
+"1217|1218": {
+"road": true
+},
+"1218|1318": {
+"trail": true
+},
+"1220|1320": {
+"trail": true
+},
+"1226|1326": {
+"road": true
+},
+"1302|1403": {
+"trail": true
+},
+"1303|1402": {
+"road": true
+},
+"1304|1404": {
+"road": true
+},
+"1307|1407": {
+"road": true
+},
+"1313|1412": {
+"trail": true
+},
+"1316|1317": {
+"road": true
+},
+"1316|1417": {
+"road": true
+},
+"1317|1417": {
+"road": true
+},
+"1324|1425": {
+"trail": true
+},
+"1325|1424": {
+"road": true
+},
+"1325|1326": {
+"road": true
+},
+"1326|1426": {
+"creek": true
+},
+"1327|1427": {
+"creek": true
+},
+"1327|1426": {
+"creek": true
+},
+"1327|1328": {
+"creek": true
+},
+"1417|1418": {
+"road": true
+},
+"1423|1424": {
+"road": true
+},
+"1425|1426": {
+"creek": true
+},
+"1426|1526": {
+"creek": true
+},
+"1427|1527": {
+"creek": true
+},
+"1503|1602": {
+"trail": true
+},
+"1506|1507": {
+"road": true
+},
+"1506|1607": {
+"trail": true
+},
+"1507|1508": {
+"road": true
+},
+"1507|1608": {
+"trail": true
+},
+"1508|1509": {
+"road": true
+},
+"1508|1609": {
+"road": true
+},
+"1509|1609": {
+"road": true
+},
+"1527|1627": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"1527|1528": {
+"creek": true
+},
+"1609|1709": {
+"trail": true
+},
+"1622|1722": {
+"trail": true
+},
+"1623|1723": {
+"creek": true
+},
+"1625|1725": {
+"trail": true
+},
+"1626|1627": {
+"creek": true
+},
+"1627|1727": {
+"creek": true
+},
+"1703|1802": {
+"trail": true
+},
+"1704|1805": {
+"trail": true
+},
+"1709|1809": {
+"road": true
+},
+"1711|1812": {
+"trail": true
+},
+"1712|1812": {
+"trail": true
+},
+"1722|1822": {
+"creek": true
+},
+"1722|1723": {
+"creek": true
+},
+"1723|1724": {
+"creek": true
+},
+"1724|1824": {
+"creek": true
+},
+"1724|1823": {
+"creek": true
+},
+"1725|1824": {
+"creek": true
+},
+"1726|1826": {
+"creek": true
+},
+"1727|1827": {
+"creek": true
+},
+"1727|1826": {
+"creek": true
+},
+"1727|1728": {
+"creek": true
+},
+"1802|1902": {
+"road": true
+},
+"1820|1920": {
+"road": true
+},
+"1821|1822": {
+"creek": true
+},
+"1822|1922": {
+"creek": true
+},
+"1824|1825": {
+"creek": true
+},
+"1825|1925": {
+"creek": true
+},
+"1825|1826": {
+"creek": true
+},
+"1826|1926": {
+"creek": true
+},
+"1902|2002": {
+"road": true
+},
+"1902|1903": {
+"road": true
+},
+"1903|2003": {
+"trail": true
+},
+"1907|2007": {
+"trail": true
+},
+"1910|2010": {
+"road": true
+},
+"1914|2015": {
+"trail": true
+},
+"1917|1918": {
+"road": true
+},
+"1919|1920": {
+"road": true
+},
+"1920|1921": {
+"road": true
+},
+"1921|1922": {
+"road": true
+},
+"1921|2022": {
+"road": true
+},
+"1922|2022": {
+"creek": true,
+"bridge": true,
+"crossing": true,
+"road": true,
+"name": "Alexander's Bridge"
+},
+"1922|1923": {
+"creek": true
+},
+"1925|1926": {
+"creek": true
+},
+"1926|2026": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"1926|2025": {
+"creek": true
+},
+"1926|1927": {
+"creek": true
+},
+"1928|2027": {
+"road": true
+},
+"2007|2107": {
+"road": true
+},
+"2009|2010": {
+"road": true
+},
+"2010|2011": {
+"road": true
+},
+"2011|2012": {
+"road": true
+},
+"2014|2114": {
+"creek": true
+},
+"2016|2116": {
+"road": true
+},
+"2017|2117": {
+"creek": true
+},
+"2021|2022": {
+"creek": true
+},
+"2022|2023": {
+"road": true
+},
+"2023|2123": {
+"trail": true
+},
+"2023|2024": {
+"road": true
+},
+"2024|2025": {
+"road": true
+},
+"2025|2026": {
+"road": true
+},
+"2026|2027": {
+"road": true
+},
+"2102|2203": {
+"trail": true
+},
+"2103|2202": {
+"road": true
+},
+"2105|2106": {
+"road": true
+},
+"2106|2107": {
+"road": true
+},
+"2111|2211": {
+"road": true
+},
+"2112|2212": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"2113|2213": {
+"creek": true
+},
+"2113|2212": {
+"creek": true
+},
+"2113|2114": {
+"creek": true
+},
+"2114|2115": {
+"creek": true
+},
+"2115|2214": {
+"creek": true
+},
+"2116|2216": {
+"road": true
+},
+"2116|2117": {
+"creek": true
+},
+"2117|2216": {
+"creek": true
+},
+"2117|2118": {
+"creek": true
+},
+"2118|2217": {
+"creek": true
+},
+"2120|2220": {
+"creek": true
+},
+"2120|2219": {
+"trail": true
+},
+"2121|2220": {
+"creek": true
+},
+"2121|2122": {
+"creek": true
+},
+"2122|2221": {
+"creek": true
+},
+"2123|2223": {
+"trail": true
+},
+"2211|2311": {
+"road": true
+},
+"2211|2212": {
+"creek": true
+},
+"2212|2312": {
+"creek": true
+},
+"2214|2215": {
+"creek": true
+},
+"2215|2315": {
+"creek": true
+},
+"2216|2316": {
+"creek": true,
+"bridge": true,
+"crossing": true,
+"road": true,
+"name": "Reed's Bridge"
+},
+"2216|2217": {
+"creek": true
+},
+"2217|2218": {
+"creek": true
+},
+"2218|2318": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"2219|2220": {
+"creek": true
+},
+"2220|2320": {
+"creek": true
+},
+"2220|2221": {
+"creek": true
+},
+"2221|2321": {
+"creek": true
+},
+"2221|2222": {
+"creek": true
+},
+"2223|2323": {
+"trail": true
+},
+"2303|2403": {
+"road": true
+},
+"2305|2405": {
+"creek": true
+},
+"2306|2406": {
+"creek": true
+},
+"2306|2405": {
+"creek": true
+},
+"2307|2406": {
+"creek": true
+},
+"2309|2409": {
+"creek": true
+},
+"2310|2409": {
+"creek": true
+},
+"2311|2411": {
+"creek": true,
+"bridge": true,
+"crossing": true,
+"road": true,
+"name": "Dyer's Bridge"
+},
+"2312|2412": {
+"creek": true
+},
+"2312|2411": {
+"creek": true
+},
+"2312|2313": {
+"creek": true
+},
+"2315|2415": {
+"trail": true
+},
+"2316|2416": {
+"road": true
+},
+"2317|2416": {
+"trail": true
+},
+"2318|2319": {
+"creek": true
+},
+"2319|2418": {
+"creek": true
+},
+"2320|2420": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"2320|2321": {
+"creek": true
+},
+"2403|2503": {
+"creek": true,
+"bridge": true,
+"crossing": true,
+"road": true,
+"name": "Ringgold Bridge"
+},
+"2404|2504": {
+"creek": true
+},
+"2404|2405": {
+"creek": true
+},
+"2406|2407": {
+"creek": true
+},
+"2407|2507": {
+"creek": true
+},
+"2408|2508": {
+"creek": true,
+"ford": true,
+"crossing": true,
+"trail": true
+},
+"2408|2409": {
+"creek": true
+},
+"2409|2410": {
+"creek": true
+},
+"2410|2510": {
+"creek": true
+},
+"2410|2411": {
+"creek": true
+},
+"2418|2419": {
+"creek": true
+},
+"2419|2519": {
+"creek": true
+},
+"2419|2420": {
+"creek": true
+},
+"2502|2503": {
+"creek": true
+}
+}
+}

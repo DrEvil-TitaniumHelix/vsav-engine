@@ -515,7 +515,7 @@ class BlueGrayGame:
             return self._v(False, "resolve the pending result first [7.7]")
         atk_ids = [str(p) for p in action.get("attackers", [])]
         def_ids = [str(p) for p in action.get("defenders", [])]
-        bomb_ids = [str(p) for p in action.get("bombarding", [])]
+        bomb_ids = [str(p) for p in self._bomb_ids(action)]
         if not atk_ids or not def_ids:
             return self._v(False, "battle needs attackers and defenders [7.0]")
         if not set(bomb_ids) <= set(atk_ids):
@@ -625,6 +625,25 @@ class BlueGrayGame:
                        f"battle at {odds_pair[0]}-{odds_pair[1]} "
                        f"({len(atk_ids)} vs {len(def_ids)}) [7.0]")
 
+    def _bomb_ids(self, action):
+        """Bombarding attackers. Explicit list honored; otherwise INFERRED:
+        an artillery attacker not adjacent (crossable) to any defender can
+        only be participating by bombardment (8.0) — the inference is exact,
+        not a heuristic, and keeps client actions simple. Deterministic, so
+        the verifier replays it identically."""
+        if "bombarding" in action:
+            return [str(p) for p in action["bombarding"]]
+        out = []
+        dfd = [self.s["units"].get(str(p)) for p in action.get("defenders", [])]
+        dfd = [d for d in dfd if d]
+        for p in action.get("attackers", []):
+            u = self.s["units"].get(str(p))
+            if not u or self.cls(u) != "artillery":
+                continue
+            if not any(self._engage_adjacent(u, d) for d in dfd):
+                out.append(str(p))
+        return out
+
     def _odds_leq(self, a, b):
         return a[0] * b[1] <= b[0] * a[1]
 
@@ -731,7 +750,7 @@ class BlueGrayGame:
             return self._v(False, f"{pid} is not among the retreating units")
         u = self.unit(pid)
         open_h, disp_h = self._retreat_hexes(u)
-        dest = action.get("dest")
+        dest = self._retreat_dest(action)
         if dest is None:
             if open_h or disp_h:
                 return self._v(False,
@@ -751,6 +770,17 @@ class BlueGrayGame:
             return self._v(True, f"{u['slot']} retreats to {dest} displacing [7.8]")
         return self._v(False, f"{dest} is not a legal retreat hex for {u['slot']} [7.72]")
 
+    @staticmethod
+    def _retreat_dest(action):
+        """Client tolerance: retreat carries dest, a path (last hex), or
+        eliminate:true (= no destination)."""
+        if action.get("eliminate"):
+            return None
+        if action.get("dest") is not None:
+            return tuple(action["dest"])
+        path = action.get("path")
+        return tuple(path[-1]) if path else None
+
     def _propose_advance(self, side, action):
         s = self.s
         p = s["pending"]
@@ -758,12 +788,12 @@ class BlueGrayGame:
             return self._v(False, "no advance pending [7.75]")
         if side != p["by"]:
             return self._v(False, f"the {p['by']} player owns the advance [7.75]")
-        if action.get("unit") is None:
+        if action.get("unit") is None or action.get("decline"):
             return self._v(True, "advance declined [7.75: never forced]")
         pid = str(action.get("unit"))
         if pid not in p["units"]:
             return self._v(False, "only a victorious participating unit may advance [7.75]")
-        dest = tuple(action.get("dest", ()))
+        dest = tuple(action.get("dest") or action.get("hex") or ())
         if dest not in {tuple(h) for h in p["hexes"]}:
             return self._v(False, f"advance hexes: {p['hexes']} [7.75]")
         u = self.unit(pid)
@@ -969,7 +999,7 @@ class BlueGrayGame:
         s = self.s
         atk_ids = [str(p) for p in action["attackers"]]
         def_ids = [str(p) for p in action["defenders"]]
-        bomb_ids = [str(p) for p in action.get("bombarding", [])]
+        bomb_ids = self._bomb_ids(action)
         atk = [self.unit(p) for p in atk_ids]
         dfd = [self.unit(p) for p in def_ids]
         dhexes = {(d["col"], d["row"]) for d in dfd}
@@ -1070,11 +1100,10 @@ class BlueGrayGame:
         pid = str(action["unit"])
         u = self.unit(pid)
         ev = []
-        dest = action.get("dest")
+        dest = self._retreat_dest(action)
         if dest is None:
             ev += self._eliminate([pid], "no retreat open [7.72]")
         else:
-            dest = tuple(dest)
             # displacement (7.8): friendly full stack - displaced unit must
             # itself retreat; chains resolved as further pendings
             friends = [v for v in s["units"].values()
@@ -1101,11 +1130,11 @@ class BlueGrayGame:
     def _apply_advance(self, side, action):
         s = self.s
         ev = []
-        if action.get("unit") is None:
+        if action.get("unit") is None or action.get("decline"):
             ev.append({"advance": "declined"})
         else:
             u = self.unit(str(action["unit"]))
-            dest = tuple(action["dest"])
+            dest = tuple(action.get("dest") or action.get("hex"))
             u["col"], u["row"] = dest
             s["advanced"].append(u["pid"])
             self._credit_occupation(side, [dest])
@@ -1260,19 +1289,71 @@ class BlueGrayGame:
         return {"slot": e["slot"], "cls": e.get("cls", "infantry")}
 
     # ------------------------------------------------------------ UI panels
-    def legal_moves(self, pid):
-        u = self.unit(str(pid))
-        if self.s["phase"] != "movement" or u["side"] != self.s["mover"] \
-           or u["pid"] in self.s["moved"]:
-            return {}
+    def on_map(self, u):
+        return True                    # no at-sea/off-board states in B&G
+
+    @property
+    def schedule(self):
+        """pid -> reserve entry with 'due' (unit_view reserve tooltips)."""
+        return self.reserve
+
+    def dests_map(self, u):
         return self.dests(u)
 
-    def battle_preview(self, side, atk_ids, def_ids, bomb_ids=()):
-        atk = [self.unit(str(p)) for p in atk_ids]
-        dfd = [self.unit(str(p)) for p in def_ids]
-        dhexes = {(d["col"], d["row"]) for d in dfd}
-        pair = self._battle_odds(atk, dfd, [str(b) for b in bomb_ids], dhexes)
-        return {"odds": f"{pair[0]}-{pair[1]}", "column": self._col_of(pair)}
+    def legal_moves(self, pid):
+        """SG contract for the UI: {can_act, reasons, budget, dests:[...]}."""
+        pid = str(pid)
+        if pid not in self.s["units"]:
+            return {"can_act": False, "reasons": ["unit is not on the map"],
+                    "dests": []}
+        u = self.unit(pid)
+        if self.s["over"]:
+            return {"can_act": False, "reasons": ["game is over [17.0]"], "dests": []}
+        if self.s["phase"] != "movement":
+            return {"can_act": False,
+                    "reasons": ["movement only in the movement phase [5.11]"],
+                    "dests": []}
+        if u["side"] != self.s["mover"]:
+            return {"can_act": False,
+                    "reasons": [f"not {u['side']}'s player turn [4.1]"], "dests": []}
+        if pid in self.s["moved"]:
+            return {"can_act": False,
+                    "reasons": [f"{u['slot']} has already moved this phase [5.17]"],
+                    "dests": []}
+        out = {"can_act": True, "reasons": [], "budget": self.budget(u), "dests": []}
+        for (c, r), cost in sorted(self.dests(u).items()):
+            x, y = self.game.grid.hex_to_pixel(c, r)
+            out["dests"].append(dict(
+                col=c, row=r, x=x, y=y, cost=round(cost, 1),
+                hexnum=self.game.grid.hexnum(c, r),
+                terrain=self.game.hex_terrain(c, r)))
+        return out
+
+    def battle_preview(self, side, atk_ids, def_ids, bomb_ids=None):
+        """Odds + legality preview for the client's battle builder."""
+        atk_ids = [str(p) for p in atk_ids]
+        def_ids = [str(p) for p in def_ids]
+        action = {"type": "battle", "attackers": atk_ids, "defenders": def_ids}
+        if bomb_ids is not None:
+            action["bombarding"] = [str(b) for b in bomb_ids]
+        chk = self.propose(side, action)
+        try:
+            atk = [self.unit(p) for p in atk_ids]
+            dfd = [self.unit(p) for p in def_ids]
+            dhexes = {(d["col"], d["row"]) for d in dfd}
+            bl = self._bomb_ids(action)
+            pair = self._battle_odds(atk, dfd, bl, dhexes)
+            a_str = sum(self.strength(u) for u in atk)
+            retreated = set(self.s.get("retreated_phase", []))
+            d_str = sum(self.strength(d) for d in dfd
+                        if d["pid"] not in retreated)
+            return {"odds": f"{pair[0]}-{pair[1]}", "column": self._col_of(pair),
+                    "factors": [a_str, d_str], "legal": chk["legal"],
+                    "reasons": chk["reasons"], "needs_supply": False,
+                    "bombarding": bl}
+        except KeyError:
+            return {"odds": None, "legal": False, "reasons": chk["reasons"],
+                    "needs_supply": False}
 
     def rules_scope(self):
         sc = self.scenario.get("rules_scope", {})
@@ -1283,26 +1364,81 @@ class BlueGrayGame:
                 "not_enforced": sc.get("enforced_tier2", []) + sc.get("umpired", []),
                 "banner": f"TIER {self.tier} MODE selected - combat is umpired"}
 
+    def _pending_view(self):
+        """The pending choice shaped for the client's combat panel."""
+        p = self.s["pending"]
+        if not p:
+            return None
+        if p["awaiting"] == "retreat":
+            units = []
+            for pid in p["units"]:
+                u = self.unit(pid)
+                oh, dh = self._retreat_hexes(u)
+                units.append({"pid": pid, "slot": u["slot"],
+                              "options": [{"path": [list(h)],
+                                           "name": self.game.grid.hexnum(*h)}
+                                          for h in sorted(oh) + sorted(dh)]})
+            return {"kind": "retreat", "chooser": p["by"], "units": units}
+        if p["awaiting"] == "exchange_loss":
+            return {"kind": "exchange", "winner": p["by"], "owe": p["owe"],
+                    "involved": [{"pid": x, "slot": self.unit(x)["slot"],
+                                  "factor": self.printed(self.unit(x))}
+                                 for x in p["units"]]}
+        if p["awaiting"] == "advance":
+            return {"kind": "advance", "chooser": p["by"], "can_decline": True,
+                    "advancers": [{"pid": x, "slot": self.unit(x)["slot"]}
+                                  for x in p["units"]],
+                    "hexes": [list(h) for h in p["hexes"]],
+                    "hex_names": [self.game.grid.hexnum(*h) for h in p["hexes"]]}
+        if p["awaiting"] == "train_retreat":
+            u = self.unit(p["unit"])
+            oh, _ = self._retreat_hexes(u)
+            return {"kind": "train_retreat", "chooser": p["by"],
+                    "unit": p["unit"], "slot": u["slot"],
+                    "options": [{"hex": list(h),
+                                 "name": self.game.grid.hexnum(*h)}
+                                for h in sorted(oh)]}
+        return dict(p)
+
     def flow(self):
         s = self.s
         due = sorted([{"pid": pid, "slot": self.reserve[pid]["slot"],
                        "side": self.reserve[pid]["side"],
                        "due": d, "entry": self.reserve[pid]["entry"]}
-                      for pid, d in s["pool"].items() if d <= s["turn"]],
+                      for pid, d in s["pool"].items() if d <= s["turn"]
+                      and self.reserve[pid]["side"] == s["mover"]],
                      key=lambda e: e["pid"])
-        ob = {}
-        if self.combat and s["phase"] == "combat" and not self.is_night():
+        must_attack, must_be = [], []
+        if self.combat and not self.is_night() and not s["over"]:
             mine, theirs = self._contacts(s["mover"])
-            ob = {"must_attack": sorted(p for p in mine if p not in s["fought"]),
-                  "must_be_attacked": sorted(p for p in theirs if p not in s["defended"])}
+            must_attack = [{"pid": p, "slot": self.unit(p)["slot"]}
+                           for p in sorted(mine) if p not in s["fought"]]
+            must_be = [{"pid": p, "slot": self.unit(p)["slot"]}
+                       for p in sorted(theirs) if p not in s["defended"]]
+        combat = None
+        if self.combat:
+            combat = {"phase": s["phase"], "must_attack": must_attack,
+                      "must_be_attacked": must_be,
+                      "pending": self._pending_view(),
+                      "battles_fought": s["battle_no"]}
+        exit_ready = []
+        if s["phase"] == "movement" and not s["over"]:
+            for u in self._live(s["mover"]):
+                if (u["col"], u["row"]) in self.exit_hexes \
+                   and s["moved"].get(u["pid"], 0) + self.exit_cfg.get("mp", 1) \
+                       <= self.budget(u):
+                    exit_ready.append({"pid": u["pid"], "slot": u["slot"]})
         return {
-            "mode": "bluegray", "turn": s["turn"], "label": self.turn_label(),
+            "mode": "bluegray", "turn": s["turn"], "turns": self.turns,
+            "turn_label": self.turn_label(),
             "night": self.is_night(), "phase": s["phase"], "mover": s["mover"],
             "over": s["over"], "winner": s["winner"], "vp": s["vp"],
-            "moved": s["moved"], "pending": s["pending"],
-            "due_reinforcements": due, "obligations": ob,
+            "moved": s["moved"], "combat": combat,
+            "bluegray": {"due": due, "exit_ready": exit_ready,
+                         "exit_hexes": [list(h) for h in sorted(self.exit_hexes)],
+                         "night": self.is_night()},
             "exited": {p: sd for p, sd in s["exited"].items()},
-            "occ": s["occ"],
+            "occ": s["occ"], "scenario": self.scenario["name"],
             "tier": self.tier, "tier_earned": self.tier_earned,
             "rules_scope": self.rules_scope(),
         }

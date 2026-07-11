@@ -76,25 +76,26 @@ def replay(bg, live, label):
 # ================================================================ A. real scenario
 print("--- A: real scenario, movement basics ---")
 bg, liveA = mkgame(os.path.join(HERE, "scenario_chickamauga.json"), seed=7)
+PID = {e["slot"]: pid for pid, e in bg.catalog.items()}   # slot -> numeric id
 check(bg.s["turn"] == 1 and bg.s["mover"] == "Union" and bg.s["phase"] == "movement",
       "GT1 opens with the Union movement phase [4.1/14.3]")
 # legal move: 1/1/XIV (1317) somewhere in its dests
-u = bg.unit("1-1-xiv")
+u = bg.unit(PID["1/1/XIV c"])
 dd = bg.dests(u)
 check(len(dd) > 0, f"1/1/XIV has {len(dd)} legal destinations")
 dest = sorted(dd)[0]
-check(ok(bg.submit("Union", {"type": "move", "unit": "1-1-xiv", "dest": list(dest)})),
+check(ok(bg.submit("Union", {"type": "move", "unit": PID["1/1/XIV c"], "dest": list(dest)})),
       "legal move accepted [5.0]")
-check(not ok(bg.submit("Union", {"type": "move", "unit": "1-1-xiv",
+check(not ok(bg.submit("Union", {"type": "move", "unit": PID["1/1/XIV c"],
                                  "dest": list(sorted(dd)[-1])})),
       "second move of the same unit rejected [5.17]")
-check(not ok(bg.submit("Union", {"type": "move", "unit": "wood", "dest": [20, 25]})),
+check(not ok(bg.submit("Union", {"type": "move", "unit": PID["Wood c"], "dest": [20, 25]})),
       "moving an enemy unit rejected")
-check(not ok(bg.submit("Confederate", {"type": "move", "unit": "wood", "dest": [20, 25]})),
+check(not ok(bg.submit("Confederate", {"type": "move", "unit": PID["Wood c"], "dest": [20, 25]})),
       "moving out of player turn rejected [4.1]")
-check(not ok(bg.submit("Union", {"type": "reinforce", "unit": "1-2-xiv", "hex": [7, 28]})),
+check(not ok(bg.submit("Union", {"type": "reinforce", "unit": PID["1/2/XIV c"], "hex": [7, 28]})),
       "GT2 reinforcement rejected on GT1 [15.0]")
-check(not ok(bg.submit("Union", {"type": "exit", "unit": "1-1-res"})),
+check(not ok(bg.submit("Union", {"type": "exit", "unit": PID["1/1/Res c"]})),
       "exit rejected off the exit hexes [16.5]")
 check(ok(bg.submit("Union", {"type": "end_movement"})), "end_movement accepted")
 check(bg.s["phase"] == "combat", "combat phase follows movement [4.1]")
@@ -105,15 +106,15 @@ check(ok(bg.submit("Confederate", {"type": "end_movement"})), "CSA end_movement"
 check(ok(bg.submit("Confederate", {"type": "end_phase"})), "CSA end_phase")
 check(bg.s["turn"] == 2 and bg.s["mover"] == "Union", "GT2 begins [4.1]")
 # GT2 Union reinforcements: column costs 1,2,3... at 0728/1027
-check(ok(bg.submit("Union", {"type": "reinforce", "unit": "1-2-xiv", "hex": [7, 28]})),
+check(ok(bg.submit("Union", {"type": "reinforce", "unit": PID["1/2/XIV c"], "hex": [7, 28]})),
       "GT2 reinforcement enters at 0728 [15.0]")
-check(not ok(bg.submit("Union", {"type": "reinforce", "unit": "2-2-xiv", "hex": [7, 28]})),
+check(not ok(bg.submit("Union", {"type": "reinforce", "unit": PID["2/2/XIV c"], "hex": [7, 28]})),
       "occupied entry hex rejected [15.4]")
-check(ok(bg.submit("Union", {"type": "reinforce", "unit": "2-2-xiv", "hex": [10, 27]})),
+check(ok(bg.submit("Union", {"type": "reinforce", "unit": PID["2/2/XIV c"], "hex": [10, 27]})),
       "second reinforcement at the other hex [15.0]")
-check(not ok(bg.submit("Union", {"type": "reinforce", "unit": "2-1-xx", "hex": [7, 28]})),
+check(not ok(bg.submit("Union", {"type": "reinforce", "unit": PID["2/1/XX c"], "hex": [7, 28]})),
       "GT5 unit rejected on GT2 [15.0]")
-check(bg.s["units"]["1-2-xiv"]["col"] == 7, "reinforcement on the map")
+check(bg.s["units"][PID["1/2/XIV c"]]["col"] == 7, "reinforcement on the map")
 replay(bg, liveA, "real scenario session")
 
 # ================================================================ B. ZOC + battle

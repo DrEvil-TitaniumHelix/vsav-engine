@@ -21,11 +21,9 @@
   "hexnum_digits": 2,
   "provenance": "VERIFIED 2026-07-10: module buildFile HexGrid params; formula validated against ALL 45 at-start piece positions in 'Chickamauga Start.vsav' resolving to the 1975 deployment chart hexes (32/32 CSA, 13/14 Union; the 2 Union deviations are module setup bugs, not grid errors) - see validate_grid.py"
  },
- "buildfile": "../../../VassalBlueGray/extracted/buildFile",
- "moduledata": "../../../VassalBlueGray/extracted/moduledata",
  "assets": {
-  "map": "../../../VassalBlueGray/extracted/images/Chickamauga.png",
-  "counters_dir": "../../../VassalBlueGray/extracted/images"
+  "map": "assets/Chickamauga.png",
+  "counters_dir": "assets/counters_dir"
  },
  "ui": {
   "counter_px": 84

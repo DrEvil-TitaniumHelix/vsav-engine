@@ -28,10 +28,12 @@ VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
           (0 illegal proposals ever touched the game state)
 ```
 
-**Two complete games ship in this repo, playable out of the box:** Avalon
-Hill's **Afrika Korps** (the flagship — the full strategic campaign) and
-Avalon Hill's **Tobruk** (a tactical tank firefight). v1 (movement legality
-for Arnhem / ASL) is still here and still works.
+**Three complete games ship in this repo, playable out of the box:** Avalon
+Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
+**Blue & Gray: Chickamauga** (the classic 1975 Civil War hex battle, encoded
+overnight as the platform's second full Tier-3 game) and Avalon Hill's
+**Tobruk** (a tactical tank firefight). v1 (movement legality for Arnhem /
+ASL) is still here and still works.
 By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
@@ -60,7 +62,29 @@ examples.
   evidence, the enforced resolution, and its authority. The in-game Rules
   panel renders the register.
 
-## Game 2: Tobruk (Avalon Hill, 1975) — the tactical proof game
+## Game 2: Blue & Gray — Chickamauga (SPI, 1975) — Tier 3
+
+**The Last Victory, 20 September 1863** — the complete campaign game from
+SPI's classic quad: the full battlefield map (creek crossings, the four named
+bridges and six fords read off the map art), all 86 counters on the printed
+deployment and reinforcement schedules, and the original rules as an
+enforced, cited gate — movement and terrain costs, rigid ZOCs, mandatory
+combat, the 1d6 CRT (validated cell-by-cell against two independent
+printings), one-hex retreats with displacement chains, advance after combat,
+artillery bombardment with line of sight, night turns, map exits, the Union
+Train, and the full Victory Point schedule with both lines-of-communication
+checks.
+
+- **Tier 3**: policy AI opponent through the same gate — five AI-vs-AI
+  campaigns complete all 15 game turns and replay byte-exact.
+- **Five validators** (`games/blue-and-gray-chickamauga/validate_*.py`):
+  grid, movement, gate, combat, AI — the same evidence chain as Afrika Korps.
+- **The register works**: encoding found the 1975 rules citing an exit hex
+  (0110) that contradicts the game's own map (the road exits at 0111) — the
+  defect, the map evidence and the official correction are recorded in
+  `game.json` and rendered in the Rules panel.
+
+## Game 3: Tobruk (Avalon Hill, 1975) — the tactical proof game
 
 **Firefight B — "An Even Encounter"** (*Tobruk* rulebook p.24, an official scenario):
 6 British Stuart Mk.III vs 15 Italian M13/40, 10 turns, open desert, official victory
@@ -169,7 +193,8 @@ python app.py                       # window opens → pick a game → play
 ```
 
 or in a plain browser with zero dependencies: `python ui/server.py` and open
-the printed URL. The release games (**Afrika Korps**, **Tobruk**) are
+the printed URL. The release games (**Afrika Korps**, **Blue & Gray:
+Chickamauga**, **Tobruk**) are
 self-contained in `games_bundled/` — a fresh clone plays out of the box.
 
 **No-Python path:** the prebuilt Windows exe is in the repo at

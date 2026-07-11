@@ -148,7 +148,7 @@ def _movement_actions(bg, side):
             continue
         u = bg.unit(pid)
         here = (u["col"], u["row"])
-        dd = bg.legal_moves(pid)
+        dd = bg.dests(u)
         # Train: run for the nearest exit hex, exit when standing on one
         if bg.cls(u) == "train":
             if here in bg.exit_hexes:
@@ -452,6 +452,7 @@ class TurnStepper:
 
     def __init__(self, bg, resolve_for=None):
         self.bg = bg
+        self.sg = bg               # server duck-typing (AI_STEP.sg staleness check)
         self.gen = turn_actions(bg, resolve_for)
         self._next = None
         try:

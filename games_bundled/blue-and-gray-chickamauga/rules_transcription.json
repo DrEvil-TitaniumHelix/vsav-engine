@@ -1,0 +1,288 @@
+{
+  "_meta": {
+    "game": "Blue & Gray: Chickamauga (SPI 1975)",
+    "ruleset": "ORIGINAL SPI rules (Bruce's decision 2026-07-10: original, not Stafford 2018 fan revision)",
+    "sources": {
+      "scan1975": "literature/blue-and-gray/BGChickamauga.pdf — original 1975 folio: Standard Rules (4pp) + Chickamauga Exclusive Rules + counter sheet + CRT/TEC page (p8) [PRIMARY for 'original' questions]",
+      "deluxe": "literature/blue-and-gray/BlueGray_Deluxe_Rules.pdf — Decision Games Deluxe reprint: original rules + official errata (red) + play examples (blue). Standard 1.0-12.0 pp3-9; Chickamauga = section 18 pp26-28",
+      "module": "C:\\VassalBlueGray\\extracted — Blue and Gray Complete.vmod v1.0: Chickamauga Start.vsav, Chickamauga.png map, chart images",
+      "stafford2018": "literature/blue-and-gray/396181570-...pdf — fan revision, CLARIFICATION AID ONLY, changes the game (leaders/disruption/2d6 CRT/breastworks)"
+    },
+    "validation": "CRT + TEC + deployment + reinforcements below verified IDENTICAL in scan1975 and deluxe unless a divergence is explicitly flagged in source_defect_candidates"
+  },
+
+  "movement": {
+    "movement_allowance_all_units": 6,
+    "citation": "[5.0] 'The Movement Allowance of all units is six Movement Points' (1975 p2; deluxe p4 'All units have a Movement Allowance of 6 MP')",
+    "always_may_move_one_hex": false,
+    "note_always_one_hex": "NO minimum-one-hex rule in the original (that is Stafford 6.15 Exception). If terrain cost exceeds remaining MP the hex may not be entered [5.21/deluxe 5.2 cumulative note].",
+    "road_hex_via_road_hexside": 1.0,
+    "road_citation": "[5.22] road hex->adjacent road hex through road hexside = 1 MP regardless of other terrain",
+    "trail_hex_via_trail_hexside_forest_or_rough": 2.0,
+    "trail_hex_via_trail_hexside_clear": 1.0,
+    "trail_citation": "[5.23] trail->trail through trail hexside = 2 MP if hex has forest and/or rough; clear = 1 MP. TEC: 'Ignore Trails in Clear Terrain' (Chickamauga only)",
+    "creek_hexside": "prohibited except bridge/ford [5.25]",
+    "bridge_hexside_extra_mp": 0,
+    "ford_hexside_extra_mp": 1,
+    "ford_example": "[5.25] ford hexside into forest hex = 4 MP total (1975); deluxe example identical",
+    "river_hex": "not on Chickamauga map (Shiloh/Antietam only per TEC)",
+    "stacking_max": 2,
+    "stacking_citation": "[5.32] max two units regardless of strength or type; [5.31] free passage through friendly; [5.33] unlimited pass-through",
+    "enemy_hex_entry": "never [5.12]",
+    "no_skip_hexes": "[5.16]",
+    "no_mp_accumulation": "[5.15]"
+  },
+
+  "zoc": {
+    "exerted_always_all_six": "[6.1]/[6.6]",
+    "entry_cost_extra": 0,
+    "entry_stops_movement": true,
+    "entry_citation": "[6.0] 'All units must cease movement when they enter an Enemy controlled hex'",
+    "exit_during_movement": "PROHIBITED — [5.13]/[6.3]: exit ONLY by retreat/advance as combat result, or removal of the exerting enemy unit by combat. (Stafford's +1MP walk-out is HIS change; original/deluxe agree: no exit.)",
+    "never_negated": "[6.1]",
+    "mutual_coexist": "[6.4]/[6.5]",
+    "blocked_hexsides": "ZOCs never extend through non-bridge non-ford creek hexsides, nor into river ferry hexes [6.6 + diagram p2 1975; deluxe p5]. (Deluxe adds: DO extend across Stream hexsides — no streams on Chickamauga map.)"
+  },
+
+  "combat": {
+    "mandatory": "[7.0] combat between adjacent opposing units is mandatory",
+    "all_adjacent_must_be_attacked": "[7.11] every enemy unit with friendly units in its ZOC must be attacked; [7.12] every phasing unit ending movement in EZOC must attack; all friendly units adjacent to an enemy must participate",
+    "multi_hex": "[7.24] units in different hexes may combine against one hex if all adjacent (or artillery in range); [7.25] multi-defender combat requires ALL attackers adjacent to ALL defenders (bombarding artillery exempt)",
+    "stack_defends_as_one": "[7.21]",
+    "attackers_in_same_hex_integral": "[7.22] (deluxe: 'Attacking units in the same hex must be used as a combined and unified Combat Strength')",
+    "multi_zoc_obligation": "[7.23] unit in ZOC of >1 enemy must attack all those not engaged by another attacker",
+    "once_per_phase": "[7.14] each unit attacks max once; each enemy attacked max once",
+    "strength_unity": "[7.3]",
+    "odds_rounding": "down, in favor of defender: 13 vs 4 = 3.25:1 -> 3-1 [7.0 PROCEDURE]",
+    "diversionary_attacks_legal": "[7.5]",
+    "voluntary_odds_reduction": "[7.9] attacker may announce lower odds column before rolling",
+    "terrain_effect": "[7.4] defender Combat Strength MULTIPLIED (doubled); NOT cumulative — best single benefit applies (deluxe 7.4 Important + 9.0 clarification)",
+    "defense_doubling_hexside_rule": "TEC + deluxe 9.0 clarification: defender doubled only if ALL adjacent attacking units attack across ford/bridge hexsides (participation of non-adjacent (bombarding) units has no effect on this)",
+    "artillery_bombard_doubling_clarification": "deluxe 9.0: unit attacked SOLELY by artillery is doubled if the LOS crosses a ford/bridge/stream hexside, a creek hexside, or an impassable hex [SPI official clarification]"
+  },
+
+  "crt": {
+    "die": "1d6",
+    "columns": ["1-5", "1-4", "1-3", "1-2", "1-1", "2-1", "3-1", "4-1", "5-1", "6-1"],
+    "rows": {
+      "1": ["Ar", "Ar", "Dr", "Dr", "Dr", "Dr", "De", "De", "De", "De"],
+      "2": ["Ar", "Ar", "Ar", "Dr", "Dr", "Dr", "Dr", "Dr", "De", "De"],
+      "3": ["Ar", "Ar", "Ar", "Ar", "Dr", "Dr", "Dr", "Dr", "Dr", "De"],
+      "4": ["Ae", "Ar", "Ar", "Ar", "Ar", "Dr", "Dr", "Dr", "Dr", "Dr"],
+      "5": ["Ae", "Ae", "Ar", "Ar", "Ar", "Ar", "Dr", "Ex", "Ex", "Dr"],
+      "6": ["Ae", "Ae", "Ae", "Ae", "Ar", "Ar", "Ex", "Ex", "Ex", "Ex"]
+    },
+    "beyond_max": "attacks > 6-1 treated as 6-1; worse than 1-5 treated as 1-5 [7.6 chart note]",
+    "results": {
+      "Ae": "Attacker Eliminated — all attacking units removed",
+      "De": "Defender Eliminated — all defending units removed",
+      "Ex": "Exchange — all defenders eliminated; attacker must eliminate participating attacking units whose total PRINTED strength >= total printed strength of eliminated defenders [7.6]",
+      "Ar": "Attacker Retreats — all attacking units retreat one hex [7.7]",
+      "Dr": "Defender Retreats — all defending units retreat one hex [7.7]"
+    },
+    "validated": "1975 scan p8 == deluxe p5 text, all 60 cells, verified cell-by-cell 2026-07-10. Third source (module chart image) pending in validate_combat.py."
+  },
+
+  "retreat_advance": {
+    "retreat_one_hex_out_of_ezoc": "[7.71] retreated units must end no longer in an EZOC; owner picks direction; two units same hex may split",
+    "retreat_prohibitions": "[7.72] no prohibited hex/hexside, no EZOC; if no hex open -> ELIMINATED",
+    "retreat_stacking": "[7.73] may join friendly stack (within stacking) if that stack not in EZOC; else may displace [7.8]",
+    "retreated_unit_bombarded_later": "[7.74] retreated-into-hex attacked by bombardment same phase: unit adds NO strength but suffers result",
+    "advance": "[7.75] one victorious participating unit may advance into vacated hex, ignores EZOC, immediate, optional, max 1 hex; advanced units may neither attack nor be attacked that phase",
+    "advance_single": "[7.76] only ONE unit advances even if two hexes vacated",
+    "displacement": "[7.81] retreating unit may displace ONE friendly unit if no other retreat path; displaced unit retreats likewise (chains allowed [7.82]); displaced-to-elimination -> retreating unit eliminated instead; displaced artillery not yet fired may not fire this phase; 1-for-1 in stacks"
+  },
+
+  "artillery": {
+    "units_per_side": 3,
+    "bombard_range_hexes": [2, 3],
+    "range_count": "include target hex, exclude own hex [8.12]",
+    "adjacent_must_fight_normally": "[8.41] in EZOC artillery must join normal attack, may NOT bombard; treated as infantry",
+    "bombard_optional": "[8.11] never forced to bombard",
+    "bombard_single_hex_only": "[8.13] except combined attacks 8.2",
+    "same_hex_arty_same_target": "[8.14]",
+    "bombarding_immune": "[8.15] bombarding artillery suffers no combat results; [8.16] MAY voluntarily take Ar",
+    "combined": "[8.21-8.23] may add bombarding strength to adjacent friendly attacks; in multi-hex attacks needs range to only one defending hex; adjacent cooperating units suffer results, bombarding artillery does not",
+    "los": "[8.31-8.35] straight edge center-to-center; blocking = Forest, Forest&Rough, Town hexes (NOT rough alone); hexside-congruent LOS blocked only if BOTH adjacent hexes block; target + firer hexes never block; may fire over units",
+    "defense": "[8.51] may never add strength to another unit's defense; [8.52] when attacked/bombarded suffers results normally",
+    "creek_exception": "[8.45] artillery across a creek hexside from its only adjacent enemy MAY bombard (ZOC doesn't cross creek) — may bombard any target in range incl. that adjacent unit"
+  },
+
+  "night_turns": {
+    "which": "GT 9 (tinted on Turn Record Track)",
+    "combat": "[10.1] no combat phase, no combat of any kind, no bombardment",
+    "movement": "[10.2] normal restrictions PLUS: may not ENTER EZOC; units already in EZOC may NOT exit (original+deluxe; Stafford allowed paid exit — his change)"
+  },
+
+  "attack_effectiveness_optional_11_0": {
+    "status": "OPTIONAL rule in original AND deluxe. NOT enforced at launch — declared umpired/off; candidate future option. Designer notes say it was 'originally an organic part of the game'.",
+    "summary": "Ar result flips attacker(s) face-down = Ineffective (attack from EZOC only [11.1]); may not attack nor enter EZOC; defends normally, keeps ZOC [11.2]; if in EZOC at own combat phase start must retreat per 7.7 unless enemy retreated away [11.31]; recovery: end of any Night GT flips all face-up [11.4]"
+  },
+
+  "chickamauga_exclusive": {
+    "player_sequence": "Union = First Player every GT [14.3]",
+    "game_length": "15 GTs, GT 9 = night [15.53]",
+    "initial_deployment_union": [
+      {"hex": "1317", "str": 5, "type": "inf", "name": "1/1/XIV"},
+      {"hex": "1319", "str": 5, "type": "inf", "name": "2/1/XIV"},
+      {"hex": "1318", "str": 5, "type": "inf", "name": "3/1/XIV"},
+      {"hex": "1413", "str": 4, "type": "inf", "name": "1/3/XIV"},
+      {"hex": "1414", "str": 5, "type": "inf", "name": "2/3/XIV"},
+      {"hex": "1315", "str": 5, "type": "inf", "name": "3/3/XIV"},
+      {"hex": "1022", "str": 8, "type": "inf", "name": "Wilder"},
+      {"hex": "0822", "str": 5, "type": "inf", "name": "2/4/XIV"},
+      {"hex": "2011", "str": 5, "type": "cav", "name": "1/2 Cav"},
+      {"hex": "1127", "str": 4, "type": "inf", "name": "1/1/XXI"},
+      {"hex": "1227", "str": 4, "type": "inf", "name": "3/1/XXI"},
+      {"hex": "0302", "str": 6, "type": "inf", "name": "1/1/Res"},
+      {"hex": "0402", "str": 4, "type": "inf", "name": "2/1/Res"},
+      {"hex": "1505", "str": 5, "type": "inf", "name": "2/2/Res"}
+    ],
+    "initial_deployment_confederate": [
+      {"hex": "2026", "str": 5, "type": "inf", "name": "Wood"},
+      {"hex": "2027", "str": 5, "type": "inf", "name": "Polk"},
+      {"hex": "2022", "str": 3, "type": "inf", "name": "Fulton"},
+      {"hex": "1726", "str": 4, "type": "inf", "name": "Brown"},
+      {"hex": "1825", "str": 4, "type": "inf", "name": "Bates"},
+      {"hex": "1926", "str": 4, "type": "inf", "name": "Clayton"},
+      {"hex": "1526", "str": 7, "type": "inf", "name": "Gracie"},
+      {"hex": "1527", "str": 4, "type": "inf", "name": "Trigg"},
+      {"hex": "1626", "str": 3, "type": "inf", "name": "Kelly"},
+      {"hex": "2517", "str": 4, "type": "inf", "name": "Gregg"},
+      {"hex": "2317", "str": 4, "type": "inf", "name": "McNair"},
+      {"hex": "1721", "str": 4, "type": "inf", "name": "Kershaw"},
+      {"hex": "1921", "str": 3, "type": "inf", "name": "Hmphry"},
+      {"hex": "1821", "str": 4, "type": "inf", "name": "Law"},
+      {"hex": "2316", "str": 3, "type": "inf", "name": "Rbrtsn"},
+      {"hex": "1722", "str": 4, "type": "inf", "name": "Andrsn"},
+      {"hex": "1922", "str": 3, "type": "inf", "name": "Benning"},
+      {"hex": "1820", "str": 4, "type": "inf", "name": "Jackson"},
+      {"hex": "1920", "str": 3, "type": "inf", "name": "Maney"},
+      {"hex": "1620", "str": 4, "type": "inf", "name": "Smith"},
+      {"hex": "1720", "str": 4, "type": "inf", "name": "Wright"},
+      {"hex": "2020", "str": 3, "type": "inf", "name": "Strahl"},
+      {"hex": "2120", "str": 5, "type": "arty", "name": "3"},
+      {"hex": "2017", "str": 5, "type": "inf", "name": "Gist"},
+      {"hex": "2118", "str": 5, "type": "inf", "name": "Ector"},
+      {"hex": "2218", "str": 5, "type": "inf", "name": "Wilson"},
+      {"hex": "2422", "str": 4, "type": "inf", "name": "Liddell"},
+      {"hex": "2421", "str": 4, "type": "inf", "name": "Wlthll"},
+      {"hex": "2212", "str": 3, "type": "cav", "name": "Armstng"},
+      {"hex": "2411", "str": 3, "type": "cav", "name": "Davdsn"},
+      {"hex": "2015", "str": 6, "type": "cav", "name": "Forrest"},
+      {"hex": "2314", "str": 6, "type": "cav", "name": "Scott"}
+    ],
+    "deployment_citation": "1975 scan p5 [14.1]/[14.2] — ORIGINAL chart (Stafford's differing strengths/generals are HIS edits; deluxe PACs not in rules PDF)",
+    "reinforcements_union_entry": ["0728", "1027"],
+    "reinforcements_union": [
+      {"gt": 2, "units": [
+        {"str": 5, "type": "inf", "name": "1/2/XIV"}, {"str": 4, "type": "inf", "name": "2/2/XIV"},
+        {"str": 5, "type": "inf", "name": "3/2/XIV"}, {"str": 3, "type": "arty", "name": "XIV"},
+        {"str": 5, "type": "inf", "name": "3/4/XIV"}, {"str": 4, "type": "inf", "name": "1/2/XXI"},
+        {"str": 5, "type": "inf", "name": "2/2/XXI"}, {"str": 5, "type": "inf", "name": "3/2/XXI"},
+        {"str": 4, "type": "inf", "name": "1/3/XXI"}, {"str": 4, "type": "inf", "name": "2/3/XXI"},
+        {"str": 4, "type": "inf", "name": "3/3/XXI"}, {"str": 3, "type": "arty", "name": "XXI"}
+      ]},
+      {"gt": 5, "units": [
+        {"str": 5, "type": "inf", "name": "2/1/XX"}, {"str": 5, "type": "inf", "name": "3/1/XX"},
+        {"str": 5, "type": "inf", "name": "1/2/XX"}, {"str": 5, "type": "inf", "name": "2/2/XX"},
+        {"str": 5, "type": "inf", "name": "3/2/XX"}, {"str": 5, "type": "inf", "name": "1/3/XX"},
+        {"str": 5, "type": "inf", "name": "2/3/XX"}, {"str": 5, "type": "inf", "name": "3/3/XX"},
+        {"str": 3, "type": "arty", "name": "XX"}
+      ]},
+      {"gt": 6, "units": [
+        {"str": 4, "type": "cav", "name": "1/1 Cav"}, {"str": 4, "type": "cav", "name": "3/1 Cav"},
+        {"str": 4, "type": "cav", "name": "2/1 Cav"}
+      ]},
+      {"gt": 7, "units": [{"str": 1, "type": "train", "name": "Train", "str_note": "(1) defense only"}]},
+      {"gt": 8, "units": [{"str": 4, "type": "cav", "name": "2/2 Cav"}]}
+    ],
+    "reinforcements_confederate_entry": ["1627", "1928"],
+    "reinforcements_confederate": [
+      {"gt": 2, "units": [
+        {"str": 5, "type": "inf", "name": "Deshler"}, {"str": 4, "type": "inf", "name": "Helm"},
+        {"str": 4, "type": "inf", "name": "Adams"}, {"str": 3, "type": "inf", "name": "Stovall"},
+        {"str": 4, "type": "arty", "name": "2"}, {"str": 6, "type": "inf", "name": "Deas"},
+        {"str": 6, "type": "inf", "name": "Andrsn (Anderson)"}, {"str": 6, "type": "inf", "name": "Mnigalt (Manigault)"},
+        {"str": 3, "type": "arty", "name": "1"}
+      ]},
+      {"gt": 5, "units": [
+        {"str": 3, "type": "cav", "name": "Crews"}, {"str": 2, "type": "cav", "name": "Russell"},
+        {"str": 4, "type": "cav", "name": "Morgan"}, {"str": 5, "type": "cav", "name": "Harisn (Harrison)"}
+      ]},
+      {"gt": 8, "units": [{"str": 4, "type": "cav", "name": "Rodney"}]}
+    ],
+    "reinforcement_rules": "[15.0] enter on southern edge at listed hex during owner's Movement Phase, column formation: 1st unit 1 MP to enter, 2nd 2 MP, 3rd 3 MP...; may enter EZOC; if both entry hexes physically occupied -> delayed [15.5]; never arrive stacked [15.4]; excess rolls to later GTs [15.3]",
+    "exit_hexes_1975": ["0101", "0110"],
+    "exit_hexes_deluxe": ["0101", "0111"],
+    "exit_rules": "[16.x] exit costs 1 MP; exited = removed forever, NOT eliminated for enemy VP; no exit as retreat (eliminated instead); unlimited units per exit hex",
+    "vp_schedule": {
+      "per_enemy_csp_eliminated": 1,
+      "union_per_csp_exited": 1,
+      "confederate_per_csp_exited": 10,
+      "confederate_if_train_fails_to_exit": 10,
+      "occupation_end_of_game": {
+        "union": {"1920": 10, "2311": 20},
+        "confederate": {"0211": 20, "0502": 20},
+        "either": {"0822": 5, "1108": 5, "1115": 5}
+      },
+      "start_occupation": {"union": ["0211", "0502", "0822", "1108", "1115"], "confederate": ["1920", "2311"]}
+    },
+    "line_of_communications": {
+      "confederate": "[17.31] CSA exit VPs require an end-of-game road trace from 0101 or 0110 (deluxe: 0111) off EASTERN edge, free of Union UNITS (ZOCs OK)",
+      "union": "[17.32] Union units (incl. blocked reinforcements) unable to trace a path of <=10 hexes to a road exiting at 0101/0110 (deluxe 0111) at game end = destroyed for VP purposes; path may cross EZOC, not enemy units"
+    },
+    "train_unit": {
+      "defense": 1, "may_attack": false,
+      "auto_retreat": "[18.11] adjacent to CSA in UNION combat phase -> must retreat (CSA may not advance after)",
+      "stacking": "[18.21/18.22] never stacks; NO unit may move through its hex; it may not move through units",
+      "movement": "[18.23] MA 6, roads/trails ONLY; forced retreat to non-road/trail hex = destroyed",
+      "displacement": "[18.24] may displace/be displaced, may retreat",
+      "zoc": "[18.25] none; CSA not required to attack it"
+    }
+  },
+
+  "module_deviations_worksheet": [
+    {
+      "id": "module-setup-wilder-0822",
+      "kind": "MODULE bug (not original-game defect)",
+      "evidence": "Chickamauga Start.vsav places Wilder at 0822 (chart: 1022) and omits 2/4/XIV (5 CSP, chart hex 0822) from the initial setup entirely. All other 45 at-start units match the 1975 deployment chart exactly (32/32 CSA, 13/14 Union).",
+      "resolution": "Our scenario follows the printed 1975 chart: Wilder at 1022, 2/4/XIV at 0822.",
+      "status": "RESOLVED (worksheet entry; not a source_defects item)"
+    }
+  ],
+
+  "grid_solution": {
+    "formula": "col = round((x-7)/95.1); row = round((y+12)/120) if col odd else round((y-48)/120); hex = f'{col:02d}{row:02d}'",
+    "validated": "45/45 module at-start positions resolve to chart hexes under this formula (the 2 deviations above are name/omission issues, not position math)",
+    "map_image": "C:\\VassalBlueGray\\extracted\\images\\Chickamauga.png 2737x3532, flat-top, col-stagger (odd cols up), playable cols 01-26, rows to 28 (jagged), TRT + reinforcement boxes printed at cols 27-28 (off-play)"
+  },
+
+  "source_defect_candidates": [
+    {
+      "id": "exit-hex-0110-vs-0111",
+      "kind": "rules/map mismatch in original printed game",
+      "evidence": "1975 rules [16.1]/[17.31]/[17.32] say exit hexes '0101 and 0110' (three times); the original 1975 MAP shows the McFarland's Gap road exiting the west edge through 0111 — hex 0110 is clear terrain with NO road (verified from map scan 2026-07-10). 16.1's own text: 'units are presumed to move along the roads leading off the map'. Module redraw agrees (road in 0111). Deluxe 18.3/18.4.3 corrected to '0101 and 0111'.",
+      "resolution": "Exit hexes = 0101 and 0111 (the road hexes). LOC traces per 17.31/17.32 use 0101/0111.",
+      "authority": "original map evidence + Decision Games Deluxe correction (official errata-bearing edition)",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "artillery-strength-vs-counter-sheet",
+      "kind": "cross-check note",
+      "evidence": "1975 counter sheet (scan p9) CSA artillery counters read 3/4/5 (names 1,2,3); deployment chart gives arty '3'=5 CSP at 2120, reinforcement arty '2'=4, '1'=3 — consistent once matched by name not sheet order",
+      "resolution": "encode by chart values; verify module counter stats agree",
+      "status": "OPEN — check module counters"
+    }
+  ],
+
+  "credits_data": {
+    "game_design": "Irad B. Hardy, III",
+    "physical_systems_design_graphics": "Redmond A. Simonsen",
+    "systems_design_development": "Irad B. Hardy, III; John Michael Young",
+    "production": "Manfred F. Milkuhn, Larry Catalano, Kevin Zucker, Linda Mosca",
+    "publisher": "Simulations Publications, Inc. (SPI), 1975",
+    "deluxe_reprint": "Decision Games Blue & Gray Deluxe Edition (source of errata/clarifications)",
+    "citation": "1975 scan p8 DESIGN CREDITS; deluxe p26 ORIGINAL DESIGN CREDITS (identical)"
+  }
+}
