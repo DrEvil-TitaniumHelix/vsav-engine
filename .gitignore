@@ -35,3 +35,4 @@ dist/*
 *.exe
 !games_bundled/**
 !dist/Legality Engine for VASSAL.exe
+/baseline.json
