@@ -20,15 +20,13 @@
   "hexnum_digits": 2,
   "provenance": "module buildFile HexGrid (dx=96 dy=119 x0=60 y0=60) == the hand-validated legacy values; formula re-validated 2026-07-11 against every printed position in 'Arnhem Historical.vsav' (7 German 18.12 hexes + 3 DZ 18.11 hexes + 8 GT1 18.13 drop targets) - see validate_grid.py"
  },
- "buildfile": "../../../VassalIngest/westwall/extracted/buildFile",
- "moduledata": "../../../VassalIngest/westwall/extracted/moduledata",
  "setup_save": "setup.vsav",
  "terrain_file": "terrain.json",
  "scenario": "scenario_historical.json",
  "assets": {
-  "map": "../../ui/assets/map.png",
-  "map_thumb": "../../ui/assets/map_thumb.png",
-  "counters_dir": "../../../VassalIngest/westwall/extracted/images"
+  "map": "assets/map.png",
+  "map_thumb": "assets/map_thumb.png",
+  "counters_dir": "assets/counters_dir"
  },
  "ui": {
   "counter_px": 75

@@ -345,7 +345,9 @@ function renderGuide() {
     if (C.pending) {
       const what = { retreat:  'retreat each losing unit with the buttons',
                      exchange: 'pick which of your involved units to remove',
-                     advance:  'advance into the vacated hex (optional)' }[C.pending.kind]
+                     advance:  'advance into the vacated hex (optional)',
+                     demolition: 'decide each bridge demolition — one chance ever [12.1]',
+                     fpf:      'allocate Final Protective Fire (or decline) [8.4]' }[C.pending.kind]
                    || C.pending.kind;
       FRAME.setGuide(`<b>Finish the battle</b> — ${what}, in the left panel.`);
       FRAME.soleNext(null);
@@ -372,7 +374,8 @@ function renderFlow() {
   FRAME.show('flowbar', true); FRAME.show('endphasebtn', true);
   // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
-  const aiOK = (!FLOW.over && FLOW.phase === 'movement' && FLOW.arrivals
+  const aiOK = (!FLOW.over && FLOW.phase === 'movement'
+    && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall)
     && GAME && GAME.tier && GAME.tier.active >= 3);
   FRAME.show('aictl', aiOK);
   if (aiOK) document.getElementById('aiplaybtn').textContent =
@@ -425,6 +428,19 @@ function pinTip() {          // selected unit's card sits above the action bar
 function hideTip() { if (selected) pinTip(); else TIP.style.display = 'none'; }
 
 // ---------- arrivals / supply / sea panel (strategic gate) ----------
+async function wwDrop(pid, target) {
+  // try the target hex, then its ring, until the gate accepts [15.31]
+  const [c, r] = target;
+  const off = (c % 2) ? 1 : -1;
+  const ring = [[c,r],[c,r-1],[c,r+1],[c+1,r],[c-1,r],[c+1,r+off],[c-1,r+off]];
+  for (const hx of ring) {
+    const rr = await (await fetch('/api/sg_action', {method:'POST',
+      body: JSON.stringify({action: {type:'reinforce', unit: pid, hex: hx}})})).json();
+    if (!rr.error) { refresh(); return; }
+  }
+  toast('no legal drop hex around the target — enemy occupation? [15.31/15.33]');
+  refresh();
+}
 async function sgAction(action, side) {
   const r = await (await fetch('/api/sg_action', {method:'POST',
     body: JSON.stringify({action, side})})).json();
@@ -435,6 +451,38 @@ async function sgAction(action, side) {
 }
 function renderArrivals() {
   const box = document.getElementById('arrivals');
+  if (FLOW && FLOW.mode === 'westwall' && !FLOW.over) {
+    const W = FLOW.westwall || {};
+    const showR = FLOW.phase === 'movement' && (W.due||[]).length;
+    const extras = (W.gsp_left || (W.demolished||[]).length);
+    if (!showR && !extras) { box.style.display = 'none'; return; }
+    let h = `<b>${sideLabel(FLOW.mover)} — reinforcements</b><br>`;
+    (W.due || []).forEach(d => {
+      h += `<div style="margin:2px 0">${d.slot} <i style="color:#9aa3ad">(GT ${d.due}, ${d.arrival})</i> `;
+      if (d.arrival === 'airborne' && d.target) {
+        h += `<button class="sidebtn" onclick='wwDrop("${d.pid}", [${d.target}])'>drop near ${String(d.target[0]).padStart(2,"0")}${String(d.target[1]).padStart(2,"0")} [15.31]</button>`;
+      } else {
+        const hexes = (d.entry || []).slice(0, 5);
+        hexes.forEach(hx => {
+          h += `<button class="sidebtn" onclick='sgAction({type:"reinforce",unit:"${d.pid}",hex:[${hx}]})'>${String(hx[0]).padStart(2,"0")}${String(hx[1]).padStart(2,"0")}</button> `;
+        });
+        if ((d.entry || []).length > 5) {
+          h += `<select onchange='if(this.value)sgAction({type:"reinforce",unit:"${d.pid}",hex:JSON.parse(this.value)})'><option value="">more…</option>` +
+               d.entry.slice(5).map(hx => `<option value="[${hx}]">${String(hx[0]).padStart(2,"0")}${String(hx[1]).padStart(2,"0")}</option>`).join('') +
+               `</select>`;
+        }
+      }
+      h += `</div>`;
+    });
+    if ((W.due||[]).some(d => d.arrival === 'airborne'))
+      h += `<span class="dim">airborne: one unit per hex, never on occupied hexes, MA 3 on arrival [15.31/15.32]</span><br>`;
+    if (W.gsp_left)
+      h += `<div style="margin-top:4px"><b>Ground Support:</b> ${W.gsp_left} points this GT [18.16] — add them when declaring a battle (or as FPF in the German turn) within 3 hexes of a non-airborne Allied unit [14.11]</div>`;
+    if ((W.demolished||[]).length)
+      h += `<div style="margin-top:4px" class="dim">demolished bridges: ${W.demolished.filter(k=>!(W.repaired||[]).includes(k)).join(', ')}</div>`;
+    box.innerHTML = h; box.style.display = '';
+    return;
+  }
   if (FLOW && FLOW.mode === 'bluegray' && !FLOW.over) {
     const B = FLOW.bluegray || {};
     const showR = FLOW.phase === 'movement' && ((B.due||[]).length || (B.exit_ready||[]).length || B.night);
@@ -530,8 +578,12 @@ async function previewBattle() {
 }
 function bgCombatant(u) {
   // which classed units still fight: B&G artillery/cavalry are combat units
-  // (only the Train is not); AK's classed units (markers/supply/hq) are not
-  return FLOW && FLOW.mode === 'bluegray' ? u.cls !== 'train' : !u.cls;
+  // (only the Train is not); Westwall everything but the DZ counters; AK's
+  // classed units (markers/supply/hq) are not
+  if (!FLOW) return !u.cls;
+  if (FLOW.mode === 'bluegray') return u.cls !== 'train';
+  if (FLOW.mode === 'westwall') return u.cls !== 'dz';
+  return !u.cls;
 }
 function toggleBattle(u, stack) {
   const C = FLOW.combat;
@@ -549,6 +601,8 @@ function toggleBattle(u, stack) {
 async function resolveBattle() {
   const a = {type:'battle', attackers:[...atkSel], defenders:[...defSel]};
   if (supplySel) a.supply = supplySel;
+  const g = document.getElementById('battlegsp');
+  if (g && +g.value > 0) a.gsp = +g.value;
   clearBattleSel();
   await sgAction(a);
 }
@@ -592,7 +646,43 @@ function renderCombat() {
     box.innerHTML = h; box.style.display = ''; return;
   }
   const P = C.pending;
-  if (P && P.kind === 'retreat') {
+  if (P && P.kind === 'demolition') {
+    h += `<div style="margin-top:6px"><b>Bridge demolition</b> — the <b>${sideLabel(P.chooser)}</b> player
+          decides NOW for each bridge (one chance ever; die 1–2 demolishes) [12.1]:<br>`;
+    P.bridges.forEach(k => {
+      h += `<div style="margin:3px 0"><b>${k}</b>
+            <button class="sidebtn" onclick='wwDemolition(${JSON.stringify(P.bridges)}, "${k}", true, "${P.chooser}")'>Blow it</button>
+            <button class="sidebtn" onclick='wwDemolition(${JSON.stringify(P.bridges)}, "${k}", false, "${P.chooser}")'>Leave intact</button></div>`;
+    });
+    h += `</div>`;
+  } else if (P && P.kind === 'fpf') {
+    h += `<div style="margin-top:6px"><b>Final Protective Fire</b> — the <b>${sideLabel(P.chooser)}</b> player
+          may add FPF to the defense before the roll [8.4]:<br>`;
+    (P.eligible || []).forEach(e => {
+      h += `<label style="display:block"><input type="checkbox" class="fpf" value='${JSON.stringify([e.pid, e.targets[0]])}'>
+            ${e.slot} <span class="dim">(FPF ${e.fpf})</span></label>`;
+    });
+    if (P.gsp_left)
+      h += `GSP: <input type="number" id="fpfgsp" min="0" max="${P.gsp_left}" value="0" style="width:60px"> of ${P.gsp_left} [9.0/14.11]<br>`;
+    h += `<button class="sidebtn" onclick='wwFpf("${P.chooser}")'>Allocate</button>
+          <button class="sidebtn" onclick='sgAction({type:"fpf",allocations:[]}, "${P.chooser}")'>Decline</button></div>`;
+  } else if (P && P.kind === 'retreat' && FLOW.mode === 'westwall') {
+    h += `<div style="margin-top:6px"><b>Retreats</b> — the <b>${sideLabel(P.chooser)}</b> player
+          retreats each unit the rolled number of hexes [7.7]:</div>`;
+    P.units.forEach(u => {
+      h += `<div style="margin:4px 0"><b>${u.slot}</b> <span class="dim">(${u.distance} hex${u.distance>1?'es':''})</span><br>`;
+      if ((u.options||[]).length)
+        u.options.forEach(o => {
+          const act = {type:'retreat', unit: u.pid, path: o.path};
+          if (o.city_reduce) act.city_reduce = true;
+          h += `<button class="sidebtn" onclick='sgAction(${JSON.stringify(act)}, "${P.chooser}")'>→ ${o.name}</button> `;
+        });
+      else
+        h += `<span style="color:#e06c5e">no legal route</span>
+              <button class="sidebtn" onclick='sgAction({type:"retreat",unit:"${u.pid}",eliminate:true}, "${P.chooser}")'>Eliminate [7.74]</button>`;
+      h += `</div>`;
+    });
+  } else if (P && P.kind === 'retreat') {
     h += `<div style="margin-top:6px"><b>Retreats</b> — the <b>${sideLabel(P.chooser)}</b> player
           (the winner) retreats each losing unit two hexes [7.5, 7.6]:</div>`;
     P.units.forEach(u => {
@@ -651,6 +741,9 @@ function renderCombat() {
                sups.map(s => `<option value="${s.id}" ${supplySel===s.id?'selected':''}>${s.name}</option>`).join('') +
                `</select><br>`;
         }
+        if (FLOW.mode === 'westwall' && FLOW.mover === 'All'
+            && FLOW.westwall && FLOW.westwall.gsp_left)
+          h += `GSP: <input type="number" id="battlegsp" min="0" max="${FLOW.westwall.gsp_left}" value="0" style="width:60px"> of ${FLOW.westwall.gsp_left} [9.0/18.16]<br>`;
         h += `<button class="sidebtn" onclick="resolveBattle()">⚔ Resolve battle</button>`;
       } else if (PREV.reasons && PREV.reasons.length) {
         h += `<span style="color:#e08c7c">${PREV.reasons[0]}</span>`;
@@ -676,6 +769,24 @@ function renderCombat() {
           use <b>End player turn</b> in the top bar</div>`;
   }
   box.innerHTML = h; box.style.display = '';
+}
+const wwDemol = {};
+function wwDemolition(bridges, key, attempt, chooser) {
+  wwDemol[key] = attempt;
+  if (bridges.every(k => k in wwDemol)) {
+    const att = {}; bridges.forEach(k => att[k] = wwDemol[k]);
+    sgAction({type:'demolition', attempt: att}, chooser);
+    bridges.forEach(k => delete wwDemol[k]);
+  } else {
+    toast('choice noted — decide the remaining bridges');
+  }
+}
+function wwFpf(chooser) {
+  const allocs = [...document.querySelectorAll('.fpf:checked')].map(x => JSON.parse(x.value));
+  const g = document.getElementById('fpfgsp');
+  const act = {type:'fpf', allocations: allocs};
+  if (g && +g.value > 0) act.gsp = +g.value;
+  sgAction(act, chooser);
 }
 function submitExchange(winner) {
   const ids = [...document.querySelectorAll('.exch:checked')].map(c => c.value);

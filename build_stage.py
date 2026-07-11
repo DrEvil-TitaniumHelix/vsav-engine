@@ -40,7 +40,8 @@ def needed_counter_stems(g):
             stems.add(u["name"])
     return stems
 
-RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga", "tobruk"]
+RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga",
+                 "westwall-arnhem", "tobruk"]
 STAGE = os.path.join(HERE, "build", "stage")
 
 

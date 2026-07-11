@@ -60,9 +60,15 @@ class WestwallGame:
             else max(1, min(int(tier), self.tier_earned))
         if self.tier < 2:
             self.combat = None
-        # pristine copies of demolishable/repairable sides (runtime mutation)
-        self._pristine = {k: dict(v) for k, v in game.terrain["sides"].items()
-                          if v.get("bridge_type") in ("canal", "rail")}
+        # pristine copies of demolishable/repairable sides (runtime mutation).
+        # Captured ONCE per Game object - later gates on the same Game must
+        # see the ORIGINAL terrain, not a previous game's demolitions.
+        pris = getattr(game, "_westwall_pristine", None)
+        if pris is None:
+            pris = {k: dict(v) for k, v in game.terrain["sides"].items()
+                    if v.get("bridge_type") in ("canal", "rail")}
+            game._westwall_pristine = pris
+        self._pristine = pris
         if os.path.exists(self.state_path):
             self.s = json.load(open(self.state_path, encoding="utf-8"))
             if "demolished" not in self.s or self.s.get("tier", self.tier_earned) != self.tier:
@@ -705,10 +711,51 @@ class WestwallGame:
             if not self._gsp_ok_hexes(dhexes):
                 return self._v(False, "GSP applies only within 3 hexes of an Allied "
                                       "non-airborne unit [14.11]")
-        # 13.24 assault: attack across the river resolves on the Stream line -
-        # flagged; assault units MUST attack across their river hexside
+        # 7.12/8.31: all adjacent friendlies participate - a battle must take
+        # every unfought friendly whose obligations it covers
+        missing = self._mandatory_joiners(side, atk_ids, def_ids)
+        if missing:
+            names = ", ".join(self.cat(p)["desig"] for p in missing[:4])
+            return self._v(False,
+                           f"all adjacent friendly units participate in an attack - "
+                           f"{names} must join this battle [7.12/8.31]")
         return self._v(True, f"battle declared ({len(atk_ids)} vs {len(def_ids)}"
                              + (f", {gsp} GSP" if gsp else "") + ") [7.0]")
+
+    def _mandatory_joiners(self, side, atk_ids, def_ids):
+        """Unfought friendlies adjacent (crossable) to ALL of the battle's
+        defender hexes, whose own un-attacked adjacent enemies all lie inside
+        this battle - they must join [7.12/8.31]. A unit 7.23 bars from the
+        multi-hex battle is excused; the 14.12 artillery cap wins over 8.31
+        (declared in rules_scope)."""
+        s = self.s
+        dfd = [self.unit(p) for p in def_ids if p in s["units"]]
+        dhexes = {(d["col"], d["row"]) for d in dfd}
+        n_arty = sum(1 for p in atk_ids if self.is_arty(p))
+        missing = []
+        for u in self._live(side):
+            p = u["pid"]
+            if p in atk_ids or p in s["fought"] or p in s["advanced"] \
+               or self.cls(p) == "dz":
+                continue
+            targets = [e for e in self._live(self.game.enemy(side))
+                       if e["pid"] not in s["defended"]
+                       and e["pid"] not in s["advanced"]
+                       and self._engage_adjacent(u, e)]
+            if not targets:
+                continue
+            if not all(e["pid"] in def_ids for e in targets):
+                continue               # obligations outside this battle
+            if not all(dh in self.game.neighbors(u["col"], u["row"])
+                       and not self._river_no_bridge((u["col"], u["row"]), dh)
+                       for dh in dhexes):
+                continue               # 7.23 bars it - excused
+            if self.is_arty(p) and n_arty >= 2:
+                continue               # 14.12
+            missing.append(p)
+            if self.is_arty(p):
+                n_arty += 1
+        return missing
 
     def _assault_pair(self, pid, d):
         """13.24: the assault-stacked unit engages across the adjacent river
@@ -916,7 +963,7 @@ class WestwallGame:
         if pid not in p["units"]:
             return self._v(False, f"{pid} is not among the retreating units")
         u = self.unit(pid)
-        n = p["distance"]
+        n = (p.get("distance_by") or {}).get(pid, p["distance"])   # displaced: 1 [7.81]
         opts = self._retreat_distance_options(pid, n)
         if action.get("eliminate"):
             mn = min(opts)
@@ -984,7 +1031,7 @@ class WestwallGame:
                                   "[7.91/7.94]")
         if pid in s["advanced"]:
             return self._v(False, f"{pid} already advanced")
-        dest = tuple(action.get("dest", ()))
+        dest = tuple(action.get("dest") or action.get("hex") or ())
         path = [tuple(h) for h in p["path"]]
         if dest not in path:
             return self._v(False, f"advance only along the Path of Retreat {p['path']} "
@@ -1020,6 +1067,44 @@ class WestwallGame:
             cur = h
         return self._v(False, "destination beyond the path")
 
+    def _retreat_path_options(self, pid, n):
+        """Legal retreat paths of exact length n, one per distinct endpoint
+        (vacant routes first; displacement routes only when no vacant route
+        reaches any endpoint, 7.73). UI surface."""
+        u = self.unit(pid)
+        side = u["side"]
+        board = self.rules_board(exclude_pid=pid)
+        enemy = self.game.enemy(side)
+        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
+        fpos = {(b["col"], b["row"]) for b in board if b["side"] == side}
+        ezoc = self.game.zoc_hexes(board, enemy)
+        origin = (u["col"], u["row"])
+
+        def search(allow_friends):
+            found = {}
+            stack = [(origin, ())]
+            while stack:
+                cur, path = stack.pop()
+                if len(path) == n:
+                    if cur not in fpos and cur not in found \
+                       and self.game.hex_distance(origin, cur) == n:
+                        found[cur] = list(path)
+                    continue
+                for nb in sorted(self.game.neighbors(*cur)):
+                    if nb in path or nb == origin:
+                        continue
+                    if not self._retreat_step_ok(pid, side, cur, nb, epos, ezoc):
+                        continue
+                    if nb in fpos and not allow_friends:
+                        continue
+                    stack.append((nb, path + (nb,)))
+            return found
+
+        found = search(False)
+        if not found:
+            found = search(True)
+        return [found[k] for k in sorted(found)]
+
     def _propose_end_phase(self, side):
         s = self.s
         if s["phase"] != "combat":
@@ -1029,15 +1114,23 @@ class WestwallGame:
         if self.combat:
             mine, theirs = self._contacts(side)
             un_att = [p for p in sorted(theirs) if p not in s["defended"]]
-            un_fgt = [p for p in sorted(mine) if p not in s["fought"]]
             if un_att:
                 names = ", ".join(self.unit(p)["slot"] for p in un_att[:4])
                 return self._v(False, f"every enemy unit in contact must be attacked: "
                                       f"{names} [7.11]")
-            if un_fgt:
-                names = ", ".join(self.unit(p)["slot"] for p in un_fgt[:4])
-                return self._v(False, f"every friendly unit in contact must attack: "
-                                      f"{names} [7.12/8.31]")
+            un_assault = [p for p in s["assault"]
+                          if p in s["units"] and p not in s["fought"]
+                          and self.unit(p)["side"] == side]
+            if un_assault:
+                names = ", ".join(self.cat(p)["desig"] for p in un_assault)
+                return self._v(False, f"the Engineer assault stack must attack "
+                                      f"across the river: {names} [13.24]")
+            # 7.12's "all adjacent friendly units participate" is enforced at
+            # battle time (_mandatory_joiners): a battle must include every
+            # unfought friendly whose obligations it covers. At closure every
+            # contacted ENEMY is attacked (7.11 above); an unfought friendly
+            # left here has only already-attacked neighbors - 7.14 (one attack
+            # per enemy per phase) makes attacking impossible, so it is excused.
         return self._v(True, "combat phase complete [4.1]")
 
     # ------------------------------------------------------------ submit
@@ -1431,7 +1524,7 @@ class WestwallGame:
             return ev
         pid = str(action["unit"])
         u = self.unit(pid)
-        dest = tuple(action["dest"])
+        dest = tuple(action.get("dest") or action.get("hex"))
         u["col"], u["row"] = dest
         s["advanced"].append(pid)
         if pid in s["assault"]:
@@ -1749,8 +1842,22 @@ class WestwallGame:
                     continue
                 n = (p.get("distance_by") or {}).get(pid, p["distance"])
                 opts = self._retreat_distance_options(pid, n)
+                options = []
+                for want in sorted(opts, reverse=True):
+                    if want == 0:
+                        options.append({"path": [], "city_reduce": True,
+                                        "name": "stand (city) [11.1]"})
+                        continue
+                    for path in self._retreat_path_options(pid, want)[:6]:
+                        o = {"path": [list(h) for h in path],
+                             "name": self.game.grid.hexnum(*path[-1])
+                             + (f" ({want})" if want != n else "")}
+                        if want != n:
+                            o["city_reduce"] = True
+                        options.append(o)
                 units.append({"pid": pid, "slot": self.unit(pid)["slot"],
-                              "distance": n, "city_options": sorted(opts)})
+                              "distance": n, "city_options": sorted(opts),
+                              "options": options})
             return {"kind": "retreat", "chooser": p["by"], "units": units}
         if p["awaiting"] == "advance":
             return {"kind": "advance", "chooser": p["by"], "can_decline": True,

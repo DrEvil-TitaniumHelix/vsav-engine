@@ -50,14 +50,18 @@ import gamespec  # noqa: E402
 import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod  # noqa: E402
+import westwall as ww_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
+import ai_westwall as wai_mod  # noqa: E402
+
+SG_FAMILY = ("strategic", "bluegray", "westwall")
 
 
 def sg_ai_module():
     """The policy-AI module matching the loaded strategic-family gate."""
-    return bai_mod if SCEN_MODE == "bluegray" else sai_mod
+    return {"bluegray": bai_mod, "westwall": wai_mod}.get(SCEN_MODE, sai_mod)
 
 VERSION = "0.1.0-beta"  # shown in-app so a tester's bug report names the build
 
@@ -112,6 +116,8 @@ def build_gate():
                                      LIVE, tier=TIER)
     elif SCEN_MODE == "bluegray":
         SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+    elif SCEN_MODE == "westwall":
+        SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     else:
         TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 
@@ -300,14 +306,15 @@ def game_descriptor():
 # Curated tester menu (order = display order; AK is the flagship). Games not in
 # this list are still loadable via --game / /api/load_game, but the menu shows
 # these. Keep in sync with the release scope.
-RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga", "tobruk"]
+RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga",
+                 "westwall-arnhem", "tobruk"]
 
 
 def game_client(scen_mode, has_scen):
     """Which front-end HTML plays this game: strategic + free-play games use the
     generic index.html; the tactical family (own scenario, AP-fire) uses
     tactical.html. Mirrors the '/' routing that ships today."""
-    if scen_mode in ("strategic", "bluegray"):
+    if scen_mode in SG_FAMILY:
         return "index.html"
     if has_scen:
         return "tactical.html"
@@ -357,7 +364,7 @@ def game_meta(slug):
         has_scen = True
         scen_mode = json.load(open(os.path.join(gdir, scen),
                                    encoding="utf-8")).get("mode")
-        if scen_mode == "strategic":
+        if scen_mode in SG_FAMILY:
             earned = (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
             choices = list(range(earned + 1))
         else:
@@ -603,7 +610,7 @@ def api_move_sg(body):
 def api_end_phase():
     # bluegray splits the player turn into movement then combat: the top-bar
     # "End player turn" maps to whichever boundary is next
-    t = "end_movement" if (SCEN_MODE == "bluegray"
+    t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
                            and SG.s["phase"] == "movement") else "end_phase"
     r = SG.submit(SG.s["mover"], {"type": t})
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
@@ -771,7 +778,7 @@ def load_game(game_dir, tier=None):
     if GAME_OBJ.spec.get("scenario"):
         SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
         SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
-        if SCEN_MODE in ("strategic", "bluegray"):
+        if SCEN_MODE in SG_FAMILY:
             # mirror the engine's own earned-tier logic (strategic.py /
             # bluegray.py): 1 = movement gate, 2 = full combat gate, 3 = + AI
             TIER_EARNED = (
