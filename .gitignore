@@ -9,8 +9,13 @@ literature/
 live/
 ref/
 
-# Derived data (regenerate with engine/extract_terrain.py from your own module copy)
+# Derived data (regenerate with engine/extract_terrain.py from your own module copy).
+# The release games ship their terrain baked in (our own hex-terrain derivation,
+# not copyrighted art) so a fresh clone runs and CI can validate them.
 terrain.json
+!games/afrika-korps-classic-ah/terrain.json
+!games/blue-and-gray-chickamauga/terrain.json
+!games/westwall-arnhem/terrain.json
 
 # Local working notes
 INTERNAL_NOTES.md
