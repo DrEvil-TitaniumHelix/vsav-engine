@@ -28,6 +28,9 @@ VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
           (0 illegal proposals ever touched the game state)
 ```
 
+**Watch it play:** https://www.youtube.com/watch?v=Afomvk0LjU8 · **Windows
+download:** https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view
+
 **Four complete games ship in this repo, playable out of the box:** Avalon
 Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
 **Blue & Gray: Chickamauga** (the classic 1975 Civil War hex battle, encoded
@@ -226,8 +229,10 @@ self-contained in `games_bundled/` — a fresh clone plays out of the box.
 
 **No-Python path:** the prebuilt Windows exe is in the repo at
 `dist/Legality Engine for VASSAL.exe` (also distributed as a separate download
-via Google Drive). Double-click it — see RELEASE_README.md for the SmartScreen
-first-run warning and the Mac build.
+via Google Drive:
+https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view).
+Double-click it — see RELEASE_README.md for the SmartScreen first-run warning
+and the Mac build.
 
 Verify any finished (or in-progress) game:
 
