@@ -531,10 +531,13 @@ class BlueGrayGame:
             return self._v(False, "defenders must be enemy units [7.0]")
         if any(p in s["fought"] for p in atk_ids):
             return self._v(False, "a unit may attack only once per combat phase [7.14]")
+        pure_bombard = set(bomb_ids) == set(atk_ids) and bool(atk_ids)
         for p in def_ids:
             # 7.74 exception: a unit retreated this phase may be swept into a
-            # bombardment of its new hex (contributing no strength)
-            if p in s["defended"] and p not in s["retreated_phase"]:
+            # BOMBARDMENT of its new hex (contributing no strength); melee
+            # re-attacks stay barred by 7.14
+            if p in s["defended"] and not (
+                    p in s["retreated_phase"] and pure_bombard):
                 return self._v(False, "a unit may be attacked only once per phase [7.14]")
         if any(p in s["advanced"] for p in atk_ids + def_ids):
             return self._v(False, "advanced units may neither attack nor be attacked [7.75]")
@@ -668,6 +671,12 @@ class BlueGrayGame:
                             (u["col"], u["row"]), h) for u in firers):
                         doubled = True
             d_str += base * 2 if doubled else base
+        if d_str <= 0:
+            # every defender retreated this phase (7.74: zero contribution):
+            # best odds the table offers
+            return tuple(self.combat["odds"]["clamp_high"])
+        if a_str <= 0:
+            return tuple(self.combat["odds"]["clamp_low"])
         return self.game.odds(a_str, d_str)
 
     # ------------------------------------------------- retreats & advances

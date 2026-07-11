@@ -1,5 +1,11 @@
 {
  "name": "Blue & Gray: Chickamauga (SPI 1975)",
+ "policy_ai": {
+  "kind": "bluegray",
+  "engine": "engine/ai_bluegray.py",
+  "validated": "games/blue-and-gray-chickamauga/validate_ai.py",
+  "note": "Tier-3: transparent policy AI, submits only through the gate; 5-seed AI-vs-AI campaigns complete all 15 GTs and replay byte-exact through verify_game. Declared-weak (no voluntary odds reduction 7.9, no diversionary-attack search 7.5, no multi-turn plans). Confederate-favored outcomes across seeds match the battle's historical result and the printed VP schedule."
+ },
  "map_name": "Main Map",
  "board_name": "Chickamauga",
  "save_key": "26",
