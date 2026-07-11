@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gamespec            # noqa: E402
 import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
+import bluegray as bg_mod   # noqa: E402
 
 
 def verify(game_dir, log_path, verbose=False):
@@ -48,9 +49,13 @@ def verify(game_dir, log_path, verbose=False):
     if not scen_path:
         return False, f"scenario '{init['scenario']}' not found in {game_dir}"
 
-    strategic = init.get("mode") == "strategic"
+    mode = init.get("mode")
+    strategic = mode in ("strategic", "bluegray")
     with tempfile.TemporaryDirectory() as tmp:
-        if strategic:
+        if mode == "bluegray":
+            tg = bg_mod.BlueGrayGame(game, scen_path, tmp, seed=init["seed"],
+                                     tier=init.get("tier"))
+        elif mode == "strategic":
             tg = strat_mod.StrategicGame(game, scen_path, tmp, seed=init["seed"],
                                          tier=init.get("tier"))
         else:
