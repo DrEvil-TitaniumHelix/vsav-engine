@@ -28,12 +28,13 @@ VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
           (0 illegal proposals ever touched the game state)
 ```
 
-**Three complete games ship in this repo, playable out of the box:** Avalon
+**Four complete games ship in this repo, playable out of the box:** Avalon
 Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
 **Blue & Gray: Chickamauga** (the classic 1975 Civil War hex battle, encoded
-overnight as the platform's second full Tier-3 game) and Avalon Hill's
-**Tobruk** (a tactical tank firefight). v1 (movement legality for Arnhem /
-ASL) is still here and still works.
+overnight as the platform's second full Tier-3 game), SPI's **Westwall:
+Arnhem** (the 1976 Market-Garden operational battle — airborne drops, bridge
+demolition, engineers) and Avalon Hill's **Tobruk** (a tactical tank
+firefight). v1 (movement legality for ASL) is still here and still works.
 By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
@@ -84,7 +85,33 @@ checks.
   defect, the map evidence and the official correction are recorded in
   `game.json` and rendered in the Rules panel.
 
-## Game 3: Tobruk (Avalon Hill, 1975) — the tactical proof game
+## Game 3: Westwall — Arnhem (SPI, 1976) — Tier 3
+
+**The Historical Scenario** from SPI's *Westwall* quadrigame — Operation
+Market-Garden at the Arnhem end of the corridor: the full operational map with
+the Rijn and Waal, the canals (drawn in stream ink), the road/rail bridges and
+ferries read off the map art; every counter on the printed reinforcement and
+airborne-drop schedules; and the original rules as an enforced, cited gate —
+the **terrain-differential CRT** [7.61] (four terrain rows, best-of favorability),
+rigid ZOCs that lock at start and don't reach across non-bridge river hexsides
+[6.33], the five **vehicle movement classes** [5.24], stacking prohibited [5.31]
+except the Engineer assault stack, **airborne drops** with arrival movement
+[15.3x], **bridge demolition** (canal and rail, one die-roll chance ever) [12.x],
+engineers (canal repair, river crossing) [13.x], the Allied ground-supply pool
+[14.11] and lines-of-communication trace [17.3x], and the full Victory-Point
+schedule with the Waal and Rijn zones and the German:Allied victory ratio.
+
+- **Tier 3**: policy AI opponent through the same gate — five AI-vs-AI
+  campaigns run to term and replay byte-exact.
+- **Five validators** (`games/westwall-arnhem/validate_*.py`): grid (18/18
+  printed anchors), movement (the vehicle classes and river-ZOC step rules),
+  gate, combat (CRT cross-checked three ways), AI — the same evidence chain.
+- **The register works**: three defects in the printed game are recorded in
+  `game.json` with quoted evidence and the enforced resolution, rendered in the
+  Rules panel. (Encoding also corrected the old "stacking allowed" lore —
+  Arnhem stacking is *prohibited* by 5.31.)
+
+## Game 4: Tobruk (Avalon Hill, 1975) — the tactical proof game
 
 **Firefight B — "An Even Encounter"** (*Tobruk* rulebook p.24, an official scenario):
 6 British Stuart Mk.III vs 15 Italian M13/40, 10 turns, open desert, official victory
@@ -194,7 +221,7 @@ python app.py                       # window opens → pick a game → play
 
 or in a plain browser with zero dependencies: `python ui/server.py` and open
 the printed URL. The release games (**Afrika Korps**, **Blue & Gray:
-Chickamauga**, **Tobruk**) are
+Chickamauga**, **Westwall: Arnhem**, **Tobruk**) are
 self-contained in `games_bundled/` — a fresh clone plays out of the box.
 
 **No-Python path:** the prebuilt Windows exe is in the repo at
@@ -208,7 +235,7 @@ Verify any finished (or in-progress) game:
 python engine/verify_game.py live/game_tobruk.log.jsonl -v
 ```
 
-Other games (Arnhem, ASL) remain bring-your-own-module:
+Other games (ASL) remain bring-your-own-module:
 
 ```
 # download Tobruk_v1.1.vmod from https://vassalengine.org/wiki/Module:Tobruk
@@ -231,7 +258,7 @@ engine/make_save.py        builds scenario .vsav files from the module's own Pie
 engine/setup_module.py     one-command setup from a downloaded .vmod
 engine/rules.py            v1 Arnhem CRT · engine/watch.py  human-move watcher
 engine/extract_terrain.py  terrain from map art (v1) · capture_baseline.py  regression
-games_bundled/             the two release games, SELF-CONTAINED (map, counters,
+games_bundled/             the four release games, SELF-CONTAINED (map, counters,
                            scenario) — a fresh clone plays out of the box
 games/afrika-korps-classic-ah/  the flagship as data: game.json (rules config,
                            credits, source-defect register), terrain.json,
@@ -249,7 +276,7 @@ web/                       v1 serverless browser build (movement only)
 
 ## What ships in the repo vs bring-your-own
 
-The two **release games** ship self-contained in `games_bundled/` for the closed
+The four **release games** ship self-contained in `games_bundled/` for the closed
 tester group: exactly the map and the counters their scenario uses (sourced from
 the games' VASSAL modules, hosted with permission at vassalengine.org), no
 rulebook scans, no unused art. The combat tables are **our transcriptions** with
