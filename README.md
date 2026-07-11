@@ -1,5 +1,7 @@
 # vsav-engine — Dr Evil's Game Legality Engine for VASSAL (v2)
 
+[![tests](https://github.com/DrEvil-TitaniumHelix/vsav-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/DrEvil-TitaniumHelix/vsav-engine/actions/workflows/ci.yml)
+
 **This system encodes a printed wargame whole — the map, the counters, the
 rules, the combat tables — and makes it a computerized version of the game.**
 Not a digital tabletop where you push pieces and consult the rulebook
@@ -227,9 +229,9 @@ the printed URL. The release games (**Afrika Korps**, **Blue & Gray:
 Chickamauga**, **Westwall: Arnhem**, **Tobruk**) are
 self-contained in `games_bundled/` — a fresh clone plays out of the box.
 
-**No-Python path:** the prebuilt Windows exe is in the repo at
-`dist/Legality Engine for VASSAL.exe` (also distributed as a separate download
-via Google Drive:
+**No-Python path:** download the prebuilt Windows exe from the
+[Releases page](https://github.com/DrEvil-TitaniumHelix/vsav-engine/releases/latest)
+(also mirrored on Google Drive:
 https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view).
 Double-click it — see RELEASE_README.md for the SmartScreen first-run warning
 and the Mac build.
@@ -246,6 +248,29 @@ Other games (ASL) remain bring-your-own-module:
 # download Tobruk_v1.1.vmod from https://vassalengine.org/wiki/Module:Tobruk
 python engine/setup_module.py tobruk "path/to/Tobruk_v1.1.vmod"
 python ui/server.py --game games/tobruk
+```
+
+## Testing
+
+One command runs the whole suite:
+
+```
+python run_all.py          # every game's validators, one PASS/FAIL summary
+python run_all.py --fast   # skip the slow multi-seed AI campaigns
+python run_all.py --game westwall-arnhem   # one game only
+```
+
+The suite *is* the validators: each `games/<name>/validate_*.py` is a standalone
+evidence script (grid, movement, gate, combat, AI) that exits non-zero on any
+discrepancy — the same checks that gate a game's tier badge, documented per game
+in its `VALIDATION.md`. The engine is stdlib-only, so no install step is needed
+to run them. A few validators cross-check against private decode material that
+isn't in this public repo; those **skip cleanly** when it's absent (as in CI),
+and never fail the run. This is exactly what runs on every push (see the badge
+above). To audit a specific finished game, replay its log independently:
+
+```
+python engine/verify_game.py live/game_tobruk.log.jsonl -v
 ```
 
 ## What's in the repo

@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validators:
+    name: Run engine validators
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The engine is stdlib-only; no pip install is needed to run the suite.
+      - name: Show Python
+        run: python --version
+
+      # The 4 ingest cross-check validators need the private ../VassalIngest
+      # decode material, which is not in this public repo. run_all.py skips
+      # them cleanly; the 14 self-contained validators must all pass.
+      - name: Run the full test suite
+        run: python run_all.py

@@ -18,9 +18,9 @@ python app.py                        # opens the game window, pick a game, play
 
 Prefer a plain browser? `python ui/server.py` then open the printed URL.
 
-Don't want to touch Python at all? Use the prebuilt Windows exe — it's in
-`dist/Legality Engine for VASSAL.exe` in this repo, and also downloadable from
-Bruce's Google Drive link (ask Bruce). Double-click, no install. Windows
+Don't want to touch Python at all? Use the prebuilt Windows exe — download it
+from the [Releases page](https://github.com/DrEvil-TitaniumHelix/vsav-engine/releases/latest),
+or from Bruce's Google Drive link (ask Bruce). Double-click, no install. Windows
 SmartScreen will warn the first time (unsigned new app — click **More info →
 Run anyway**); details in RELEASE_README.md.
 
