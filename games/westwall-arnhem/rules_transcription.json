@@ -264,7 +264,10 @@
    {"image": "A 1-6P.png", "was": "1/6 3-3-7", "is": "1/6PT German infantry 2-3-7"},
    {"image": "A 2-6P.png", "was": "2/6 3-3-7", "is": "2/6PT German infantry 2-3-7"},
    {"image": "A 2-1PT.png", "was": "ambiguous side", "is": "2/1PT GERMAN infantry 2-2-7 (Balkenkreuz on art)"},
-   {"image": "A 1-1P.png", "was": "1/1 ambiguous", "is": "1/1PT GERMAN infantry 2-2-7"}
+   {"image": "A 1-1P.png", "was": "1/1 ambiguous", "is": "1/1PT GERMAN infantry 2-2-7"},
+   {"image": "A Engineers.png", "was": "marker, no factors", "is": "the Allied ENGINEER unit 3-3-10 [13.0/18.14] - a real combat unit with special functions, counter-verified (British, engineer symbol)"},
+   {"image": "A 55.png", "was": "2-1-4/3-10", "is": "55 SP artillery 4-2-7/3-10 - counter-verified (top line reads 4-2-7), matches the 18.14 GT2 schedule"},
+   {"image": "A 15-19.png", "was": "factors '3-10' (top line dropped)", "is": "15/19 SP artillery 2-1-4/3-10 - counter-verified, matches the 18.14 GT3 schedule"}
   ],
   "confirmed_harmless_ties": "A 1-1-1/A 1-1-2/A 1-1-2S (British 1 Para Bde + S.Staffs, all 2-2-7), A 1-4-10 (10/4 2-2-7), A 2107 P (5-3-10 armor), A 1-6/A 2-6 (1/6 & 2/6 3-3-7)"
  }
