@@ -65,7 +65,7 @@ def discover(one_game=None, fast=False):
             yield game, os.path.join(gdir, fn)
 
 
-def run_one(path):
+def run_one(path, extra_args=None):
     """Run a validator. Returns (status, seconds, tail) where status is one of
     PASS / FAIL / SKIP."""
     if needs_local_material(path) and not os.path.isdir(INGEST_ROOT):
@@ -73,7 +73,7 @@ def run_one(path):
     start = time.time()
     try:
         proc = subprocess.run(
-            [sys.executable, path],
+            [sys.executable, path] + (extra_args or []),
             cwd=REPO,
             capture_output=True,
             text=True,
@@ -93,9 +93,14 @@ def main():
     ap = argparse.ArgumentParser(description="Run the whole engine test suite.")
     ap.add_argument("--fast", action="store_true",
                     help="skip the slow multi-seed AI campaigns")
+    ap.add_argument("--ai-smoke", action="store_true",
+                    help="run validate_ai in --smoke mode (1 seed, short game) "
+                         "instead of the full 5-seed soak; also enabled by the "
+                         "VASSAL_AI_SMOKE env var. Used by CI.")
     ap.add_argument("--game", default=None,
                     help="run only this game's validators (folder name)")
     args = ap.parse_args()
+    ai_smoke = args.ai_smoke or bool(os.environ.get("VASSAL_AI_SMOKE"))
 
     validators = list(discover(args.game, args.fast))
     if not validators:
@@ -120,7 +125,10 @@ def main():
             print(c(DIM, f"{game}"))
             cur_game = game
         name = os.path.basename(path)
-        status, secs, tail = run_one(path)
+        extra = ["--smoke"] if (ai_smoke and name == "validate_ai.py") else None
+        status, secs, tail = run_one(path, extra)
+        if extra and status != "SKIP":
+            name += " (smoke)"
         counts[status] += 1
         mark = {"PASS": c(GREEN, "PASS"), "FAIL": c(RED, "FAIL"),
                 "SKIP": c(YELLOW, "SKIP")}[status]

@@ -29,5 +29,9 @@ jobs:
       # The 4 ingest cross-check validators need the private ../VassalIngest
       # decode material, which is not in this public repo. run_all.py skips
       # them cleanly; the 14 self-contained validators must all pass.
-      - name: Run the full test suite
-        run: python run_all.py
+      # AI validators run in --smoke mode here (1 seed, short game): still
+      # exercises the gate, combat, byte-exact replay and no-stall properties,
+      # but finishes in minutes on CI's slower runners. The full 5-seed soak is
+      # run locally / before a release (plain `python run_all.py`).
+      - name: Run the test suite (AI in smoke mode)
+        run: python run_all.py --ai-smoke
