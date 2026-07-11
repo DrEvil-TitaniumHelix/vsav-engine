@@ -1123,13 +1123,16 @@ class BlueGrayGame:
                 chain = p.setdefault("chain", [])
                 disp = next((v for v in friends if v["pid"] not in chain),
                             friends[0])
-                p["units"].append(disp["pid"])
+                # a unit owes ONE retreat [7.71]: never queue it twice (two
+                # retreaters displacing the same stack before it resolves)
+                if disp["pid"] not in p["units"]:
+                    p["units"].append(disp["pid"])
                 ev.append({"displaced": disp["slot"], "by": u["slot"]})
             u["col"], u["row"] = dest
             s["retreated_phase"].append(pid)
             p.setdefault("chain", []).append(pid)
             ev.append({"retreat": u["slot"], "to": list(dest)})
-        p["units"].remove(pid)
+        p["units"] = [q for q in p["units"] if q != pid]   # all instances
         if not p["units"]:
             adv_by, adv_units = p.get("adv_by"), p.get("adv_units", [])
             vacating = p.get("vacating", [])
