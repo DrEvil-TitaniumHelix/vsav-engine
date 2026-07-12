@@ -29,6 +29,7 @@ import gamespec            # noqa: E402
 import bluegray as bg_mod   # noqa: E402
 import plans               # noqa: E402
 import llm_planner         # noqa: E402
+import strategy_bg          # noqa: E402
 
 
 def main():
@@ -38,7 +39,16 @@ def main():
     ap.add_argument("--side", required=True)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--max-gts", type=int, default=None)
+    ap.add_argument("--opponent-theta", default=None,
+                    help="JSON file holding a strategy_bg genome (e.g. an "
+                    "optimizer status.json 'champion' block); the enemy side "
+                    "then plays that strategy instead of the baseline policy")
     a = ap.parse_args()
+
+    opp_theta = None
+    if a.opponent_theta:
+        blob = json.load(open(a.opponent_theta, encoding="utf-8"))
+        opp_theta = blob.get("champion", blob)   # status.json or bare genome
 
     game = gamespec.Game(a.game)
     scen = None
@@ -57,7 +67,10 @@ def main():
         if a.max_gts and turn > a.max_gts:
             break
         if mover != a.side:
-            plans.take_turn(tg)                      # policy plays the enemy
+            if opp_theta is not None:                # champion plays the enemy
+                plans.take_turn(tg, strategy_bg.make_plan(tg, mover, opp_theta))
+            else:
+                plans.take_turn(tg)                  # policy plays the enemy
             continue
         pfile = os.path.join(a.live, f"plan_gt{turn}_{a.side.lower()}.json")
         bfile = os.path.join(a.live, f"briefing_gt{turn}_{a.side.lower()}.txt")
