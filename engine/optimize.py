@@ -153,6 +153,7 @@ def main():
     if a.resume and os.path.exists(ck_path):
         ck = json.load(open(ck_path, encoding="utf-8"))
         popn, hof = ck["population"], ck["hall_of_fame"]
+        reigning = ck.get("reigning")
         gen0, streak = ck["generation"] + 1, ck.get("unbeaten_streak", 0)
         ledger["games"] = ck.get("games_played", 0)
         rng.setstate(tuple(ck["rng_state"][0:1] + [tuple(ck["rng_state"][1])]
@@ -168,6 +169,7 @@ def main():
         while len(popn) < a.pop:
             popn.append(strategy_bg.random_theta(rng))
         hof = []
+        reigning = None
 
     pool = mp.Pool(a.procs) if a.procs > 1 else None
     t0 = time.time()
@@ -181,17 +183,34 @@ def main():
                             a.max_gts)
             ranked = sorted(zip(fits, popn),
                             key=lambda fp: (-fp[0][0], -fp[0][1]))
-            (bw, bm, bn), champ = ranked[0]
+            (bw, bm, bn), contender = ranked[0]
+
+            # REIGNING champion defends the streak: the graduation candidate
+            # is one persistent genome, not each generation's tournament
+            # winner. A contender dethrones it only by winning their
+            # head-to-head pair set - then starts its own streak from zero.
+            if reigning is None:
+                reigning = dict(contender)
+                streak = 0
+            elif contender != reigning:
+                h = evaluate(pool, [contender], [reigning],
+                             rng.sample(HELDOUT_SEEDS, 2), a.game, ledger,
+                             a.max_gts)
+                hw, hm, hn = h[0]
+                if hw > hn / 2 + 1e-9:
+                    reigning = dict(contender)
+                    streak = 0
 
             # held-out gauntlet: baseline + HoF + fresh random challengers
             gauntlet = [None] + hof[-a.hof_size:] \
                 + [strategy_bg.random_theta(rng) for _ in range(3)]
             gseeds = rng.sample(HELDOUT_SEEDS, 2 if not a.smoke else 1)
-            gres = evaluate(pool, [champ], gauntlet, gseeds, a.game, ledger,
+            gres = evaluate(pool, [reigning], gauntlet, gseeds, a.game, ledger,
                             a.max_gts)
             gw, gm, gn = gres[0]
             unbeaten = gw >= gn - 1e-9
             streak = streak + 1 if unbeaten else 0
+            champ = reigning
 
             elapsed = time.time() - t0
             status = {"generation": gen, "games_played": ledger["games"],
@@ -209,6 +228,7 @@ def main():
             hof.append(dict(champ))
             hof = hof[-8:]
             ck = {"generation": gen, "population": popn, "hall_of_fame": hof,
+                  "reigning": reigning,
                   "unbeaten_streak": streak, "games_played": ledger["games"],
                   "rng_state": [rng.getstate()[0], list(rng.getstate()[1]),
                                 rng.getstate()[2]]}
