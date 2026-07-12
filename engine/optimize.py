@@ -79,14 +79,21 @@ def matches_for(theta, opponents, seeds, game_dir, max_gts):
 
 
 def score(results_home_away):
-    """wins + 0.5 draws, margin tiebreak, from the candidate's perspective."""
+    """Aggregate HOME-AND-AWAY PAIRS (consecutive A-seat/B-seat results vs
+    the same opponent+seed): a pair is won when the candidate's summed VP
+    margin across both seatings is positive. Wargames are structurally
+    side-imbalanced, so per-game win rate pins at .500 for every competent
+    strategy and gives selection no gradient; pair aggregate is how
+    tournament play scores imbalanced matchups. Returns (pair wins with
+    0.5 for exact ties, total margin)."""
     w = m = 0.0
-    for res, cand_is_a in results_home_away:
-        margin = res["margin_a"] if cand_is_a else -res["margin_a"]
-        m += margin
-        if margin > 0:
+    it = iter(results_home_away)
+    for (res_a, _), (res_b, _) in zip(it, it):
+        pair = res_a["margin_a"] + (-res_b["margin_a"])
+        m += pair
+        if pair > 0:
             w += 1
-        elif margin == 0:
+        elif pair == 0:
             w += 0.5
     return w, m
 
@@ -108,7 +115,7 @@ def evaluate(pool, cands, opponents, seeds, game_dir, ledger, max_gts=None):
             job = jobs[start + k]
             ra.append((results[start + k], job[1] is th))
         w, m = score(ra)
-        out.append((w, m, n))
+        out.append((w, m, n // 2))          # n//2 = home-and-away pairs
     return out
 
 
