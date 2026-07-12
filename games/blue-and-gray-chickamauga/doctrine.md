@@ -119,6 +119,42 @@ What the game proved:
    1115 carries the game's largest counterfactual swing; the GT2 south
    scramble of 110/111 was correctly rated a bullet dodged.
 
+## Lessons from Game 2 (Claude-as-Union, revised doctrine, seed 1, 2026-07-11)
+
+Final 125-32 Confederate — margin -93 vs game 1's -91 and the -90
+baseline: revised doctrine changed the SHAPE of the game and not the
+RESULT. Verified 697/697. What game 2 proved on top of game 1:
+
+1. **Decoys are not free.** The fly-paper economy (three separate enemy
+   groups chasing sacrifices all game) bought total fortress immunity for
+   14 turns - and paid for it in kills: their 68 combat VP were mostly my
+   decoys, pins, and entry losses. CSP kills are 1 VP each, symmetric:
+   sacrifice-based denial is VP-neutral at best against an opponent that
+   eventually catches things.
+2. **The exit column works.** Wilder/108/147 (18 CSP) exited under the
+   noses of a 40-CSP wing that spent ten turns escorting them off the map
+   for zero payoff. Herding pursuers toward your own exits converts their
+   biggest field force into a losing proposition.
+3. **The eastern raid works and the policy never retakes Union-scoring
+   hexes deliberately** - 2311 flipped for six turns and was lost only to
+   a combat-advance accident, not intent. A raider that avoids ZOC can
+   bank 30 VP in the empty east; creeks gate the routes (2311 only via
+   the 2411 bridge).
+4. **Entry hold-back is a missing plan verb.** The compiler auto-enters
+   every due reinforcement; watched entry hexes turned ~30 VP of arrivals
+   into kills across both games. The DSL needs "withhold reinforcements
+   while entry hexes are in enemy reach."
+5. **Garrison depth decides the death-turn.** 0502 fell in the FINAL
+   combat phase to the one concentration that stopped chasing decoys -
+   20 VP lost at the buzzer. Single-stack garrisons are not enough
+   against end-game mass; the champion genome's heavy-garrison economics
+   (8+ strength per 10 VP) is the corrected number.
+6. **Three human-doctrine games, one conclusion:** -91, -93 vs -90
+   baseline. Reasoned play with research reshuffles WHERE the VP flow,
+   not the margin. The optimizer's evolved champion (84% held-out pair
+   wins during the same hours) is the empirical argument that exhaustive
+   experience, not cleverness, closes this gap [spec #22].
+
 ## What the current policy AI does (know your baseline)
 
 The shipped opponent walks each unit toward the nearest enemy-held VP hex,
