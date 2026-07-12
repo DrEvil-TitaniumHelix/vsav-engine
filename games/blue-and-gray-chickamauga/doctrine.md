@@ -155,6 +155,51 @@ RESULT. Verified 697/697. What game 2 proved on top of game 1:
    wins during the same hours) is the empirical argument that exhaustive
    experience, not cleverness, closes this gap [spec #22].
 
+## Lessons from Game 3 (Claude-as-Union vs the OPTIMIZED CHAMPION, seed 42, 2026-07-12)
+
+First LLM-vs-champion match (gen-119 checkpoint genome as Confederate via
+session_play --opponent-theta). Final: **Confederate 51 - Union 27** after
+Union led 12-0 through all 15 game turns. Verified 534/534. What it proved:
+
+1. **The 17.32 cutoff is the real victory condition, and the champion's
+   genes price it in.** Union won every visible exchange (3 detail kills,
+   every VP hex held, zero CSA exits, LOC voided) and lost at final
+   scoring: 9 southern units / 41 CSP counted as destroyed because the
+   champion's end positions severed their 10-hex path to an
+   exit-connected road. Its "odds-locked hovering blobs" (0113/0213/0313
+   and the Gracie/Deas ring around 0822) were not failed attacks - they
+   were road-severing endgame geometry. Evidence: game log n=534,
+   nine cut_off events, csa_loc_road_clear=false (the plug worked,
+   they just didn't need exits).
+2. **Blocking geometry odds-locks the champion's assaults.** Stacks on
+   0111/0210/0211 capped the adjacency its combat layer needed for
+   acceptable odds; ~50 str orbited a 9-str stack for six turns without
+   declaring a single battle. Same at 0502 and 0822. Fortress-with-
+   approach-hex-denial completely neutralizes its ATTACK; it wins with
+   the map, not the CRT.
+3. **The champion is enemy-blind - and it doesn't matter.** make_plan
+   reads hex credit and its own units; feints, pins and threats change
+   nothing in its allocation. Exploits that work on lookahead opponents
+   are wasted; only hex credit and forced combat register. Its strength
+   is that its FIXED allocation is already near the game's fixed point.
+4. **Entry-hex blocking works as the missing hold-back verb** (unit
+   sitting on the entry hex stalls the whole column, off-board units are
+   invisible to 17.32) - it kept ~90 str safe all game and cost only the
+   train's 10 VP (never entered = never exited = 10 to CSA [18.x]).
+   Corollary: the drip is ~1-2 units/turn even unblocked; the Union
+   army NEVER fully arrives in 15 GTs.
+5. **Detail kills against garrison-walkers are free VP.** Its per-unit
+   garrison assignments march singletons and pairs across the map;
+   concentrated locals killed Brown+Bates+Kershaw (12 CSP) at zero loss.
+   This is the one axis where the LLM outplayed the genome all game.
+6. **Spec #22 evidence, third angle:** rules-complete LLM + full doctrine
+   book + live counterfactual reasoning = 27; evolved genome from 34k
+   games of exhaustive experience = 51. The margin IS the experience
+   corpus - the champion knew the endgame scoring geometry that three
+   human-doctrine games and the published literature never surfaced.
+   Union counter next game: garrison the ROAD JUNCTIONS south and west
+   of every force group from ~GT12, not just the VP hexes.
+
 ## What the current policy AI does (know your baseline)
 
 The shipped opponent walks each unit toward the nearest enemy-held VP hex,
