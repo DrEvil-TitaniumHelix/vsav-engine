@@ -33,14 +33,18 @@ engine/baseline.json
 /build/
 *.app/
 
-# SHIPPED IN THE REPO (closed dev+tester distribution — Bruce 2026-07-10):
-# games_bundled/ = the release games, self-contained (only the counters the
-# scenario uses, no rulebook scans).
-# The prebuilt Windows exe is distributed via GitHub Releases + Google Drive,
-# NOT committed to git (kept the 47 MB binary out of history).
+# games_bundled/: ships only OUR OWN data (game specs, terrain derivation,
+# scenarios, engine-generated setup saves). Third-party module art — maps,
+# counters, module-provided saves — is NEVER committed (Bruce 2026-07-12,
+# Decision Games copyright compliance; art purged from history same day).
+# Stage art locally from your own module copy via build_stage.py.
 dist/*
 *.exe
-!games_bundled/**
+!games_bundled/**/*.json
+!games_bundled/blue-and-gray-chickamauga/setup.vsav
+!games_bundled/westwall-arnhem/setup.vsav
+!games_bundled/tobruk/scenario_firefight_b.vsav
+!games_bundled/tobruk/scenario_meeting.vsav
 /baseline.json
 
 games/*/eval_llm_out/
