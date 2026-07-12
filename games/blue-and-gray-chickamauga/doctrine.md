@@ -1,5 +1,40 @@
 # Doctrine — Blue & Gray: Chickamauga (v1, authored)
 
+## Published literature on this title (retrieved 2026-07-11)
+
+Design: Irad B. Hardy, Redmond A. Simonsen, John Young (SPI 1975, Blue &
+Gray quad; system adapted from Napoleon at War 1972; TSR reissue 1984,
+Decision Games revision 1995). Ranked 15th of 202 in SPI's North American
+popularity poll; a perennial convention tournament favorite.
+
+- Jay Nelson, MOVES #23 (Oct 1975), Blue & Gray Profile: "a simple game
+  that portrays a rather complex situation... interesting challenges to
+  both sides"; his conclusion — play comes down to "exploiting specific
+  weaknesses and strengths that will be unique to each game."
+- Tom Walczyk, MOVES (Oct 1976): QuadriGame errata covering Blue & Gray.
+- Charles Vasey (1977): "simple tactical surround-and-destroy system" —
+  encirclement to cut retreat paths is the system's core weapon.
+- Jon Freeman, Complete Book of Wargames (1980): rules "ideal" in their
+  simplicity; judged the scenario UNBALANCED IN FAVOR OF THE UNION.
+- Steve List, MOVES #54 (1981): "easily the best of the B&Gs", B+,
+  "outcome usually in doubt to the end."
+- Luc Olivier, Simulacrum #20 (2004): "by far the best", historical
+  victory conditions create natural balance.
+
+**Calibration consequence:** the published consensus (balanced to
+Union-favored) contradicts our policy-vs-policy baseline (Confederate
++90). The baseline therefore reflects weak POLICY Union play, not the
+game - the expert bar for Union is WINNING, not losing gracefully.
+
+**Retrieval targets (work orders):** full text of Nelson's MOVES #23
+profile and Walczyk's Oct-1976 errata - candidate transcription jobs for
+the OCR pipeline; check the errata against our source-defect register.
+**Verification note:** Wikipedia describes an "Attack Effectiveness"
+rule (Attacker-Retreat results bar further attacks that day) and a
+10-turn day; our validated transcription/scenario runs 15 GTs - likely
+edition differences (quad standard vs folio vs DG revision), but check
+the module's rulebook edition against both claims on next touch.
+
 This is the doctrine book the LLM planner reads before writing each turn's
 plan. v1 is authored from the encoded victory schedule and the strategy the
 map dictates; as the Staff College loop comes online, entries earned from
