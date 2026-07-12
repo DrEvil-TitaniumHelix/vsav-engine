@@ -1,0 +1,1243 @@
+{
+ "log": "C:\\VassalArnhem\\runs\\2026-07-12_fable_vs_champion\\game_blue-and-gray-chickamauga.log.jsonl",
+ "game": "C:\\VassalArnhem\\games\\blue-and-gray-chickamauga",
+ "mode": "bluegray",
+ "scenario": "Chickamauga - The Last Victory (campaign, 15 GTs)",
+ "seed": 42,
+ "points_mined": 12,
+ "alts_per_point": 3,
+ "actual_final": {
+  "over": true,
+  "end_turn": 16,
+  "vp": {
+   "Union": 27,
+   "Confederate": 51
+  },
+  "winner": "Confederate",
+  "level": null
+ },
+ "points": [
+  {
+   "n": 1,
+   "turn": 1,
+   "phase": "movement",
+   "side": "Union",
+   "action": {
+    "type": "move",
+    "unit": "101",
+    "dest": [
+     11,
+     15
+    ]
+   },
+   "desc": "1/1/XIV c moves to 1115",
+   "from": "1317",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "101",
+      "dest": [
+       15,
+       20
+      ]
+     },
+     "legal": true,
+     "desc": "1/1/XIV c moves to 1520",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 36,
+       "Confederate": 128
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -21,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "101",
+      "dest": [
+       10,
+       14
+      ]
+     },
+     "legal": true,
+     "desc": "1/1/XIV c moves to 1014",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 41,
+       "Confederate": 112
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "101",
+      "dest": [
+       11,
+       21
+      ]
+     },
+     "legal": true,
+     "desc": "1/1/XIV c moves to 1121",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 8,
+       "Confederate": 135
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -56,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 41,
+     "Confederate": 112
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 0,
+   "dodged": -56
+  },
+  {
+   "n": 31,
+   "turn": 1,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "134",
+    "dest": [
+     14,
+     17
+    ]
+   },
+   "desc": "Smith c moves to 1417",
+   "from": "1620",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "134",
+      "dest": [
+       14,
+       21
+      ]
+     },
+     "legal": true,
+     "desc": "Smith c moves to 1421",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 31,
+       "Confederate": 100
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -4,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "134",
+      "dest": [
+       18,
+       19
+      ]
+     },
+     "legal": true,
+     "desc": "Smith c moves to 1819",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 35,
+       "Confederate": 128
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 20,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "134",
+      "dest": [
+       16,
+       22
+      ]
+     },
+     "legal": true,
+     "desc": "Smith c moves to 1622",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 31,
+       "Confederate": 100
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -4,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 22,
+     "Confederate": 95
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 20,
+   "dodged": -4
+  },
+  {
+   "n": 71,
+   "turn": 2,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "124",
+    "dest": [
+     23,
+     13
+    ]
+   },
+   "desc": "Gregg c moves to 2313",
+   "from": "2315",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "124",
+      "dest": [
+       19,
+       18
+      ]
+     },
+     "legal": true,
+     "desc": "Gregg c moves to 1918",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 10,
+       "Confederate": 101
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -3,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "124",
+      "dest": [
+       25,
+       18
+      ]
+     },
+     "legal": true,
+     "desc": "Gregg c moves to 2518",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 18,
+       "Confederate": 100
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -12,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "124",
+      "dest": [
+       20,
+       18
+      ]
+     },
+     "legal": true,
+     "desc": "Gregg c moves to 2018",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 10,
+       "Confederate": 101
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -3,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 10,
+     "Confederate": 104
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": -3,
+   "dodged": -12
+  },
+  {
+   "n": 117,
+   "turn": 3,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "125",
+    "dest": [
+     22,
+     11
+    ]
+   },
+   "desc": "McNair c moves to 2211",
+   "from": "2313",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "125",
+      "dest": [
+       19,
+       10
+      ]
+     },
+     "legal": true,
+     "desc": "McNair c moves to 1910",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 49,
+       "Confederate": 110
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -12,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "125",
+      "dest": [
+       25,
+       12
+      ]
+     },
+     "legal": true,
+     "desc": "McNair c moves to 2512",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 43,
+       "Confederate": 116
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "125",
+      "dest": [
+       23,
+       15
+      ]
+     },
+     "legal": true,
+     "desc": "McNair c moves to 2315",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 43,
+       "Confederate": 116
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 43,
+     "Confederate": 116
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 0,
+   "dodged": -12
+  },
+  {
+   "n": 166,
+   "turn": 4,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "139",
+    "dest": [
+     14,
+     12
+    ]
+   },
+   "desc": "Ector c moves to 1412",
+   "from": "1514",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "139",
+      "dest": [
+       14,
+       14
+      ]
+     },
+     "legal": true,
+     "desc": "Ector c moves to 1414",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 24,
+       "Confederate": 67
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 21,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "139",
+      "dest": [
+       17,
+       13
+      ]
+     },
+     "legal": true,
+     "desc": "Ector c moves to 1713",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 24,
+       "Confederate": 67
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 21,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "139",
+      "dest": [
+       15,
+       16
+      ]
+     },
+     "legal": true,
+     "desc": "Ector c moves to 1516",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 24,
+       "Confederate": 67
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 21,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 27,
+     "Confederate": 49
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 21,
+   "dodged": 21
+  },
+  {
+   "n": 203,
+   "turn": 5,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "176",
+    "dest": [
+     20,
+     22
+    ]
+   },
+   "desc": "Stovall c moves to 2022",
+   "from": "1928",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "176",
+      "dest": [
+       16,
+       27
+      ]
+     },
+     "legal": true,
+     "desc": "Stovall c moves to 1627",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 36,
+       "Confederate": 78
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 4,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "176",
+      "dest": [
+       21,
+       23
+      ]
+     },
+     "legal": true,
+     "desc": "Stovall c moves to 2123",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 39,
+       "Confederate": 77
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "176",
+      "dest": [
+       17,
+       28
+      ]
+     },
+     "legal": true,
+     "desc": "Stovall c moves to 1728",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 39,
+       "Confederate": 72
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -5,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 39,
+     "Confederate": 77
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 4,
+   "dodged": -5
+  },
+  {
+   "n": 261,
+   "turn": 7,
+   "phase": "movement",
+   "side": "Union",
+   "action": {
+    "type": "move",
+    "unit": "147",
+    "dest": [
+     4,
+     22
+    ]
+   },
+   "desc": "1/2/XIV c moves to 0422",
+   "from": "0525",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "147",
+      "dest": [
+       6,
+       23
+      ]
+     },
+     "legal": true,
+     "desc": "1/2/XIV c moves to 0623",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 31,
+       "Confederate": 47
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 24,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "147",
+      "dest": [
+       5,
+       28
+      ]
+     },
+     "legal": true,
+     "desc": "1/2/XIV c moves to 0528",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 31,
+       "Confederate": 63
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 8,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "147",
+      "dest": [
+       7,
+       28
+      ]
+     },
+     "legal": true,
+     "desc": "1/2/XIV c moves to 0728",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 33,
+       "Confederate": 48
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 25,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 27,
+     "Confederate": 67
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 25,
+   "dodged": 8
+  },
+  {
+   "n": 310,
+   "turn": 8,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "137",
+    "dest": [
+     4,
+     10
+    ]
+   },
+   "desc": "3 Artillery c moves to 0410",
+   "from": "0511",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "137",
+      "dest": [
+       5,
+       12
+      ]
+     },
+     "legal": true,
+     "desc": "3 Artillery c moves to 0512",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 27,
+       "Confederate": 66
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -5,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "137",
+      "dest": [
+       7,
+       11
+      ]
+     },
+     "legal": true,
+     "desc": "3 Artillery c moves to 0711",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 30,
+       "Confederate": 71
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -3,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 27,
+     "Confederate": 71
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": -3,
+   "dodged": -5
+  },
+  {
+   "n": 350,
+   "turn": 9,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "179",
+    "dest": [
+     14,
+     25
+    ]
+   },
+   "desc": "Anderson6 c moves to 1425",
+   "from": "1627",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "179",
+      "dest": [
+       14,
+       27
+      ]
+     },
+     "legal": true,
+     "desc": "Anderson6 c moves to 1427",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 32,
+       "Confederate": 66
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -10,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "179",
+      "dest": [
+       20,
+       27
+      ]
+     },
+     "legal": true,
+     "desc": "Anderson6 c moves to 2027",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 43,
+       "Confederate": 76
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": -11,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 32,
+     "Confederate": 76
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": -10,
+   "dodged": -11
+  },
+  {
+   "n": 404,
+   "turn": 12,
+   "phase": "movement",
+   "side": "Union",
+   "action": {
+    "type": "move",
+    "unit": "150",
+    "dest": [
+     4,
+     19
+    ]
+   },
+   "desc": "XIV Artillery c moves to 0419",
+   "from": "0420",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "150",
+      "dest": [
+       5,
+       20
+      ]
+     },
+     "legal": true,
+     "desc": "XIV Artillery c moves to 0520",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 29,
+       "Confederate": 76
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "150",
+      "dest": [
+       3,
+       21
+      ]
+     },
+     "legal": true,
+     "desc": "XIV Artillery c moves to 0321",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 35,
+       "Confederate": 76
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 6,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "150",
+      "dest": [
+       4,
+       21
+      ]
+     },
+     "legal": true,
+     "desc": "XIV Artillery c moves to 0421",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 37,
+       "Confederate": 76
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 8,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 29,
+     "Confederate": 76
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 8,
+   "dodged": 0
+  },
+  {
+   "n": 438,
+   "turn": 12,
+   "phase": "movement",
+   "side": "Confederate",
+   "action": {
+    "type": "move",
+    "unit": "182",
+    "dest": [
+     18,
+     19
+    ]
+   },
+   "desc": "Crews c moves to 1819",
+   "from": "2022",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "182",
+      "dest": [
+       18,
+       22
+      ]
+     },
+     "legal": true,
+     "desc": "Crews c moves to 1822",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 30,
+       "Confederate": 81
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "182",
+      "dest": [
+       23,
+       24
+      ]
+     },
+     "legal": true,
+     "desc": "Crews c moves to 2324",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 30,
+       "Confederate": 81
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "182",
+      "dest": [
+       19,
+       28
+      ]
+     },
+     "legal": true,
+     "desc": "Crews c moves to 1928",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 30,
+       "Confederate": 81
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 30,
+     "Confederate": 81
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 0,
+   "dodged": 0
+  },
+  {
+   "n": 484,
+   "turn": 14,
+   "phase": "movement",
+   "side": "Union",
+   "action": {
+    "type": "move",
+    "unit": "157",
+    "dest": [
+     10,
+     23
+    ]
+   },
+   "desc": "3/3/XXI c moves to 1023",
+   "from": "1027",
+   "branches": [
+    {
+     "label": "aggressive",
+     "action": {
+      "type": "move",
+      "unit": "157",
+      "dest": [
+       8,
+       23
+      ]
+     },
+     "legal": true,
+     "desc": "3/3/XXI c moves to 0823",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 22,
+       "Confederate": 86
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    },
+    {
+     "label": "cautious",
+     "action": {
+      "type": "move",
+      "unit": "157",
+      "dest": [
+       14,
+       23
+      ]
+     },
+     "legal": true,
+     "desc": "3/3/XXI c moves to 1423",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 24,
+       "Confederate": 86
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 2,
+     "flips": false
+    },
+    {
+     "label": "divergent",
+     "action": {
+      "type": "move",
+      "unit": "157",
+      "dest": [
+       13,
+       28
+      ]
+     },
+     "legal": true,
+     "desc": "3/3/XXI c moves to 1328",
+     "final": {
+      "over": true,
+      "end_turn": 16,
+      "vp": {
+       "Union": 22,
+       "Confederate": 86
+      },
+      "winner": "Confederate",
+      "level": null
+     },
+     "delta": 0,
+     "flips": false
+    }
+   ],
+   "factual": {
+    "over": true,
+    "end_turn": 16,
+    "vp": {
+     "Union": 22,
+     "Confederate": 86
+    },
+    "winner": "Confederate",
+    "level": null
+   },
+   "baseline_matches_actual": false,
+   "regret": 2,
+   "dodged": 0
+  }
+ ]
+}

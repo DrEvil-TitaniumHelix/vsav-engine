@@ -1,0 +1,37 @@
+{
+ "playbook_version": 1,
+ "game": "blue-and-gray-chickamauga",
+ "earned_by": {
+  "games_played": 43108,
+  "generations": 149,
+  "graduation": {
+   "wins": 13.0,
+   "of": 16,
+   "unbeaten": false,
+   "streak": 0,
+   "target": 3
+  },
+  "champion_fitness": {
+   "wins": 7.0,
+   "of": 8,
+   "margin": 192.0
+  },
+  "matrix_evidence": "matrix.json"
+ },
+ "contents": {
+  "champion.json": "portfolio",
+  "doctrine.md": "evidence-cited knowledge + auto-distilled genome",
+  "corpus/": [
+   "game1_claude_vs_policy.log.jsonl",
+   "game1_orders_union.jsonl",
+   "game1_regret.json",
+   "game2_claude_revised.log.jsonl",
+   "game2_orders_union.jsonl",
+   "game3_fable_vs_champion.log.jsonl",
+   "game3_orders_union.jsonl",
+   "game3_regret.json",
+   "policy_seed1_regret.json"
+  ]
+ },
+ "verification": "every corpus log replays byte-exact through engine/verify_game.py; optimization games used seeded dice through the same gate"
+}
