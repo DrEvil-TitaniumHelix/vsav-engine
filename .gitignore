@@ -44,3 +44,5 @@ dist/*
 /baseline.json
 
 games/*/eval_llm_out/
+
+runs/
