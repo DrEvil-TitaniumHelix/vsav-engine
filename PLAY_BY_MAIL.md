@@ -91,13 +91,30 @@ unbiased and the journal honest). Published alongside the moves.
   verified JSONL log.
 - Seed announced by the judge at match start, before any plan.
 
+## Fully-autonomous mode (the YOUR_TURN signal contract)
+The Overseer's relay can be removed entirely: generals run a cheap shell
+wait-loop between turns (pattern is in COMMANDER_TEMPLATE.md) watching
+their inbox for `YOUR_TURN.txt`; the judge is the only writer of that
+file. Contract:
+- Judge writes `inbox\YOUR_TURN.txt` (naming the briefing) when a general
+  is up; deletes it when the plan is TAKEN; re-creates it pointing at
+  REJECTED_gt<N>.txt on a bounce; writes `inbox\GAME_OVER.txt` to both
+  mailboxes (with the result) when the driver reports game end — the
+  generals' loops exit on it.
+- The disappear-then-reappear sequence is the general's resubmission
+  signal; generals never delete signal files.
+- Overseer's role shrinks to: paste ONE autonomy kickoff prompt per
+  terminal, then watch (and chat with anyone at will).
+
 ## Judge per-turn loop
 1. Watcher (persistent Monitor polling both outboxes for new/updated
    *.json) fires on a filed plan.
-2. Read the plan. Reject (REJECTED_gt<N>.txt into that general's inbox,
-   explain, request overwrite) if: malformed JSON, orders enemy/wrong-side
-   units, or missing required fields. Bounces are administrative — orders
-   already judged valid stay valid on resubmission.
+2. Read the plan; delete that general's YOUR_TURN.txt (the plan is
+   TAKEN). Reject (REJECTED_gt<N>.txt into that general's inbox +
+   re-create YOUR_TURN.txt pointing at it) if: malformed JSON, orders
+   enemy/wrong-side units, or missing required fields. Bounces are
+   administrative — orders already judged valid stay valid on
+   resubmission.
 3. SHA-256 receipt → judge_log.md. Byte-copy plan → live dir.
 4. Re-run the driver:
    `python engine/session_match.py --game games/<game> --live runs/<match>
@@ -106,11 +123,16 @@ unbiased and the journal honest). Published alongside the moves.
    Exit 3 = compile-check rejection → bounce per step 2.
    Gate rejections DURING a turn (n rejected in the driver's summary
    line) are normal — illegal proposals logged + provably inert.
-5. Render the new boundary still (`render_movie.py --stills`), copy the
-   latest PNG to the next general's inbox as map_gt<N>.png, copy the new
+5. Render the new boundary still (`render_movie.py --stills`) and copy it
+   to the next general's inbox as map_gt<N>.png — select the still by
+   NAME PATTERN (`*gt<N>_<side>_done.png`), not by index (stale files
+   from prior renders accumulate in the stills dir). Copy the new
    briefing beside it, receipt both.
 6. Harvest confidence/win_percent into judge_log.md's track table.
-7. Tell the Overseer who is up. Repeat until the driver reports game end.
+7. Write YOUR_TURN.txt into the next general's inbox (autonomous mode)
+   and/or tell the Overseer who is up. Repeat until the driver reports
+   game end, then write GAME_OVER.txt (with the result + VP) to BOTH
+   inboxes and notify the Overseer.
 
 ## Restart procedure (e.g. after a fairness defect)
 Void the receipts (keep them in judge_log under a "voided" heading — the
