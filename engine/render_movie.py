@@ -41,6 +41,50 @@ TERRAIN = {"clear": "#e9dfc2", "forest": "#96ad7e", "rough": "#cbb98e",
            "town": "#d8c8a8", "offmap": "#efefef"}
 CLASS_GLYPH = {"infantry": "X", "cavalry": "/", "artillery": "•",
                "train": "T"}
+ORD = {1: "1st", 2: "2nd", 3: "3rd"}
+RESULT_PROSE = {
+    "Ar": "the attack was thrown back",
+    "Dr": "the defenders were driven from their position",
+    "Ae": "the attacking force was wiped out",
+    "De": "the defenders were destroyed",
+    "Ex": "both sides suffered heavy losses in a bloody exchange"}
+
+
+def _ord(n):
+    return ORD.get(int(n), f"{n}th")
+
+
+def prettify(slot):
+    """Slot token -> news-report unit name."""
+    import re
+    s = re.sub(r"\s+[cw]$", "", slot.strip())
+    if "supply train" in s.lower():
+        return "the " + ("Union " if "union" in s.lower() else "") \
+            + "supply train"
+    m = re.match(r"^(\d+)/(\d+)/(\w+)$", s)
+    if m:
+        corps = ("the Reserve Corps" if m.group(3).lower() == "res"
+                 else f"{m.group(3)} Corps")
+        return (f"{_ord(m.group(1))} Brigade ({_ord(m.group(2))} Division, "
+                f"{corps})")
+    m = re.match(r"^(\d+)/(\d+)\s+Cavalry$", s, re.I)
+    if m:
+        return (f"{_ord(m.group(1))} Cavalry Brigade "
+                f"({_ord(m.group(2))} Cavalry Division)")
+    m = re.match(r"^(\w+)\s+Artillery$", s, re.I)
+    if m:
+        return f"the {m.group(1)} Corps artillery"
+    return f"{s}'s command"
+
+
+def battle_sentence(b):
+    """One news sentence from a battle result dict."""
+    atk = " and ".join(prettify(x) for x in b.get("attackers", [])[:2])
+    if len(b.get("attackers", [])) > 2:
+        atk += f" (with {len(b['attackers']) - 2} more)"
+    dfd = " and ".join(prettify(x) for x in b.get("defenders", [])[:2])
+    prose = RESULT_PROSE.get(b.get("result"), b.get("result", ""))
+    return f"{atk} attacked {dfd} at {b.get('odds')} odds; {prose}"
 
 
 def font(sz):
@@ -85,11 +129,13 @@ class Frames:
 
 
 class BGMovie:
-    """Bluegray adapter + painter."""
+    """Bluegray adapter + painter. art = {"map": path, "imgs": {key: path}}
+    (unit pid/slot -> counter PNG) switches from schematic to module art."""
 
-    def __init__(self, game, tg, terrain, width, labels):
+    def __init__(self, game, tg, terrain, width, labels, art=None):
         self.game, self.tg, self.terrain = game, tg, terrain
-        self.labels = labels
+        self.labels, self.art = labels, art
+        self.sprites = {}
         g = game.grid
         self.digits = g.digits
         hexes = terrain["hexes"]
@@ -97,13 +143,18 @@ class BGMovie:
         for key in hexes:
             c, r = int(key[:self.digits]), int(key[self.digits:])
             centers[key] = g.hex_to_pixel(c, r)
-        xs = [p[0] for p in centers.values()]
-        ys = [p[1] for p in centers.values()]
         self.R = g.dx / 1.5                       # flat-top: col pitch = 1.5R
         self.H = g.dy                             # hex height = row pitch
-        x0, y0 = min(xs) - self.R - MARGIN, min(ys) - self.H / 2 - MARGIN
-        map_w = (max(xs) - min(xs)) + 2 * self.R + 2 * MARGIN
-        map_h = (max(ys) - min(ys)) + self.H + 2 * MARGIN
+        if art:
+            self.map_img = Image.open(art["map"]).convert("RGB")
+            x0 = y0 = 0.0
+            map_w, map_h = self.map_img.size
+        else:
+            xs = [p[0] for p in centers.values()]
+            ys = [p[1] for p in centers.values()]
+            x0, y0 = min(xs) - self.R - MARGIN, min(ys) - self.H / 2 - MARGIN
+            map_w = (max(xs) - min(xs)) + 2 * self.R + 2 * MARGIN
+            map_h = (max(ys) - min(ys)) + self.H + 2 * MARGIN
         self.scale = width / map_w
         self.W = int(round(map_w * self.scale / 2)) * 2
         self.MH = int(round(map_h * self.scale))
@@ -116,6 +167,24 @@ class BGMovie:
         self.f_big = font(44)
         self.sides = game.side_order
         self.base = self._paint_base()
+
+    def _sprite(self, unit):
+        """Counter art for a unit, scaled + cached; None in schematic mode."""
+        if not self.art:
+            return None
+        img = self.art["imgs"].get(unit["pid"]) \
+            or self.art["imgs"].get(unit["slot"])
+        if not img:
+            return None
+        if img not in self.sprites:
+            try:
+                sp = Image.open(img).convert("RGBA")
+                w = int(self.R * self.scale * 1.30)
+                sp = sp.resize((w, max(1, int(sp.height * w / sp.width))))
+                self.sprites[img] = sp
+            except OSError:
+                self.sprites[img] = None
+        return self.sprites[img]
 
     def P(self, x, y):
         return (x * self.scale + self.off[0], y * self.scale + self.off[1])
@@ -136,8 +205,24 @@ class BGMovie:
         return sorted(sorted(va, key=d2)[:2])
 
     def _paint_base(self):
-        """Static layer: terrain, roads, VP/exit markers."""
+        """Static layer: terrain, roads, VP/exit markers (schematic mode)
+        or the module map scan (art mode)."""
         img = Image.new("RGB", (self.W, self.HT), "#f4f1e8")
+        if self.art:
+            m = self.map_img.resize((self.W, self.MH))
+            img.paste(m, (0, HUD_H))
+            d = ImageDraw.Draw(img)
+            vp = self.tg.vp_cfg.get("occupation") or {}
+            for owner, hexes in vp.items():
+                for hx, pts in hexes.items():
+                    cx, cy = self.centers[hx]
+                    d.polygon(self._hexpoly(cx, cy), outline="#c9a227",
+                              width=max(2, int(4 * self.scale)))
+            for (c, r) in self.tg.exit_hexes:
+                cx, cy = self.centers[self.hexkey(c, r)]
+                d.polygon(self._hexpoly(cx, cy), outline="#b03a2e",
+                          width=max(2, int(4 * self.scale)))
+            return img
         d = ImageDraw.Draw(img)
         for key, cell in self.terrain["hexes"].items():
             cx, cy = self.centers[key]
@@ -215,6 +300,11 @@ class BGMovie:
             for j, (i, u) in enumerate(units[:3]):
                 ox = cx + (j - min(n - 1, 2) / 2) * cw * 0.28
                 oy = cy - j * ch * 0.16
+                sp = self._sprite(u)
+                if sp is not None:
+                    img.paste(sp, (int(ox - sp.width / 2),
+                                   int(oy - sp.height / 2)), sp)
+                    continue
                 st = self.game.stats(u["slot"])
                 d.rounded_rectangle([ox - cw / 2, oy - ch / 2,
                                      ox + cw / 2, oy + ch / 2],
@@ -294,9 +384,7 @@ def describe(e):
         return f"{e['side']}: {r.get('reinforce', a['unit'])} enters at {a['hex']}"
     if t == "battle":
         r = res[0] if res else {}
-        return (f"BATTLE {' + '.join(r.get('attackers', []))} vs "
-                f"{' + '.join(r.get('defenders', []))} - {r.get('odds')}, "
-                f"die {r.get('die')} -> {r.get('result')}")
+        return f"BATTLE (die {r.get('die')}): {battle_sentence(r)}"
     if t == "retreat":
         r = res[0] if res else {}
         return f"{r.get('retreat', a.get('unit'))} retreats to {a.get('dest')}"
@@ -322,6 +410,10 @@ def main():
                     help="decision_probe comparison.json: annotate each "
                          "still's caption with commander agreement at that "
                          "decision point")
+    ap.add_argument("--schematic", action="store_true",
+                    help="force engine-drawn schematic art even when the "
+                         "module's map/counter art is present locally "
+                         "(module art is BYO - local only, never committed)")
     a = ap.parse_args()
     out = a.out or os.path.join(os.path.dirname(a.log), "playthrough.mp4")
 
@@ -343,16 +435,38 @@ def main():
                 break
     if not scen:
         raise SystemExit(f"scenario '{init['scenario']}' not found")
-    terrain = json.load(open(os.path.join(
-        a.game, json.load(open(os.path.join(a.game, "game.json"),
-                               encoding="utf-8"))["terrain_file"]),
-        encoding="utf-8"))
+    gcfg = json.load(open(os.path.join(a.game, "game.json"),
+                          encoding="utf-8"))
+    terrain = json.load(open(os.path.join(a.game, gcfg["terrain_file"]),
+                             encoding="utf-8"))
     orders = load_orders(os.path.dirname(os.path.abspath(a.log)))
+
+    # module art (BYO: local disk only) - map scan + per-unit counter PNGs
+    art = None
+    if not a.schematic:
+        assets = gcfg.get("assets") or {}
+        map_path = os.path.normpath(os.path.join(a.game,
+                                                 assets.get("map") or ""))
+        cdir = os.path.normpath(os.path.join(a.game,
+                                             assets.get("counters_dir") or ""))
+        if assets.get("map") and os.path.exists(map_path) \
+           and os.path.isdir(cdir):
+            sdata = json.load(open(scen, encoding="utf-8"))
+            imgs = {}
+            for u in sdata.get("units", []) + sdata.get("reserve", []):
+                p = os.path.join(cdir, u.get("img") or "")
+                if u.get("img") and os.path.exists(p):
+                    imgs[u["id"]] = p
+                    imgs[u["slot"]] = p
+            art = {"map": map_path, "imgs": imgs}
+            print(f"module art: map + {len(imgs) // 2} counters from {cdir}")
+        else:
+            print("module art not found locally - schematic fallback")
 
     with tempfile.TemporaryDirectory() as tmp:
         tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"],
                                  tier=init.get("tier"))
-        mv = BGMovie(game, tg, terrain, a.width, labels)
+        mv = BGMovie(game, tg, terrain, a.width, labels, art=art)
         if a.stills:
             os.makedirs(a.stills, exist_ok=True)
             diverge = {}
@@ -383,19 +497,27 @@ def main():
 
             def caption(ev, cur):
                 bits = []
-                if ev["battles"]:
-                    bits.append(f"{len(ev['battles'])} battle(s): "
-                                + "; ".join(ev["battles"][:3]))
+                for b in ev["battles"][:2]:
+                    bits.append(battle_sentence(b) + ".")
+                if len(ev["battles"]) > 2:
+                    bits.append(f"There were {len(ev['battles']) - 2} "
+                                "further engagements.")
                 if ev["dead"]:
-                    bits.append("eliminated: " + ", ".join(ev["dead"][:6]))
+                    names = ", ".join(prettify(x) for x in ev["dead"][:4])
+                    bits.append(f"Destroyed this turn: {names}.")
                 if ev["reinf"]:
-                    bits.append(f"{ev['reinf']} reinforcements entered")
+                    bits.append(f"{ev['reinf']} fresh {cur[1]} "
+                                f"unit{'s' if ev['reinf'] > 1 else ''} "
+                                "arrived on the field.")
                 if ev["exits"]:
-                    bits.append(f"{ev['exits']} unit(s) exited")
+                    bits.append(f"{ev['exits']} unit"
+                                f"{'s' if ev['exits'] > 1 else ''} marched "
+                                "off the map.")
                 dv = diverge.get(cur)
                 if dv:
-                    bits.append(dv)
-                return ". ".join(bits) if bits else "quiet turn - maneuver only"
+                    bits.append(dv.capitalize() + ".")
+                return " ".join(bits) if bits else \
+                    "A quiet turn - both armies maneuvered without a fight."
 
             def fresh():
                 return {"battles": [], "dead": [], "reinf": 0, "exits": 0}
@@ -420,11 +542,7 @@ def main():
                     t = e["action"]["type"]
                     res = e.get("result") or []
                     if t == "battle" and res:
-                        b = res[0]
-                        ev["battles"].append(
-                            f"{'+'.join(b.get('attackers', []))} vs "
-                            f"{'+'.join(b.get('defenders', []))} {b.get('odds')}"
-                            f" -> {b.get('result')}")
+                        ev["battles"].append(res[0])
                     if t == "reinforce":
                         ev["reinf"] += 1
                     for d_ in res:
