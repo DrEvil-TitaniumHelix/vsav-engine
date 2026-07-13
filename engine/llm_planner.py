@@ -180,6 +180,49 @@ def claude_transport(model=DEFAULT_MODEL, effort=DEFAULT_EFFORT,
     return call
 
 
+def openai_transport(model="gpt-5.6", max_tokens=16000):
+    """OpenAI transport (Responses API, strict json_schema output). Lazy
+    import, same contract as claude_transport: the plan schema already meets
+    OpenAI strict-mode rules (additionalProperties false, all-required)."""
+    client_box = []
+
+    def call(system_text, user_text, schema):
+        from openai import OpenAI
+        if not client_box:
+            client_box.append(OpenAI())
+        resp = client_box[0].responses.create(
+            model=model,
+            max_output_tokens=max_tokens,
+            input=[{"role": "system", "content": system_text},
+                   {"role": "user", "content": user_text}],
+            text={"format": {"type": "json_schema", "name": "turn_plan",
+                             "schema": schema, "strict": True}},
+        )
+        text = resp.output_text
+        if not text:
+            raise RuntimeError(f"empty output (status={resp.status}) — "
+                               "refusal or truncation")
+        u = resp.usage
+        cached = getattr(getattr(u, "input_tokens_details", None),
+                         "cached_tokens", 0) or 0
+        usage = {"model": model, "in": u.input_tokens, "out": u.output_tokens,
+                 "cache_read": cached, "cache_write": 0}
+        return text, usage
+
+    return call
+
+
+def mock_transport(_model="mock", **_kw):
+    """Keyless transport for pipeline dry-runs: a valid empty plan every
+    turn (empty orders = the policy plays the turn)."""
+    def call(system_text, user_text, schema):
+        return (json.dumps({"commentary": "mock: standing doctrine",
+                            "orders": []}),
+                {"model": "mock", "in": 0, "out": 0,
+                 "cache_read": 0, "cache_write": 0})
+    return call
+
+
 # ------------------------------------------------------------ the planner
 class LLMPlanner:
     """Callable planner for plans.play_game: planner(tg, side) -> plan|None.
