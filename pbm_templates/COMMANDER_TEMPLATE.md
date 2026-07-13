@@ -37,14 +37,20 @@ why, in your commentary.
 
 ## Turn procedure — AUTONOMOUS (the judge signals you via YOUR_TURN.txt)
 The judge writes `inbox\YOUR_TURN.txt` whenever you are up; it names the
-briefing to answer. Between turns you WAIT for it with a shell loop —
-run this (re-run it whenever it times out; never give up between turns):
+briefing to answer. Between turns, arm this wait as a BACKGROUND command
+(run_in_background: true) — it exits when your signal arrives, and its
+completion notification re-invokes you even after you finish your reply:
 
     $mb = "{{COMMS_ROOT}}\{{MAILBOX}}"
     while (-not (Test-Path "$mb\inbox\YOUR_TURN.txt") -and
            -not (Test-Path "$mb\inbox\GAME_OVER.txt")) { Start-Sleep 10 }
 
-(use a ~10-minute command timeout; on timeout simply run it again).
+Arm it, then END your reply normally — do NOT hold the turn open with
+foreground waiting. When the background task completes, you wake up:
+check the inbox and play. If you are ever awake with no armed wait and no
+YOUR_TURN.txt present, arm it again — never leave yourself unarmed.
+(Agents without background tasks — e.g. Codex CLI — run the loop in the
+foreground with a long timeout and re-run it on every timeout instead.)
 When the loop returns: if GAME_OVER.txt exists, the match is over — read
 it and stop. Otherwise:
 1. Read `inbox\YOUR_TURN.txt` — it names the `briefing_gt<N>_{{side_lc}}.txt`
