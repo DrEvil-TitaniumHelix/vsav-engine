@@ -51,6 +51,26 @@ your own game you supply:
 - **The credits** — the printed game's designers and publisher, and the
   VASSAL module's authors, rendered in the in-game Rules panel.
 
+## Can my game be encoded? — the five-point pre-screen
+
+All five must pass for a game to ship with an **enforced** rules gate (Tier 1+):
+
+1. **Rules present** — embedded in the module or freely/legitimately obtainable.
+2. **Rules transcribe cleanly** — clear procedures, ideally with worked
+   examples in the rulebook to validate against.
+3. **Mechanics fit the engine** — hex movement + ZOC/terrain, plus one combat
+   flavor already built (odds/differential CRT, or to-hit/damage). Not yet in
+   the engine: card-driven systems, hidden movement, air/naval subsystems —
+   each is a future engine expansion, not a per-game hack.
+4. **Complete playable scope exists** — a defined scenario with victory
+   conditions, not the whole game system at once.
+5. **Every encoded table is validatable** — worked examples, a second printed
+   source, or expert review. No way to check the transcription = no
+   enforcement.
+
+Failing the screen doesn't mean the game can't run — it runs at **Tier 0**
+(free play, you are the umpire) instead of with a validated gate.
+
 ## The tier ladder — encode incrementally, enforce only what's validated
 
 A game earns its tier; it never ships enforcement that hasn't been proven:
