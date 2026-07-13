@@ -133,6 +133,27 @@ seed ⇒ byte-identical opening briefing (determinism check: hash matches).
    final result. 6. Publish package: verified log + commentary sidecars +
    war journals + confidence track + thinking scores + stills/movie.
 
+## Reproducibility & copyright — BYO, stated plainly
+Everything the harness itself needs is public in this repo: the engine,
+this protocol, the templates, and our own derived encodings
+(game.json / terrain.json / rules_transcription.json / scenarios). What is
+NOT ours and never ships: the published game's map/counter art, rulebook
+scans/PDFs, and VASSAL module contents (`literature/`, module art, and
+`comms_*/` mailboxes are all gitignored). To REPRODUCE a match someone
+needs their own copy of the game's resources:
+1. Own the printed game and/or download its module from vassalengine.org
+   (BYO principle — see ENCODING_GUIDE.md).
+2. Place rulebook material under `literature/<family>/` and extracted
+   module art where the renderer looks for it (it says at startup which
+   path it used); WITHOUT module art the renderer automatically falls
+   back to `--schematic`, which is fully self-contained.
+3. Everything else (logs, seeds, briefings, judge receipts) regenerates
+   deterministically from the public engine + the match log.
+PUBLISHING a match story: module-art renders are for the players'/owner's
+private use during the match. Anything published (stills, movie, posts)
+uses `--schematic` renders unless rights to the art are cleared —
+schematic output contains zero copyrighted material by construction.
+
 ## Stamping out a new match (checklist)
 1. Pick game, sides, seed; name the match (`<date>_<A>_vs_<B>`).
 2. `mkdir comms_<match>\{A,B}\{inbox,outbox}`; fill COMMANDER.md ×2 from
