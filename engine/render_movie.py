@@ -314,6 +314,14 @@ def main():
     ap.add_argument("--width", type=int, default=1400)
     ap.add_argument("--label", action="append", default=[],
                     help='Side=Commander name, e.g. "Union=Fable 5"')
+    ap.add_argument("--stills", default=None, metavar="DIR",
+                    help="instead of a movie, write one PNG per player-turn "
+                         "boundary (end of each side's turn = start-of-turn "
+                         "state for the next) plus setup + final, into DIR")
+    ap.add_argument("--divergence", default=None, metavar="COMPARISON_JSON",
+                    help="decision_probe comparison.json: annotate each "
+                         "still's caption with commander agreement at that "
+                         "decision point")
     a = ap.parse_args()
     out = a.out or os.path.join(os.path.dirname(a.log), "playthrough.mp4")
 
@@ -345,6 +353,97 @@ def main():
         tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"],
                                  tier=init.get("tier"))
         mv = BGMovie(game, tg, terrain, a.width, labels)
+        if a.stills:
+            os.makedirs(a.stills, exist_ok=True)
+            diverge = {}
+            if a.divergence:
+                comp = json.load(open(a.divergence, encoding="utf-8"))
+                for row in comp.get("decisions", []):
+                    ps = {k: v for k, v in row["plans"].items()
+                          if k != "_advisor" and v}
+                    names = sorted(ps)
+                    if len(names) >= 2:
+                        u = set().union(*(set(p) for p in ps.values()))
+                        same = sum(1 for x in u if len(
+                            {json.dumps(p.get(x)) for p in ps.values()}) == 1)
+                        diverge[(row["turn"], row["side"])] = \
+                            (f"commanders ({'/'.join(names)}) agreed on "
+                             f"{same}/{len(u)} units at this decision point")
+            n = 0
+
+            def live_set():
+                return {u["pid"]: u["slot"] for s_ in game.side_order
+                        for u in tg._live(s_)}
+
+            def snap(name, hud, cap=""):
+                nonlocal n
+                n += 1
+                mv.frame(hud, cap).save(
+                    os.path.join(a.stills, f"{n:02d}_{name}.png"))
+
+            def caption(ev, cur):
+                bits = []
+                if ev["battles"]:
+                    bits.append(f"{len(ev['battles'])} battle(s): "
+                                + "; ".join(ev["battles"][:3]))
+                if ev["dead"]:
+                    bits.append("eliminated: " + ", ".join(ev["dead"][:6]))
+                if ev["reinf"]:
+                    bits.append(f"{ev['reinf']} reinforcements entered")
+                if ev["exits"]:
+                    bits.append(f"{ev['exits']} unit(s) exited")
+                dv = diverge.get(cur)
+                if dv:
+                    bits.append(dv)
+                return ". ".join(bits) if bits else "quiet turn - maneuver only"
+
+            def fresh():
+                return {"battles": [], "dead": [], "reinf": 0, "exits": 0}
+
+            snap("setup", f"{init['scenario']} - starting positions")
+            cur, ev, before = None, fresh(), live_set()
+            for e in lines[1:]:
+                if e.get("event") != "action":
+                    continue
+                key = (e["turn"], e["side"])
+                if e.get("phase") == "movement" and key != cur:
+                    if cur:
+                        now = live_set()
+                        ev["dead"] = [before[p] for p in before
+                                      if p not in now]
+                        snap(f"gt{cur[0]}_{cur[1].lower()}_done",
+                             f"end of {cur[1]}'s player turn, GT {cur[0]}",
+                             caption(ev, cur))
+                    cur, ev, before = key, fresh(), live_set()
+                r = tg.submit(e["side"], e["action"])
+                if r["verdict"]["legal"]:
+                    t = e["action"]["type"]
+                    res = e.get("result") or []
+                    if t == "battle" and res:
+                        b = res[0]
+                        ev["battles"].append(
+                            f"{'+'.join(b.get('attackers', []))} vs "
+                            f"{'+'.join(b.get('defenders', []))} {b.get('odds')}"
+                            f" -> {b.get('result')}")
+                    if t == "reinforce":
+                        ev["reinf"] += 1
+                    for d_ in res:
+                        if isinstance(d_, dict) and ("exit" in d_
+                                                     or "exited" in d_):
+                            ev["exits"] += 1
+                if tg.s["over"]:
+                    break
+            if cur:
+                now = live_set()
+                ev["dead"] = [before[p] for p in before if p not in now]
+                snap(f"gt{cur[0]}_{cur[1].lower()}_done",
+                     f"end of {cur[1]}'s player turn, GT {cur[0]}",
+                     caption(ev, cur))
+            vp = " ".join(f"{s} {v}" for s, v in sorted(tg.s["vp"].items()))
+            snap("final", f"FINAL - winner {tg.s['winner']} ({vp})"
+                 if tg.s["over"] else "final logged state (game unfinished)")
+            print(f"{n} stills -> {a.stills}")
+            return
         sink = Frames(out, (mv.W, mv.HT), a.fps)
 
         def sub_for(turn, side):
