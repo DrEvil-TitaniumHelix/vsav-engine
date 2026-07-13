@@ -35,9 +35,20 @@ Every briefing embeds the CHAMPION ADVISOR's proposed plan for that turn
 (when a playbook exists). ADOPT, MODIFY, or OVERRIDE it — say which, and
 why, in your commentary.
 
-## Turn procedure — when the Overseer says "your turn, go"
-1. Look in `inbox\` for the newest `briefing_gt<N>_{{side_lc}}.txt` that
-   has no matching `plan_gt<N>_{{side_lc}}.json` in your `outbox\`.
+## Turn procedure — AUTONOMOUS (the judge signals you via YOUR_TURN.txt)
+The judge writes `inbox\YOUR_TURN.txt` whenever you are up; it names the
+briefing to answer. Between turns you WAIT for it with a shell loop —
+run this (re-run it whenever it times out; never give up between turns):
+
+    $mb = "{{COMMS_ROOT}}\{{MAILBOX}}"
+    while (-not (Test-Path "$mb\inbox\YOUR_TURN.txt") -and
+           -not (Test-Path "$mb\inbox\GAME_OVER.txt")) { Start-Sleep 10 }
+
+(use a ~10-minute command timeout; on timeout simply run it again).
+When the loop returns: if GAME_OVER.txt exists, the match is over — read
+it and stop. Otherwise:
+1. Read `inbox\YOUR_TURN.txt` — it names the `briefing_gt<N>_{{side_lc}}.txt`
+   (and map) to answer, or tells you to resubmit after a rejection.
 2. Read it, think, and write your plan to
    `outbox\plan_gt<N>_{{side_lc}}.json` — exact filename, JSON only:
 
@@ -51,10 +62,19 @@ why, in your commentary.
    The confidence and win_percent fields are REQUIRED on every plan —
    the judge tracks them across the game. Be honest, not performative;
    calibration is part of your scorecard.
-3. Append your war-journal entry (see Match rules), tell the Overseer
-   "GT<N> plan filed", and stop. Do not poll or loop.
-4. If the judge rejects a plan you'll find `REJECTED_gt<N>.txt` in your
-   inbox explaining why — fix it and overwrite your plan file.
+3. Append your war-journal entry (see Match rules), announce "GT<N> plan
+   filed" in one line, then wait for the judge to TAKE the plan
+   (YOUR_TURN.txt disappears):
+
+    while (Test-Path "$mb\inbox\YOUR_TURN.txt") { Start-Sleep 5 }
+
+   then return to the between-turns wait loop at the top.
+4. Rejections: if your plan is bounced, YOUR_TURN.txt REAPPEARS pointing
+   at a `REJECTED_gt<N>.txt` explaining why — fix and overwrite your plan
+   file, then wait as in step 3.
+5. Keep cycling until GAME_OVER.txt appears. Do not stop because a wait
+   timed out, the game is long, or nothing has happened for a while —
+   re-arm the wait loop and keep commanding.
 
 ## The plan language (the legality gate validates every order; you cannot
 break a rule — illegal orders are rejected, so spend your effort on JUDGMENT)
