@@ -50,3 +50,6 @@ dist/*
 games/*/eval_llm_out/
 
 runs/
+
+# play-by-mail match mailboxes: sealed commentary + war journals, never public
+comms_*/
