@@ -71,7 +71,38 @@ PLAN_SCHEMA = {
 
 
 # ------------------------------------------------------------ briefings
-def _bg_briefing(tg, side):
+def load_champion(game_dir):
+    """The playbook's champion genome (portfolio -> highest-weight genome),
+    or None if the game has no playbook."""
+    path = os.path.join(game_dir, "playbook", "champion.json")
+    if not os.path.exists(path):
+        return None
+    c = json.load(open(path, encoding="utf-8"))
+    port = c.get("portfolio") or {}
+    weights = port.get("weights") or []
+    if not weights:
+        return None
+    best = max(weights, key=lambda w: w[1])[0]
+    return port["genomes"][best]
+
+
+def advisor_text(tg, side, theta):
+    """The champion advisor's proposed plan for this turn, rendered for a
+    briefing. Deterministic: same state + genome = same advice for any
+    commander."""
+    import strategy_bg
+    plan = strategy_bg.make_plan(tg, side, theta)
+    return (
+        "\nCHAMPION ADVISOR - a strategy evolved over 43,108 self-play games "
+        "(150 generations) proposes this plan for your turn:\n"
+        + json.dumps(plan.get("orders", []))
+        + "\nIts strengths are garrison/exit-road endgame geometry and "
+        "odds-locked blocking; its known blind spot is that it never reacts "
+        "to what the enemy is doing. You may ADOPT, MODIFY, or OVERRIDE it - "
+        "state which you did, and why, in your commentary.")
+
+
+def _bg_briefing(tg, side, advisor=None):
     """Compact, factual state briefing for a Blue & Gray game. Open
     information - both orders of battle are public on the map."""
     s = tg.s
@@ -108,6 +139,8 @@ def _bg_briefing(tg, side):
     if due:
         out.append("REINFORCEMENTS DUE (enter automatically this turn): "
                    + " ".join(f"{p} {tg.reserve[p]['slot']}" for p in due))
+    if advisor is not None:
+        out.append(advisor_text(tg, side, advisor))
     out.append(
         "\nWrite this turn's plan as JSON. Refer to units by their pid "
         "(e.g. u12). Units you leave unassigned follow standing doctrine "
@@ -229,10 +262,12 @@ class LLMPlanner:
     None means 'no plan this turn' and plans.take_turn plays pure policy."""
 
     def __init__(self, transport=None, doctrine_path=None, orders_log=None,
-                 max_calls=400, model=DEFAULT_MODEL, effort=DEFAULT_EFFORT):
+                 max_calls=400, model=DEFAULT_MODEL, effort=DEFAULT_EFFORT,
+                 advisor=None):
         self.transport = transport or claude_transport(model, effort)
         self.doctrine_path = doctrine_path
         self.orders_log = orders_log
+        self.advisor = advisor          # champion genome dict, or None
         self.max_calls = max_calls
         self.calls = 0
         self.fallbacks = 0
