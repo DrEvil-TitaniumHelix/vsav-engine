@@ -57,6 +57,19 @@ First attempt at this match gave coordinates-only briefings — the general
 immediately (and rightly) complained he was commanding through a keyhole.
 Match was restarted once the full package was granted.
 
+## Naive vs. veteran commanders (Overseer's designation, 2026-07-14)
+Every commander ALWAYS gets the complete knowledge package above — the
+designation controls only exposure to MATCH HISTORY on top of it:
+- **NAIVE** — has never played and gets no prior-match archive. Full
+  library, zero games.
+- **VETERAN** — additionally receives their own accumulated match record
+  (their prior games' logs, journals, judge logs, grades).
+Standing rule: a general who WINS a match keeps that match in their
+record and enters future matches as a veteran of it. The designation of
+each commander is declared in the judge log before the first plan.
+(First use: 2026-07-14 Opus-vs-GPT-5.6 — both commanders naive by the
+Overseer's ruling, GPT compensated instead with the stronger seat.)
+
 ## Required plan fields (Overseer's standing orders, 2026-07-13)
 Every plan JSON must carry, top-level:
 - `commentary` — 2-4 sentences: intent + advisor verdict.
