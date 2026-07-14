@@ -91,6 +91,7 @@
     <span id="note" class="fixw"></span>
     <span id="progress" class="fixw"></span>
     <button class="sidebtn holdspace fixw" id="tierbtn" style="width:120px"></button>
+    <button class="sidebtn" id="pbmbtn">✉ Mail</button>
     <button class="sidebtn" id="rulesbtn">Rules</button>
     <button class="sidebtn" id="tablesbtn">Tables</button>
     <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
@@ -123,6 +124,10 @@
 <div id="tierpanel" style="display:none; position:fixed; top:52px; right:8px; width:360px;
      background:#23262cee; color:#dde3ea; font-size:13px; border:1px solid #3a3f47;
      border-radius:8px; padding:10px 14px; z-index:46; box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
+<div id="pbmpanel" style="display:none; position:fixed; top:52px; right:8px; width:400px;
+     max-height:82vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
+     border:1px solid #3a3f47; border-radius:8px; padding:10px 14px; z-index:46;
+     box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
 <div id="viewport">
   <div id="world">
     <img class="map">
@@ -159,6 +164,7 @@ let HX = 64, HXC = 32, HYH = 59.5;   // hex polygon geometry, derived from the g
 let scale = 0.25, panX = 0, panY = 0;
 let units = [], mySide = null, selected = null, legal = null, dragging = null;
 let FLOW = null;                 // strategic-gate flow (turn, mover) when the game is gated
+let PBM = null;                  // play-by-mail match status (null = no match)
 
 // pan/zoom/layout/nav are ENGINE-LEVEL (ui/frame.js) — this screen only supplies hooks
 function apply() { FRAME.apply(); }
@@ -187,7 +193,7 @@ FRAME.initFrame({
                                    && u.status !== 'reserve');
     return mine.length > 0 && mine.every(u => u.status);
   },
-  followTop: ['tierpanel','arrivals','combat','rulespanel','tablespanel']
+  followTop: ['tierpanel','arrivals','combat','rulespanel','tablespanel','pbmpanel']
              .map(id => ({ id, gap: 8 })),
 });
 let toastT = null;
@@ -238,6 +244,7 @@ function bootGame(g) {
     const b = document.createElement('button');
     b.className = 'sidebtn'; b.id = 'side-' + s.id; b.textContent = s.label;
     b.onclick = () => {
+      if (PBM) { toast(`Play-by-mail: you are ${sideLabel(PBM.human_side)} for this whole match — ${PBM.labels[PBM.ai_side]} plays the other side by email.`); return; }
       mySide = s.id; deselect();
       SB.querySelectorAll('.sidebtn').forEach(x => x.classList.remove('on'));
       b.classList.add('on');
@@ -257,6 +264,16 @@ async function refresh() {
   else GAME.tier = s.game.tier;      // active tier can change on reset
   units = s.units;
   FLOW = s.flow || null;
+  PBM = s.pbm || null;
+  PBM_OK = ('pbm' in s);   // key present = this game family plays by mail
+  if (PBM && mySide !== PBM.human_side) {   // a mailed match locks your seat
+    mySide = PBM.human_side;
+    document.querySelectorAll('#sidebtns .sidebtn').forEach(x => x.classList.remove('on'));
+    const sb = document.getElementById('side-' + mySide);
+    if (sb) sb.classList.add('on');
+  }
+  renderPBMBtn();
+  if (document.getElementById('pbmpanel').style.display === 'block') renderPBMPanel();
   renderTierBtn();
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
@@ -281,6 +298,7 @@ function renderGuide() {
     FRAME.soleNext(null);
     return;
   }
+  if (PBM && pbmGuide()) return;
   if (FLOW.over) {
     FRAME.setGuide(`GAME OVER after ${FLOW.turn - 1} turns — <b>Reset game</b> starts a new one.`, true);
     FRAME.soleNext('resetbtn');
@@ -371,10 +389,12 @@ function renderFlow() {
   const fb = document.getElementById('flowbar');
   if (!FLOW) { FRAME.show('flowbar', false); FRAME.show('endphasebtn', false);
                FRAME.show('aictl', false); return; }
-  FRAME.show('flowbar', true); FRAME.show('endphasebtn', true);
+  FRAME.show('flowbar', true);
+  // in a mailed match, the opponent's turn is untouchable locally
+  FRAME.show('endphasebtn', !PBM || (!FLOW.over && FLOW.mover === mySide));
   // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
-  const aiOK = (!FLOW.over && FLOW.phase === 'movement'
+  const aiOK = (!PBM && !FLOW.over && FLOW.phase === 'movement'
     && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall)
     && GAME && GAME.tier && GAME.tier.active >= 3);
   FRAME.show('aictl', aiOK);
@@ -1032,10 +1052,10 @@ function renderTierPanel() {
     location.reload();   // tier decides which client the server serves
   });
 }
-// Rules / Tables / Tier share the same top-right slot — open one, close the others
+// Rules / Tables / Tier / Mail share the same top-right slot — open one, close the others
 function soloPanel(id) {
   let opened = false;
-  ['rulespanel','tablespanel','tierpanel'].forEach(p => {
+  ['rulespanel','tablespanel','tierpanel','pbmpanel'].forEach(p => {
     const el = document.getElementById(p);
     if (p === id) { opened = el.style.display !== 'block';
                     el.style.display = opened ? 'block' : 'none'; }
@@ -1203,8 +1223,195 @@ document.getElementById('tablesbtn').onclick = () => {
   renderTierBtn();
 };
 
+// ---------- play-by-mail (engine-level: any strategic-family game) ----------
+// You play one seat; the other seat's turns arrive as emailed turn files.
+// Export after your turn; import the reply. Every imported file is replayed
+// move-by-move through a fresh engine before it is accepted (spec #9).
+let PBM_OK = false;   // the loaded game family supports mailed matches
+function pbmOpp() { return (PBM.labels && PBM.labels[PBM.ai_side]) || 'your opponent'; }
+function renderPBMBtn() {
+  const B = document.getElementById('pbmbtn');
+  FRAME.show(B, PBM_OK);
+  B.textContent = PBM ? '✉ Mail ●' : '✉ Mail';
+  B.classList.toggle('on', document.getElementById('pbmpanel').style.display === 'block');
+}
+function pbmGuide() {   // true = PBM owns the guidance for this state
+  const opp = pbmOpp();
+  const open = document.getElementById('pbmpanel').style.display === 'block';
+  const mailTo = open ? '#pbmpanel #pbmexport' : 'pbmbtn';
+  const mailIn = open ? '#pbmpanel #pbmimport' : 'pbmbtn';
+  if (FLOW.over) {
+    FRAME.setGuide(`GAME OVER — winner: <b>${FLOW.winner || '—'}</b>. ` + (PBM.exported
+      ? `Final file exported — email it to <b>${opp}</b> and both sides hold the verified record.`
+      : `Open <b>✉ Mail</b> and <b>Export</b> the final file, then email it to <b>${opp}</b> so both sides hold the verified record.`), true);
+    FRAME.soleNext(PBM.exported ? null : mailTo);
+    return true;
+  }
+  if (FLOW.mover !== mySide) {
+    if (!PBM.exported) {
+      FRAME.setGuide(PBM.seq === 0
+        ? `<b>Match started</b> — <b>${opp}</b> has the first turn. Open <b>✉ Mail</b>, press <b>Export turn file</b>, and email the downloaded file to them to begin.`
+        : `<b>Your turn is complete.</b> Open <b>✉ Mail</b> and press <b>Export turn file</b>, then attach the downloaded file to an email to <b>${opp}</b>.`);
+      FRAME.soleNext(mailTo);
+    } else {
+      FRAME.setGuide(`File sent — waiting for <b>${opp}</b>. When the reply email arrives, save the attachment, then open <b>✉ Mail</b> and <b>Import</b> it to see their turn.`);
+      FRAME.soleNext(mailIn);
+    }
+    return true;
+  }
+  return false;   // your turn: the normal guidance takes over
+}
+function renderPBMPanel() {
+  const P = document.getElementById('pbmpanel');
+  let h = `<b>✉ Play by mail</b>`;
+  if (!PBM) {
+    h += `<div class="dim" style="margin:4px 0 8px">Play one side here; your opponent —
+          the <b>AI General</b>, or any person with this app — plays the other by email.
+          After your turn you export a small file and email it; when the reply arrives you
+          import it. Every received file is replayed move-by-move through the rules engine
+          before it is accepted, so neither side has to trust the other.</div>
+          <div style="margin:6px 0 2px">Opponent (name or email address):</div>
+          <input id="pbmopp" type="text" placeholder="AI General"
+                 style="width:95%;background:#2c2f36;color:#ddd;border:1px solid #555;border-radius:4px;padding:4px 6px">
+          <div style="margin:10px 0 0"><b>Start a match</b> — you play:<br>`;
+    GAME.sides.forEach(s => {
+      h += `<button class="sidebtn" style="margin:6px 6px 0 0" onclick='pbmStart("${s.id}")'>${s.label}</button>`;
+    });
+    h += `</div><div class="dim" style="margin-top:4px">Starting a match restarts the game at
+          the full enforcement tier.</div>
+          <div style="margin-top:12px;border-top:1px solid #3a3f47;padding-top:8px">
+          <b>Or join a match</b> — received a turn file by email?<br>
+          <button class="sidebtn" id="pbmimport" style="margin-top:6px"
+                  onclick="document.getElementById('pbmfile').click()">Import turn file…</button></div>`;
+  } else {
+    const opp = pbmOpp();
+    h += `<div style="margin:4px 0 8px">You are <b>${sideLabel(PBM.human_side)}</b> vs
+          <b>${opp}</b> <span class="dim">(match ${PBM.match_id} · file #${PBM.seq})</span></div>`;
+    if (PBM.over)
+      h += `<div style="color:#9fc27f;margin:4px 0"><b>GAME OVER</b> — winner: ${PBM.winner || '—'}</div>`;
+    else if (PBM.your_turn)
+      h += `<div style="margin:6px 0"><b>Your player turn</b> — play it on the map, press
+            <b>End player turn</b>, then come back here to export.</div>`;
+    if (PBM.can_export)
+      h += `<button class="sidebtn" id="pbmexport" onclick="pbmExport()">⬇ Export turn file</button>
+            <div class="dim" style="margin:4px 0 8px">${PBM.exported
+              ? 'Exported — attach the downloaded file to an email to <b>' + opp + '</b>. Export again re-downloads the same position.'
+              : 'Downloads a small .json file — attach it to an email to <b>' + opp + '</b>.'}</div>`;
+    if (!PBM.over && !PBM.your_turn)
+      h += `<div style="margin:8px 0 4px"><b>Reply arrived?</b><br>
+            <button class="sidebtn" id="pbmimport" style="margin-top:4px"
+                    onclick="document.getElementById('pbmfile').click()">Import reply file…</button></div>`;
+    h += `<div style="margin-top:12px;border-top:1px solid #3a3f47;padding-top:8px" class="dim">
+          <button class="sidebtn" onclick="pbmStop()">End this match</button> — abandons the
+          mailed match (the position stays on the board).</div>`;
+  }
+  h += `<input id="pbmfile" type="file" accept=".json,application/json" style="display:none">`;
+  P.innerHTML = h;
+  document.getElementById('pbmfile').onchange = pbmImportFile;
+  if (FLOW) renderGuide();   // the sole-next border may live on a panel button
+}
+async function pbmStart(side) {
+  const oppEl = document.getElementById('pbmopp');
+  const r = await (await fetch('/api/pbm/start', {method:'POST',
+    body: JSON.stringify({side, opponent_label: (oppEl && oppEl.value) || undefined})})).json();
+  if (r.error) { toast(r.error); return; }
+  deselect();
+  await refresh();
+  renderPBMPanel();
+}
+async function pbmExport() {
+  const r = await fetch('/api/pbm/export');
+  const cd = r.headers.get('Content-Disposition') || '';
+  if (!cd) { const e = await r.json(); toast(e.error || 'export failed'); return; }
+  const m = cd.match(/filename="([^"]+)"/);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(await r.blob());
+  a.download = m ? m[1] : 'pbm_turn.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Turn file downloaded — attach it to an email to ' + pbmOpp() + '.');
+  refresh();
+}
+async function pbmImportFile(ev) {
+  const f = ev.target.files[0];
+  ev.target.value = '';
+  if (!f) return;
+  let doc;
+  try { doc = JSON.parse(await f.text()); }
+  catch (e) { toast('That is not a turn file (' + e + ')'); return; }
+  if (doc.format === 'vsav-pbm-reject/1') {
+    toast('Your opponent REJECTED your last file: ' + doc.reason);
+    return;
+  }
+  const r = await (await fetch('/api/pbm/import', {method:'POST',
+    body: JSON.stringify({doc})})).json();
+  if (r.error) { toast(r.error); return; }
+  deselect();
+  await refresh();
+  pbmShowReplay(r.new_entries || []);
+}
+function pbmDescribe(e) {
+  const a = e.action || {};
+  const nm = id => { const x = unitById(id); return x ? x.name : id; };
+  const hx = h => Array.isArray(h) && h.length > 1
+    ? String(h[0]).padStart(2,'0') + String(h[1]).padStart(2,'0') : '?';
+  const res = e.result && (e.result.result || e.result.note);
+  try { switch (a.type) {
+    case 'move':      return `${nm(a.unit)} → ${hx(a.dest)}`;
+    case 'battle':    return `⚔ ${(a.attackers||[]).map(nm).join(' + ')} attack ${(a.defenders||[]).map(nm).join(' + ')}${res ? ' — ' + res : ''}`;
+    case 'retreat':   return a.eliminate ? `${nm(a.unit)} has no retreat — eliminated` : `${nm(a.unit)} retreats`;
+    case 'advance':   return (a.decline || !a.unit) ? 'declines the advance'
+                             : `${nm(a.unit)} advances to ${hx(a.dest || a.hex)}`;
+    case 'reinforce': return `${nm(a.unit)} enters at ${hx(a.hex)}`;
+    case 'exit':      return `${nm(a.unit)} exits the map`;
+    case 'end_movement': return 'ends movement — battles resolve';
+    case 'end_phase': return 'ends the player turn';
+    default:          return String(a.type || '?').replace(/_/g,' ') + (a.unit ? ' ' + nm(a.unit) : '') + (res ? ' — ' + res : '');
+  } } catch (err) { return String(a.type || '?').replace(/_/g,' '); }
+}
+function pbmShowReplay(entries) {
+  soloPanel('pbmpanel') || soloPanel('pbmpanel');   // force open
+  const P = document.getElementById('pbmpanel');
+  const opp = PBM ? pbmOpp() : 'your opponent';
+  let h = `<b>✉ ${opp} played:</b>`;
+  const shown = entries.slice(-60);
+  if (entries.length > shown.length)
+    h += `<div class="dim">(showing the last ${shown.length} of ${entries.length} actions)</div>`;
+  h += `<ol style="margin:6px 0;padding-left:20px">`;
+  shown.forEach(e => h += `<li>${pbmDescribe(e)}</li>`);
+  h += `</ol>`;
+  if (!entries.length) h += `<div class="dim">no actions (opening file)</div>`;
+  h += `<button class="sidebtn" onclick="renderPBMPanel()">OK — my turn</button>`;
+  P.innerHTML = h;
+  renderPBMBtn();
+}
+let pbmStopArm = null;
+async function pbmStop() {
+  if (!pbmStopArm || Date.now() - pbmStopArm > 12000) {
+    pbmStopArm = Date.now();
+    toast('Click "End this match" again to confirm — this abandons the mailed match.');
+    return;
+  }
+  pbmStopArm = null;
+  await fetch('/api/pbm/stop', {method:'POST', body:'{}'});
+  await refresh();
+  renderPBMPanel();
+}
+document.getElementById('pbmbtn').onclick = () => {
+  if (soloPanel('pbmpanel')) renderPBMPanel();
+  renderTierBtn(); renderPBMBtn();
+};
+
 // ---------- top bar ----------
 document.getElementById('resetbtn').onclick = async () => {
+  if (PBM) {
+    if (!pbmStopArm || Date.now() - pbmStopArm > 12000) {
+      pbmStopArm = Date.now();
+      toast('A play-by-mail match is in progress — Reset abandons it. Click Reset again to confirm.');
+      return;
+    }
+    pbmStopArm = null;
+  }
   await fetch('/api/reset', {method:'POST'}); deselect(); refresh();
 };
 document.getElementById('endphasebtn').onclick = async () => {

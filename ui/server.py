@@ -55,6 +55,7 @@ import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
+import pbm as pbm_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall")
 
@@ -488,6 +489,8 @@ def api_state():
     if SG:
         out["flow"] = SG.flow()
         out["notes"] = SG.scenario["name"]
+    if SCEN_MODE in pbm_mod.PBM_MODES:
+        out["pbm"] = pbm_status()
     return out
 
 
@@ -586,6 +589,9 @@ def api_legal(qs):
 def api_move_sg(body):
     """Strategic mode: /api/move goes THROUGH the gate — the only door.
     Illegal proposals are rejected (and logged) with cited reasons."""
+    blocked = pbm_blocked()
+    if blocked:
+        return dict(error=blocked, flow=SG.flow())
     pid, dest, whole = body["id"], str(body["dest"]), body.get("whole")
     d = GAME_OBJ.grid.digits
     col, row = int(dest[:d]), int(dest[d:])
@@ -608,6 +614,9 @@ def api_move_sg(body):
 
 
 def api_end_phase():
+    blocked = pbm_blocked()
+    if blocked:
+        return dict(error=blocked, flow=SG.flow())
     # bluegray splits the player turn into movement then combat: the top-bar
     # "End player turn" maps to whichever boundary is next
     t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
@@ -625,6 +634,10 @@ def api_sg_ai_turn(body):
     (default: the current mover) THROUGH the gate. Every proposal is logged
     with its verdict; the board mirror is diff-synced once at the end so real
     VASSAL and the browser see the result."""
+    if pbm_mod.load_sidecar(LIVE, GAME_SLUG):
+        return dict(steps=[], flow=SG.flow(),
+                    error="play-by-mail: the AI opponent plays by email, "
+                          "not locally")
     side = body.get("side") or SG.s["mover"]
     if SG.s["over"]:
         return dict(steps=[], flow=SG.flow(), error="game is over")
@@ -649,6 +662,9 @@ def api_ai_step(body):
     global AI_STEP
     if not SG:
         return dict(error="stepped AI is only for strategic games")
+    if pbm_mod.load_sidecar(LIVE, GAME_SLUG):
+        return dict(error="play-by-mail: the AI opponent plays by email, "
+                          "not locally")
     if SG.s["over"]:
         AI_STEP = None
         return dict(done=True, step=None, next=None, flow=SG.flow(),
@@ -679,6 +695,10 @@ def api_sg_action(body):
     """Strategic mode: any gate action (arrivals, supply roll, sea movement,
     Rommel bonus) goes THROUGH the gate; placements are mirrored into the
     work .vsav (units at sea keep their last board spot in the mirror)."""
+    blocked = pbm_blocked()
+    if blocked:
+        return dict(verdict=dict(legal=False, reasons=[blocked]),
+                    error=blocked, flow=SG.flow())
     action = body["action"]
     side = body.get("side") or SG.s["mover"]
     r = SG.submit(side, action)
@@ -726,9 +746,153 @@ def api_face(body):
     return dict(ok=True, facing=facing[pid])
 
 
+# --- play-by-mail (spec #19): the log IS the game; files travel by email ----
+def pbm_blocked():
+    """In a PBM match, the local user drives everything DURING their own
+    player turn (including opponent forced choices like retreat routing -
+    same protocol the AI follows in its turn), but may touch nothing while
+    it is the mailed opponent's turn. Returns the refusal reason or None."""
+    sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
+    if sc and SG and not SG.s["over"] and SG.s["mover"] != sc["human_side"]:
+        return (f"play-by-mail: it is {sc['ai_side']}'s player turn - it is "
+                "played by your email opponent. Export/send your file, then "
+                "import the reply.")
+    return None
+
+
+def pbm_status():
+    """PBM match status for the loaded game (None when no match is active)."""
+    sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not sc:
+        return None
+    st = dict(sc)
+    if SG:
+        st["your_turn"] = (not SG.s["over"]) and SG.s["mover"] == sc["human_side"]
+        st["over"] = SG.s["over"]
+        st["winner"] = SG.s["winner"]
+        st["can_export"] = SG.s["over"] or SG.s["mover"] != sc["human_side"]
+        st["exported"] = sc.get("last_export_n") == SG.s["n"]
+    return st
+
+
+def api_pbm_start(body):
+    """Begin a play-by-mail match: fresh game, you play ONE side, the other
+    seat is your email opponent (the AI General). Runs at the earned tier -
+    PBM is a full-gate feature by construction."""
+    if SCEN_MODE not in pbm_mod.PBM_MODES:
+        return dict(error="play-by-mail v1 plays the strategic-family games "
+                          f"({', '.join(pbm_mod.PBM_MODES)})")
+    side = body.get("side")
+    if side not in GAME_OBJ.side_order:
+        return dict(error=f"pick a side: {' or '.join(GAME_OBJ.side_order)}")
+    if TIER != TIER_EARNED:
+        r = api_reset(dict(tier=TIER_EARNED))   # PBM = full gate, always
+        if r.get("error"):
+            return r
+    else:
+        api_reset({})
+    if body.get("seed") is not None:
+        SG.new_game(int(body["seed"]))
+    ai_s = next(s for s in GAME_OBJ.side_order if s != side)
+    sc = dict(match_id=pbm_mod.new_match_id(), game=GAME_SLUG, mode=SCEN_MODE,
+              human_side=side, ai_side=ai_s,
+              labels={side: body.get("my_label") or "You",
+                      ai_s: body.get("opponent_label") or "AI General"},
+              seq=0, last_export_n=None)
+    pbm_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    return dict(ok=True, pbm=pbm_status(), flow=SG.flow())
+
+
+def api_pbm_export():
+    """The current game as a mailable turn file. Allowed once your player
+    turn is over (or the game is) - the file is what you email out."""
+    sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not (SG and sc):
+        return dict(error="no play-by-mail match is active")
+    if not SG.s["over"] and SG.s["mover"] == sc["human_side"]:
+        return dict(error="it is still your turn - press End player turn "
+                          "before exporting")
+    entries = pbm_mod.read_log(SG.log_path)
+    sides = {s: {"player": "human" if s == sc["human_side"] else "ai",
+                 "label": sc["labels"].get(s, s)}
+             for s in (sc["human_side"], sc["ai_side"])}
+    sc["seq"] += 1
+    doc = pbm_mod.make_turn_file(GAME_SLUG, SCEN_MODE, entries, sides,
+                                 sc["match_id"], sc["seq"], SG.flow())
+    sc["last_export_n"] = SG.s["n"]
+    pbm_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    return dict(doc=doc,
+                filename=f"pbm_{GAME_SLUG}_{sc['match_id']}"
+                         f"_{sc['seq']:03d}.json")
+
+
+def api_pbm_import(body):
+    """Install a received turn file as THE live game. The whole log is
+    replayed through a fresh engine first (verify_game semantics) - a file
+    that doesn't reproduce is rejected with the specific reason, exactly
+    what we mail back to the sender."""
+    global TIER, AI_STEP
+    if SCEN_MODE not in pbm_mod.PBM_MODES:
+        return dict(error="play-by-mail v1 plays the strategic-family games")
+    try:
+        doc = pbm_mod.load_turn_file(body.get("doc"))
+    except pbm_mod.PBMError as e:
+        return dict(error=str(e))
+    if doc["game"] != GAME_SLUG:
+        return dict(error=f"this file belongs to {doc['game']!r} - open that "
+                          "game from the Games menu, then import it there")
+    init_tier = doc["log"][0].get("tier")
+    if init_tier != TIER_EARNED:
+        return dict(error=f"file was played at tier {init_tier}; this "
+                          f"machine's earned tier for the game is {TIER_EARNED}")
+    sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
+    prev = []
+    if sc:
+        if doc["match_id"] != sc["match_id"]:
+            return dict(error="this file belongs to a DIFFERENT match than "
+                              "the one in progress - Reset game first if you "
+                              "mean to abandon yours and adopt this one")
+        if SG and os.path.exists(SG.log_path):
+            prev = pbm_mod.read_log(SG.log_path)
+    try:
+        if prev:
+            pbm_mod.ensure_extends(prev, doc["log"])
+        pbm_mod.install(doc, LIVE, ROOT)
+    except pbm_mod.PBMError as e:
+        return dict(error="REJECTED: " + str(e))
+    if not sc:                       # adopt: we are the second player
+        sc = dict(match_id=doc["match_id"], game=GAME_SLUG, mode=doc["mode"],
+                  human_side=pbm_mod.human_side(doc),
+                  ai_side=pbm_mod.ai_side(doc),
+                  labels={s: v.get("label", s)
+                          for s, v in doc["sides"].items()},
+                  seq=doc["seq"], last_export_n=None)
+    else:
+        sc["seq"] = doc["seq"]
+    pbm_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    if TIER != init_tier:            # gate must rebuild at the file's tier or
+        TIER = init_tier             # the state-file tier check would reset it
+        save_tier()
+    AI_STEP = None
+    done.clear()
+    build_gate()
+    fresh_board()
+    sync_mirror()
+    new = doc["log"][len(prev):] if prev else doc["log"][1:]
+    return dict(ok=True, flow=SG.flow(), pbm=pbm_status(),
+                new_entries=[e for e in new if e.get("event") == "action"
+                             and e["verdict"]["legal"]])
+
+
+def api_pbm_stop():
+    pbm_mod.clear_sidecar(LIVE, GAME_SLUG)
+    return dict(ok=True)
+
+
 def api_reset(body=None):
     global TIER, AI_STEP
     AI_STEP = None
+    pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     t = (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
@@ -876,6 +1040,18 @@ class H(http.server.SimpleHTTPRequestHandler):
             if TG and url.path == "/api/ai_plan":
                 p = ai_mod.plan_next(TG, qs["side"][0])
                 return self._json(p if p else dict(none=True, flow=flow_view()))
+            if url.path == "/api/pbm/export":
+                r = api_pbm_export()
+                if "error" in r:
+                    return self._json(r)
+                data = json.dumps(r["doc"]).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Disposition",
+                                 f'attachment; filename="{r["filename"]}"')
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                return self.wfile.write(data)
             if url.path == "/gasset/map":
                 return self._file(GAME_OBJ.assets.get("map"))
             if url.path.startswith("/gasset/counters/"):
@@ -916,6 +1092,12 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(api_sg_ai_turn(body))
             if SG and self.path == "/api/ai_step":
                 return self._json(api_ai_step(body))
+            if self.path == "/api/pbm/start":
+                return self._json(api_pbm_start(body))
+            if self.path == "/api/pbm/import":
+                return self._json(api_pbm_import(body))
+            if self.path == "/api/pbm/stop":
+                return self._json(api_pbm_stop())
             if self.path == "/api/pass":
                 return self._json(api_pass(body))
             if self.path == "/api/face":
