@@ -160,6 +160,50 @@ intent, then act).
    every state hash re-derived. If any illegal action had ever been applied, or a die
    fudged, or a counter teleported, the replay cannot reproduce the log.
 
+## Code tour — where the rules live, where a move is checked
+
+Three questions every code reader asks, answered up front:
+
+**1. Where are the rules encoded?** In two layers — there is deliberately no
+`<game>_rules.py`:
+
+- **Data:** `games/<game>/game.json` is the game. For Afrika Korps that file
+  holds the complete CRT (`combat.crt` — all 66 cells, with a `provenance`
+  field naming the two independent transcriptions it was cross-checked
+  against), the movement and terrain-cost config, unit types and factors,
+  the credits, and the source-defect register. Rulebook section numbers are
+  carried in the data entries themselves. `terrain.json` holds per-hex
+  terrain; `scenario_*.json` holds setup and reinforcement schedules.
+- **Procedure:** one gate module per game family interprets that data and
+  enforces the rules that don't reduce to a table — ZOC, stacking, mandatory
+  attacks, supply tracing, turn sequence. Rule numbers are cited inline in
+  the code where each rule is enforced.
+
+The point of the split: adding a game is mostly writing a new data file, not
+new engine code.
+
+**2. Where is a move checked?** Each game has exactly one door, a
+`submit(side, action)` method. Every proposal — human click or AI decision —
+goes through it; illegal ones are rejected with the rule citation, legal ones
+are applied and appended to the JSONL log.
+
+| Game | Gate (`submit()` lives in) |
+|---|---|
+| Afrika Korps | `engine/strategic.py` (`StrategicGame`) |
+| Blue & Gray: Chickamauga | `engine/bluegray.py` |
+| Westwall: Arnhem | `engine/westwall.py` |
+| Tobruk (tactical) | `engine/gamestate.py` |
+
+`engine/verify_game.py` replays any log through a fresh engine and re-derives
+every verdict, die and state hash.
+
+**3. What is `VALIDATION.md`?** Each game directory's `VALIDATION.md` is the
+evidence worksheet — working notes recorded *as the validation was done*
+(what was checked, against which source, what broke, how it was fixed). It's
+an audit trail, not an introduction; start with this section and
+`ENCODING_GUIDE.md` instead, then use `VALIDATION.md` to audit any specific
+claim.
+
 ## Where the rules came from — and why this generalizes
 
 Nothing here required owning the physical game. The Tobruk module **ships its own
