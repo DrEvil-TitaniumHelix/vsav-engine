@@ -53,3 +53,5 @@ runs/
 
 # play-by-mail match mailboxes: sealed commentary + war journals, never public
 comms_*/
+# match archives: full series records (journals, receipts) — publication is a per-match decision
+matches/

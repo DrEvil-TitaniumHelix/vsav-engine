@@ -155,6 +155,21 @@ seed ⇒ byte-identical opening briefing (determinism check: hash matches).
    final result. 6. Publish package: verified log + commentary sidecars +
    war journals + confidence track + thinking scores + stills/movie.
 
+## Lessons from the first series (Fable-vs-Opus, 2026-07-13) — v2 items
+- Briefings MUST carry a per-side exited-units tally: exit VP scores at the
+  end, so the running VP counter silently hides exits — this directly
+  caused a decisive misread ("he did not exit" while 24 CSP were off-board).
+- The compiler's per-mover >=1-1 odds guard makes 2-unit garrisons
+  unassaultable; artillery bombardment is the only eviction tool. DSL v2:
+  assault verb (declared multi-unit contact), entry hold-back verb.
+- Renderer news captions can state raw CRT results that rules then void
+  (bombardier immunity) — captions should reflect applied results only.
+- Retreat-into-EZOC-lock is the deadliest interface edge: the guard stops
+  units walking into hopeless adjacency but not being STRANDED in it by a
+  retreat (mandatory combat then forces the suicide attack).
+- Full archive pattern: matches/<match>/ = series report + judge logs +
+  scorecards + journals + verified logs (gitignored; publication per-match).
+
 ## Reproducibility & copyright — BYO, stated plainly
 Everything the harness itself needs is public in this repo: the engine,
 this protocol, the templates, and our own derived encodings
