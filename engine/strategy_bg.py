@@ -54,6 +54,43 @@ def crossover(a, b, rng):
     return {n: (a if rng.random() < 0.5 else b)[n] for n, _, _, _ in GENES}
 
 
+def corners():
+    """Doctrine-seeded corners of the space: the fortress doctrine from the
+    first commanded campaign's lessons (values identical to the optimizer's
+    original hardcoded seed - the 150-gen Chickamauga run reproduces)."""
+    fortress = baseline()
+    fortress.update(garrison_per_10vp=6.0, hold_factor=1.0, mass_min=15.0,
+                    endgame_turn=13.0, exit_turn=15.0, deny_weight=1.5)
+    return [fortress]
+
+
+GENE_PROSE = {
+    "garrison_per_10vp": "post {v:.1f} strength points of garrison per 10 VP "
+                         "of occupation-hex value",
+    "garrison_range": "draw garrisons from up to {v:.0f} hexes away",
+    "hold_factor": "weight already-credited hexes at {v:.2f}x when assigning "
+                   "garrisons (1.0 = defend what you hold as hard as what "
+                   "you want)",
+    "deny_weight": "weight enemy-scoring hexes at {v:.2f}x for denial "
+                   "garrisons",
+    "mass_min": "the field force advances only above {v:.0f} combined "
+                "strength - below that it stands",
+    "focus_value_w": "objective choice scores VP value at weight {v:.2f}",
+    "focus_dist_w": "and distance at weight {v:.2f} (0 = ignore distance, "
+                    "pick the richest prize)",
+    "endgame_turn": "from turn {v:.0f}, units spread to grab the nearest "
+                    "uncredited VP hexes one-by-one",
+    "exit_turn": "from turn {v:.0f}, units standing on exit hexes leave the "
+                 "map to bank exit VP",
+    "reinf_to_field": "reinforcements join the field force with propensity "
+                      "{v:.2f} (vs garrison duty)",
+    "arty_standoff": "artillery {alt} (1 = classic 2-3 hex standoff, "
+                     "0 = fights in the line)",
+    "night_freeze": "night turns: {alt} (1 = hold everything, 0 = keep "
+                    "marching)",
+}
+
+
 # ------------------------------------------------------------ plan builder
 def _hexnum(h):
     return f"{h[0]:02d}{h[1]:02d}"

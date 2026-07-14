@@ -48,24 +48,27 @@ def _load(game_dir):
 
 def play_one(args):
     """One full campaign. thetaA commands side_order[0], thetaB side_order[1];
-    None = shipped baseline policy AI. Returns result dict."""
+    None = shipped baseline policy AI. Returns result dict. The game family
+    (driver class, genome module, graded margin fn) comes from families.py;
+    margin_a is the family's graded margin from side A's perspective."""
     game_dir, thetaA, thetaB, seed, max_gts = args
-    import bluegray
+    import families
     import plans
-    import strategy_bg
     game, scen = _load(game_dir)
+    fam = families.for_game(game)
     with tempfile.TemporaryDirectory(prefix="opt_") as tmp:
-        bg = bluegray.BlueGrayGame(game, scen, tmp, seed=seed)
+        tg = fam["game_cls"](game, scen, tmp, seed=seed)
         a, b = game.side_order
         planners = {}
         if thetaA is not None:
-            planners[a] = strategy_bg.StrategyPlanner(thetaA)
+            planners[a] = fam["strategy"].StrategyPlanner(thetaA)
         if thetaB is not None:
-            planners[b] = strategy_bg.StrategyPlanner(thetaB)
-        plans.play_game(bg, planners, max_turns=max_gts)
-        vp = bg.s["vp"]
-        return {"seed": seed, "vp": vp, "winner": bg.s["winner"],
-                "over": bg.s["over"], "margin_a": vp[a] - vp[b]}
+            planners[b] = fam["strategy"].StrategyPlanner(thetaB)
+        plans.play_game(tg, planners, max_turns=max_gts)
+        vp = tg.s["vp"]
+        return {"seed": seed, "vp": vp, "winner": tg.s["winner"],
+                "over": tg.s["over"],
+                "margin_a": fam["margin"](vp, game.side_order)}
 
 
 def matches_for(theta, opponents, seeds, game_dir, max_gts):
@@ -142,7 +145,8 @@ def main():
         a.peers, a.max_gts = 1, 4
 
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import strategy_bg
+    import families
+    strat = families.for_game_dir(a.game)["strategy"]
 
     os.makedirs(a.out, exist_ok=True)
     ck_path = os.path.join(a.out, "checkpoint.json")
@@ -160,14 +164,13 @@ def main():
                            + ck["rng_state"][2:]))
         print(f"resumed at generation {gen0}, {ledger['games']} games played")
     else:
-        popn = [strategy_bg.baseline()]
-        # a fortress-doctrine corner of the space (game 1's lessons)
-        fortress = strategy_bg.baseline()
-        fortress.update(garrison_per_10vp=6.0, hold_factor=1.0, mass_min=15.0,
-                        endgame_turn=13.0, exit_turn=15.0, deny_weight=1.5)
-        popn.append(fortress)
+        popn = [strat.baseline()]
+        # doctrine-seeded corners of the space (the family module owns them)
+        for c in strat.corners():
+            if len(popn) < a.pop:
+                popn.append(c)
         while len(popn) < a.pop:
-            popn.append(strategy_bg.random_theta(rng))
+            popn.append(strat.random_theta(rng))
         hof = []
         reigning = None
 
@@ -203,7 +206,7 @@ def main():
 
             # held-out gauntlet: baseline + HoF + fresh random challengers
             gauntlet = [None] + hof[-a.hof_size:] \
-                + [strategy_bg.random_theta(rng) for _ in range(3)]
+                + [strat.random_theta(rng) for _ in range(3)]
             gseeds = rng.sample(HELDOUT_SEEDS, 2 if not a.smoke else 1)
             gres = evaluate(pool, [reigning], gauntlet, gseeds, a.game, ledger,
                             a.max_gts)
@@ -249,8 +252,8 @@ def main():
             children = []
             while len(survivors) + len(children) < a.pop:
                 pa, pb = rng.sample(survivors, 2)
-                children.append(strategy_bg.mutate(
-                    strategy_bg.crossover(pa, pb, rng), rng))
+                children.append(strat.mutate(
+                    strat.crossover(pa, pb, rng), rng))
             popn = survivors + children
     finally:
         if pool:

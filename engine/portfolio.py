@@ -24,15 +24,15 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import optimize  # noqa: E402
-import strategy_bg  # noqa: E402
+import families  # noqa: E402
 
 HELDOUT = list(range(940, 990))       # disjoint from training AND gauntlet
 
 
-def dedupe(genomes):
+def dedupe(genomes, genes):
     seen, out = set(), []
     for g in genomes:
-        key = tuple(round(g[n], 4) for n, _, _, _ in strategy_bg.GENES)
+        key = tuple(round(g[n], 4) for n, _, _, _ in genes)
         if key not in seen:
             seen.add(key)
             out.append(g)
@@ -70,8 +70,10 @@ def main():
     a = ap.parse_args()
 
     ck = json.load(open(a.checkpoint, encoding="utf-8"))
+    genes = families.for_game_dir(a.game)["strategy"].GENES
     pool_genomes = dedupe(([ck["reigning"]] if ck.get("reigning") else [])
-                          + list(reversed(ck.get("hall_of_fame", []))))[:a.k]
+                          + list(reversed(ck.get("hall_of_fame", []))),
+                          genes)[:a.k]
     # entrants: elite genomes + None (the shipped baseline policy AI)
     entrants = pool_genomes + [None]
     names = [f"elite_{i}" for i in range(len(pool_genomes))] + ["baseline"]
