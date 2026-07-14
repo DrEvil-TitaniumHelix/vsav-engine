@@ -214,3 +214,48 @@ schematic output contains zero copyrighted material by construction.
 5. Arm the outbox watcher (Monitor, persistent).
 6. Give the Overseer the two kickoff lines (from README template) and the
    smoke-test result for any non-Claude agent.
+
+---
+
+# Play-by-Mail v1: HUMAN vs AI General by email (shipped 2026-07-14)
+
+The tester-facing mode (spec #19): a person plays one side in this app,
+the AI General plays the other, and the two exchange ONE small .json turn
+file per player turn as a plain email attachment. Nothing else travels.
+
+## The turn file (`vsav-pbm/1`, engine/pbm.py)
+Self-contained JSON: game slug, mode, scenario, match id, seq counter,
+side->player mapping, and the COMPLETE JSONL log from game start (init
+entry = scenario + seed + every starting position; every action entry =
+proposal, verdict, dice, state hash). The log IS the game.
+
+## Trust model
+Every received file is replayed move-by-move through a fresh engine
+(verify_game semantics) before it is accepted: every verdict, every die,
+every state hash must reproduce, and the file must EXTEND the game already
+on disk (stale or forked files bounce). A file built by this app can only
+contain legal moves — the gate is the only door — so a rejection means
+tampering, corruption, or a version mismatch, and the sender is told to
+redo the turn from their last good position. Dice are engine-owned and in
+the log: both sides can audit every roll of the whole game at any time.
+
+## Protocol
+1. Tester: ✉ Mail panel -> start a match, pick a side (or import the
+   opening file someone sent them). Play the turn; End player turn;
+   Export; email the downloaded file to the AI General's address.
+2. Our side: `python engine\pbm_respond.py incoming.json -o reply.json`
+   — verifies, plays the AI's whole player turn through the gate, writes
+   the reply (or a `vsav-pbm-reject/1` doc naming the exact failure).
+   Email reply.json back.
+3. Tester: ✉ Mail -> Import reply file — the app re-verifies, shows what
+   the AI played, and hands them the turn. Repeat to game end.
+
+Whoever's player turn it is also executes the opponent's forced responses
+that arise inside it (retreat routing, exchange picks, FPF) — the same
+protocol the AI follows during its turn. Mid-turn decision handshakes are
+a possible v2 refinement.
+
+Scope: strategic-family games (Afrika Korps, Blue & Gray Chickamauga,
+Westwall Arnhem — every current Tier-3 strategic game inherits it).
+Tactical family needs its own exchange grain (alternating fire) — later.
+Validated end-to-end by games/blue-and-gray-chickamauga/validate_pbm.py.
