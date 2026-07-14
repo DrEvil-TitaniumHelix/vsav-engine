@@ -58,10 +58,13 @@ class PBMError(Exception):
 
 # ------------------------------------------------------------ game resolution
 def resolve_game_dir(slug, root=None):
-    """Slug -> runnable game folder: prefer the dev folder when its assets
-    resolve on this machine, else the self-contained bundle (mirrors the
-    server's resolution so both ends of the mail loop load the same game)."""
+    """Slug -> runnable game folder. Two passes: prefer the folder whose map
+    art resolves (matches the server's pick, so the UI end serves pictures),
+    but fall back to any folder with a game.json — the PBM engine replays
+    LOGS, not art, and must work on an art-less checkout (BYO modules; this
+    exact assumption failed in CI once)."""
     root = root or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    cands = []
     for base in ("games", "games_bundled"):
         d = os.path.join(root, base, slug)
         gj = os.path.join(d, "game.json")
@@ -71,12 +74,13 @@ def resolve_game_dir(slug, root=None):
             spec = json.load(open(gj, encoding="utf-8"))
         except Exception:
             continue
+        cands.append(d)
         m = (spec.get("assets") or {}).get("map")
-        if not m:
+        p = m if (not m or os.path.isabs(m)) else os.path.join(d, m)
+        if not m or os.path.exists(p):
             return d
-        p = m if os.path.isabs(m) else os.path.join(d, m)
-        if os.path.exists(p):
-            return d
+    if cands:
+        return cands[0]          # engine-complete but art-less: fine for PBM
     raise PBMError(f"game {slug!r} is not installed on this machine")
 
 
