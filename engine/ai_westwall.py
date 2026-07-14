@@ -78,10 +78,12 @@ def _objective(ww, u, dist):
     return here
 
 
-def _local_diff_ok(ww, u, dest):
+def _local_diff_ok(ww, u, dest, caution=-2):
     """Ending on dest must not create a hopeless mandatory battle [7.0]:
     combined printed attack of us + friends already adjacent to the enemies
-    we would touch must be >= their combined defense - 2."""
+    we would touch must be >= their combined defense - 2. caution raises
+    (or keeps, at the -2 default) that acceptable-differential floor - the
+    plans.py DSL exposes it per order; the policy always plays -2."""
     touch = []
     for h, e in _foes(ww, u["side"]).items():
         if h in ww.game.neighbors(*dest) and not ww._river_no_bridge(dest, h):
@@ -98,7 +100,7 @@ def _local_diff_ok(ww, u, dest):
             if h in ww.game.neighbors(fc, fr) \
                and not ww._river_no_bridge((fc, fr), h):
                 my += ww.stats(f["pid"]).get("att", 0)
-    return my >= d_total - 2
+    return my >= d_total + caution
 
 
 def _movement_actions(ww, side):
@@ -373,9 +375,13 @@ def _pick_battle(ww, side, tried):
     return None
 
 
-def turn_actions(ww, resolve_for=None):
+def turn_actions(ww, resolve_for=None, movement_gen=None):
     """Generator of (side, action, desc) for the current mover's player turn.
-    resolve_for: sides whose pending choices this generator may answer."""
+    resolve_for: sides whose pending choices this generator may answer.
+    movement_gen: optional replacement movement-phase generator (the plans.py
+    compiler injects planned movement here); None = the policy's own
+    _movement_actions, byte-identical to the shipped behavior. Pendings and
+    the combat phase always stay the policy's - 7.x is mandatory."""
     side = ww.s["mover"]
     resolve_for = resolve_for if resolve_for is not None \
         else set(ww.game.side_order)
@@ -412,7 +418,8 @@ def turn_actions(ww, resolve_for=None):
 
     # ---------------- movement phase (pendings may interrupt: demolition)
     if ww.s["phase"] == "movement" and live():
-        gen = _movement_actions(ww, side)
+        gen = movement_gen if movement_gen is not None \
+            else _movement_actions(ww, side)
         okv = None
         while live():
             if ww.s["pending"]:

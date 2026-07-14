@@ -191,6 +191,28 @@ class Game:
         return out
 
     def hex_distance(self, a, b):
+        # neighbors() is a pure infinite lattice (linear pixel round-trip), so
+        # BFS distance equals the doubled-coordinate closed form — verified
+        # exhaustively, 674,730 pairs / 0 mismatches across all 5 gridded
+        # games, both orientations (2026-07-14). The historical BFS cut off
+        # after the first pop past d=60: <=60 is exact, >=62 was always None,
+        # and d==61 depended on BFS pop order — that one case still runs the
+        # original BFS so results stay byte-identical.
+        g = self.grid
+        ax, ay = g.hex_to_pixel(*a)
+        bx, by = g.hex_to_pixel(*b)
+        if g.orient == "pointy":
+            du = round(abs(bx - ax) / (g.dx / 2.0))
+            dv = round(abs(by - ay) / g.dy)
+            d = dv + max(0, (du - dv) // 2)
+        else:
+            du = round(abs(bx - ax) / g.dx)
+            dv = round(abs(by - ay) / (g.dy / 2.0))
+            d = du + max(0, (dv - du) // 2)
+        if d <= 60:
+            return d
+        if d >= 62:
+            return None
         seen = {a}; q = deque([(a, 0)])
         while q:
             cur, d = q.popleft()

@@ -32,19 +32,28 @@ Verbs (movement phase only):
   standoff - keep a 2-3 hex bombardment distance (artillery doctrine 8.1)
   run_exit - road-march for the exit hexes and exit when able
 
-Families: Blue & Gray first (the stage-2 pilot). The compiler surface
-(take_turn / play_game / validate_plan) is family-generic; register other
-families in COMPILERS as their adapters land.
+Families: Blue & Gray (the stage-2 pilot) and Westwall. The compiler
+surface (take_turn / play_game / validate_plan) is family-generic; register
+other families in COMPILERS as their adapters land.
 
-The default-unit blocks mirror ai_bluegray._movement_actions and must stay
-behavior-compatible with it; consolidate when the next family adapter
-lands rather than fork further.
+Westwall additions: orders may carry an optional "caution" integer (the
+minimum acceptable local combat differential a moving unit will accept when
+ending adjacent to the enemy; the policy default is -2 [7.0]). run_exit
+(German 15.4 map exit) is not compiled yet - plans naming it are rejected
+at validation.
+
+The default-unit blocks mirror ai_bluegray._movement_actions /
+ai_westwall._movement_actions and must stay behavior-compatible with them;
+consolidate when the next family adapter lands rather than fork further.
 """
 import ai_bluegray as abg
+import ai_westwall as aww
 
 
 # ------------------------------------------------------------ plan parsing
 VERBS = ("push", "hold", "standoff", "run_exit")
+VERBS_BY_MODE = {"bluegray": VERBS,
+                 "westwall": ("push", "hold", "standoff")}
 
 
 def parse_hex(v):
@@ -70,12 +79,16 @@ def validate_plan(bg, side, plan):
     """Compile-check a plan: list of problems (empty = clean). The gate
     still has the last word on every emitted action."""
     probs = []
+    verbs = VERBS_BY_MODE.get(_mode_of(bg), VERBS)
     if not isinstance(plan, dict) or not isinstance(plan.get("orders", []), list):
         return ["plan must be {'orders': [...]}"]
     for i, o in enumerate(plan.get("orders", [])):
         tag = f"order {i}"
-        if o.get("verb") not in VERBS:
-            probs.append(f"{tag}: unknown verb {o.get('verb')!r} (know {VERBS})")
+        if o.get("verb") not in verbs:
+            probs.append(f"{tag}: unknown verb {o.get('verb')!r} (know {verbs})")
+            continue
+        if "caution" in o and not isinstance(o["caution"], (int, float)):
+            probs.append(f"{tag}: caution must be a number")
             continue
         refs = o.get("units") or []
         if not refs:
@@ -235,14 +248,142 @@ def _bg_turn_actions(bg, plan, resolve_for=None):
         yield from abg.turn_actions(bg, resolve_for)
 
 
-COMPILERS = {"bluegray": _bg_turn_actions}
+# ------------------------------------------------------------ WW compiler
+def _ww_planned_movement(ww, side, plan):
+    """Westwall movement-phase generator: plan verbs for assigned units, the
+    policy's own behavior for everyone else. Mirrors
+    ai_westwall._movement_actions exactly for unassigned units."""
+    dist = aww._Dist(ww.game)
+    s = ww.s
+    assign = _assignments(ww, side, plan)
+
+    # reinforcements [15.x] - policy behavior, mirrors ai_westwall; a plan
+    # order on an arriving unit steers its 15.14 drive-on objective
+    due = sorted(pid for pid, d in s["pool"].items() if d <= s["turn"]
+                 and ww.reserve[pid]["side"] == side)
+    for pid in due:
+        e = ww.reserve[pid]
+        if e.get("arrival") == "airborne":
+            tgt = tuple(e["target"])
+            ring = [tgt] + sorted(ww.game.neighbors(*tgt))
+            for h in ring:
+                if not ww.game.on_map(*h):
+                    continue
+                okv = yield (side, {"type": "reinforce", "unit": pid,
+                                    "hex": list(h)},
+                             f"{e['slot']} drops near {tgt} [15.31]")
+                if okv:
+                    break
+        else:
+            entry = [tuple(h) for h in e["entry"]]
+            placed = False
+            for h in entry:
+                okv = yield (side, {"type": "reinforce", "unit": pid,
+                                    "hex": list(h)},
+                             f"{e['slot']} enters at {h} [15.1]")
+                if okv:
+                    placed = True
+                    # clear the entry hex for the column mates [15.12]
+                    if pid in s["units"]:
+                        u = ww.unit(pid)
+                        dd = ww.dests(pid)
+                        if dd:
+                            order = assign.get(pid)
+                            obj = parse_hex((order or {}).get("objective")) \
+                                or aww._objective(ww, u, dist)
+                            cands = [h2 for h2 in dd
+                                     if aww._local_diff_ok(ww, u, h2)]
+                            if cands:
+                                best = min(cands,
+                                           key=lambda h2: (dist(h2, obj), h2))
+                                yield (side, {"type": "move", "unit": pid,
+                                              "dest": list(best)},
+                                       f"{e['slot']} drives on [15.14]")
+                    break
+            if not placed:
+                continue
+
+    # unit moves: plan verbs override targeting, never capabilities
+    for pid in sorted(s["units"]):
+        if pid not in s["units"] or pid in s["done"]:
+            continue
+        u = ww.unit(pid)
+        if u["side"] != side or ww.cls(pid) == "dz":
+            continue
+        dd = ww.dests(pid)
+        if not dd:
+            continue
+        here = (u["col"], u["row"])
+        order = assign.get(pid)
+        verb = order["verb"] if order else None
+        caution = int(order.get("caution", -2)) if order else -2
+
+        if verb == "standoff" or (verb is None and ww.is_arty(pid)):
+            rng = ww.stats(pid).get("range", 4)
+            foes = aww._foes(ww, side)
+            obj = parse_hex((order or {}).get("objective")) \
+                or aww._objective(ww, u, dist)
+
+            def standoff(h):
+                dmin = min((dist(h, eh) for eh in foes), default=99)
+                return (0 if 2 <= dmin <= rng else 1, dist(h, obj), h)
+            cands = [h for h in dd
+                     if min((dist(h, eh) for eh in foes), default=99) >= 2]
+            if cands:
+                best = min(cands, key=standoff)
+                if standoff(best) < standoff(here):
+                    yield (side, {"type": "move", "unit": pid,
+                                  "dest": list(best)},
+                           "artillery takes a barrage standoff [8.11/8.41]")
+            continue
+
+        if verb == "push":
+            target = parse_hex(order["objective"])
+            desc = f"{ww.cat(pid)['desig']} pushes on {target} [plan]"
+        elif verb == "hold":
+            target = parse_hex(order.get("at")) or here
+            if target == here:
+                continue                      # standing fast IS the order
+            desc = f"{ww.cat(pid)['desig']} falls in at {target} [plan]"
+        else:
+            target = aww._objective(ww, u, dist)
+            desc = f"{ww.cat(pid)['desig']} advances toward {target}"
+        scored = [(dist(h, target), h) for h in sorted(dd)
+                  if aww._local_diff_ok(ww, u, h, caution)]
+        if not scored:
+            continue
+        scored.sort()
+        if dist(here, target) <= scored[0][0]:
+            continue                          # no progress - stand
+        yield (side, {"type": "move", "unit": pid,
+                      "dest": list(scored[0][1])}, desc)
+
+    yield (side, {"type": "end_movement"}, "movement phase complete [4.1]")
+
+
+def _ww_turn_actions(ww, plan, resolve_for=None):
+    """One planned Westwall player turn: planned movement injected into the
+    policy's turn loop - pendings (demolition/FPF/retreat/advance) and the
+    whole combat phase stay the validated policy's (7.x is mandatory)."""
+    side = ww.s["mover"]
+    return aww.turn_actions(ww, resolve_for,
+                            movement_gen=_ww_planned_movement(ww, side,
+                                                              plan or {}))
+
+
+COMPILERS = {"bluegray": _bg_turn_actions, "westwall": _ww_turn_actions}
 
 
 # ------------------------------------------------------------ drivers
 def _mode_of(tg):
     # class-name dispatch: engine modules are importable both as `bluegray`
     # and `engine.bluegray`, so isinstance would see two different classes
-    return {"BlueGrayGame": "bluegray"}.get(type(tg).__name__)
+    return {"BlueGrayGame": "bluegray",
+            "WestwallGame": "westwall"}.get(type(tg).__name__)
+
+
+def _policy_of(tg):
+    return {"bluegray": abg, "westwall": aww}.get(_mode_of(tg), abg)
 
 
 def take_turn(tg, plan=None, resolve_for=None):
@@ -255,9 +396,10 @@ def take_turn(tg, plan=None, resolve_for=None):
         raise NotImplementedError(
             "no plan compiler for this game family yet - register it in "
             "plans.COMPILERS")
+    pol = _policy_of(tg)
     if not plan or not plan.get("orders"):
-        return abg.take_turn(tg, resolve_for)
-    return abg._drive(comp(tg, plan, resolve_for), tg)
+        return pol.take_turn(tg, resolve_for)
+    return pol._drive(comp(tg, plan, resolve_for), tg)
 
 
 def play_game(tg, planners=None, max_turns=None):

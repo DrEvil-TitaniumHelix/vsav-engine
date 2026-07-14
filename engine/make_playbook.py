@@ -26,43 +26,18 @@ import shutil
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import strategy_bg  # noqa: E402
-
-GENE_PROSE = {
-    "garrison_per_10vp": "post {v:.1f} strength points of garrison per 10 VP "
-                         "of occupation-hex value",
-    "garrison_range": "draw garrisons from up to {v:.0f} hexes away",
-    "hold_factor": "weight already-credited hexes at {v:.2f}x when assigning "
-                   "garrisons (1.0 = defend what you hold as hard as what "
-                   "you want)",
-    "deny_weight": "weight enemy-scoring hexes at {v:.2f}x for denial "
-                   "garrisons",
-    "mass_min": "the field force advances only above {v:.0f} combined "
-                "strength - below that it stands",
-    "focus_value_w": "objective choice scores VP value at weight {v:.2f}",
-    "focus_dist_w": "and distance at weight {v:.2f} (0 = ignore distance, "
-                    "pick the richest prize)",
-    "endgame_turn": "from turn {v:.0f}, units spread to grab the nearest "
-                    "uncredited VP hexes one-by-one",
-    "exit_turn": "from turn {v:.0f}, units standing on exit hexes leave the "
-                 "map to bank exit VP",
-    "reinf_to_field": "reinforcements join the field force with propensity "
-                      "{v:.2f} (vs garrison duty)",
-    "arty_standoff": "artillery {alt} (1 = classic 2-3 hex standoff, "
-                     "0 = fights in the line)",
-    "night_freeze": "night turns: {alt} (1 = hold everything, 0 = keep "
-                    "marching)",
-}
+import families  # noqa: E402
 
 
-def distill(theta):
+def distill(theta, strat):
+    """strat = the family's strategy module (owns GENES + GENE_PROSE)."""
     lines = ["## The champion genome, in words (auto-distilled)",
              "",
              "Machine-optimized doctrine - every number below was selected "
              "by tournament survival, not by argument:", ""]
-    for name, _, _, _ in strategy_bg.GENES:
+    for name, _, _, _ in strat.GENES:
         v = theta[name]
-        t = GENE_PROSE[name]
+        t = strat.GENE_PROSE[name]
         lines.append("- " + t.format(v=v, alt=("yes" if v >= 0.5 else "no")))
     return "\n".join(lines) + "\n"
 
@@ -79,15 +54,16 @@ def main():
 
     ck = json.load(open(a.checkpoint, encoding="utf-8"))
     status = json.load(open(a.status, encoding="utf-8"))
+    strat = families.for_game_dir(a.game)["strategy"]
     out = os.path.join(a.game, "playbook")
     os.makedirs(os.path.join(out, "corpus"), exist_ok=True)
 
     champion = {"type": "portfolio" if a.portfolio else "single",
-                "strategy_family": "engine/strategy_bg.py",
+                "strategy_family": f"engine/{strat.__name__}.py",
                 "consume": {
-                    "execute": "strategy_bg.StrategyPlanner(genome) emits one "
-                               "plans.py-DSL plan per turn; every order is "
-                               "validated by the legality gate",
+                    "execute": f"{strat.__name__}.StrategyPlanner(genome) "
+                               "emits one plans.py-DSL plan per turn; every "
+                               "order is validated by the legality gate",
                     "retrieve": "load doctrine.md + corpus logs into any LLM "
                                 "context; plans are written in the DSL "
                                 "documented in engine/plans.py",
@@ -109,7 +85,7 @@ def main():
     with open(os.path.join(out, "doctrine.md"), "w", encoding="utf-8") as f:
         f.write(doctrine)
         if best:
-            f.write("\n\n" + distill(best))
+            f.write("\n\n" + distill(best, strat))
 
     for src in a.corpus:
         if os.path.exists(src):
