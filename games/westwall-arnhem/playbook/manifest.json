@@ -1,0 +1,35 @@
+{
+ "playbook_version": 1,
+ "game": "westwall-arnhem",
+ "earned_by": {
+  "games_played": 43400,
+  "generations": 149,
+  "graduation": {
+   "wins": 12.0,
+   "of": 16,
+   "unbeaten": false,
+   "streak": 0,
+   "target": 3
+  },
+  "champion_fitness": {
+   "wins": 6.0,
+   "of": 8,
+   "margin": 361.0
+  },
+  "matrix_evidence": "matrix.json"
+ },
+ "contents": {
+  "champion.json": "portfolio",
+  "doctrine.md": "evidence-cited knowledge + auto-distilled genome",
+  "corpus/": [
+   "champ_All_970.log.jsonl",
+   "champ_All_971.log.jsonl",
+   "champ_All_972.log.jsonl",
+   "champ_Ger_970.log.jsonl",
+   "champ_Ger_971.log.jsonl",
+   "champ_Ger_972.log.jsonl",
+   "corpus_manifest.json"
+  ]
+ },
+ "verification": "every corpus log replays byte-exact through engine/verify_game.py; optimization games used seeded dice through the same gate"
+}
