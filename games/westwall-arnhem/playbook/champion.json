@@ -1,0 +1,32 @@
+{
+ "type": "portfolio",
+ "strategy_family": "engine/strategy_ww.py",
+ "consume": {
+  "execute": "strategy_ww.StrategyPlanner(genome) emits one plans.py-DSL plan per turn; every order is validated by the legality gate",
+  "retrieve": "load doctrine.md + corpus logs into any LLM context; plans are written in the DSL documented in engine/plans.py",
+  "train": "corpus logs are verified, seeded, replayable (engine/verify_game.py) - clean RL/fine-tune trajectories"
+ },
+ "portfolio": {
+  "weights": [
+   [
+    "elite_1",
+    1.0
+   ]
+  ],
+  "worst_case_mean_margin_for_mixture": -0.0,
+  "genomes": {
+   "elite_1": {
+    "all_waal_turn": 1.0,
+    "all_rijn_turn": 10.084959531434027,
+    "all_airborne_reach": 6.724080863031193,
+    "all_mass_min": 23.225438051392793,
+    "all_loc_guard": 1.0,
+    "all_caution": -0.711382857732681,
+    "ger_loc_cut_w": 0.0,
+    "ger_dz_w": 0.0,
+    "ger_mass_min": 3.3864294804637707,
+    "arty_standoff": 0.0
+   }
+  }
+ }
+}

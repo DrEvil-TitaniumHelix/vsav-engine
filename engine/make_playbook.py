@@ -72,7 +72,12 @@ def main():
                              "trajectories"}}
     if a.portfolio:
         champion["portfolio"] = json.load(open(a.portfolio, encoding="utf-8"))
-        best = ck.get("reigning")
+        # distill the portfolio's top-weight genome - the equilibrium winner
+        # may be a hall-of-famer, not the final reigning champion
+        port = champion["portfolio"]
+        named = [(w, nm) for nm, w in port.get("weights", [])
+                 if nm in port.get("genomes", {})]
+        best = port["genomes"][max(named)[1]] if named else ck.get("reigning")
     else:
         champion["genome"] = ck.get("reigning")
         best = ck.get("reigning")

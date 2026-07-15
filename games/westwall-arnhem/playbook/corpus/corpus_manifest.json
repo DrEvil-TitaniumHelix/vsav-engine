@@ -1,0 +1,71 @@
+{
+ "champion": "elite_1",
+ "games": [
+  {
+   "seed": 970,
+   "champion_seat": "All",
+   "vp": {
+    "All": 17,
+    "Ger": 334
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_All_970\\game_westwall-arnhem.log.jsonl"
+  },
+  {
+   "seed": 970,
+   "champion_seat": "Ger",
+   "vp": {
+    "All": 16,
+    "Ger": 492
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_Ger_970\\game_westwall-arnhem.log.jsonl"
+  },
+  {
+   "seed": 971,
+   "champion_seat": "All",
+   "vp": {
+    "All": 15,
+    "Ger": 363
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_All_971\\game_westwall-arnhem.log.jsonl"
+  },
+  {
+   "seed": 971,
+   "champion_seat": "Ger",
+   "vp": {
+    "All": 15,
+    "Ger": 498
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_Ger_971\\game_westwall-arnhem.log.jsonl"
+  },
+  {
+   "seed": 972,
+   "champion_seat": "All",
+   "vp": {
+    "All": 16,
+    "Ger": 358
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_All_972\\game_westwall-arnhem.log.jsonl"
+  },
+  {
+   "seed": 972,
+   "champion_seat": "Ger",
+   "vp": {
+    "All": 18,
+    "Ger": 492
+   },
+   "level": "German Strategic",
+   "verified": true,
+   "log": "C:\\VassalArnhem\\runs\\2026-07-14_westwall_optimizer\\corpus_games\\champ_Ger_972\\game_westwall-arnhem.log.jsonl"
+  }
+ ]
+}
