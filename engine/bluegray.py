@@ -24,51 +24,37 @@ Actions:
   {"type":"train_retreat", "dest":[c,r]?}            (18.11, dest None = destroyed)
   {"type":"end_phase"}                               (combat phase, 7.11/7.12 check)
 """
-import hashlib
-import json
-import os
-import random
+try:
+    from .gate import GateGame      # imported as engine.bluegray
+except ImportError:
+    from gate import GateGame       # imported with engine/ on sys.path
 
 
-class BlueGrayGame:
+class BlueGrayGame(GateGame):
+    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    HASH_KEYS = ("turn", "phase", "mover", "over", "winner", "rng_calls",
+                 "units", "moved", "pool", "entered", "exited", "dead", "vp",
+                 "occ", "attacked", "defended", "fought", "advanced",
+                 "retreated_phase", "battle_no", "pending", "train_checked")
+    TURN_NOUN = "GT"
+
     def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
-        self.game = game
-        self.scenario = json.load(open(scenario_path, encoding="utf-8"))
-        gkey = os.path.basename(os.path.normpath(game.dir))
-        self.state_path = os.path.join(live_dir, f"game_{gkey}.state.json")
-        self.log_path = os.path.join(live_dir, f"game_{gkey}.log.jsonl")
+        super().__init__(game, scenario_path, live_dir)
         cfg = self.scenario["game"]
-        self.turns = int(cfg["turns"])
-        self.first_player = cfg["first_player"]
         self.night_turns = set(cfg.get("night_turns", []))
-        self.turn_labels = cfg.get("turn_labels", [])
         self.vp_cfg = self.scenario.get("vp", {})
         self.exit_cfg = game.spec.get("exit", {})
         self.exit_hexes = {tuple(h) for h in self.exit_cfg.get("hexes", [])}
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.catalog = {u["id"]: u for u in
                         self.scenario.get("units", []) + self.scenario.get("reserve", [])}
-        self.combat = game.spec.get("combat")
-        self.tier_earned = (3 if game.spec.get("policy_ai") else 2) if self.combat else 1
-        self.tier = self.tier_earned if tier is None \
-            else max(1, min(int(tier), self.tier_earned))
-        if self.tier < 2:
-            self.combat = None
-        if os.path.exists(self.state_path):
-            self.s = json.load(open(self.state_path, encoding="utf-8"))
-            if "occ" not in self.s or "retreated_phase" not in self.s \
-               or self.s.get("tier", self.tier_earned) != self.tier:
-                self.new_game(seed)
-        else:
-            self.new_game(seed)
+        self._resolve_tier(tier)
+        self._resume_or_new(seed, required=("occ", "retreated_phase"))
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
-        seed = seed if seed is not None else random.SystemRandom().randrange(10 ** 9)
-        units = {}
-        for u in self.scenario["units"]:
-            units[u["id"]] = {"pid": u["id"], "slot": u["slot"], "side": u["side"],
-                              "col": u["hex"][0], "row": u["hex"][1]}
+        seed = self._fresh_seed(seed)
+        units = self._scenario_units()
         occ = {}
         for side, hexes in (self.vp_cfg.get("start_occupation") or {}).items():
             side_full = {"union": "Union", "confederate": "Confederate"}.get(side.lower(), side)
@@ -92,59 +78,17 @@ class BlueGrayGame:
             "pending": None,                # retreat/advance/exchange/train dict
             "train_checked": False,         # 18.11 auto-retreat handled this combat phase
         }
-        if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+        self._reset_log()
         self._log({"event": "init", "mode": "bluegray",
                    "scenario": self.scenario["name"],
                    "tier": self.tier,
                    "rules_scope": self.rules_scope(),
                    "seed": seed, "turns": self.turns,
                    "first_player": self.first_player,
-                   "units": [dict(pid=u["pid"], slot=u["slot"], side=u["side"],
-                                  hex=[u["col"], u["row"]])
-                             for u in units.values()]})
+                   "units": self._units_for_log(units)})
         self.save()
 
-    def save(self):
-        json.dump(self.s, open(self.state_path, "w", encoding="utf-8"), indent=1)
-
-    def _log(self, entry):
-        entry["n"] = self.s["n"]
-        self.s["n"] += 1
-        entry["state_hash"] = self.state_hash()
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-
-    def state_hash(self):
-        core = {k: self.s[k] for k in
-                ("turn", "phase", "mover", "over", "winner", "rng_calls",
-                 "units", "moved", "pool", "entered", "exited", "dead", "vp",
-                 "occ", "attacked", "defended", "fought", "advanced",
-                 "retreated_phase", "battle_no", "pending", "train_checked")}
-        blob = json.dumps(core, sort_keys=True)
-        return hashlib.sha256(blob.encode()).hexdigest()[:16]
-
-    # ------------------------------------------------------------ dice
-    def _rng(self):
-        r = random.Random(self.s["seed"])
-        for _ in range(self.s["rng_calls"]):
-            r.random()
-        return r
-
-    def roll_die(self):
-        r = self._rng()
-        v = 1 + int(r.random() * 6)
-        self.s["rng_calls"] += 1
-        return v
-
     # ------------------------------------------------------------ helpers
-    def unit(self, pid):
-        return self.s["units"][str(pid)]
-
-    def turn_label(self, t=None):
-        t = self.s["turn"] if t is None else t
-        return self.turn_labels[t - 1] if 0 < t <= len(self.turn_labels) else f"GT {t}"
-
     def is_night(self, t=None):
         return (self.s["turn"] if t is None else t) in self.night_turns
 
@@ -386,10 +330,6 @@ class BlueGrayGame:
                 if f.get("creek") or f.get("ford") or f.get("bridge"):
                     return True
         return False
-
-    # ------------------------------------------------------------ verdict
-    def _v(self, ok, *reasons):
-        return {"legal": bool(ok), "reasons": list(reasons)}
 
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
@@ -1305,9 +1245,6 @@ class BlueGrayGame:
         return {"slot": e["slot"], "cls": e.get("cls", "infantry")}
 
     # ------------------------------------------------------------ UI panels
-    def on_map(self, u):
-        return True                    # no at-sea/off-board states in B&G
-
     @property
     def schedule(self):
         """pid -> reserve entry with 'due' (unit_view reserve tooltips)."""
@@ -1370,15 +1307,6 @@ class BlueGrayGame:
         except KeyError:
             return {"odds": None, "legal": False, "reasons": chk["reasons"],
                     "needs_supply": False}
-
-    def rules_scope(self):
-        sc = self.scenario.get("rules_scope", {})
-        if self.tier >= 2:
-            return {"enforced": sc.get("enforced", []) + sc.get("enforced_tier2", []),
-                    "not_enforced": sc.get("umpired", [])}
-        return {"enforced": sc.get("enforced", []),
-                "not_enforced": sc.get("enforced_tier2", []) + sc.get("umpired", []),
-                "banner": f"TIER {self.tier} MODE selected - combat is umpired"}
 
     def _pending_view(self):
         """The pending choice shaped for the client's combat panel."""

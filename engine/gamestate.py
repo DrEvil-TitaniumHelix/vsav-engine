@@ -24,40 +24,39 @@ Actions:
   {"type":"fire",   "unit":pid, "target":pid}
   {"type":"pass_fire"}                   (done firing this combat segment)
 """
-import hashlib
-import json
-import os
-import random
 from collections import deque
 
-import combat as combat_mod
+try:
+    from . import combat as combat_mod       # imported as engine.gamestate
+    from .gate import GateGame
+except ImportError:
+    import combat as combat_mod               # imported with engine/ on sys.path
+    from gate import GateGame
 
 REL_ARCS = {0: "front", 1: "flank", 2: "flank", 3: "rear", 4: "flank", 5: "flank"}
 REAR_RELS = (2, 3, 4)   # the three rear-facing hexsides (p.4 I.C.4)
 
 
-class TacticalGame:
+class TacticalGame(GateGame):
+    # Frozen log contract — see gate.GateGame.HASH_KEYS. ("pivoted" is
+    # deliberately absent: it has never been hashed, and adding it now
+    # would orphan every previously recorded Tobruk log.)
+    HASH_KEYS = ("turn", "segment", "mover", "movement_done", "initiative",
+                 "fire_done", "moved", "fired", "acquired", "fired_pairs",
+                 "over", "winner", "rng_calls", "units")
+
     def __init__(self, game, scenario_path, live_dir, seed=None):
-        self.game = game                      # gamespec.Game
+        super().__init__(game, scenario_path, live_dir)
         self.cd = combat_mod.CombatData(game.dir)
-        self.scenario = json.load(open(scenario_path, encoding="utf-8"))
-        gkey = os.path.basename(os.path.normpath(game.dir))
-        self.state_path = os.path.join(live_dir, f"game_{gkey}.state.json")
-        self.log_path = os.path.join(live_dir, f"game_{gkey}.log.jsonl")
         cfg = self.scenario["game"]
-        self.turns = int(cfg["turns"])
-        self.first_player = cfg["first_player"]
         self.combat_first = cfg["combat_first_fire"]
         self.bounds = cfg["bounds"]
         self.entry_moved = bool(cfg.get("entry_moved"))
-        if os.path.exists(self.state_path):
-            self.s = json.load(open(self.state_path, encoding="utf-8"))
-        else:
-            self.new_game(seed)
+        self._resume_or_new(seed)
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
-        seed = seed if seed is not None else random.SystemRandom().randrange(10 ** 9)
+        seed = self._fresh_seed(seed)
         units = {}
         pid = 1000000000001                    # make_save.py pid order = scenario order
         for u in self.scenario["units"]:
@@ -84,8 +83,7 @@ class TacticalGame:
             "fired_pairs": [], "over": False, "winner": None,
             "units": units,
         }
-        if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+        self._reset_log()
         self._log({"event": "init", "scenario": self.scenario["name"],
                    "rules_scope": self.scenario.get("rules_scope"),
                    "seed": seed, "turns": self.turns,
@@ -98,39 +96,10 @@ class TacticalGame:
                              for u in units.values()]})
         self.save()
 
-    def save(self):
-        json.dump(self.s, open(self.state_path, "w", encoding="utf-8"), indent=1)
-
-    def _log(self, entry):
-        entry["n"] = self.s["n"]
-        self.s["n"] += 1
-        entry["state_hash"] = self.state_hash()
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-
-    def state_hash(self):
-        core = {k: self.s[k] for k in
-                ("turn", "segment", "mover", "movement_done", "initiative",
-                 "fire_done", "moved", "fired", "acquired", "fired_pairs",
-                 "over", "winner", "rng_calls", "units")}
-        blob = json.dumps(core, sort_keys=True)
-        return hashlib.sha256(blob.encode()).hexdigest()[:16]
-
     # ------------------------------------------------------------ dice
-    def _rng(self):
-        r = random.Random(self.s["seed"])
-        for _ in range(self.s["rng_calls"]):
-            r.random()
-        return r
-
     def roll(self, n_dice):
         """Roll dice by advancing the seeded stream; returns list of 1..6."""
-        r = self._rng()
-        out = []
-        for _ in range(n_dice):
-            out.append(1 + int(r.random() * 6))
-            self.s["rng_calls"] += 1
-        return out
+        return [self.roll_die() for _ in range(n_dice)]
 
     # ------------------------------------------------------------ geometry
     def xy(self, u):
@@ -162,9 +131,6 @@ class TacticalGame:
                 q.append((nb, d + 1))
         return best
 
-    def unit(self, pid):
-        return self.s["units"][str(pid)]
-
     def alive(self, u):
         return not u["K"]
 
@@ -181,9 +147,6 @@ class TacticalGame:
         return best.get((b["col"], b["row"]))
 
     # ------------------------------------------------------------ verdicts
-    def _v(self, ok, *reasons):
-        return {"legal": ok, "reasons": list(reasons)}
-
     def propose(self, side, action):
         t = action.get("type")
         if self.s["over"]:

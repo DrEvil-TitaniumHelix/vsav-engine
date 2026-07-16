@@ -41,7 +41,7 @@ a = Analysis(
     # Engine modules are imported after a runtime sys.path.insert, so name them
     # explicitly; PyInstaller pulls in their dependencies (combat, rules, vsav…).
     hiddenimports=[
-        "server", "board", "gamespec", "gamestate",
+        "server", "board", "gamespec", "gate", "gamestate",
         "strategic", "ai", "ai_strategic",
         "bluegray", "ai_bluegray", "westwall", "ai_westwall",
     ] + wv_hidden,
