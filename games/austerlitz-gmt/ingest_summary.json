@@ -1,0 +1,188 @@
+{
+ "vmod": "C:\\VassalLibrary\\austerlitz\\Austerlitz1_0_0.vmod",
+ "steps": [
+  "extracted 1077 entries -> C:\\VassalIngest\\austerlitz-gmt\\extracted",
+  "module: 'Austerlitz' v1.0.0; 1066 images staged",
+  "608 piece/card slots (510 with BasicPiece art, 35 blank-image layer pieces VASL-style); 16 prototypes",
+  "declared sides: ['French', 'Allied']",
+  "1 card deck(s) / 0 card slot(s) \u2014 cards NOT converted (engine future)",
+  "main board: 'Austerlitz' on map 'Main Map'; 8 other board(s) not converted: LIM Board (map 'Activation Markers'), Withdrawal (map 'Destroyed Units'), Page 1 (map 'Page 1'), Page 2 (map 'Page 2'), Page 3 (map 'Page 3'), Page 4 (map 'Page 4')",
+  "hex grid from buildFile: flat dx=84.52562584220303 dy=97.29999999999811 origin=(-13.0,-56.0)",
+  "map asset: map.png (6600x10200 px)",
+  "setup 'Counter Tray - Counters are stacked by division': 521 pieces, 47 ON the main map (0 self-positioned, 0 in stacks), key 0x9d",
+  "setup 'The Northern Flank: A Learning Scenario': 145 pieces, 82 ON the main map (0 self-positioned, 0 in stacks), key 0xa3",
+  "setup \"Le Beau Soleil D'Austerlitz: The Full Historical Battle\": 500 pieces, 436 ON the main map (0 self-positioned, 0 in stacks), key 0x9f",
+  "setup \"Bagration's Battle: A One-Map Scenario\": 253 pieces, 188 ON the main map (0 self-positioned, 0 in stacks), key 0xe6",
+  "setup 'Struggle on the Goldbach: A Two Map Scenario': 246 pieces, 184 ON the main map (0 self-positioned, 0 in stacks), key 0x85",
+  "setup 'Battle for the Pratzen: The Central Battlefield': 242 pieces, 177 ON the main map (0 self-positioned, 0 in stacks), key 0x24",
+  "setup 'Langeron Prevails: A More Balanced Full Battle': 496 pieces, 435 ON the main map (0 self-positioned, 0 in stacks), key 0xea",
+  "no terrain metadata (normal \u2014 terrain is not a Tier-0 item)",
+  "spec skeleton -> C:\\VassalArnhem\\games\\austerlitz-gmt\\game.json",
+  "runtime self-check: engine loads the setup and sees 358 units"
+ ],
+ "problems": [],
+ "verdict": "FULL",
+ "module": "Austerlitz",
+ "version": "1.0.0",
+ "slug": "austerlitz-gmt",
+ "staging": "C:\\VassalIngest\\austerlitz-gmt",
+ "out": "C:\\VassalArnhem\\games\\austerlitz-gmt",
+ "pdfs": [],
+ "main_map": "Main Map",
+ "main_board": "Austerlitz",
+ "grid": {
+  "orient": "flat",
+  "dx": 84.52562584220303,
+  "dy": 97.29999999999811,
+  "x0": -13.0,
+  "y0": -56.0,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 1,
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=8 vOff=-1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "hexnum_digits": 2
+ },
+ "grid_how": "hexgrid",
+ "map_asset": "C:\\VassalIngest\\austerlitz-gmt\\assets\\map.png",
+ "setups": [
+  {
+   "name": "Counter Tray - Counters are stacked by division",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\Counter Tray.vsav",
+   "pieces": 521,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 47,
+   "kinds": {
+    "mark": 47,
+    "immob": 13,
+    "calcProp": 3,
+    "deck": 1,
+    "emb2": 42,
+    "setprop": 415
+   },
+   "key": "9d"
+  },
+  {
+   "name": "The Northern Flank: A Learning Scenario",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\The Northern Flank.vsav",
+   "pieces": 145,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 82,
+   "kinds": {
+    "setprop": 33,
+    "rotate": 1,
+    "mark": 47,
+    "macro": 1,
+    "immob": 13,
+    "calcProp": 3,
+    "return": 4,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "a3"
+  },
+  {
+   "name": "Le Beau Soleil D'Austerlitz: The Full Historical Battle",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\La Beau Soleil D'Austerlitz.vsav",
+   "pieces": 500,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 436,
+   "kinds": {
+    "setprop": 384,
+    "rotate": 5,
+    "mark": 47,
+    "immob": 13,
+    "calcProp": 3,
+    "return": 5,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "9f"
+  },
+  {
+   "name": "Bagration's Battle: A One-Map Scenario",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\Bagration.vsav",
+   "pieces": 253,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 188,
+   "kinds": {
+    "rotate": 29,
+    "setprop": 111,
+    "mark": 47,
+    "macro": 1,
+    "immob": 13,
+    "calcProp": 3,
+    "return": 6,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "e6"
+  },
+  {
+   "name": "Struggle on the Goldbach: A Two Map Scenario",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\Struggle on the Goldbach.vsav",
+   "pieces": 246,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 184,
+   "kinds": {
+    "setprop": 131,
+    "rotate": 5,
+    "mark": 47,
+    "macro": 1,
+    "immob": 13,
+    "calcProp": 3,
+    "return": 3,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "85"
+  },
+  {
+   "name": "Battle for the Pratzen: The Central Battlefield",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\The Pratzen Heights.vsav",
+   "pieces": 242,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 177,
+   "kinds": {
+    "setprop": 127,
+    "return": 7,
+    "rotate": 1,
+    "mark": 47,
+    "macro": 1,
+    "immob": 13,
+    "calcProp": 3,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "24"
+  },
+  {
+   "name": "Langeron Prevails: A More Balanced Full Battle",
+   "path": "C:\\VassalIngest\\austerlitz-gmt\\setups\\Langeron Prevails.vsav",
+   "pieces": 496,
+   "positioned": 0,
+   "in_stacks": 0,
+   "on_map": 435,
+   "kinds": {
+    "setprop": 383,
+    "rotate": 5,
+    "mark": 47,
+    "immob": 13,
+    "calcProp": 3,
+    "return": 2,
+    "deck": 1,
+    "emb2": 42
+   },
+   "key": "ea"
+  }
+ ],
+ "at_start_count": 49,
+ "terrain_meta": [],
+ "spec_path": "C:\\VassalArnhem\\games\\austerlitz-gmt\\game.json",
+ "runtime_units": 358
+}
