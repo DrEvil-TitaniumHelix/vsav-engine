@@ -36,7 +36,8 @@ ROW_RANK = ["rough", "broken", "grove", "clear"]          # 7.61, defender-best 
 
 
 class WestwallGame(GateGame):
-    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    # Frozen log contract — never add/remove/rename entries for a
+    # shipped game (it orphans every recorded log). See gate.GateGame.
     HASH_KEYS = ("turn", "phase", "mover", "over", "winner", "rng_calls", "units",
                  "moved", "done", "arrived", "entered", "drops", "pool", "exited",
                  "dead", "vp", "gsp_left", "demolished", "repaired", "offered",
@@ -206,9 +207,9 @@ class WestwallGame(GateGame):
 
     def _attack_strength(self, atk_ids):
         """Total attacking strength: artillery contributes its barrage
-        factor when it has one, everyone else its attack factor [8.1].
-        _resolve_battle and battle_preview must agree on this sum — one
-        definition keeps the preview honest."""
+        factor when it has one, everyone else its attack factor
+        [8.21/8.31]. _resolve_battle and battle_preview must agree on this
+        sum — one definition keeps the preview honest."""
         a = 0
         for p in atk_ids:
             st = self.stats(p)
@@ -1097,22 +1098,8 @@ class WestwallGame(GateGame):
         return self._v(True, "combat phase complete [4.1]")
 
     # ------------------------------------------------------------ submit
-    def submit(self, side, action):
-        verdict = self.propose(side, action)
-        entry = {"event": "action", "turn": self.s["turn"], "phase": self.s["phase"],
-                 "side": side, "action": action, "verdict": verdict}
-        if not verdict["legal"]:
-            self._log(entry)
-            self.save()
-            return {"verdict": verdict}
-        result = self._apply(side, action)
-        entry["result"] = result
-        self._log(entry)
-        self.save()
-        return {"verdict": verdict, "result": result}
-
     # ------------------------------------------------------------ apply
-    def _apply(self, side, action):
+    def _apply(self, side, action, verdict):
         s = self.s
         t = action["type"]
         ev = []

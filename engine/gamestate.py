@@ -38,12 +38,14 @@ REAR_RELS = (2, 3, 4)   # the three rear-facing hexsides (p.4 I.C.4)
 
 
 class TacticalGame(GateGame):
-    # Frozen log contract — see gate.GateGame.HASH_KEYS. ("pivoted" is
-    # deliberately absent: it has never been hashed, and adding it now
+    # Frozen log contract — never add/remove/rename entries for a shipped
+    # game (it orphans every recorded log). See gate.GateGame. ("pivoted"
+    # is deliberately absent: it has never been hashed, and adding it now
     # would orphan every previously recorded Tobruk log.)
     HASH_KEYS = ("turn", "segment", "mover", "movement_done", "initiative",
                  "fire_done", "moved", "fired", "acquired", "fired_pairs",
                  "over", "winner", "rng_calls", "units")
+    PHASE_FIELD = "segment"
 
     def __init__(self, game, scenario_path, live_dir, seed=None):
         super().__init__(game, scenario_path, live_dir)
@@ -295,22 +297,7 @@ class TacticalGame(GateGame):
                                f"(aspect {aspect.upper()}) has not fired at this unit — may not initiate [I.H.1-2]")
         return self._v(True)
 
-    # ------------------------------------------------------------ submit
-    def submit(self, side, action):
-        """The only door: validate, log the proposal + verdict, apply if legal."""
-        verdict = self.propose(side, action)
-        entry = {"event": "action", "turn": self.s["turn"], "segment": self.s["segment"],
-                 "side": side, "action": action, "verdict": verdict}
-        if not verdict["legal"]:
-            self._log(entry)
-            self.save()
-            return {"verdict": verdict}
-        result = self._apply(side, action, verdict)
-        entry["result"] = result
-        self._log(entry)
-        self.save()
-        return {"verdict": verdict, "result": result}
-
+    # ------------------------------------------------------------ apply
     def _apply(self, side, action, verdict):
         """Apply a LEGAL action; returns the result dict recorded in the
         log (dice, damage, segment flow) — replayed verbatim by the

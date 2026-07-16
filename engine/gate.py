@@ -22,9 +22,14 @@ between games:
             (spec #11); `seed` + `rng_calls` reproduce every die ever rolled
   verdicts  _v(ok, *reasons) — the {"legal", "reasons"} shape every
             proposal answer uses
+  submit    submit() — the only door: validate, log EVERY proposal, apply
+            legal ones via the subclass's _apply(side, action, verdict)
   tiers     _resolve_tier() (spec #13) for the strategic gates
   resume    _resume_or_new(): reload the saved state file unless its schema
             is stale or it was played at another tier
+  queries   presentation/query defaults: unit(), turn_label()/TURN_NOUN,
+            on_map(), rules_scope() (StrategicGame intentionally shadows
+            it with a richer shape), _scenario_units()/_units_for_log()
 
 Subclasses own everything rule-shaped: new_game() state layout,
 propose()/submit()/_apply(), and their HASH_KEYS tuple.
@@ -45,6 +50,9 @@ class GateGame:
     # Fallback noun for turns past the scenario's turn_labels list
     # ("turn 4" vs "GT 4" — cosmetic only, never hashed).
     TURN_NOUN = "turn"
+    # State key naming the sub-turn stage, echoed into every log entry
+    # ("phase" for the strategic gates; the tactical gate says "segment").
+    PHASE_FIELD = "phase"
 
     def __init__(self, game, scenario_path, live_dir):
         self.game = game                      # gamespec.Game
@@ -179,3 +187,23 @@ class GateGame:
     # ------------------------------------------------------------ verdicts
     def _v(self, ok, *reasons):
         return {"legal": bool(ok), "reasons": list(reasons)}
+
+    # ------------------------------------------------------------ submit
+    def submit(self, side, action):
+        """The only door: validate, log the proposal + verdict, apply if
+        legal. Every proposal — including rejected ones — lands in the log;
+        the subclass's _apply(side, action, verdict) returns the result dict
+        recorded (and replayed verbatim by the verifier)."""
+        verdict = self.propose(side, action)
+        entry = {"event": "action", "turn": self.s["turn"],
+                 self.PHASE_FIELD: self.s[self.PHASE_FIELD],
+                 "side": side, "action": action, "verdict": verdict}
+        if not verdict["legal"]:
+            self._log(entry)
+            self.save()
+            return {"verdict": verdict}
+        result = self._apply(side, action, verdict)
+        entry["result"] = result
+        self._log(entry)
+        self.save()
+        return {"verdict": verdict, "result": result}
