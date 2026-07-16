@@ -29,6 +29,7 @@ import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod   # noqa: E402
 import westwall as ww_mod   # noqa: E402
+import napoleonic as nap_mod  # noqa: E402
 
 
 def verify(game_dir, log_path, verbose=False):
@@ -51,9 +52,13 @@ def verify(game_dir, log_path, verbose=False):
         return False, f"scenario '{init['scenario']}' not found in {game_dir}"
 
     mode = init.get("mode")
-    strategic = mode in ("strategic", "bluegray", "westwall")
+    strategic = mode in ("strategic", "bluegray", "westwall", "napoleonic")
     with tempfile.TemporaryDirectory() as tmp:
-        if mode == "westwall":
+        if mode == "napoleonic":
+            tg = nap_mod.NapoleonicGame(game, scen_path, tmp,
+                                        seed=init["seed"],
+                                        tier=init.get("tier"))
+        elif mode == "westwall":
             tg = ww_mod.WestwallGame(game, scen_path, tmp, seed=init["seed"],
                                      tier=init.get("tier"))
         elif mode == "bluegray":

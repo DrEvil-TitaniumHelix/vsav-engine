@@ -82,6 +82,7 @@
   },
   "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
  },
+ "scenario": "scenario_northern_flank.json",
  "formations": {
   "cite": "TEC [5.0] + Stacking Chart [7.1], transcribed cell-by-cell from GMT's updated charts PDF (living_rules/auscharts.pdf, errata applied by GMT 2000-07-20), verified against the rendered page image; formation properties from rulebook 6.3.1-6.3.8",
   "formations": {
