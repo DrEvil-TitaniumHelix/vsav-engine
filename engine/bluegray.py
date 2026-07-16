@@ -33,7 +33,8 @@ except ImportError:
 
 
 class BlueGrayGame(GateGame):
-    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    # Frozen log contract — never add/remove/rename entries for a
+    # shipped game (it orphans every recorded log). See gate.GateGame.
     HASH_KEYS = ("turn", "phase", "mover", "over", "winner", "rng_calls",
                  "units", "moved", "pool", "entered", "exited", "dead", "vp",
                  "occ", "attacked", "defended", "fought", "advanced",
@@ -250,7 +251,10 @@ class BlueGrayGame(GateGame):
         at dest, every step adjacent with a defined move cost (crossable,
         on-map), never through an enemy-occupied hex, never THROUGH an EZOC
         hex (6.x stop), Train confined to roads/trails (18.23), and total
-        cost within the unit's MA [5.x]. Returns a failure verdict or None."""
+        cost within the unit's MA [5.x]. Returns a failure verdict or None.
+        NOTE: mirrors Chickamauga's movement spec (raw per-step move_cost).
+        A sibling scenario adding road-bonus / stop-terrain / pass-class
+        specs must extend this checker to match dests()."""
         bad = self._v(False, "explicit path is not a route this unit could "
                              "take [5.x movement / 6.x ZOC / 17.22 credit]")
         if len(path) < 2 or path[0] != (u["col"], u["row"]) or path[-1] != dest:
@@ -888,22 +892,6 @@ class BlueGrayGame(GateGame):
                     if (e["col"], e["row"]) in self.game.neighbors(u["col"], u["row"]):
                         return u["pid"]
         return None
-
-    # ------------------------------------------------------------ submit
-    def submit(self, side, action):
-        """The only door: validate, log the proposal + verdict, apply if legal."""
-        verdict = self.propose(side, action)
-        entry = {"event": "action", "turn": self.s["turn"], "phase": self.s["phase"],
-                 "side": side, "action": action, "verdict": verdict}
-        if not verdict["legal"]:
-            self._log(entry)
-            self.save()
-            return {"verdict": verdict}
-        result = self._apply(side, action, verdict)
-        entry["result"] = result
-        self._log(entry)
-        self.save()
-        return {"verdict": verdict, "result": result}
 
     # ------------------------------------------------------------ apply
     def _apply(self, side, action, verdict):

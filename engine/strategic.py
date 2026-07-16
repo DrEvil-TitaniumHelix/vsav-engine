@@ -40,7 +40,8 @@ except ImportError:
 
 
 class StrategicGame(GateGame):
-    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    # Frozen log contract — never add/remove/rename entries for a
+    # shipped game (it orphans every recorded log). See gate.GateGame.
     HASH_KEYS = ("turn", "phase", "mover", "moved", "over", "winner",
                  "rng_calls", "units", "pool", "supply_pool", "supply_rolled",
                  "supply_pending", "allied_supply_done", "paths", "bonus",
@@ -2039,22 +2040,7 @@ class StrategicGame(GateGame):
                                   "[23.44, 23.5, 4.3]")
         return self._v(True)
 
-    # ------------------------------------------------------------ submit
-    def submit(self, side, action):
-        """The only door: validate, log the proposal + verdict, apply if legal."""
-        verdict = self.propose(side, action)
-        entry = {"event": "action", "turn": self.s["turn"], "phase": self.s["phase"],
-                 "side": side, "action": action, "verdict": verdict}
-        if not verdict["legal"]:
-            self._log(entry)
-            self.save()
-            return {"verdict": verdict}
-        result = self._apply(side, action, verdict)
-        entry["result"] = result
-        self._log(entry)
-        self.save()
-        return {"verdict": verdict, "result": result}
-
+    # ------------------------------------------------------------ apply
     def _apply(self, side, action, verdict):
         """Apply a LEGAL action; returns the result dict recorded in the
         log (dice, captures, eliminations, turn flow) — replayed verbatim
@@ -2692,6 +2678,9 @@ class StrategicGame(GateGame):
 
     def rules_scope(self):
         """The scenario's declared scope, composed for the ACTIVE tier.
+        Intentionally SHADOWS gate.GateGame.rules_scope with a richer
+        shape (preserves the scenario's full rules_scope dict) that the
+        strategic UI renders — do not 'deduplicate' into the base form.
         Scenarios may split their enforced list into `enforced` (tier-1
         systems) + `enforced_tier2` (combat systems); at tier 1 the tier-2
         items are presented honestly as not-enforced-in-this-mode."""
