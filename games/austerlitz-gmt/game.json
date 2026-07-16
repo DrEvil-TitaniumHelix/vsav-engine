@@ -82,6 +82,74 @@
   },
   "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
  },
+ "formations": {
+  "cite": "TEC [5.0] + Stacking Chart [7.1], transcribed cell-by-cell from GMT's updated charts PDF (living_rules/auscharts.pdf, errata applied by GMT 2000-07-20), verified against the rendered page image; formation properties from rulebook 6.3.1-6.3.8",
+  "formations": {
+   "line":      {"facing": "vertex",  "road_movement": false, "slide": true,  "cite": "6.3.1/6.3.5: vertex facing; no Road/Strategic Movement; slide via flank 2x if unoccupied; reverse = whole MA; facing change beyond 1st vertex per activation = disorder check each"},
+   "column":    {"facing": "hexside", "road_movement": true,  "slide": false, "cite": "6.3.2/6.3.6: hexside facing; road+strategic OK; reverse 2x unoccupied; unlimited facing changes at cost"},
+   "disorder":  {"facing": "hexside", "road_movement": true,  "slide": false, "cite": "6.4.1 + TEC 'na': disordered units have no flank hex (Fig K)"},
+   "square":    {"facing": "all", "immobile": true, "change_formation_override": 2, "cite": "6.3.4: may not move; all-around facing; pays 2 MPs to change formation (TEC note S)"},
+   "skirmish":  {"facing": "all", "road_movement": true, "free_facing": true, "pass_through": true, "cite": "6.3.3: all-around facing, facing changes free; moves through/is moved through at no penalty; only skirmish-capable units"},
+   "limbered":  {"facing": "hexside", "road_movement": true, "no_adjacent_enemy": true, "cite": "6.3.7: may not fire; never moves adjacent to unrouted enemy infantry/cavalry"},
+   "unlimbered": {"facing": "vertex", "immobile": true, "cite": "6.3.8: may not move into another hex; may change facing one vertex per activation"}
+  },
+  "tec": {
+   "columns": ["infantry_line", "infantry_column", "infantry_disorder",
+               "cavalry_line", "cavalry_column", "cavalry_disorder",
+               "artillery_foot", "artillery_horse", "skirmisher", "leader"],
+   "rows": {
+    "clear":            ["2", "1", "1", "2", "1", "1", "2", "1", "1", "1"],
+    "woods":            ["2D", "2D", "2", "3D", "3D", "2", "P", "P", "1", "1"],
+    "swamp":            ["2D", "2D", "2", "4D", "3D", "3", "P", "P", "2", "2"],
+    "primary_road":     ["OT", "1/2", "1", "OT", "1/2", "1", "1/2", "1/2", "1/2", "1/2"],
+    "secondary_road":   ["OT", "1", "1", "OT", "1/2", "1", "1", "1/2", "1/2", "1/2"],
+    "stream_hexside":   ["+1d", "+1", "+1", "+3d", "+2", "+2", "+3", "+2", "+1", "+1"],
+    "deep_stream_hexside": "No units may cross a Deep Stream hexside except at a Bridge",
+    "bridge_hexside":   "Only units utilizing Road Movement may benefit from bridges (no additional cost)",
+    "pond":             "No units may enter an all-Pond hex",
+    "minor_slope_up":   ["†", "†", "†", "‡", "‡", "‡", "+1", "‡", "0", "0"],
+    "minor_slope_down": ["†", "†", "†", "‡", "‡", "‡", "+1", "‡", "0", "0"],
+    "steep_slope_up":   ["+1d", "+1", "+1", "+2d", "+2", "+2", "+1", "+2", "+1", "+1"],
+    "steep_slope_down": ["+1d", "+1", "+1", "+1d", "+1", "+1", "+1", "+1", "0", "0"],
+    "sharp_slope_up":   ["+2D", "+2d", "+2", "+3D", "+3d", "+3", "P", "P", "+2", "+1"],
+    "sharp_slope_down": ["+1D", "+1d", "+1", "+2D", "+2d", "+2", "P", "P", "+1", "+1"],
+    "village":          ["2D", "2", "2", "3D", "2", "2", "2", "2", "2", "1"],
+    "castle":           ["P", "2", "2", "P", "P", "P", "P", "P", "2", "2"],
+    "wall_hexside":     ["+1d", "+1", "+1", "P", "P", "P", "P", "P", "+1", "+1"],
+    "change_formation": ["2", "1", "1", "2", "1", "1", "3", "2", "1", "0"],
+    "change_facing":    ["2", "1", "1", "1", "1", "1", "2", "1", "0", "0"],
+    "about_face":       ["m", "2", "3", "3", "3", "3", "NA", "NA", "na", "na"],
+    "slide":            ["2x", "NA", "na", "2x", "NA", "na", "NA", "NA", "na", "na"],
+    "reverse":          ["M", "2x", "2x", "M", "2x", "2x", "NA", "NA", "na", "na"]
+   }
+  },
+  "combat_effects": {
+   "note": "TEC right-hand columns (Fire shift / Melee DRM / Cav Charge allowed / Defensive terrain) — transcribed now, ENFORCED IN PHASE 2, unused at Tier 1",
+   "columns": ["fire", "melee", "cav_charge", "defensive"],
+   "rows": {
+    "clear": ["NE", "NE", "Yes", "No"], "woods": ["1R", "NE", "No", "No"],
+    "swamp": ["NE", "NE", "No", "No"], "primary_road": ["NE", "NE", "Yes", "No"],
+    "secondary_road": ["NE", "NE", "Yes", "No"], "stream_hexside": ["NE", "-1", "Yes", "No"],
+    "deep_stream_hexside": ["NE", "NA", "No", "No"], "bridge_hexside": ["NE", "-2", "No", "No"],
+    "minor_slope_up": ["1R", "NE", "Yes", "No"], "minor_slope_down": ["1R", "+1", "Yes", "No"],
+    "steep_slope_up": ["1R", "-1", "Yes", "No"], "steep_slope_down": ["1R", "+1", "Yes", "No"],
+    "sharp_slope_up": ["2R", "NA", "No", "No"], "sharp_slope_down": ["1R", "NA", "No", "No"],
+    "village": ["2R", "-2", "No", "Yes"], "castle": ["2R", "-3", "No", "Yes"],
+    "wall_hexside": ["1R", "-1", "No", "Yes"]
+   }
+  },
+  "stacking": {
+   "cite": "Stacking Chart [7.1]: per-hex SP limits; same type+formation+division only; overstack during movement disorders both; leaders free; multi-hex counters may not stack; artillery alone = 2 batteries, with inf/cav = 1 battery; strategic movement = 8 SP inf / 7 SP cav in column",
+   "infantry": {"line": {"clear": 8, "woods_swamp": null, "village_castle": null},
+                "column": {"clear": 10, "woods_swamp": null, "village_castle": 8},
+                "disorder": {"clear": 10, "woods_swamp": 8, "village_castle": 8},
+                "square": {"clear": 10, "woods_swamp": null, "village_castle": null},
+                "skirmish": {"clear": 12, "woods_swamp": 10, "village_castle": 10}},
+   "cavalry": {"line": {"clear": 6, "woods_swamp": null, "village_castle": null},
+               "column": {"clear": 9, "woods_swamp": null, "village_castle": 8},
+               "disorder": {"clear": 9, "woods_swamp": 8, "village_castle": 8}}
+  }
+ },
  "credits": {
   "game": {
    "title": "Austerlitz: Napoleon's Greatest Victory (Great Battles of the Napoleonic Wars, Vol. I)",
