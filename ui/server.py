@@ -51,13 +51,14 @@ import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod  # noqa: E402
 import westwall as ww_mod  # noqa: E402
+import napoleonic as nap_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
 import pbm as pbm_mod  # noqa: E402
 
-SG_FAMILY = ("strategic", "bluegray", "westwall")
+SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
 
 
 def sg_ai_module():
@@ -119,6 +120,8 @@ def build_gate():
         SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "westwall":
         SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+    elif SCEN_MODE == "napoleonic":
+        SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     else:
         TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 

@@ -1,0 +1,714 @@
+{
+ "name": "The Northern Flank: A Learning Scenario",
+ "mode": "napoleonic",
+ "source": "setup from the module's own 'The Northern Flank' save; scenario rules from playbook A15.1 (GMT sanctioned Spanish translation, translated)",
+ "game": {
+  "turns": 16,
+  "first_player": "French",
+  "turn_labels": [
+   "11:40 am",
+   "12:00 pm",
+   "12:20 pm",
+   "12:40 pm",
+   "1:00 pm",
+   "1:20 pm",
+   "1:40 pm",
+   "2:00 pm",
+   "2:20 pm",
+   "2:40 pm",
+   "3:00 pm",
+   "3:20 pm",
+   "3:40 pm",
+   "4:00 pm",
+   "4:20 pm",
+   "4:40 pm"
+  ],
+  "duration_cite": "A15.1: from the 11:40 am turn to the 4:40 pm turn unless victory sooner"
+ },
+ "terrain_file": "terrain_nf.json",
+ "initial_lims": {
+  "French": [
+   "Suchet",
+   "Independent"
+  ],
+  "Allied": [
+   "Markov",
+   "Vorpatzki"
+  ],
+  "cite": "A15.1 initial LIMs (command NOT enforced at tier 1)"
+ },
+ "victory": {
+  "french_win": "7 Russian battalions/regiments/batteries destroyed, routed or unsteady",
+  "russian_win": "10 French battalions/regiments/batteries destroyed, routed or unsteady",
+  "draw": "neither by the end of the 4:40 pm turn",
+  "cite": "A15.1 VICTORIA (translated); NOT enforced at tier 1 (morale states are phase-2 systems)"
+ },
+ "units": [
+  {
+   "id": "1782188320583",
+   "slot": "Markov",
+   "img": "Sheet 2 a F_13_1.png",
+   "side": "Allied",
+   "hex": [
+    68,
+    12
+   ],
+   "facing": 9,
+   "arm": "leader",
+   "formation": "column",
+   "stats": {
+    "ma": 12,
+    "morale": 0,
+    "sp": 0
+   },
+   "command": {
+    "activation": 4,
+    "personality": "C",
+    "range": 4,
+    "of": "Bagration"
+   },
+   "cite": "leader ratings from counter; MA 12 [5.4]"
+  },
+  {
+   "id": "1782188320585",
+   "slot": "3/Arkh",
+   "img": "Sheet 2 a F_5_25.png",
+   "side": "Allied",
+   "hex": [
+    68,
+    11
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 6,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320580",
+   "slot": "G/Arkh",
+   "img": "Sheet 2 a F_3_39.png",
+   "side": "Allied",
+   "hex": [
+    68,
+    13
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 7,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320582",
+   "slot": "2/Arkh",
+   "img": "Sheet 2 a F_5_23.png",
+   "side": "Allied",
+   "hex": [
+    68,
+    12
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 6,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320576",
+   "slot": "G/Pskv",
+   "img": "Sheet 2 a F_5_27.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    12
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 7,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320578",
+   "slot": "2/Pskv",
+   "img": "Sheet 2 a F_5_29.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    11
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 7,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320572",
+   "slot": "2/O.Ing",
+   "img": "Sheet 2 a F_5_35.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    14
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 7,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320574",
+   "slot": "3/O.Ing",
+   "img": "Sheet 2 a F_5_37.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    13
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 6,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320570",
+   "slot": "G/O.Ing",
+   "img": "Sheet 2 a F_5_33.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    15
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 7,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320598",
+   "slot": "22 CaC",
+   "img": "Sheet 1  a F_11_5.png",
+   "side": "French",
+   "hex": [
+    62,
+    6
+   ],
+   "facing": 3,
+   "arm": "cavalry",
+   "div": "M",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 12,
+    "morale": 6,
+    "sp": 6,
+    "fire": ""
+   }
+  },
+  {
+   "id": "1782188320595",
+   "slot": "a/B",
+   "img": "Sheet 2 a F_5_39.png",
+   "side": "Allied",
+   "hex": [
+    69,
+    5
+   ],
+   "facing": 9,
+   "arm": "artillery_horse",
+   "formation": "unlimbered",
+   "div": "2",
+   "stats": {
+    "ma": 7,
+    "morale": 6,
+    "sp": 6,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320597",
+   "slot": "Milhaud",
+   "img": "Sheet 1  a F_11_33.png",
+   "side": "French",
+   "hex": [
+    62,
+    6
+   ],
+   "facing": 3,
+   "arm": "leader",
+   "formation": "column",
+   "stats": {
+    "ma": 12,
+    "morale": 0,
+    "sp": 0
+   },
+   "command": {
+    "activation": 5,
+    "personality": "N",
+    "range": 5,
+    "of": "Cav Res"
+   },
+   "cite": "leader ratings from counter; MA 12 [5.4]"
+  },
+  {
+   "id": "1782188320591",
+   "slot": "3/Pskv",
+   "img": "Sheet 2 a F_5_31.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    10
+   ],
+   "facing": 9,
+   "arm": "infantry",
+   "div": "2",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 5,
+    "morale": 4,
+    "sp": 6,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320593",
+   "slot": "Vorpatzki",
+   "img": "Sheet 2 a F_13_3.png",
+   "side": "Allied",
+   "hex": [
+    67,
+    9
+   ],
+   "facing": 9,
+   "arm": "leader",
+   "formation": "column",
+   "stats": {
+    "ma": 12,
+    "morale": 0,
+    "sp": 0
+   },
+   "command": {
+    "activation": 4,
+    "personality": "N",
+    "range": 5,
+    "of": "Bagration"
+   },
+   "cite": "leader ratings from counter; MA 12 [5.4]"
+  },
+  {
+   "id": "1782188320543",
+   "slot": "1/40 Ln",
+   "img": "Sheet 1  a F_5_29.png",
+   "side": "French",
+   "hex": [
+    62,
+    11
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 6,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320545",
+   "slot": "2/40 Ln",
+   "img": "Sheet 1  a F_5_31.png",
+   "side": "French",
+   "hex": [
+    62,
+    10
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 6,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320541",
+   "slot": "2/34 Ln",
+   "img": "Sheet 1  a F_5_27.png",
+   "side": "French",
+   "hex": [
+    62,
+    13
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 8,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320547",
+   "slot": "2/17 Leg",
+   "img": "Sheet 1  a F_5_23.png",
+   "side": "French",
+   "hex": [
+    62,
+    9
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": true,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 7,
+    "sp": 6,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320549",
+   "slot": "1/88 Ln",
+   "img": "Sheet 1  a F_5_37.png",
+   "side": "French",
+   "hex": [
+    60,
+    11
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 7,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320539",
+   "slot": "1/34 Ln",
+   "img": "Sheet 1  a F_5_25.png",
+   "side": "French",
+   "hex": [
+    62,
+    14
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 8,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320565",
+   "slot": "13 CaC",
+   "img": "Sheet 1  a F_15_34.png",
+   "side": "French",
+   "hex": [
+    62,
+    3
+   ],
+   "facing": 3,
+   "arm": "cavalry",
+   "div": "T",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 12,
+    "morale": 6,
+    "sp": 5,
+    "fire": ""
+   }
+  },
+  {
+   "id": "1782188320566",
+   "slot": "Treilhard",
+   "img": "Sheet 1  a F_11_3.png",
+   "side": "French",
+   "hex": [
+    62,
+    3
+   ],
+   "facing": 3,
+   "arm": "leader",
+   "formation": "column",
+   "stats": {
+    "ma": 12,
+    "morale": 0,
+    "sp": 0
+   },
+   "command": {
+    "activation": 5,
+    "personality": "N",
+    "range": 6,
+    "of": "Cav Res"
+   },
+   "cite": "leader ratings from counter; MA 12 [5.4]"
+  },
+  {
+   "id": "1782188320568",
+   "slot": "10 Hus",
+   "img": "Sheet 1  a F_17_39.png",
+   "side": "French",
+   "hex": [
+    62,
+    2
+   ],
+   "facing": 3,
+   "arm": "cavalry",
+   "div": "T",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 12,
+    "morale": 7,
+    "sp": 5,
+    "fire": ""
+   }
+  },
+  {
+   "id": "1782188320563",
+   "slot": "21 CaC",
+   "img": "Sheet 1  a F_15_37.png",
+   "side": "French",
+   "hex": [
+    62,
+    4
+   ],
+   "facing": 3,
+   "arm": "cavalry",
+   "div": "T",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 12,
+    "morale": 6,
+    "sp": 5,
+    "fire": ""
+   }
+  },
+  {
+   "id": "1782188320555",
+   "slot": "c/V",
+   "img": "Sheet 1  a F_3_31.png",
+   "side": "French",
+   "hex": [
+    58,
+    15
+   ],
+   "facing": 1,
+   "arm": "artillery_horse",
+   "formation": "unlimbered",
+   "div": "3",
+   "stats": {
+    "ma": 8,
+    "morale": 7,
+    "sp": 1,
+    "fire": "E"
+   }
+  },
+  {
+   "id": "1782188320556",
+   "slot": "b/V",
+   "img": "Sheet 1  a F_3_29.png",
+   "side": "French",
+   "hex": [
+    58,
+    15
+   ],
+   "facing": 1,
+   "arm": "artillery_foot",
+   "formation": "unlimbered",
+   "div": "1",
+   "stats": {
+    "ma": 8,
+    "morale": 6,
+    "sp": 4,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320551",
+   "slot": "2/88 Ln",
+   "img": "Sheet 1  a F_5_39.png",
+   "side": "French",
+   "hex": [
+    60,
+    10
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 7,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320553",
+   "slot": "a/V",
+   "img": "Sheet 1  a F_3_27.png",
+   "side": "French",
+   "hex": [
+    59,
+    15
+   ],
+   "facing": 1,
+   "arm": "artillery_foot",
+   "formation": "unlimbered",
+   "div": "3",
+   "stats": {
+    "ma": 8,
+    "morale": 6,
+    "sp": 3,
+    "fire": "D"
+   }
+  },
+  {
+   "id": "1782188320558",
+   "slot": "1/64 Ln",
+   "img": "Sheet 1  a F_5_33.png",
+   "side": "French",
+   "hex": [
+    60,
+    13
+   ],
+   "facing": 3,
+   "arm": "infantry",
+   "div": "3",
+   "skirmish_capable": false,
+   "formation": "line",
+   "stats": {
+    "ma": 6,
+    "morale": 5,
+    "sp": 6,
+    "fire": "C"
+   }
+  },
+  {
+   "id": "1782188320559",
+   "slot": "Suchet",
+   "img": "Sheet 1  a F_9_9.png",
+   "side": "French",
+   "hex": [
+    60,
+    13
+   ],
+   "facing": 3,
+   "arm": "leader",
+   "formation": "column",
+   "stats": {
+    "ma": 12,
+    "morale": 0,
+    "sp": 0
+   },
+   "command": {
+    "activation": 5,
+    "personality": "N",
+    "range": 5,
+    "of": "V Corps"
+   },
+   "cite": "leader ratings from counter; MA 12 [5.4]"
+  }
+ ],
+ "rules_scope": {
+  "enforced": [
+   "Formation-true movement: advance through front hexsides only; facing changes cost MPs [6.1/6.3/TEC 5.0]",
+   "TEC terrain costs per arm+formation, incl. roads (Road Movement, not in Line), streams, slopes, bridges [5.0/5.1/5.3]",
+   "Movement disorder: auto-disorder terrain and disorder checks vs morale, engine-rolled d10 [5.1.1/6.4.1]",
+   "Line special moves: slide (2x, unoccupied flank), reverse (whole MA), about face (half MA) [6.3.1/6.3.5]",
+   "Enemy front hexes end movement; no re-adjacency to the same enemy [5.1.3]",
+   "Stacking limits by type/formation/division and terrain class [7.1]",
+   "One activation per unit per game turn [3.0/4.6]"
+  ],
+  "enforced_tier2": [
+   "Fire combat [8.1], melee/charge [8.2-8.5], morale [9.0], rout/rally [10.0/12.0], fatigue [13.0]"
+  ],
+  "umpired": [
+   "Command system: LIM pool, activations, command range [4.0] (phase 3)",
+   "Reactions: reaction fire, countercharge, form square [6.2/8.4.2] (phase 4)",
+   "Strategic movement [5.2]; limited-activation MA reduction [4.6.2] (needs the command system)",
+   "Victory conditions [A15.1] (need morale states)"
+  ]
+ }
+}
