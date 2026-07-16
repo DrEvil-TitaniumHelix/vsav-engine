@@ -56,6 +56,9 @@ class TacticalGame(GateGame):
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
+        """Fresh game state from the scenario: units at setup hexes with
+        facings, AFV types resolved from the combat data, damage clear,
+        turn-1 movement segment, new audit log."""
         seed = self._fresh_seed(seed)
         units = {}
         pid = 1000000000001                    # make_save.py pid order = scenario order
@@ -148,6 +151,9 @@ class TacticalGame(GateGame):
 
     # ------------------------------------------------------------ verdicts
     def propose(self, side, action):
+        """Verdict for an action WITHOUT applying it: {"legal", "reasons"}
+        with rulebook citations. The only judge — submit() applies exactly
+        what this method blesses."""
         t = action.get("type")
         if self.s["over"]:
             return self._v(False, "game is over")
@@ -306,6 +312,9 @@ class TacticalGame(GateGame):
         return {"verdict": verdict, "result": result}
 
     def _apply(self, side, action, verdict):
+        """Apply a LEGAL action; returns the result dict recorded in the
+        log (dice, damage, segment flow) — replayed verbatim by the
+        verifier, so its content is part of the log contract."""
         s = self.s
         t = action["type"]
         if t == "end_movement":

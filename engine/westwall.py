@@ -72,6 +72,8 @@ class WestwallGame(GateGame):
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
+        """Fresh game state from the scenario: units at setup hexes, all
+        bridges intact, GSP schedule at GT 1, trackers empty, new log."""
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         self.s = {
@@ -186,6 +188,49 @@ class WestwallGame(GateGame):
     def _positions(self, side=None, dz=None):
         return {(u["col"], u["row"]) for u in self._live(side, dz=dz)}
 
+    def _board_sets(self, side, exclude_pid=None):
+        """(board, epos, fpos, ezoc) for a `side` mover: the rules board
+        with enemy positions, friendly positions and enemy-ZOC hexes
+        precomputed — the standard legality environment for movement,
+        reinforcement, retreat and advance checks."""
+        board = self.rules_board(exclude_pid=exclude_pid)
+        enemy = self.game.enemy(side)
+        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
+        fpos = {(b["col"], b["row"]) for b in board if b["side"] == side}
+        ezoc = self.game.zoc_hexes(board, enemy)
+        return board, epos, fpos, ezoc
+
+    def _gsp_of(self, action):
+        """GSP the action commits (14.11); absent/None -> 0."""
+        return int(action.get("gsp", 0) or 0)
+
+    def _attack_strength(self, atk_ids):
+        """Total attacking strength: artillery contributes its barrage
+        factor when it has one, everyone else its attack factor [8.1].
+        _resolve_battle and battle_preview must agree on this sum — one
+        definition keeps the preview honest."""
+        a = 0
+        for p in atk_ids:
+            st = self.stats(p)
+            a += st.get("barrage", st["att"]) if self.is_arty(p) else st["att"]
+        return a
+
+    def _gate_gsp(self, side, gsp, dhexes):
+        """Gate a GSP commitment (14.11/18.16): Allied only, within the GT
+        budget, and only against hexes within 3 of an Allied non-airborne
+        unit. Returns a failure verdict or None."""
+        if not gsp:
+            return None
+        if side != "All":
+            return self._v(False, "only the Allied player has GSP [14.11]")
+        if gsp > self.s["gsp_left"]:
+            return self._v(False, f"only {self.s['gsp_left']} GSP left this "
+                                  f"GT [18.16/9.14]")
+        if not self._gsp_ok_hexes(dhexes):
+            return self._v(False, "GSP applies only within 3 hexes of an "
+                                  "Allied non-airborne unit [14.11]")
+        return None
+
     def side_feat(self, a, b):
         return self.game.side_features(a, b)
 
@@ -203,6 +248,8 @@ class WestwallGame(GateGame):
         return None
 
     def budget(self, pid):
+        """MPs the unit still has this phase: MA (capped at 3 on an
+        airborne unit's arrival GT, 15.32) minus MPs already spent."""
         u = self.unit(pid)
         ma = self.stats(pid)["ma"]
         if self.s["arrived"].get(str(pid)) == self.s["turn"]:
@@ -245,11 +292,7 @@ class WestwallGame(GateGame):
         u = self.unit(pid)
         if self.cls(pid) == "dz":
             return {}
-        board = self.rules_board(exclude_pid=pid)
-        enemy = self.game.enemy(u["side"])
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        fpos = {(b["col"], b["row"]) for b in board if b["side"] != enemy}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, fpos, ezoc = self._board_sets(u["side"], exclude_pid=pid)
         start = (u["col"], u["row"])
         if start in ezoc:
             return {}                        # 5.14/6.13 locked in EZOC
@@ -333,6 +376,9 @@ class WestwallGame(GateGame):
 
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
+        """Verdict for an action WITHOUT applying it: {"legal", "reasons"}
+        with rulebook citations. The only judge — submit() applies exactly
+        what this method blesses."""
         s = self.s
         t = action.get("type")
         if s["over"]:
@@ -421,11 +467,7 @@ class WestwallGame(GateGame):
         h = tuple(action.get("hex", ()))
         if len(h) != 2:
             return self._v(False, "reinforce needs a hex [c,r]")
-        board = self.rules_board()
-        enemy = self.game.enemy(side)
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        fpos = {(b["col"], b["row"]) for b in board if b["side"] == side}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, fpos, ezoc = self._board_sets(side)
         arrival = e.get("arrival")
         if arrival == "airborne":
             tgt = tuple(e["target"])
@@ -548,6 +590,10 @@ class WestwallGame(GateGame):
         return best
 
     def _column_pos(self, row, diff):
+        """1-based CRT column for a strength differential on a terrain row.
+        Column brackets come from game.json terrain_columns as strings:
+        "-4,3" = -4..-3 (comma inside a leading minus spans negatives),
+        "+6-8" = 6..8, "<=-9" / ">=13" are the open ends."""
         cols = self.combat["crt"]["terrain_columns"][row]
         def parse(br):
             b = br.replace("+", "")
@@ -572,6 +618,8 @@ class WestwallGame(GateGame):
         return len(cols)
 
     def crt_result(self, row, diff, die):
+        """CRT lookup: (result code, column position) for a terrain row,
+        strength differential and die roll [7.5, CRT chart]."""
         pos = self._column_pos(row, diff)
         return self.combat["crt"]["die_rows"][str(die)][pos - 1], pos
 
@@ -616,8 +664,6 @@ class WestwallGame(GateGame):
         # non-artillery must be adjacent [7.15]; never across non-bridge rivers [6.33]
         for p in melee:
             u = self.unit(p)
-            if not self.is_arty(p) or True:
-                pass
             for d in dfd:
                 if not self._engage_adjacent(u, d) and not self._assault_pair(p, d):
                     return self._v(False,
@@ -646,15 +692,10 @@ class WestwallGame(GateGame):
         # full stacks fight together: Westwall has no stacks (5.31), except the
         # 13.24 assault stack: Engineer+assault unit - the Engineer need not join
         # GSP allocation [9.x/14.11]
-        gsp = int(action.get("gsp", 0) or 0)
-        if gsp:
-            if side != "All":
-                return self._v(False, "only the Allied player has GSP [14.11]")
-            if gsp > s["gsp_left"]:
-                return self._v(False, f"only {s['gsp_left']} GSP left this GT [18.16/9.14]")
-            if not self._gsp_ok_hexes(dhexes):
-                return self._v(False, "GSP applies only within 3 hexes of an Allied "
-                                      "non-airborne unit [14.11]")
+        gsp = self._gsp_of(action)
+        err = self._gate_gsp(side, gsp, dhexes)
+        if err:
+            return err
         # 7.12/8.31: all adjacent friendlies participate - a battle must take
         # every unfought friendly whose obligations it covers
         missing = self._mandatory_joiners(side, atk_ids, def_ids)
@@ -732,7 +773,6 @@ class WestwallGame(GateGame):
         """Artillery that may add FPF [8.41/8.42/8.46] + GSP eligibility."""
         s = self.s
         out = []
-        board = self.rules_board()
         for u in self._live(def_side):
             p = u["pid"]
             if not self.is_arty(p) or p in s["fpf_used"]:
@@ -791,17 +831,12 @@ class WestwallGame(GateGame):
         n_arty_def = len(alloc)
         if n_arty_def > 2:
             return self._v(False, "no more than two artillery per combat [14.12]")
-        gsp = int(action.get("gsp", 0) or 0)
-        if gsp:
-            if side != "All":
-                return self._v(False, "only the Allied player has GSP [14.11]")
-            if gsp > self.s["gsp_left"]:
-                return self._v(False, f"only {self.s['gsp_left']} GSP left [18.16]")
-            dhexes = [ (self.unit(d)["col"], self.unit(d)["row"])
-                       for d in p["def_ids"] if d in self.s["units"] ]
-            if not self._gsp_ok_hexes(dhexes):
-                return self._v(False, "GSP only within 3 hexes of an Allied "
-                                      "non-airborne unit [14.11]")
+        gsp = self._gsp_of(action)
+        dhexes = [(self.unit(d)["col"], self.unit(d)["row"])
+                  for d in p["def_ids"] if d in self.s["units"]]
+        err = self._gate_gsp(side, gsp, dhexes)
+        if err:
+            return err
         if p.get("pure_barrage") and (alloc or gsp):
             return self._v(False, "no FPF against an attack made solely by "
                                   "artillery/GSP [8.45]")
@@ -810,10 +845,8 @@ class WestwallGame(GateGame):
     # ------------------------------------------------- retreats & advances
     def _surrounded(self, u):
         """11.2: all six adjacent hexes enemy-occupied or enemy-controlled."""
-        board = self.rules_board(exclude_pid=u["pid"])
-        enemy = self.game.enemy(u["side"])
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, _, ezoc = self._board_sets(u["side"],
+                                                exclude_pid=u["pid"])
         for nb in self.game.neighbors(u["col"], u["row"]):
             if not self.game.on_map(*nb):
                 continue
@@ -875,11 +908,7 @@ class WestwallGame(GateGame):
         allow_friends.)"""
         u = self.unit(pid)
         side = u["side"]
-        board = self.rules_board(exclude_pid=pid)
-        enemy = self.game.enemy(side)
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        fpos = {(b["col"], b["row"]) for b in board if b["side"] == side}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, fpos, ezoc = self._board_sets(side, exclude_pid=pid)
         start = (u["col"], u["row"])
         q = deque([(start, 0, (start,))])
         while q:
@@ -932,11 +961,7 @@ class WestwallGame(GateGame):
             if 0 not in opts:
                 return self._v(False, "a zero retreat needs the city no-effect option [11.1]")
             return self._v(True, f"{u['slot']} stands - city benefit [11.1]")
-        board = self.rules_board(exclude_pid=pid)
-        enemy = self.game.enemy(u["side"])
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        fpos = {(b["col"], b["row"]) for b in board if b["side"] == u["side"]}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, fpos, ezoc = self._board_sets(u["side"], exclude_pid=pid)
         cur = (u["col"], u["row"])
         seen = {cur}
         uses_friends = False
@@ -957,8 +982,6 @@ class WestwallGame(GateGame):
                                   f"combat position [7.74]")
         if uses_friends and self._retreat_paths_exist(pid, want, allow_friends=False):
             return self._v(False, "displacement only when no vacant route exists [7.73]")
-        if want > 0 and path and action.get("city_reduce"):
-            pass                               # already validated via opts
         return self._v(True, f"{u['slot']} retreats {want} to {cur}"
                              + (" displacing" if uses_friends else "") + " [7.7]")
 
@@ -1017,11 +1040,7 @@ class WestwallGame(GateGame):
         reaches any endpoint, 7.73). UI surface."""
         u = self.unit(pid)
         side = u["side"]
-        board = self.rules_board(exclude_pid=pid)
-        enemy = self.game.enemy(side)
-        epos = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
-        fpos = {(b["col"], b["row"]) for b in board if b["side"] == side}
-        ezoc = self.game.zoc_hexes(board, enemy)
+        board, epos, fpos, ezoc = self._board_sets(side, exclude_pid=pid)
         origin = (u["col"], u["row"])
 
         def search(allow_friends):
@@ -1203,7 +1222,7 @@ class WestwallGame(GateGame):
         s = self.s
         atk_ids = [str(p) for p in action["attackers"]]
         def_ids = [str(p) for p in action["defenders"]]
-        gsp = int(action.get("gsp", 0) or 0)
+        gsp = self._gsp_of(action)
         dfd = [self.unit(p) for p in def_ids]
         melee, barrage = self._split_attackers(atk_ids, dfd)
         pure = not melee
@@ -1229,7 +1248,7 @@ class WestwallGame(GateGame):
         s = self.s
         p = s["pending"]
         alloc = [(str(a), str(b)) for a, b in action.get("allocations", [])]
-        gsp = int(action.get("gsp", 0) or 0)
+        gsp = self._gsp_of(action)
         if gsp:
             s["gsp_left"] -= gsp
         for arty, _tgt in alloc:
@@ -1240,16 +1259,14 @@ class WestwallGame(GateGame):
         return self._resolve_battle(att_side, battle, alloc, gsp)
 
     def _resolve_battle(self, side, battle, fpf_alloc, gsp_def):
+        """Roll and apply one battle after FPF settles: differential CRT on
+        the defender-best terrain row [7.5, 7.61], eliminations/retreats/
+        advances per the result code, adverse-result artillery marks [8.41]."""
         s = self.s
         atk_ids, def_ids = battle["attackers"], battle["defenders"]
         melee, barrage = battle["melee"], battle["barrage"]
-        atk = [self.unit(p) for p in atk_ids if p in s["units"]]
         dfd = [self.unit(p) for p in def_ids if p in s["units"]]
-        a_str = 0
-        for p in atk_ids:
-            st = self.stats(p)
-            a_str += st.get("barrage", st["att"]) if self.is_arty(p) else st["att"]
-        a_str += battle["gsp_att"]
+        a_str = self._attack_strength(atk_ids) + battle["gsp_att"]
         d_str = sum(self.stats(p)["def"] for p in def_ids)
         d_str += sum(self.stats(a)["fpf"] for a, _t in fpf_alloc) + gsp_def
         diff = a_str - d_str
@@ -1323,8 +1340,6 @@ class WestwallGame(GateGame):
                             "then_attacker": [p for p in melee if p in s["units"]],
                             "then_by": side, "battle_ctx": battle}
             ev.append({"both_retreat": 1, "defender_first": True})
-        if res in ("De", "D1", "D2", "D3", "D4") or res in ("Ae",):
-            pass
         return ev
 
     def _mark_adverse(self, pids, attackers_only):
@@ -1492,6 +1507,9 @@ class WestwallGame(GateGame):
 
     # ------------------------------------------------------------ turn flow
     def _end_player_turn(self, side):
+        """Close a player turn (4.1): 13.24 assault settlements, German
+        turn-end scoring, GT advance after the second player, GSP refresh,
+        final scoring after the last GT [17.x]."""
         s = self.s
         ev = []
         # 13.24: assault units that never attacked are handled by the 7.12
@@ -1665,6 +1683,9 @@ class WestwallGame(GateGame):
         return False
 
     def _final_scoring(self):
+        """17.4 victory: the German:Allied VP ratio decides the level —
+        above 2:1 German wins, below Allied, exactly 2:1 is the draw line
+        (ratio thresholds from the scenario's vp config)."""
         s = self.s
         ev = [{"game_end": self.turns}]
         loc = self._loc_status()
@@ -1702,10 +1723,10 @@ class WestwallGame(GateGame):
     def schedule(self):
         return self.reserve
 
-    def dests_map(self, u):
-        return self.dests(u["pid"] if isinstance(u, dict) else u)
 
     def legal_moves(self, pid):
+        """For the UI: every legal destination with cost, or the reason the
+        unit cannot act."""
         pid = str(pid)
         if pid not in self.s["units"]:
             return {"can_act": False, "reasons": ["unit is not on the map"], "dests": []}
@@ -1732,6 +1753,8 @@ class WestwallGame(GateGame):
         return out
 
     def battle_preview(self, side, atk_ids, def_ids, bomb_ids=None):
+        """Differential/row/column preview for a prospective battle (UI
+        helper: read-only, computed by the same code that gates it)."""
         atk_ids = [str(p) for p in atk_ids]
         def_ids = [str(p) for p in def_ids]
         chk = self.propose(side, {"type": "battle", "attackers": atk_ids,
@@ -1739,10 +1762,7 @@ class WestwallGame(GateGame):
         try:
             dfd = [self.unit(p) for p in def_ids]
             melee, barrage = self._split_attackers(atk_ids, dfd)
-            a = 0
-            for p in atk_ids:
-                st = self.stats(p)
-                a += st.get("barrage", st["att"]) if self.is_arty(p) else st["att"]
+            a = self._attack_strength(atk_ids)
             d = sum(self.stats(p)["def"] for p in def_ids)
             melee_units = [self.unit(p) for p in melee]
             row = self._terrain_row(dfd, melee_units)
@@ -1800,6 +1820,8 @@ class WestwallGame(GateGame):
         return dict(p)
 
     def flow(self):
+        """The client's one-call game snapshot: turn/phase/mover, VP, LOC
+        status, arrivals, pending choice, scope — the UI header's feed."""
         s = self.s
         due = sorted([{"pid": pid, "slot": self.reserve[pid]["slot"],
                        "side": self.reserve[pid]["side"], "due": d,
