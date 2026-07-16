@@ -33,23 +33,27 @@ Actions:
   {"type":"end_phase"}     (current mover is done; 6.1/2.3 stacking check,
                             12.4 supply forfeit, 23.42 at-sea elimination)
 """
-import hashlib
-import json
-import os
-import random
+try:
+    from .gate import GateGame      # imported as engine.strategic
+except ImportError:
+    from gate import GateGame       # imported with engine/ on sys.path
 
 
-class StrategicGame:
+class StrategicGame(GateGame):
+    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    HASH_KEYS = ("turn", "phase", "mover", "moved", "over", "winner",
+                 "rng_calls", "units", "pool", "supply_pool", "supply_rolled",
+                 "supply_pending", "allied_supply_done", "paths", "bonus",
+                 "landed_sea", "ports",
+                 "attacked", "defended", "fought", "supplies_used",
+                 "pending", "pending_rommel", "vic_start_ok", "vic_streak",
+                 "dead", "cap_pool", "no_sustain", "cap_attacks",
+                 "cap_move",
+                 "iso", "iso_start", "nosup", "nosup_start",
+                 "repl", "av", "sub_stock", "sub_comp")
+
     def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
-        self.game = game                      # gamespec.Game
-        self.scenario = json.load(open(scenario_path, encoding="utf-8"))
-        gkey = os.path.basename(os.path.normpath(game.dir))
-        self.state_path = os.path.join(live_dir, f"game_{gkey}.state.json")
-        self.log_path = os.path.join(live_dir, f"game_{gkey}.log.jsonl")
-        cfg = self.scenario["game"]
-        self.turns = int(cfg["turns"])
-        self.first_player = cfg["first_player"]
-        self.turn_labels = cfg.get("turn_labels", [])
+        super().__init__(game, scenario_path, live_dir)
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.schedule = {u["id"]: u for u in self.scenario.get("reserve", [])
                          if "due" in u}
@@ -63,23 +67,7 @@ class StrategicGame:
         self.supply_max = self.scenario.get("supply_max_on_board", {})
         p = (game.spec.get("ports") or {}).get("list", [])
         self.ports = {tuple(e["hex"]): e for e in p}
-        self.combat = game.spec.get("combat")
-        # Tier selection (spec #13): a game may be RUN below the tier it has
-        # earned. Tier 1 = movement/arrivals gate only — the entire combat
-        # ruleset (and everything keyed on it: capture, isolation,
-        # replacements, substitutes, AV, victory) is switched off, which is
-        # exactly the validated Tier-1 configuration. Tier 0 never reaches
-        # this class (no gate at all — the server serves free play).
-        # Earned tier: 1 = movement/arrivals only; 2 = full combat gate;
-        # 3 = combat gate + a validated policy AI (declared in game.json
-        # `policy_ai`). Tier 3's gate is identical to tier 2 — the AI is an
-        # opponent offered on top, it submits through the same door.
-        self.tier_earned = (
-            (3 if game.spec.get("policy_ai") else 2) if self.combat else 1)
-        self.tier = self.tier_earned if tier is None \
-            else max(1, min(int(tier), self.tier_earned))
-        if self.tier < 2:
-            self.combat = None
+        self._resolve_tier(tier)
         self.repl_cfg = self.scenario.get("replacements")
         self.sub_cfg = self.scenario.get("substitutes")
         # 4.1/4.2 control-victory objectives: every fortress + home base hex
@@ -89,25 +77,12 @@ class StrategicGame:
                 if v["t"] in ("fortress", "homebase"):
                     self.victory_hexes.append((int(key[:2]), int(key[2:])))
             self.victory_hexes.sort()
-        if os.path.exists(self.state_path):
-            self.s = json.load(open(self.state_path, encoding="utf-8"))
-            if "pool" not in self.s or "attacked" not in self.s \
-               or "cap_pool" not in self.s:
-                self.new_game(seed)       # older-schema state file: reset
-            elif self.s.get("tier", self.tier_earned) != self.tier:
-                self.new_game(seed)       # state was played at another tier
-        else:
-            self.new_game(seed)
+        self._resume_or_new(seed, required=("pool", "attacked", "cap_pool"))
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
-        seed = seed if seed is not None else random.SystemRandom().randrange(10 ** 9)
-        units = {}
-        for u in self.scenario["units"]:
-            units[u["id"]] = {
-                "pid": u["id"], "slot": u["slot"], "side": u["side"],
-                "col": u["hex"][0], "row": u["hex"][1],
-            }
+        seed = self._fresh_seed(seed)
+        units = self._scenario_units()
         self.s = {
             "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
             "turn": 1, "phase": "movement", "mover": self.first_player,
@@ -143,66 +118,17 @@ class StrategicGame:
         self.s["iso_start"] = self._iso_snapshot(self.first_player)
         self.s["nosup_start"] = not self._supply_hexes(self.first_player) \
             and self.combat is not None
-        if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+        self._reset_log()
         self._log({"event": "init", "mode": "strategic",
                    "scenario": self.scenario["name"],
                    "tier": self.tier,
                    "rules_scope": self.rules_scope(),
                    "seed": seed, "turns": self.turns,
                    "first_player": self.first_player,
-                   "units": [dict(pid=u["pid"], slot=u["slot"], side=u["side"],
-                                  hex=[u["col"], u["row"]])
-                             for u in units.values()]})
+                   "units": self._units_for_log(units)})
         self.save()
 
-    def save(self):
-        json.dump(self.s, open(self.state_path, "w", encoding="utf-8"), indent=1)
-
-    def _log(self, entry):
-        entry["n"] = self.s["n"]
-        self.s["n"] += 1
-        entry["state_hash"] = self.state_hash()
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-
-    def state_hash(self):
-        core = {k: self.s[k] for k in
-                ("turn", "phase", "mover", "moved", "over", "winner",
-                 "rng_calls", "units", "pool", "supply_pool", "supply_rolled",
-                 "supply_pending", "allied_supply_done", "paths", "bonus",
-                 "landed_sea", "ports",
-                 "attacked", "defended", "fought", "supplies_used",
-                 "pending", "pending_rommel", "vic_start_ok", "vic_streak",
-                 "dead", "cap_pool", "no_sustain", "cap_attacks",
-                 "cap_move",
-                 "iso", "iso_start", "nosup", "nosup_start",
-                 "repl", "av", "sub_stock", "sub_comp")}
-        blob = json.dumps(core, sort_keys=True)
-        return hashlib.sha256(blob.encode()).hexdigest()[:16]
-
-    # ------------------------------------------------------------ dice
-    def _rng(self):
-        r = random.Random(self.s["seed"])
-        for _ in range(self.s["rng_calls"]):
-            r.random()
-        return r
-
-    def roll_die(self):
-        """Engine-owned d6: seeded, counted, replayable (spec #11)."""
-        r = self._rng()
-        v = 1 + int(r.random() * 6)
-        self.s["rng_calls"] += 1
-        return v
-
     # ------------------------------------------------------------ helpers
-    def unit(self, pid):
-        return self.s["units"][str(pid)]
-
-    def turn_label(self, t=None):
-        t = self.s["turn"] if t is None else t
-        return self.turn_labels[t - 1] if 0 < t <= len(self.turn_labels) else f"turn {t}"
-
     def on_map(self, u):
         return u.get("loc") != "at_sea"
 
@@ -957,9 +883,6 @@ class StrategicGame:
         return {p for e in self.s["av"] for p in e["defenders"]}
 
     # ------------------------------------------------------------ verdicts
-    def _v(self, ok, *reasons):
-        return {"legal": ok, "reasons": list(reasons)}
-
     def propose(self, side, action):
         t = action.get("type")
         if self.s["over"]:

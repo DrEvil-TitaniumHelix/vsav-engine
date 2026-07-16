@@ -22,29 +22,32 @@ Actions:
   {"type":"advance", "unit":pid, "dest":[c,r]} / {"type":"advance","decline":1}
   {"type":"end_phase"}
 """
-import hashlib
 import heapq
-import json
-import os
-import random
 from collections import deque
+
+try:
+    from .gate import GateGame      # imported as engine.westwall
+except ImportError:
+    from gate import GateGame       # imported with engine/ on sys.path
 
 ARTY = {"artillery", "sp_artillery", "ab_artillery"}
 VEHICLE = {"armor", "recon", "mech", "sp_artillery"}      # 5.24
 ROW_RANK = ["rough", "broken", "grove", "clear"]          # 7.61, defender-best first
 
 
-class WestwallGame:
+class WestwallGame(GateGame):
+    # Frozen log contract — see gate.GateGame.HASH_KEYS.
+    HASH_KEYS = ("turn", "phase", "mover", "over", "winner", "rng_calls", "units",
+                 "moved", "done", "arrived", "entered", "drops", "pool", "exited",
+                 "dead", "vp", "gsp_left", "demolished", "repaired", "offered",
+                 "fought", "defended", "advanced", "fpf_used", "adverse",
+                 "displaced_arty", "eng_lock", "eng_start", "assault",
+                 "battle_no", "pending")
+    TURN_NOUN = "GT"
+
     def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
-        self.game = game
-        self.scenario = json.load(open(scenario_path, encoding="utf-8"))
-        gkey = os.path.basename(os.path.normpath(game.dir))
-        self.state_path = os.path.join(live_dir, f"game_{gkey}.state.json")
-        self.log_path = os.path.join(live_dir, f"game_{gkey}.log.jsonl")
+        super().__init__(game, scenario_path, live_dir)
         cfg = self.scenario["game"]
-        self.turns = int(cfg["turns"])
-        self.first_player = cfg["first_player"]
-        self.turn_labels = cfg.get("turn_labels", [])
         self.gsp_sched = {int(k): v for k, v in
                           (cfg.get("gsp", {}).get("All") or {}).items()}
         self.vp_cfg = self.scenario.get("vp", {})
@@ -54,12 +57,7 @@ class WestwallGame:
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.catalog = {u["id"]: u for u in
                         self.scenario.get("units", []) + self.scenario.get("reserve", [])}
-        self.combat = game.spec.get("combat")
-        self.tier_earned = (3 if game.spec.get("policy_ai") else 2) if self.combat else 1
-        self.tier = self.tier_earned if tier is None \
-            else max(1, min(int(tier), self.tier_earned))
-        if self.tier < 2:
-            self.combat = None
+        self._resolve_tier(tier)
         # pristine copies of demolishable/repairable sides (runtime mutation).
         # Captured ONCE per Game object - later gates on the same Game must
         # see the ORIGINAL terrain, not a previous game's demolitions.
@@ -69,21 +67,13 @@ class WestwallGame:
                     if v.get("bridge_type") in ("canal", "rail")}
             game._westwall_pristine = pris
         self._pristine = pris
-        if os.path.exists(self.state_path):
-            self.s = json.load(open(self.state_path, encoding="utf-8"))
-            if "demolished" not in self.s or self.s.get("tier", self.tier_earned) != self.tier:
-                self.new_game(seed)
-        else:
-            self.new_game(seed)
+        self._resume_or_new(seed, required=("demolished",))
         self._apply_bridge_state()
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
-        seed = seed if seed is not None else random.SystemRandom().randrange(10 ** 9)
-        units = {}
-        for u in self.scenario["units"]:
-            units[u["id"]] = {"pid": u["id"], "slot": u["slot"], "side": u["side"],
-                              "col": u["hex"][0], "row": u["hex"][1]}
+        seed = self._fresh_seed(seed)
+        units = self._scenario_units()
         self.s = {
             "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
             "turn": 1, "phase": "movement", "mover": self.first_player,
@@ -110,48 +100,13 @@ class WestwallGame:
             "battle_no": 0,
             "pending": None,
         }
-        if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+        self._reset_log()
         self._log({"event": "init", "mode": "westwall",
                    "scenario": self.scenario["name"], "tier": self.tier,
                    "rules_scope": self.rules_scope(), "seed": seed,
                    "turns": self.turns, "first_player": self.first_player,
-                   "units": [dict(pid=u["pid"], slot=u["slot"], side=u["side"],
-                                  hex=[u["col"], u["row"]]) for u in units.values()]})
+                   "units": self._units_for_log(units)})
         self.save()
-
-    def save(self):
-        json.dump(self.s, open(self.state_path, "w", encoding="utf-8"), indent=1)
-
-    def _log(self, entry):
-        entry["n"] = self.s["n"]
-        self.s["n"] += 1
-        entry["state_hash"] = self.state_hash()
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-
-    def state_hash(self):
-        core = {k: self.s[k] for k in
-                ("turn", "phase", "mover", "over", "winner", "rng_calls", "units",
-                 "moved", "done", "arrived", "entered", "drops", "pool", "exited",
-                 "dead", "vp", "gsp_left", "demolished", "repaired", "offered",
-                 "fought", "defended", "advanced", "fpf_used", "adverse",
-                 "displaced_arty", "eng_lock", "eng_start", "assault",
-                 "battle_no", "pending")}
-        return hashlib.sha256(json.dumps(core, sort_keys=True).encode()).hexdigest()[:16]
-
-    # ------------------------------------------------------------ dice
-    def _rng(self):
-        r = random.Random(self.s["seed"])
-        for _ in range(self.s["rng_calls"]):
-            r.random()
-        return r
-
-    def roll_die(self):
-        r = self._rng()
-        v = 1 + int(r.random() * 6)
-        self.s["rng_calls"] += 1
-        return v
 
     # ------------------------------------------------------------ bridges
     def _apply_bridge_state(self):
@@ -196,9 +151,6 @@ class WestwallGame:
         return ev
 
     # ------------------------------------------------------------ helpers
-    def unit(self, pid):
-        return self.s["units"][str(pid)]
-
     def cat(self, pid):
         return self.catalog[str(pid)]
 
@@ -216,10 +168,6 @@ class WestwallGame:
 
     def is_airborne(self, pid):
         return bool(self.cat(pid).get("airborne"))
-
-    def turn_label(self, t=None):
-        t = self.s["turn"] if t is None else t
-        return self.turn_labels[t - 1] if 0 < t <= len(self.turn_labels) else f"GT {t}"
 
     def _live(self, side=None, dz=None):
         for u in self.s["units"].values():
@@ -382,10 +330,6 @@ class WestwallGame:
             if str(pid) in self.s["units"]:
                 mine.add(str(pid))
         return mine, theirs
-
-    # ------------------------------------------------------------ verdict
-    def _v(self, ok, *reasons):
-        return {"legal": bool(ok), "reasons": list(reasons)}
 
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
@@ -1754,9 +1698,6 @@ class WestwallGame:
         return ev
 
     # ------------------------------------------------------------ UI surface
-    def on_map(self, u):
-        return True
-
     @property
     def schedule(self):
         return self.reserve
@@ -1812,15 +1753,6 @@ class WestwallGame:
         except KeyError:
             return {"odds": None, "legal": False, "reasons": chk["reasons"],
                     "needs_supply": False}
-
-    def rules_scope(self):
-        sc = self.scenario.get("rules_scope", {})
-        if self.tier >= 2:
-            return {"enforced": sc.get("enforced", []) + sc.get("enforced_tier2", []),
-                    "not_enforced": sc.get("umpired", [])}
-        return {"enforced": sc.get("enforced", []),
-                "not_enforced": sc.get("enforced_tier2", []) + sc.get("umpired", []),
-                "banner": f"TIER {self.tier} MODE selected - combat is umpired"}
 
     def _pending_view(self):
         p = self.s["pending"]
