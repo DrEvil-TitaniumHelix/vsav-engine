@@ -24,6 +24,8 @@ Actions:
   {"type":"train_retreat", "dest":[c,r]?}            (18.11, dest None = destroyed)
   {"type":"end_phase"}                               (combat phase, 7.11/7.12 check)
 """
+import heapq
+
 try:
     from .gate import GateGame      # imported as engine.bluegray
 except ImportError:
@@ -53,6 +55,9 @@ class BlueGrayGame(GateGame):
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
+        """Fresh game state from the scenario: units at their setup hexes,
+        VP occupation snapshot seeded from the historical start (17.2), all
+        per-phase trackers empty, new audit log."""
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         occ = {}
@@ -96,7 +101,10 @@ class BlueGrayGame(GateGame):
         return self.game.unit_class(u["slot"]) or "infantry"
 
     def strength(self, u):
-        return self.game.stats(u["slot"])[0] or self.game.stats(u["slot"])[1]
+        """Effective strength: attack factor, or defense factor for
+        defense-only units (printed 0 attack)."""
+        st = self.game.stats(u["slot"])
+        return st[0] or st[1]
 
     def printed(self, u):
         """Printed combat strength (Ex accounting, 7.6)."""
@@ -127,6 +135,12 @@ class BlueGrayGame(GateGame):
         non-crossing creek hexside (5.25/6.6/TEC)."""
         return not self.game.hexside_prohibited(a, b)
 
+    def _road_or_trail(self, a, b):
+        """The a->b hexside carries a road or trail — the only sides the
+        Train may ever use (18.23; bridges carry roads, fords trails)."""
+        f = self.game.side_features(a, b)
+        return bool(f.get("road") or f.get("trail"))
+
     def _engage_adjacent(self, ua, ub):
         """Combat contact: adjacency across a crossable hexside (attacks only
         across bridges/fords on the creek, TEC; no ZOC through plain creek 6.6)."""
@@ -153,7 +167,6 @@ class BlueGrayGame(GateGame):
         """Train movement (18.23): roads/trails ONLY (bridges carry roads,
         fords carry trails), never stacks with anyone (18.21), blocked by all
         units, ZOC stop applies (it is a unit like any other for 6.0)."""
-        import heapq
         start = (u["col"], u["row"])
         occ = {(b["col"], b["row"]) for b in board}
         enemy = self.game.enemy(u["side"])
@@ -170,8 +183,7 @@ class BlueGrayGame(GateGame):
             if cur != start and cur in ezoc:
                 continue
             for nb in self.game.neighbors(*cur):
-                f = self.game.side_features(cur, nb)
-                if not (f.get("road") or f.get("trail")):
+                if not self._road_or_trail(cur, nb):
                     continue
                 if nb in occ:
                     continue
@@ -190,7 +202,6 @@ class BlueGrayGame(GateGame):
         """Deterministic min-cost path start->dest under the same constraints
         as dests() (parent-tracked Dijkstra with sorted neighbor order).
         Used for occupation credit (17.22) when no explicit path is given."""
-        import heapq
         me = dict(id=u["pid"], name=u["slot"], side=u["side"],
                   col=u["col"], row=u["row"])
         board = self.rules_board(exclude_pid=u["pid"], mover_side=u["side"])
@@ -211,8 +222,7 @@ class BlueGrayGame(GateGame):
                 continue
             if self.cls(u) == "train":
                 nbs = [nb for nb in self.game.neighbors(*cur)
-                       if self.game.side_features(cur, nb).get("road")
-                       or self.game.side_features(cur, nb).get("trail")]
+                       if self._road_or_trail(cur, nb)]
             else:
                 nbs = self.game.neighbors(*cur)
             for nb in sorted(nbs):
@@ -233,6 +243,38 @@ class BlueGrayGame(GateGame):
             path.append(parent[path[-1]])
         return list(reversed(path))
 
+    def _path_check(self, u, path, dest, budget_mp):
+        """Gate a client-supplied movement path (it drives 17.22 occupation
+        credit, so a forged path would forge VP). Honored only if it is a
+        route the unit could actually take: starts at the unit's hex, ends
+        at dest, every step adjacent with a defined move cost (crossable,
+        on-map), never through an enemy-occupied hex, never THROUGH an EZOC
+        hex (6.x stop), Train confined to roads/trails (18.23), and total
+        cost within the unit's MA [5.x]. Returns a failure verdict or None."""
+        bad = self._v(False, "explicit path is not a route this unit could "
+                             "take [5.x movement / 6.x ZOC / 17.22 credit]")
+        if len(path) < 2 or path[0] != (u["col"], u["row"]) or path[-1] != dest:
+            return bad
+        board = self.rules_board(exclude_pid=u["pid"], mover_side=u["side"])
+        enemy = self.game.enemy(u["side"])
+        occ_enemy = {(b["col"], b["row"]) for b in board if b["side"] == enemy}
+        ezoc = self.game.zoc_hexes(board, enemy)
+        cost = 0.0
+        for cur, nb in zip(path, path[1:]):
+            if cur != path[0] and cur in ezoc:
+                return bad                     # ZOC stop: no transit through
+            if nb not in self.game.neighbors(*cur) or nb in occ_enemy:
+                return bad
+            if self.cls(u) == "train" and not self._road_or_trail(cur, nb):
+                return bad
+            c = self.game.move_cost(cur, nb)
+            if c is None:
+                return bad
+            cost += c
+        if cost > budget_mp + 1e-9:
+            return bad
+        return None
+
     def _credit_occupation(self, side, hexes):
         """17.21/17.22: occupation = last friendly unit on/through the hex."""
         vp_hexes = set()
@@ -242,6 +284,14 @@ class BlueGrayGame(GateGame):
             key = f"{h[0]:02d}{h[1]:02d}"
             if key in vp_hexes:
                 self.s["occ"][key] = side
+
+    def _friends_at(self, u, hexpos):
+        """u's OTHER friendly units on hexpos. The propose side
+        (_retreat_hexes) and the apply side (_apply_retreat displacement)
+        must agree on this exact set — one definition keeps them locked."""
+        return [v for v in self.s["units"].values()
+                if v["pid"] != u["pid"] and (v["col"], v["row"]) == hexpos
+                and v["side"] == u["side"]]
 
     # ------------------------------------------------------------ contacts
     def _live(self, side=None):
@@ -333,6 +383,9 @@ class BlueGrayGame(GateGame):
 
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
+        """Verdict for an action WITHOUT applying it: {"legal", "reasons"}
+        with rulebook citations. The only judge — submit() applies exactly
+        what this method blesses."""
         s = self.s
         t = action.get("type")
         if s["over"]:
@@ -397,6 +450,12 @@ class BlueGrayGame(GateGame):
                            f"{dest} is not a legal destination for {u['slot']} "
                            f"[5.x movement / 6.x ZOC / 9.0 TEC"
                            + ("; night: no EZOC entry 10.2" if self.is_night() else "") + "]")
+        path = action.get("path")
+        if path:
+            err = self._path_check(u, [tuple(h) for h in path], dest,
+                                   self.budget(u))
+            if err:
+                return err
         return self._v(True, f"move {u['slot']} to {dest} for {dd[dest]:g} MP")
 
     def _propose_reinforce(self, side, action):
@@ -658,23 +717,17 @@ class BlueGrayGame(GateGame):
         for nb in self.game.neighbors(*src):
             if not self.game.on_map(*nb) or not self._crossable(src, nb):
                 continue
-            if self.cls(u) == "train":
-                f = self.game.side_features(src, nb)
-                if not (f.get("road") or f.get("trail")):
-                    continue   # 18.23: forced to a non-road/trail hex = destroyed
+            if self.cls(u) == "train" and not self._road_or_trail(src, nb):
+                continue   # 18.23: forced to a non-road/trail hex = destroyed
             if nb in ezoc or nb in epos:
                 continue
-            friends = [v for v in self.s["units"].values()
-                       if v["pid"] != u["pid"] and (v["col"], v["row"]) == nb
-                       and v["side"] == u["side"]]
+            friends = self._friends_at(u, nb)
             if self.cls(u) == "train" and friends:
                 continue                       # 18.21 never stacks
             if any(self.cls(v) == "train" for v in friends):
                 continue                       # 18.21 no one stacks with it
             if not friends:
                 open_h.append(nb)
-            elif nb in ezoc:
-                continue
             elif len(friends) < int(self.game.stacking["max"]):
                 open_h.append(nb)
             elif any(v["pid"] not in chain for v in friends):
@@ -889,10 +942,7 @@ class BlueGrayGame(GateGame):
             s["entered"] = 0
             if self.combat and not self.is_night():
                 s["phase"] = "combat"
-                s["attacked"], s["defended"] = {}, {}
-                s["fought"], s["advanced"] = [], []
-                s["retreated_phase"] = []
-                s["train_checked"] = False
+                self._reset_combat_tracking()
                 tr = self._train_contact(side)
                 if tr:
                     s["pending"] = {"awaiting": "train_retreat", "by": "Union",
@@ -916,17 +966,26 @@ class BlueGrayGame(GateGame):
             ev += self._next_player()
         return ev
 
+    def _reset_combat_tracking(self):
+        """Clear the once-per-combat-phase trackers (7.14 attack/attacked
+        once, 7.74/7.75 retreat/advance marks, 18.11 Train check)."""
+        s = self.s
+        s["attacked"], s["defended"] = {}, {}
+        s["fought"], s["advanced"] = [], []
+        s["retreated_phase"] = []
+        s["train_checked"] = False
+
     def _next_player(self):
+        """Advance the player-turn sequence (4.1; Union first every GT,
+        14.3), rolling the GT marker and final scoring after the second
+        player's turn."""
         s = self.s
         ev = []
         s["phase"] = "movement"
         s["moved"] = {}
         s["entered"] = 0
-        s["attacked"], s["defended"] = {}, {}
-        s["fought"], s["advanced"] = [], []
-        s["retreated_phase"] = []
+        self._reset_combat_tracking()
         s["pending"] = None
-        s["train_checked"] = False
         order = self.game.side_order
         if s["mover"] == order[0]:
             s["mover"] = order[1]
@@ -976,11 +1035,12 @@ class BlueGrayGame(GateGame):
         d_hexes = sorted(dhexes)
         if res == "De":
             ev += self._eliminate(def_ids, "De [7.6]")
-            ev += self._offer_advance(side, atk_ids, bomb_ids, d_hexes, bno)
+            ev += self._offer_advance_vacated(side, atk_ids, bomb_ids, d_hexes, bno)
         elif res == "Ae":
             victims = melee_ids            # bombarding artillery immune [8.15]
             ev += self._eliminate(victims, "Ae [7.6/8.15]")
-            ev += self._offer_advance(self.game.enemy(side), def_ids, [], a_hexes, bno)
+            ev += self._offer_advance_vacated(self.game.enemy(side), def_ids, [],
+                                              a_hexes, bno)
         elif res == "Ex":
             owe = sum(self.printed(self.unit(p)) for p in def_ids)
             ev += self._eliminate(def_ids, "Ex defenders [7.6]")
@@ -1031,7 +1091,9 @@ class BlueGrayGame(GateGame):
 
     def _offer_advance(self, by, unit_ids, bomb_ids, hexes, bno):
         """7.75: one victorious participating unit (never bombarding
-        artillery - it is at range) may advance into ONE vacated hex."""
+        artillery - it is at range) may advance into ONE vacated hex.
+        Callers pass hexes through _offer_advance_vacated so a hex still
+        held by a survivor is never offered."""
         s = self.s
         cands = [p for p in unit_ids if p not in bomb_ids and p in s["units"]]
         hexes = [list(h) for h in hexes]
@@ -1040,6 +1102,15 @@ class BlueGrayGame(GateGame):
         s["pending"] = {"awaiting": "advance", "by": by, "units": cands,
                         "hexes": hexes, "battle": bno}
         return [{"advance_offered": by, "hexes": hexes}]
+
+    def _offer_advance_vacated(self, by, unit_ids, bomb_ids, hexes, bno):
+        """Filter the candidate advance hexes down to those actually VACATED
+        (7.75) — after a De/Ae/Ex/retreat a hex can still hold a survivor
+        (a unit that had already advanced, or co-stacked artillery that was
+        immune to the result) and is then not open to advance."""
+        occupied = {(v["col"], v["row"]) for v in self.s["units"].values()}
+        vac = [h for h in hexes if tuple(h) not in occupied]
+        return self._offer_advance(by, unit_ids, bomb_ids, vac, bno)
 
     def _apply_retreat(self, side, action):
         s = self.s
@@ -1056,9 +1127,7 @@ class BlueGrayGame(GateGame):
             # already in this battle's chain is never displaced again
             # (7.81/7.82 cycle guard - _retreat_hexes excludes such hexes,
             # this pick mirrors it).
-            friends = [v for v in s["units"].values()
-                       if v["pid"] != pid and (v["col"], v["row"]) == dest
-                       and v["side"] == u["side"]]
+            friends = self._friends_at(u, dest)
             if len(friends) >= int(self.game.stacking["max"]):
                 chain = p.setdefault("chain", [])
                 disp = next((v for v in friends if v["pid"] not in chain),
@@ -1074,13 +1143,11 @@ class BlueGrayGame(GateGame):
             ev.append({"retreat": u["slot"], "to": list(dest)})
         p["units"] = [q for q in p["units"] if q != pid]   # all instances
         if not p["units"]:
-            adv_by, adv_units = p.get("adv_by"), p.get("adv_units", [])
-            vacating = p.get("vacating", [])
             s["pending"] = None
-            occupied = {(v["col"], v["row"]) for v in s["units"].values()}
-            vac = [h for h in vacating if tuple(h) not in occupied]
-            if adv_by and vac:
-                ev += self._offer_advance(adv_by, adv_units, [], vac, p["battle"])
+            if p.get("adv_by"):
+                ev += self._offer_advance_vacated(
+                    p["adv_by"], p.get("adv_units", []), [],
+                    p.get("vacating", []), p["battle"])
         return ev
 
     def _apply_advance(self, side, action):
@@ -1104,12 +1171,9 @@ class BlueGrayGame(GateGame):
         pids = [str(x) for x in action["units"]]
         ev = self._eliminate(pids, "Ex attacker share [7.6]")
         adv_units = [x for x in p["units"] if x not in pids]
-        hexes = p.get("adv_hexes", [])
         s["pending"] = None
-        occupied = {(v["col"], v["row"]) for v in s["units"].values()}
-        vac = [h for h in hexes if tuple(h) not in occupied]
-        if adv_units and vac:
-            ev += self._offer_advance(side, adv_units, [], vac, p["battle"])
+        ev += self._offer_advance_vacated(side, adv_units, [],
+                                          p.get("adv_hexes", []), p["battle"])
         return ev
 
     def _apply_train_retreat(self, side, action):
@@ -1121,7 +1185,10 @@ class BlueGrayGame(GateGame):
         if dest is None:
             s["dead"].append(u["pid"])
             csp = self.printed(u)
-            s["vp"]["Confederate"] += csp
+            # same VP accounting as _eliminate (17.11); Chickamauga's
+            # multiplier is 1, sibling scenarios may differ
+            s["vp"]["Confederate"] += csp * self.vp_cfg.get(
+                "per_enemy_csp_eliminated", 1)
             del s["units"][u["pid"]]
             ev.append({"train_destroyed": u["slot"], "why": "18.23"})
         else:
@@ -1192,9 +1259,7 @@ class BlueGrayGame(GateGame):
             for hx, pts in hexes.items():
                 holder = s["occ"].get(hx)
                 if holder and (owner is None or holder == owner):
-                    if owner is None or holder == owner:
-                        s["vp"][holder] += pts if owner is None else (
-                            pts if holder == owner else 0)
+                    s["vp"][holder] += pts
         # Union 10-hex path check (17.32): live Union units unable to reach a
         # road hex (<=10 steps, through EZOC fine, never through CSA units)
         # whose road component contains an exit hex count as destroyed
@@ -1250,8 +1315,6 @@ class BlueGrayGame(GateGame):
         """pid -> reserve entry with 'due' (unit_view reserve tooltips)."""
         return self.reserve
 
-    def dests_map(self, u):
-        return self.dests(u)
 
     def legal_moves(self, pid):
         """SG contract for the UI: {can_act, reasons, budget, dests:[...]}."""
@@ -1345,6 +1408,8 @@ class BlueGrayGame(GateGame):
         return dict(p)
 
     def flow(self):
+        """The client's one-call game snapshot: turn/phase/mover, VP,
+        arrivals, pending choice, scope — everything the UI header needs."""
         s = self.s
         due = sorted([{"pid": pid, "slot": self.reserve[pid]["slot"],
                        "side": self.reserve[pid]["side"],

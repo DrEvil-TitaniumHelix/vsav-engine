@@ -81,6 +81,9 @@ class StrategicGame(GateGame):
 
     # ------------------------------------------------------------ lifecycle
     def new_game(self, seed=None):
+        """Fresh game state from the scenario: units at setup hexes,
+        arrival/sea/supply/combat bookkeeping empty, start-of-turn port
+        control and victory/isolation snapshots taken, new audit log."""
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         self.s = {
@@ -147,22 +150,49 @@ class StrategicGame(GateGame):
     def budget(self, u):
         return self.game.stats(u["slot"])[2]
 
+    def _board_unit(self, u):
+        """A gate unit shaped for the spec movement engine's board."""
+        return dict(id=u["pid"], name=u["slot"], side=u["side"],
+                    col=u["col"], row=u["row"])
+
+    def _is_supply(self, u, side):
+        """A supply unit of `side` on the map (own or captured)."""
+        return u["side"] == side and self.on_map(u) \
+            and self.game.unit_class(u["slot"]) == "supply"
+
+    def _ezoc(self, side, exclude_pid=None):
+        """Enemy ZOC hexes threatening `side` (full-board snapshot)."""
+        return self.game.zoc_hexes(self.rules_board(exclude_pid=exclude_pid),
+                                   self.game.enemy(side))
+
+    def _occupies(self, side, hx):
+        """4.3 occupation: a non-marker unit of `side` on hex `hx` (combat,
+        supply or Rommel — status markers never control anything)."""
+        return any(u["side"] == side and self.on_map(u)
+                   and (u["col"], u["row"]) == tuple(hx)
+                   and self.game.unit_class(u["slot"]) != "markers"
+                   for u in self.s["units"].values())
+
+    def _hq_forbidden(self, u):
+        """Hexes the headquarters unit may not voluntarily END on (22.41):
+        enemy ZOC without an accompanying friendly combat unit (staying put
+        is always an alternative, so the gate simply forbids the move)."""
+        ezoc = self._ezoc(u["side"], exclude_pid=u["pid"])
+        friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
+        return ezoc - friends
+
     def dests(self, u):
         """Legal destinations for a gate unit via the validated spec engine
         (terrain, roads/escarpments 17/18, ZOC 7/8 incl. fortress immunity
         19.5, stacking 6, enemy hexes 5.4). An hq unit may not voluntarily
         end alone in an enemy ZOC (22.41: staying put is always an
         alternative)."""
-        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
-                  col=u["col"], row=u["row"])
         dd = self.game.legal_destinations_t(
-            me, self.budget(u), self.rules_board(exclude_pid=u["pid"]))
+            self._board_unit(u), self.budget(u),
+            self.rules_board(exclude_pid=u["pid"]))
         if self.combat and self.game.unit_class(u["slot"]) == "hq":
-            board = self.rules_board(exclude_pid=u["pid"])
-            ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
-            friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
-            dd = {h: c for h, c in dd.items()
-                  if h not in ezoc or h in friends}
+            bad = self._hq_forbidden(u)
+            dd = {h: c for h, c in dd.items() if h not in bad}
         return dd
 
     def overstacked_hexes(self, side):
@@ -184,17 +214,12 @@ class StrategicGame(GateGame):
         """Ports usable by `side` and controlled at this snapshot (4.3:
         occupied by a combat, supply or Rommel unit; a home base must also
         be free of enemy ZOC — fortress ports are ZOC-immune per 19.5)."""
-        board = self.rules_board()
-        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        ezoc = self._ezoc(side)
         out = []
         for hx, port in self.ports.items():
             if side not in port["usable_by"]:
                 continue
-            occ = any(u["side"] == side and self.on_map(u)
-                      and (u["col"], u["row"]) == hx
-                      and self.game.unit_class(u["slot"]) != "markers"
-                      for u in self.s["units"].values())
-            if not occ:
+            if not self._occupies(side, hx):
                 continue
             if self.game.hex_terrain(*hx) == "homebase" and hx in ezoc:
                 continue
@@ -203,9 +228,7 @@ class StrategicGame(GateGame):
 
     def _own_supply_on_board(self, side):
         return sum(1 for u in self.s["units"].values()
-                   if u["side"] == side and self.on_map(u)
-                   and self.game.unit_class(u["slot"]) == "supply"
-                   and "Captured" not in u["slot"])
+                   if self._is_supply(u, side) and "Captured" not in u["slot"])
 
     def _supply_sunk_rolls(self, turn):
         for w in self.supply_table:
@@ -272,20 +295,14 @@ class StrategicGame(GateGame):
                 return self._v(False, f"Rommel's route this turn does not move "
                                       f"with this unit for {bonus} hex(es) — no "
                                       f"shared {bonus}-hex path segment [22.1]")
-        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
-                  col=u["col"], row=u["row"])
         ma = self.budget(u) + (bonus or 0)
         ok, why = self.game.trace_path(
-            me, ma, self.rules_board(exclude_pid=u["pid"]),
+            self._board_unit(u), ma, self.rules_board(exclude_pid=u["pid"]),
             [tuple(h) for h in path])
         if not ok:
             return self._v(False, f"illegal path: {why}")
         if self.combat and self.game.unit_class(u["slot"]) == "hq":
-            end = tuple(path[-1])
-            board = self.rules_board(exclude_pid=u["pid"])
-            ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
-            friends = {(f["col"], f["row"]) for f in self._combat_units(u["side"])}
-            if end in ezoc and end not in friends:
+            if tuple(path[-1]) in self._hq_forbidden(u):
                 return self._v(False, "the headquarters unit may not be "
                                       "purposefully moved into an enemy ZOC "
                                       "without an accompanying friendly combat "
@@ -376,8 +393,7 @@ class StrategicGame(GateGame):
     def _supply_hexes(self, side):
         """Hexes of side's on-map supply units (own or captured)."""
         return [(u["col"], u["row"]) for u in self.s["units"].values()
-                if u["side"] == side and self.on_map(u)
-                and self.game.unit_class(u["slot"]) == "supply"]
+                if self._is_supply(u, side)]
 
     def _isolated(self, u):
         """24.1: no trace of any length free of enemy ZOC / sea / Qattara /
@@ -496,8 +512,7 @@ class StrategicGame(GateGame):
         intermediate hex ignores stacking (7.6), final hex must respect it
         (7.61). Returns {end_hex: [path, ...]}."""
         start = (u["col"], u["row"])
-        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
-                  col=u["col"], row=u["row"])
+        me = self._board_unit(u)
         out = {}
         for h1 in self.game.neighbors(*start):
             if not self._retreat_step_ok(start, h1, ezoc, eblock):
@@ -633,14 +648,9 @@ class StrategicGame(GateGame):
         ZOC."""
         if not self.victory_hexes:
             return False
-        board = self.rules_board()
-        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        ezoc = self._ezoc(side)
         for hx in self.victory_hexes:
-            occ = any(u["side"] == side and self.on_map(u)
-                      and (u["col"], u["row"]) == hx
-                      and self.game.unit_class(u["slot"]) != "markers"
-                      for u in self.s["units"].values())
-            if not occ:
+            if not self._occupies(side, hx):
                 return False
             if self.game.hex_terrain(*hx) == "homebase" and hx in ezoc:
                 return False
@@ -712,8 +722,7 @@ class StrategicGame(GateGame):
         while changed:
             changed = False
             for u in list(self.s["units"].values()):
-                if u["side"] != enemy or not self.on_map(u) \
-                   or self.game.unit_class(u["slot"]) != "supply":
+                if not self._is_supply(u, enemy):
                     continue
                 if context != "movement" and u["pid"] in self.s["supplies_used"]:
                     continue                     # 15.22 sustaining exception
@@ -850,17 +859,12 @@ class StrategicGame(GateGame):
         cfg = self.repl_cfg
         if not cfg or not self.combat or self.s["turn"] < cfg["start_turn"]:
             return
-        board = self.rules_board()
-        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        ezoc = self._ezoc(side)
         earned = 0
         rates = cfg["rates"][side]
         for hx in self.victory_hexes:
             terr = self.game.hex_terrain(*hx)
-            occ = any(u["side"] == side and self.on_map(u)
-                      and (u["col"], u["row"]) == hx
-                      and self.game.unit_class(u["slot"]) != "markers"
-                      for u in self.s["units"].values())
-            if not occ:
+            if not self._occupies(side, hx):
                 continue
             if terr == "homebase":
                 if hx in ezoc:
@@ -884,6 +888,9 @@ class StrategicGame(GateGame):
 
     # ------------------------------------------------------------ verdicts
     def propose(self, side, action):
+        """Verdict for an action WITHOUT applying it: {"legal", "reasons"}
+        with rulebook citations. The only judge — submit() applies exactly
+        what this method blesses."""
         t = action.get("type")
         if self.s["over"]:
             return self._v(False, "game is over")
@@ -978,9 +985,8 @@ class StrategicGame(GateGame):
 
             def in_range(spid):
                 su = self.s["units"].get(spid)
-                if not su or not self.on_map(su) \
-                   or self.game.unit_class(su["slot"]) != "supply" \
-                   or su["side"] != side or spid in self.s["no_sustain"]:
+                if not su or not self._is_supply(su, side) \
+                   or spid in self.s["no_sustain"]:
                     return False
                 return all(self._trace_reaches(h, side,
                                                [(su["col"], su["row"])],
@@ -1151,7 +1157,7 @@ class StrategicGame(GateGame):
         # has no takebacks; an orphaned unit would dead-lock the turn)
         defended2 = set(self.s["defended"]) | set(def_ids)
         attacked2 = set(self.s["attacked"]) | set(atk_ids)
-        ezoc = self.game.zoc_hexes(self.rules_board(), enemy)
+        ezoc = self._ezoc(side)
         for f in self._combat_units(side):
             if f["pid"] in attacked2 or (f["col"], f["row"]) not in ezoc:
                 continue
@@ -1170,8 +1176,7 @@ class StrategicGame(GateGame):
         if d <= 2:
             spid = str(action.get("supply") or "")
             su = self.s["units"].get(spid)
-            if not su or su["side"] != side or not self.on_map(su) \
-               or self.game.unit_class(su["slot"]) != "supply":
+            if not su or not self._is_supply(su, side):
                 vv = self._v(False,
                     f"odds {n}-{d} are 1-2 or better — the attack must state "
                     f"a friendly supply unit sustaining it [14.1, 14.6]")
@@ -1210,9 +1215,7 @@ class StrategicGame(GateGame):
             return err
         if not self._is_combat(u):
             return self._v(False, "only combat units are forced to attack [8.4]")
-        board = self.rules_board()
-        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
-        if (u["col"], u["row"]) not in ezoc:
+        if (u["col"], u["row"]) not in self._ezoc(side):
             return self._v(False, "unit is not in an enemy ZOC — it is not "
                                   "forced to attack [7.2, 8.4]")
         if self._solo_attack_exists(u):
@@ -1234,9 +1237,8 @@ class StrategicGame(GateGame):
             if b["id"] in ignore:
                 b = dict(b, zoc_negated=True)
             board.append(b)
-        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
-                  col=u["col"], row=u["row"])
-        return self.game.legal_destinations_t(me, self.budget(u), board)
+        return self.game.legal_destinations_t(self._board_unit(u),
+                                              self.budget(u), board)
 
     def _fig3_guard(self, u, dest):
         """Clarifications fig 3: a combat unit may not voluntarily move to
@@ -1251,8 +1253,7 @@ class StrategicGame(GateGame):
         dest = tuple(dest)
         would_capture = False
         for su in self.s["units"].values():
-            if su["side"] != enemy or not self.on_map(su) \
-               or self.game.unit_class(su["slot"]) != "supply":
+            if not self._is_supply(su, enemy):
                 continue
             sh = (su["col"], su["row"])
             if any((b["col"], b["row"]) == sh for b in self._combat_units(enemy)):
@@ -1263,9 +1264,7 @@ class StrategicGame(GateGame):
                 break
         if not would_capture:
             return None
-        board = self.rules_board(exclude_pid=u["pid"])
-        ezoc = self.game.zoc_hexes(board, enemy)
-        if dest not in ezoc:
+        if dest not in self._ezoc(u["side"], exclude_pid=u["pid"]):
             return None
         fake = dict(u, col=dest[0], row=dest[1])
         if self._solo_attack_exists(fake):
@@ -1319,8 +1318,7 @@ class StrategicGame(GateGame):
         spid = str(action.get("supply"))
         su = self.s["units"].get(spid)
         enemy = self.game.enemy(side)
-        if not su or su["side"] != enemy or not self.on_map(su) \
-           or self.game.unit_class(su["slot"]) != "supply":
+        if not su or not self._is_supply(su, enemy):
             return self._v(False, "target is not an enemy supply unit on the "
                                   "map [15.2]")
         sh = (su["col"], su["row"])
@@ -1484,8 +1482,7 @@ class StrategicGame(GateGame):
                                       f"below 7-1 unless surrounded [9.1]")
         spid = str(action.get("supply") or "")
         su = self.s["units"].get(spid)
-        if not su or su["side"] != side or not self.on_map(su) \
-           or self.game.unit_class(su["slot"]) != "supply":
+        if not su or not self._is_supply(su, side):
             return self._v(False, "an AV must be sustained by a named supply "
                                   "unit at the instant it is achieved [9.2, "
                                   "9.6, 14.6]")
@@ -1708,9 +1705,7 @@ class StrategicGame(GateGame):
         if not self._engageable((u["col"], u["row"]), hx):
             return self._v(False, "advancing unit must be adjacent to the "
                                   "vacated hex [16.1, 8.5]")
-        me = dict(id=u["pid"], name=u["slot"], side=u["side"],
-                  col=u["col"], row=u["row"])
-        if not self.game._stack_ok(me, hx, self.rules_board()):
+        if not self.game._stack_ok(self._board_unit(u), hx, self.rules_board()):
             return self._v(False, "advance may not exceed stacking limits "
                                   "[16.1, 6.1]")
         return self._v(True)
@@ -2017,9 +2012,7 @@ class StrategicGame(GateGame):
         if list(hx) not in self.s["ports"]:
             # not controlled at start of turn: still allowed OUT unless the
             # port is in enemy ZOC at embarkation (23.44)
-            board = self.rules_board()
-            ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
-            if hx in ezoc:
+            if hx in self._ezoc(side):
                 return self._v(False, "you may move out of a port you did not "
                                       "control at the start of your turn only "
                                       "if it is not in an enemy ZOC at the time "
@@ -2063,6 +2056,9 @@ class StrategicGame(GateGame):
         return {"verdict": verdict, "result": result}
 
     def _apply(self, side, action, verdict):
+        """Apply a LEGAL action; returns the result dict recorded in the
+        log (dice, captures, eliminations, turn flow) — replayed verbatim
+        by the verifier, so its content is part of the log contract."""
         s = self.s
         t = action["type"]
         if t == "move":
@@ -2299,8 +2295,7 @@ class StrategicGame(GateGame):
                               "movement — BOTH supplies are expended [14.5]")
         # 11.9: attacking units isolated in enemy ZOC with no supply-free
         # attack are eliminated before combat (clarifications sec. 5)
-        board = self.rules_board()
-        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        ezoc = self._ezoc(side)
         for u in list(self._combat_units(side)):
             if (u["col"], u["row"]) not in ezoc:
                 continue
@@ -2630,8 +2625,7 @@ class StrategicGame(GateGame):
                     continue                     # panel offers 7-1 only
                 rad = self.combat["attack_supply"]["radius"]
                 sup = next((u["pid"] for u in self.s["units"].values()
-                            if u["side"] == side and self.on_map(u)
-                            and self.game.unit_class(u["slot"]) == "supply"
+                            if self._is_supply(u, side)
                             and u["pid"] not in s["no_sustain"]
                             and all(self._trace_reaches(
                                 (a["col"], a["row"]), side,
@@ -2718,6 +2712,8 @@ class StrategicGame(GateGame):
                     + rs.get("not_enforced", []))
 
     def flow(self):
+        """The client's one-call game snapshot: turn/phase/mover, arrivals,
+        combat panel, pending choice, scope — the UI header's feed."""
         s = self.s
         return dict(turn=s["turn"], turns=self.turns,
                     turn_label=self.turn_label(),
