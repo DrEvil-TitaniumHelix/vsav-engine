@@ -177,7 +177,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js"></script>
+<script src="frame.js?v=20260717"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay');
@@ -334,8 +334,9 @@ function cmdStepper() {
     + `</span>`;
 }
 function renderGuide() {
-  FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
-                       ? cmdStepper() : '');
+  if (FRAME.setGuideSuffix)   // guard: stale-cached frame.js
+    FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
+                         ? cmdStepper() : '');
   if (!FLOW) {
     const t = GAME && GAME.tier ? GAME.tier.active : 0;
     FRAME.setGuide(t > 0
