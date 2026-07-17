@@ -156,7 +156,7 @@ def menu_page(metas):
 <html>
 <head>
 <meta charset="utf-8">
-<title>The Wargame Engine — choose a game</title>
+<title>VALOR Engine — choose a game</title>
 <style>
   html,body { margin:0; min-height:100%; background:#1a1c20; color:#dde3ea;
               font-family:Segoe UI,sans-serif; }
@@ -193,7 +193,7 @@ def menu_page(metas):
 </head>
 <body>
 <header>
-  <h1>The Wargame Engine <span style="color:#8a8f98;font-weight:400">— full rules, in your browser</span></h1>
+  <h1>VALOR Engine <span style="color:#8a8f98;font-weight:400">— VASSAL-Adjudicated Legality Of Rules. Full rules, in your browser.</span></h1>
   <div class="sub">Choose a game. Every game runs at its full earned tier — the complete
   validated rules engine (the same Python engine, running in your browser) with tier
   selection, seeded dice and a replayable log. The first time you open a game it asks
@@ -203,7 +203,7 @@ def menu_page(metas):
 </header>
 <div id="cards"></div>
 <footer>
-  <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; engine + rules data only — all game art
+  <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues" target="_blank" rel="noopener" style="color:#9cc4ee">contact the developer / report a bug</a> &nbsp;·&nbsp; engine + rules data only — all game art
   belongs to its publishers and module authors and comes from your own module &nbsp;·&nbsp;
   session-based: reloading a game page starts a fresh game
 </footer>
