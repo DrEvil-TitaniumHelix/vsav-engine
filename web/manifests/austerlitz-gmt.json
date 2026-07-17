@@ -14,6 +14,12 @@
   "assets": {
     "map":      { "req": "austerlitz_100", "entry": "images/Austerlitz.jpg",
                   "_note": "our baked map.png is a PNG conversion of this JPG at identical pixel dimensions" },
-    "counters": { "req": "austerlitz_100", "prefix": "images/" }
-  }
+    "counters": { "req": "austerlitz_100", "prefix": "images/" },
+    "cover":    { "req": "austerlitz_100", "entry": "images/Austerlitz Box Cover.png" }
+  },
+  "engine_files": [
+    { "req": "austerlitz_100", "entry": "The Northern Flank.vsav",
+      "fs_path": "setup_from_module.vsav",
+      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime" }
+  ]
 }

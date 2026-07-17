@@ -113,7 +113,9 @@
     <span class="chip fixw" id="turnchip" style="width:90px; text-align:center">…</span>
     <span class="chip brit fixw" id="vpbrit" style="width:100px; text-align:center">…</span>
     <span class="chip axis fixw" id="vpaxis" style="width:90px; text-align:center">…</span>
-    <button class="sidebtn" id="tablesbtn" style="margin-left:auto">📊 Tables</button>
+    <button class="sidebtn holdspace fixw" id="tierbtn" style="margin-left:auto; width:120px"></button>
+    <button class="sidebtn" id="rulesbtn">📜 Rules</button>
+    <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
     <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
     <button class="sidebtn warn" id="newgame">New game</button>
@@ -167,7 +169,7 @@
 <div id="actions"></div>
 <div id="picker"></div>
 
-<script src="frame.js?v=20260717d"></script>
+<script src="frame.js?v=20260718a"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay'), FW = document.getElementById('facewheel');
@@ -204,7 +206,8 @@ FRAME.initFrame({
     const mine=units.filter(u=>u.side===mySide);
     return mine.length>0&&mine.every(u=>u.moved);
   },
-  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8}],
+  followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8},
+              {id:'rulespanel',gap:8},{id:'tierpanel',gap:8}],
   guideRight: 340,   // the guidance banner centers over the map, not the log
 
 });
@@ -251,6 +254,7 @@ async function refresh(){
   OV.setAttribute('width',MAPW); OV.setAttribute('height',MAPH);
   if(first)fitBounds();
   document.getElementById('scen').textContent=FLOW.scenario+`  ·  seed ${FLOW.seed}`;
+  FRAME.renderTierBtn(); FRAME.renderRules();   // shared chrome (engine-level)
   render(); renderLog(); maybeAutoAI();
 }
 
@@ -1033,40 +1037,22 @@ function openGuide(sec){
 }
 document.getElementById('guidebtn').onclick=()=>openGuide('The Scenario');
 
-// ---------- tables panel (transcribed to-hit / CRT — the data the gate uses) ----------
-function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-async function renderTables(){
-  const P=document.getElementById('tablespanel');
-  if(P.style.display!=='block') return;
-  P.innerHTML=`<b>Game tables</b><div class="cite">Loading…</div>`;
-  let tables=[];
-  try{ tables=(await (await fetch('/api/tables')).json()).tables||[]; }
-  catch(e){ P.innerHTML=`<b>Game tables</b><div class="cite">Could not load tables.</div>`; return; }
-  let h=`<b>Game tables</b><div class="cite">Transcribed from the rulebook and cited — the
-         same data the engine resolves fire on, not scanned images.</div>`;
-  if(!tables.length) h+=`<div style="margin-top:6px;color:#8a8f98">No encoded tables for this game.</div>`;
-  for(const t of tables){
-    h+=`<h3>${esc(t.title)}</h3>`;
-    if(t.cite) h+=`<div class="cite">${esc(t.cite)}</div>`;
-    h+=`<div style="overflow-x:auto"><table><thead><tr>`;
-    t.columns.forEach(c=>h+=`<th>${esc(c)}</th>`);
-    h+=`</tr></thead><tbody>`;
-    t.rows.forEach(r=>{ h+=`<tr>`; r.forEach(c=>h+=`<td>${esc(c)}</td>`); h+=`</tr>`; });
-    h+=`</tbody></table></div>`;
-    if(t.legend&&t.legend.length){ h+=`<div class="legend">`;
-      t.legend.forEach(l=>h+=`<div><code>${esc(l.code)}</code>${esc(l.text)}</div>`); h+=`</div>`; }
-    if(t.notes&&t.notes.length){ h+=`<ul class="notes">`;
-      t.notes.forEach(n=>h+=`<li>${esc(n)}</li>`); h+=`</ul>`; }
-  }
-  P.innerHTML=h;
-}
-document.getElementById('tablesbtn').onclick=()=>{
-  const P=document.getElementById('tablespanel');
-  const open=P.style.display==='block';
-  P.style.display=open?'none':'block';
-  document.getElementById('tablesbtn').classList.toggle('on',!open);
-  renderTables();
-};
+// ---------- Tier / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
+FRAME.initPanels({
+  game: () => GAME,
+  flow: () => FLOW,
+  toast: (m) => toastReasons([m]),
+  clientItems: (gated) => [
+    `<li><b>Firing</b> — after the movement segment, select your unit then click an
+     enemy in range: the engine answers the three questions (to-hit, aspect, damage)
+     on the transcribed data cards with its own seeded dice.</li>`,
+    `<li><b>End movement / Pass fire</b> — close your segment; the turn strip shows
+     whose decision the game is waiting on.</li>`,
+    `<li><b>AI</b> — stepped (press SPACE per action) or auto; the AI proposes
+     through the same legality gate you play through.</li>`,
+  ],
+});
+FRAME.layoutBars();
 
 // ---------- top bar ----------
 document.getElementById('endmove').onclick=()=>postAction({type:'end_movement'});

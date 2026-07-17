@@ -1071,6 +1071,76 @@ def make_server(port):
     return http.server.ThreadingHTTPServer(("127.0.0.1", port), H)
 
 
+# --- API dispatch, shared by the HTTP handler and the browser (Pyodide) ---
+# bridge. Pure functions: (path, qs/body) -> JSON-able dict, or None when the
+# path is not an API route (handler then falls through to files/404).
+def route_get(path, qs):
+    if path == "/api/state":
+        return api_state()
+    if path == "/api/games":
+        return api_games()
+    if path == "/api/tables":
+        return dict(tables=game_tables())
+    if path == "/api/legal":
+        return api_legal(qs)
+    if TG and path == "/api/game":
+        return flow_view()
+    if SG and path == "/api/battle_preview":
+        atk = [p for p in qs.get("atk", [""])[0].split(",") if p]
+        dfd = [p for p in qs.get("def", [""])[0].split(",") if p]
+        return SG.battle_preview(SG.s["mover"], atk, dfd)
+    if TG and path == "/api/legal_moves":
+        return TG.legal_moves(qs["id"][0])
+    if TG and path == "/api/legal_targets":
+        return dict(targets=TG.legal_targets(qs["id"][0]))
+    if TG and path == "/api/range_info":
+        col = int(qs["col"][0]) if "col" in qs else None
+        row = int(qs["row"][0]) if "row" in qs else None
+        return TG.range_info(qs["id"][0], col, row)
+    if TG and path == "/api/log":
+        return api_log_tail(qs)
+    if TG and path == "/api/ai_plan":
+        p = ai_mod.plan_next(TG, qs["side"][0])
+        return p if p else dict(none=True, flow=flow_view())
+    if path == "/api/pbm/export":
+        return api_pbm_export()
+    return None
+
+
+def route_post(path, body):
+    if TG and path == "/api/action":
+        return api_action(body)
+    if TG and path == "/api/ai_turn":
+        return api_ai_turn(body)
+    if TG and path == "/api/new_game":
+        return api_new_game(body)
+    if path == "/api/load_game":
+        return api_load_game(body)
+    if path == "/api/move":
+        return api_move(body)
+    if SG and path == "/api/end_phase":
+        return api_end_phase()
+    if SG and path == "/api/sg_action":
+        return api_sg_action(body)
+    if SG and path == "/api/sg_ai_turn":
+        return api_sg_ai_turn(body)
+    if SG and path == "/api/ai_step":
+        return api_ai_step(body)
+    if path == "/api/pbm/start":
+        return api_pbm_start(body)
+    if path == "/api/pbm/import":
+        return api_pbm_import(body)
+    if path == "/api/pbm/stop":
+        return api_pbm_stop()
+    if path == "/api/pass":
+        return api_pass(body)
+    if path == "/api/face":
+        return api_face(body)
+    if path == "/api/reset":
+        return api_reset(body)
+    return None
+
+
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=HERE, **kw)
@@ -1110,34 +1180,8 @@ class H(http.server.SimpleHTTPRequestHandler):
         url = urllib.parse.urlparse(self.path)
         qs = urllib.parse.parse_qs(url.query)
         try:
-            if url.path == "/api/state":
-                return self._json(api_state())
-            if url.path == "/api/games":
-                return self._json(api_games())
-            if url.path == "/api/tables":
-                return self._json(dict(tables=game_tables()))
-            if url.path == "/api/legal":
-                return self._json(api_legal(qs))
-            if TG and url.path == "/api/game":
-                return self._json(flow_view())
-            if SG and url.path == "/api/battle_preview":
-                atk = [p for p in qs.get("atk", [""])[0].split(",") if p]
-                dfd = [p for p in qs.get("def", [""])[0].split(",") if p]
-                return self._json(SG.battle_preview(SG.s["mover"], atk, dfd))
-            if TG and url.path == "/api/legal_moves":
-                return self._json(TG.legal_moves(qs["id"][0]))
-            if TG and url.path == "/api/legal_targets":
-                return self._json(dict(targets=TG.legal_targets(qs["id"][0])))
-            if TG and url.path == "/api/range_info":
-                col = int(qs["col"][0]) if "col" in qs else None
-                row = int(qs["row"][0]) if "row" in qs else None
-                return self._json(TG.range_info(qs["id"][0], col, row))
-            if TG and url.path == "/api/log":
-                return self._json(api_log_tail(qs))
-            if TG and url.path == "/api/ai_plan":
-                p = ai_mod.plan_next(TG, qs["side"][0])
-                return self._json(p if p else dict(none=True, flow=flow_view()))
             if url.path == "/api/pbm/export":
+                # download semantics (Content-Disposition) — handler-only path
                 r = api_pbm_export()
                 if "error" in r:
                     return self._json(r)
@@ -1149,6 +1193,9 @@ class H(http.server.SimpleHTTPRequestHandler):
                 self.send_header("Content-Length", str(len(data)))
                 self.end_headers()
                 return self.wfile.write(data)
+            r = route_get(url.path, qs)
+            if r is not None:
+                return self._json(r)
             if url.path.startswith("/gasset/menu_art/"):
                 slug = urllib.parse.unquote(url.path.rsplit("/", 1)[1])
                 if slug not in set(RELEASE_GAMES) | {current_slug()}:
@@ -1176,36 +1223,9 @@ class H(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"] or 0)) or b"{}")
         try:
-            if TG and self.path == "/api/action":
-                return self._json(api_action(body))
-            if TG and self.path == "/api/ai_turn":
-                return self._json(api_ai_turn(body))
-            if TG and self.path == "/api/new_game":
-                return self._json(api_new_game(body))
-            if self.path == "/api/load_game":
-                return self._json(api_load_game(body))
-            if self.path == "/api/move":
-                return self._json(api_move(body))
-            if SG and self.path == "/api/end_phase":
-                return self._json(api_end_phase())
-            if SG and self.path == "/api/sg_action":
-                return self._json(api_sg_action(body))
-            if SG and self.path == "/api/sg_ai_turn":
-                return self._json(api_sg_ai_turn(body))
-            if SG and self.path == "/api/ai_step":
-                return self._json(api_ai_step(body))
-            if self.path == "/api/pbm/start":
-                return self._json(api_pbm_start(body))
-            if self.path == "/api/pbm/import":
-                return self._json(api_pbm_import(body))
-            if self.path == "/api/pbm/stop":
-                return self._json(api_pbm_stop())
-            if self.path == "/api/pass":
-                return self._json(api_pass(body))
-            if self.path == "/api/face":
-                return self._json(api_face(body))
-            if self.path == "/api/reset":
-                return self._json(api_reset(body))
+            r = route_post(self.path, body)
+            if r is not None:
+                return self._json(r)
         except Exception as e:
             return self._json(dict(error=str(e)))
         self.send_error(404)

@@ -1,43 +1,30 @@
-/* byo.js — bring-your-own-module gate for the static web build.
+/* byo.js — bring-your-own-module gate for the browser builds.
  *
- * The release ships only the engine + our transcribed rules data. The
- * publisher's art (map, counters) comes out of the user's own .vmod, parsed
- * right here in the browser — nothing is ever uploaded (there is no server).
+ * The releases ship only the engine + our transcribed rules data. The
+ * publisher's art (map, counters) and any module-provided saves come out of
+ * the user's own .vmod, parsed right here in the browser — nothing is ever
+ * uploaded (there is no server).
  *
- * Load order on a game page: data.js, local.js (fetch shim), manifest.js
- * (window.BYO_MANIFEST), then this file, then the game script. We wrap the
- * fetch shim so the game's first /api/state waits until the module's assets
- * are mounted; the game code itself needs no changes beyond BYO.counter().
+ * Two consumers share this file:
+ *  - LEGACY static build (build_web.py): window.GAME_DATA exists. The gate
+ *    verifies + caches the module, patches GAME_DATA.game.map_url + counter
+ *    blob URLs, and holds the page's /api/* fetches until mounted.
+ *  - FULL demo (build_demo.py): no GAME_DATA. The gate verifies + caches the
+ *    module and resolves BYO.ready = {files, manifest}; bridge.js (Pyodide
+ *    engine) does the mounting and owns the fetch shim.
  *
  * Manifest shape (window.BYO_MANIFEST):
  *   requirements: [{id, title, filename, size, sha256, page, hint}, ...]
- *   assets: { map:      {req, entry},
- *             counters: {req, prefix} }
- * Files are cached in IndexedDB keyed by sha256, so one successful drop
- * lasts across visits (and across games sharing a module). "?byo=reset"
- * clears this page's cached files and shows the gate again.
+ *   assets: { map: {req, entry}, counters: {req, prefix}, cover: {req, entry} }
+ *   engine_files: [{req, entry, fs_path}]   (module-provided saves etc.)
+ * Files are cached in IndexedDB keyed by sha256, so one successful drop lasts
+ * across visits (and across games sharing a module). "?byo=reset" clears this
+ * page's cached files and shows the gate again.
  */
 (function () {
-  const M = window.BYO_MANIFEST;
-  if (!M) return;                              // not a BYO build — do nothing
-  const BYO = (window.BYO = { _counters: new Map() });
+  "use strict";
 
-  BYO.counter = function (u) {
-    return BYO._counters.get(u.img || (u.name + ".png")) || "";
-  };
-
-  // --- hold the game's /api/* fetches until the module is mounted ----------
-  // (only /api/: anything else — including diagnostics — must not deadlock
-  // behind the gate)
-  const realFetch = window.fetch.bind(window);
-  let release;
-  const mounted = new Promise((r) => (release = r));
-  window.fetch = (url, ...rest) =>
-    String((url && url.url) || url).includes("/api/")
-      ? mounted.then(() => realFetch(url, ...rest))
-      : realFetch(url, ...rest);
-
-  // --- IndexedDB cache (key = sha256, value = {name, size, blob}) ----------
+  // ---------- IndexedDB cache (key = sha256, value = {name, size, blob}) ----
   function idb() {
     return new Promise((res, rej) => {
       const q = indexedDB.open("byo_modules", 1);
@@ -65,7 +52,7 @@
       t.onerror = () => rej(t.error);
     });
 
-  // --- sha256 --------------------------------------------------------------
+  // ---------- sha256 ----------
   async function sha256hex(blob) {
     if (!(crypto && crypto.subtle))
       throw new Error("This page needs a modern browser (Chrome/Edge/Firefox) — " +
@@ -74,7 +61,7 @@
     return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  // --- minimal zip reader (central directory + stored/deflate entries) -----
+  // ---------- minimal zip reader (central directory + stored/deflate) ------
   async function zipIndex(blob) {
     const tailLen = Math.min(blob.size, 70000);
     const tail = new DataView(await blob.slice(blob.size - tailLen).arrayBuffer());
@@ -122,17 +109,42 @@
     URL.createObjectURL(new Blob([blob],
       { type: MIME[name.toLowerCase().split(".").pop()] || "application/octet-stream" }));
 
-  // --- mount: marry the user's module art to our baked game data -----------
-  async function mount(files) {                      // files: {reqId: blob}
-    const zips = {};
-    for (const r of M.requirements)
-      zips[r.id] = { blob: files[r.id], idx: await zipIndex(files[r.id]) };
+  // ---------- public surface ----------
+  const BYO = (window.BYO = window.BYO || {});
+  BYO._counters = new Map();
+  BYO.counter = function (u) {
+    return BYO._counters.get(u.img || (u.name + ".png")) || "";
+  };
+  BYO.util = { idb, idbGet, idbPut, idbDel, sha256hex, zipIndex, unzipEntry, urlFor };
+
+  const M = window.BYO_MANIFEST;
+  if (!M) return;                              // no manifest — gate not in play
+
+  const zipCache = {};                         // reqId -> {blob, idx}
+  async function zipOf(files, reqId) {
+    if (!zipCache[reqId])
+      zipCache[reqId] = { blob: files[reqId], idx: await zipIndex(files[reqId]) };
+    return zipCache[reqId];
+  }
+  // extract one entry from a verified requirement (available after BYO.ready)
+  let readyFiles = null;
+  BYO.extract = async function (reqId, entry) {
+    const z = await zipOf(readyFiles, reqId);
+    const e = z.idx.get(entry);
+    if (!e) throw new Error("entry not found in module: " + entry);
+    return unzipEntry(z.blob, e);
+  };
+  BYO.entryUrl = async (reqId, entry) =>
+    urlFor(await BYO.extract(reqId, entry), entry);
+
+  // ---------- legacy mount: marry module art to baked GAME_DATA ------------
+  async function legacyMount(files) {
     const D = window.GAME_DATA;
-    const me = zips[M.assets.map.req].idx.get(M.assets.map.entry);
+    const mz = await zipOf(files, M.assets.map.req);
+    const me = mz.idx.get(M.assets.map.entry);
     if (!me) throw new Error("map entry not found in module: " + M.assets.map.entry);
-    D.game.map_url = urlFor(await unzipEntry(zips[M.assets.map.req].blob, me),
-                            M.assets.map.entry);
-    const cz = zips[M.assets.counters.req];
+    D.game.map_url = urlFor(await unzipEntry(mz.blob, me), M.assets.map.entry);
+    const cz = await zipOf(files, M.assets.counters.req);
     const need = new Set();
     for (const u of D.units) need.add(u.img || (u.name + ".png"));
     let missing = 0;
@@ -144,7 +156,22 @@
     if (missing) console.warn("BYO: " + missing + " counter images not found in module");
   }
 
-  // --- the gate overlay ----------------------------------------------------
+  // legacy build only: hold the game's /api/* fetches until mounted
+  const LEGACY = !!window.GAME_DATA;
+  let release = null;
+  if (LEGACY) {
+    const realFetch = window.fetch.bind(window);
+    const mounted = new Promise((r) => (release = r));
+    window.fetch = (url, ...rest) =>
+      String((url && url.url) || url).includes("/api/")
+        ? mounted.then(() => realFetch(url, ...rest))
+        : realFetch(url, ...rest);
+  }
+  let readyResolve, readyReject;
+  BYO.ready = new Promise((res, rej) => { readyResolve = res; readyReject = rej; });
+  BYO.ready.catch(() => {});                   // avoid unhandled-rejection noise
+
+  // ---------- the gate overlay ----------
   const CSS = `
     #byogate { position:fixed; inset:0; z-index:99999; background:#1a1c20;
       color:#dde3ea; font-family:Segoe UI,system-ui,sans-serif; overflow:auto; }
@@ -174,7 +201,8 @@
     document.head.appendChild(style);
     const ov = document.createElement("div");
     ov.id = "byogate";
-    const name = (window.GAME_DATA && GAME_DATA.game && GAME_DATA.game.name) || "this game";
+    const name = window.DEMO_NAME
+      || (window.GAME_DATA && GAME_DATA.game && GAME_DATA.game.name) || "This game";
     ov.innerHTML =
       `<div class="in"><h1>Bring your own module</h1>
        <p class="sub">${name} ships with no game art. Drop your own copy of the
@@ -261,7 +289,7 @@
     }
   }
 
-  // --- main ----------------------------------------------------------------
+  // ---------- main ----------
   (async function () {
     let db = null;
     const files = {};
@@ -275,16 +303,22 @@
       }
     } catch (e) { console.warn("BYO: IndexedDB unavailable — no cross-visit cache", e); }
 
+    async function complete() {
+      readyFiles = files;
+      if (LEGACY) { await legacyMount(files); release(); }
+      readyResolve({ files, manifest: M });
+    }
+
     const missing = M.requirements.filter((r) => !files[r.id]);
     if (!missing.length) {
-      try { await mount(files); release(); return; }
+      try { await complete(); return; }
       catch (e) {                       // cached blob unreadable — re-gate
         console.warn("BYO: cached module failed to mount, asking again", e);
         for (const k in files) delete files[k];
       }
     }
     const ask = M.requirements.filter((r) => !files[r.id]);
-    const start = () => showGate(ask, files, db, async () => { await mount(files); release(); });
+    const start = () => showGate(ask, files, db, complete);
     if (document.body) start();
     else document.addEventListener("DOMContentLoaded", start);
   })();

@@ -116,6 +116,10 @@ def bake(game_key):
     html = replace_counted(html, COUNTER_SRC, BYO_EXPR, 1, "counter src URL")
     html = replace_counted(html, COUNTER_TPL, "${%s}" % BYO_EXPR, 1,
                            "counter template URL")
+    # static host has no /menu — the Games button goes to the landing page
+    html = replace_counted(html, "location.href='/menu'",
+                           "location.href='../START_HERE.html'", 1,
+                           "games menu link")
     html = html.replace("<script>",
                         '<script src="data.js"></script>\n'
                         '<script src="../shared/local.js"></script>\n'

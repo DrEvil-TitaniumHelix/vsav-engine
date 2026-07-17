@@ -12,6 +12,7 @@
   ],
   "assets": {
     "map":      { "req": "tobruk_v11", "entry": "images/Board_ADBECF.bmp" },
-    "counters": { "req": "tobruk_v11", "prefix": "images/" }
+    "counters": { "req": "tobruk_v11", "prefix": "images/" },
+    "cover":    { "req": "tobruk_v11", "entry": "images/Tobruk_Box_Art.bmp" }
   }
 }
