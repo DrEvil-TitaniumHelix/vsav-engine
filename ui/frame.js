@@ -78,7 +78,10 @@ const FRAME = (() => {
     let left = 0;
     (H.guideAvoid || ['arrivals', 'tierpanel']).forEach(id => {
       const el = document.getElementById(id);
-      if (!el || el.style.display === 'none' || !el.offsetParent) return;
+      // NOTE: these panels are position:fixed — offsetParent is always
+      // null for them, so visibility must come from getClientRects()
+      if (!el || el.style.display === 'none'
+          || !el.getClientRects().length) return;
       const r = el.getBoundingClientRect();
       if (r.left < window.innerWidth * 0.45 && r.width)
         left = Math.max(left, r.right + 12);
@@ -99,6 +102,10 @@ const FRAME = (() => {
     const full = html ? html + guideSuffix : html;
     if (pill.innerHTML !== full) pill.innerHTML = full;
     guideAvoidPanels();
+    // panels often re-render AFTER the guide in the same refresh — their
+    // new size isn't measurable yet, so re-measure on the next frame
+    // (the Vorpatzki-overlay bug's second life)
+    requestAnimationFrame(guideAvoidPanels);
   }
 
   // ---------- sole-way-forward marker ----------
@@ -126,6 +133,9 @@ const FRAME = (() => {
     clampPan();
     const s = H.get();
     H.world.style.transform = `translate(${s.panX}px,${s.panY}px) scale(${s.scale})`;
+    // zoom-compensation factor for markers that must stay readable at
+    // any zoom (rings, badges): CSS uses calc(Npx * var(--ringpx))
+    H.world.style.setProperty('--ringpx', (1 / s.scale).toFixed(3));
   }
   function zoomAt(cx, cy, f) {
     const s = H.get();
