@@ -36,7 +36,29 @@
   .counter { position:absolute; cursor:pointer;
              user-select:none; -webkit-user-drag:none; border-radius:4px; }
   .counter.done { filter:grayscale(.9) brightness(.65); }
-  .counter.sel { outline:3px solid #ffd75e; outline-offset:1px; z-index:30!important; }
+  /* selection must be UNMISSABLE (Bruce 2026-07-17): fat ring + glow,
+     and every selected counter is also listed in #selbox bottom-right */
+  .counter.sel { outline:4px solid #ffd75e; outline-offset:2px; z-index:30!important;
+                 box-shadow:0 0 0 7px rgba(255,215,94,.35), 0 0 22px 8px rgba(255,215,94,.8); }
+  .counter.selatk { outline:4px solid #ff5040; outline-offset:2px; z-index:29!important;
+                    box-shadow:0 0 0 7px rgba(255,80,64,.35), 0 0 22px 8px rgba(255,80,64,.8); }
+  .counter.seldef { outline:4px solid #4e9de0; outline-offset:2px; z-index:29!important;
+                    box-shadow:0 0 0 7px rgba(78,157,224,.35), 0 0 22px 8px rgba(78,157,224,.8); }
+  .counter.flashfocus { animation: flashfocus 1.6s ease-out; }
+  @keyframes flashfocus {
+    0%,20%,40% { outline:6px solid #fff; box-shadow:0 0 30px 14px rgba(255,255,255,.95); }
+    10%,30%    { outline:6px solid #ffd75e; box-shadow:0 0 10px 2px rgba(255,215,94,.4); }
+    100%       { } }
+  a.ulink { color:#8fc7ff; cursor:pointer; text-decoration:underline dotted; }
+  a.ulink:hover { color:#c4e2ff; }
+  #selbox { position:fixed; right:14px; bottom:150px; z-index:47; max-width:280px;
+            background:#23262cee; border:1px solid #3a3f47; border-radius:8px;
+            color:#dde3ea; font-size:12.5px; padding:8px 10px;
+            box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  #selbox .hdr { color:#9aa3ad; font-size:11px; margin-bottom:4px; }
+  #selbox .row { display:flex; gap:6px; align-items:center; margin:2px 0; }
+  #selbox .row .x { cursor:pointer; color:#e0a34e; padding:0 4px; }
+  #selbox .row .x:hover { color:#ff5040; }
   .counter.dragging { z-index:40!important; pointer-events:none; opacity:.85; }
   .badge { position:absolute; margin:-48px 0 0 14px; background:#c33; color:#fff; font-size:11px;
            border-radius:8px; padding:0 5px; z-index:31; pointer-events:none; }
@@ -152,6 +174,7 @@
      max-height:70vh; overflow:auto; background:#2c2320ee; color:#e8ddd4; font-size:13px;
      border:1px solid #55423a; border-radius:8px; padding:10px 12px; z-index:30;
      box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
+<div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
 <script src="frame.js"></script>
@@ -289,7 +312,30 @@ async function refresh() {
 // ---------- guidance banner + sole-way-forward marker ----------
 // Every state says what to do next; when only ONE button can advance the
 // game, FRAME.soleNext gives it the red border (engine rule).
+function cmdStepper() {
+  // "where am I in the turn" strip for command-flow games (Bruce
+  // 2026-07-17: phase navigation help — no more going in circles)
+  const C3 = FLOW && FLOW.command;
+  if (!C3) return '';
+  const steps = [
+    ['command',    'Pool'],
+    ['initiative', 'Initiative'],
+    ['activation', `Activations${C3.pool_left ? ` (${C3.pool_left} LIM${
+                     C3.pool_left > 1 ? 's' : ''} left)` : ''}`],
+    ['non_lim',    'Non-LIM'],
+    ['rally',      'Rally'],
+  ];
+  const idx = Math.max(0, steps.findIndex(s => s[0] === FLOW.phase));
+  return `<br><span style="font-size:11.5px;color:#9aa3ad">Turn flow: `
+    + steps.map((s, i) =>
+        i < idx ? `<span style="color:#7fae6b">${s[1]} ✓</span>`
+        : i === idx ? `<b style="color:#ffd75e">▶ ${s[1]}</b>`
+        : s[1]).join(' → ')
+    + `</span>`;
+}
 function renderGuide() {
+  FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
+                       ? cmdStepper() : '');
   if (!FLOW) {
     const t = GAME && GAME.tier ? GAME.tier.active : 0;
     FRAME.setGuide(t > 0
@@ -935,7 +981,8 @@ async function resolveBattle() {
 }
 function unitById(id) { return units.find(u => u.id === id); }
 function chips(set) {
-  return [...set].map(id => { const u = unitById(id); return u ? u.name : id; }).join(', ') || '—';
+  // every unit mention is a link that flies the camera to the counter
+  return [...set].map(id => ulink(id)).join(', ') || '—';
 }
 function renderCombat() {
   const box = document.getElementById('combat');
@@ -1134,8 +1181,8 @@ function render() {
     el.style.left = (u.x + i*14) + 'px'; el.style.top = (u.y - i*14) + 'px';
     el.style.zIndex = 10 + i;
     el.dataset.id = u.id;
-    if (atkSel.has(u.id)) el.style.outline = '4px solid #e05a4e';
-    else if (defSel.has(u.id)) el.style.outline = '4px solid #4e9de0';
+    if (atkSel.has(u.id)) el.classList.add('selatk');
+    else if (defSel.has(u.id)) el.classList.add('seldef');
     else if (u.morale_state === 'shaken') el.style.outline = '3px solid #e0c34e';
     else if (u.morale_state === 'unsteady') el.style.outline = '3px solid #e0862e';
     else if (u.morale_state === 'routed') el.style.outline = '4px solid #e0342e';
@@ -1160,7 +1207,49 @@ function render() {
   document.getElementById('progress').textContent =
     `${sideShort(mySide)} movement: ${doneN} / ${mine.length} units done`;
   FRAME.onRender();     // engine frame: unit-nav visibility + end-turn glow
+  renderSelBox();
   drawOverlay();
+}
+
+// ---------- selected-counters box + click-to-focus (engine rules,
+// Bruce 2026-07-17: selection must be visible even off-screen; unit
+// names in panels are links that fly the camera to the counter) ----------
+function focusUnit(id) {
+  const u = unitById(String(id));
+  if (!u || !u.onmap) { toast('that unit is not on the map'); return; }
+  FRAME.centerOn(u.x, u.y);
+  setTimeout(() => {
+    const el = document.querySelector(`.counter[data-id="${u.id}"]`);
+    if (el) { el.classList.remove('flashfocus'); void el.offsetWidth;
+              el.classList.add('flashfocus'); }
+  }, 420);
+}
+function ulink(id, label) {
+  const u = unitById(String(id));
+  return `<a class="ulink" onclick="focusUnit('${id}')">${label
+    || (u ? u.name : id)}</a>`;
+}
+function unselect(id) {
+  id = String(id);
+  if (selected && String(selected.id) === id) { deselect(); return; }
+  if (atkSel.delete(id) || defSel.delete(id)) { previewBattle(); return; }
+  renderSelBox();
+}
+function renderSelBox() {
+  const box = document.getElementById('selbox');
+  if (!box) return;
+  const rows = [];
+  const row = (u, tag, color) => rows.push(
+    `<div class="row"><span style="color:${color}">${tag}</span>` +
+    `${ulink(u.id)} <span class="dim">${u.hexnum || ''}</span>` +
+    `<span class="x" title="deselect" onclick="unselect('${u.id}')">✕</span></div>`);
+  if (selected) row(selected, '●', '#ffd75e');
+  [...atkSel].forEach(id => { const u = unitById(id); if (u) row(u, '⚔', '#ff5040'); });
+  [...defSel].forEach(id => { const u = unitById(id); if (u) row(u, '🛡', '#4e9de0'); });
+  if (!rows.length) { box.style.display = 'none'; return; }
+  box.innerHTML = `<div class="hdr">selected — click a name to find it</div>`
+    + rows.join('');
+  box.style.display = '';
 }
 
 // ---------- hex highlight overlay ----------
