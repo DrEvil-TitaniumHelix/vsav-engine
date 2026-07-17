@@ -85,10 +85,19 @@
    }
   },
   "artillery_attach": {
-   "a/V": ["3"],
-   "b/V": ["3"],
-   "c/V": ["3"],
-   "a/B": ["2", "3v"],
+   "a/V": [
+    "3"
+   ],
+   "b/V": [
+    "3"
+   ],
+   "c/V": [
+    "3"
+   ],
+   "a/B": [
+    "2",
+    "3v"
+   ],
    "cite": "A15.1 special rule: artillery of both sides may be under the command of any division leader of its corps, explicitly including the French 1/V foot battery under Suchet; neither Milhaud nor Treilhard may command artillery"
   }
  },
@@ -311,7 +320,8 @@
     "morale": 6,
     "sp": 6,
     "fire": ""
-   }
+   },
+   "cav_type": "light"
   },
   {
    "id": "1782188320595",
@@ -553,7 +563,8 @@
     "morale": 6,
     "sp": 5,
     "fire": ""
-   }
+   },
+   "cav_type": "light"
   },
   {
    "id": "1782188320566",
@@ -599,7 +610,8 @@
     "morale": 7,
     "sp": 5,
     "fire": ""
-   }
+   },
+   "cav_type": "light"
   },
   {
    "id": "1782188320563",
@@ -620,7 +632,8 @@
     "morale": 6,
     "sp": 5,
     "fire": ""
-   }
+   },
+   "cav_type": "light"
   },
   {
    "id": "1782188320555",

@@ -67,10 +67,19 @@ class NapoleonicGame(GateGame):
         self._ratings = {(u["side"], u["slot"]): u["command"]
                          for u in self.scenario["units"]
                          if u.get("command")}
+        # cavalry class (playbook A8.1) - static scenario data, same
+        # non-hashed contract as leader ratings
+        self._cavtype = {(u["side"], u["slot"]): u["cav_type"]
+                         for u in self.scenario["units"]
+                         if u.get("cav_type")}
         self._resolve_tier(tier)
+        # phase 4 (tier 2): melee + reaction windows + strategic movement.
+        # Tier 1 keeps the phase-3 flow so schema-3 logs replay untouched.
+        self._p4 = self._cmd and self.tier >= 2
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "moved", "tier", "schema"))
-        if (self.s.get("schema", 2) >= 3) != self._cmd:
+        have = self.s.get("schema", 2)
+        if (have >= 3) != self._cmd or (have >= 4) != self._p4:
             self.new_game(self._fresh_seed(seed))   # flow mismatch: reset
 
     # ------------------------------------------------------------ terrain
@@ -103,10 +112,13 @@ class NapoleonicGame(GateGame):
 
     # ---------------------------------------------------------- lifecycle
     def _resolve_tier(self, tier):
-        # Napoleonic family: combat ships in later phases; earned = 1 now.
+        # Napoleonic family earned tier 2 at phase 4 (fire + command +
+        # melee + reactions enforced). Tier 1 = the phase-3 subset
+        # (melee/reactions umpired); a tier change starts a new game.
         self.combat = None
-        self.tier_earned = 1
-        self.tier = 1 if tier is None else max(1, min(int(tier), 1))
+        self.tier_earned = 2
+        self.tier = self.tier_earned if tier is None \
+            else max(1, min(int(tier), self.tier_earned))
 
     def new_game(self, seed=None):
         seed = self._fresh_seed(seed)
@@ -150,6 +162,25 @@ class NapoleonicGame(GateGame):
                 "fatigue": {dk: 0 for dk in self._divisions()},
                 "fat_crossed": {},      # div_key -> [7/8/9 thresholds hit]
                 "fat_lim": [], "fat_combat": [],
+            })
+        if self._p4:
+            self.s["schema"] = 4
+            for u in units.values():
+                u["blown"] = 0          # Blown level 0/1/2 [8.4.4]
+                u["recovery"] = False   # Recovery marker [8.4.5]
+            self.s.update({
+                "pending_melee": None,  # open shock-combat state machine
+                "pending_react": None,  # open reaction window [6.2]
+                "reacted": [],          # reaction-fired this activation
+                                        # [8.1.3] (return fire = returned)
+                "rev_blocked": [],      # reverse-move failures [6.2.5]
+                "cc_failed": [],        # reaction-charge failures [6.2.3]
+                "defended": [],         # defended in combat this turn
+                                        # (blown recovery gate [8.4.5])
+                "strat": [],            # divisions under Strategic
+                                        # Movement markers [5.2]
+                "strat_turn": [],       # divisions that strat-moved this
+                                        # turn (fatigue exemption, Fox Q&A)
             })
         self._reset_log()
         self._log({"event": "init", "mode": "napoleonic",
@@ -394,11 +425,19 @@ class NapoleonicGame(GateGame):
         act["pending"] = None
         act["stage"] = "move"
         act["incommand"] = [u["pid"] for u in members]
+
+        def _ma(u):
+            # Blown cavalry moves at half MA, rounded up [8.4.4]
+            if self._p4 and u.get("blown", 0) > 0:
+                return -(-int(u["ma"]) // 2)
+            return u["ma"]
         act["budget"] = {
-            u["pid"]: float(int(u["ma"] * frac) if frac < 1.0
-                            else u["ma"]) for u in members}
+            u["pid"]: float(int(_ma(u) * frac) if frac < 1.0
+                            else _ma(u)) for u in members}
         self.s["moved"] = []
         self.s["returned"] = []      # once per enemy activation (Q&A)
+        if self._p4:
+            self._p4_open_act(act)
         self.s["act_count"][dk] = self.s["act_count"].get(dk, 0) + 1
         self.s["turn_units"] = sorted(set(self.s["turn_units"])
                                       | set(act["incommand"]))
@@ -520,6 +559,20 @@ class NapoleonicGame(GateGame):
     def _close_division(self, out):
         """One division's activation ends; route the flow onward."""
         act = self.s["act"]
+        if self._p4 and act is not None:
+            self._strat_close_checks(out)
+            if act.get("side"):
+                self._strat_proximity_sweep(act["side"], out)
+            # Blown Recovery marking [8.4.5]: blown cavalry that
+            # neither moved nor defended gets a Recovery marker when
+            # its division's activation closes
+            for pid in act.get("incommand", []):
+                u = self.unit(pid)
+                if u["arm"] == "cavalry" and u.get("blown", 0) > 0 \
+                        and not u.get("dead") \
+                        and pid not in self.s["moved"] \
+                        and pid not in self.s.get("defended", []):
+                    u["recovery"] = True
         if act.get("bd_after"):
             after = act.pop("bd_after")
             self._offer_breakdown(after["side"], after["origin"],
@@ -652,6 +705,14 @@ class NapoleonicGame(GateGame):
         for dk in sorted(self._divisions()):
             lvl = self.s["fatigue"].get(dk, 0)
             up = dk in self.s["fat_lim"] or dk in self.s["fat_combat"]
+            if self._p4 and dk in self.s.get("strat_turn", []) \
+                    and dk not in self.s["fat_combat"]:
+                # 5.2.1 + Fox Q&A: a division whose only action was
+                # strategic movement gains no activation fatigue (it
+                # MAY still gain it from being attacked = fat_combat).
+                # It marched, so it is not an idle rested division
+                # either [13.2] - its level simply holds.
+                continue
             if up:
                 new = min(9, lvl + 1)
             else:
@@ -790,7 +851,35 @@ class NapoleonicGame(GateGame):
         return cost, dis, nmc
 
     # -------------------------------------------------------- reachability
-    def reachable(self, pid, budget=None, avoid_adjacent=False):
+    def _near_enemy(self, hexx, dist, side):
+        return any(v["side"] != side and v["arm"] != "leader"
+                   and self.on_map(v)
+                   and self._dist((v["col"], v["row"]), hexx) <= dist
+                   for v in self.s["units"].values())
+
+    def _strat_step_ok(self, u, frm, nb):
+        """Strategic-movement step duties [5.2.1]: never within 3 hexes
+        of an enemy; Road Movement required to enter village/swamp/
+        woods or to cross a stream (or wall) hexside."""
+        if self._near_enemy(nb, 3, u["side"]):
+            return False
+        road = self._road(frm, nb)
+        using_road = road is not None and \
+            self.F.may_road_move(u["formation"])
+        if self.hex_terrain(*nb) in ("village", "swamp", "woods") \
+                and not using_road:
+            return False
+        rows, bridge = self._hexside_rows(frm, nb)
+        names = [rw[0] if isinstance(rw, tuple) else rw for rw in rows]
+        crossing = [n for n in names
+                    if n.startswith("stream") or n.startswith("deep")
+                    or n == "wall_hexside"]
+        if crossing and not (using_road and bridge):
+            return False
+        return True
+
+    def reachable(self, pid, budget=None, avoid_adjacent=False,
+                  strat=False):
         """Dijkstra over (col,row,facing): every reachable (hex, facing)
         with its cheapest MP cost, its path, and pending disorder events.
         Facing changes cost the TEC row per 30-degree step; advancing goes
@@ -864,6 +953,9 @@ class NapoleonicGame(GateGame):
                         continue
                 if tuple(nb) in no_adj:
                     continue    # limited: never adjacent to enemy [4.6.2]
+                if strat and not self._strat_step_ok(u, (c, r),
+                                                     tuple(nb)):
+                    continue    # strategic movement duties [5.2.1]
                 sc, dis, nmc2 = self.step_cost(u, (c, r), nb, nmc)
                 if sc is None:
                     continue
@@ -924,6 +1016,20 @@ class NapoleonicGame(GateGame):
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
         t = action.get("type")
+        # phase-4 windows: an open shock combat or reaction window owns
+        # the flow completely - only its decision-maker may submit
+        pm = self.s.get("pending_melee")
+        if pm:
+            return self._propose_melee_window(side, action)
+        pr = self.s.get("pending_react")
+        if pr:
+            return self._propose_react_window(side, action)
+        if t in ("melee_return", "melee_no_return", "melee_stand",
+                 "melee_withdraw", "square_choice", "reaction_fire",
+                 "reaction_move", "reaction_reverse", "reaction_face",
+                 "reaction_limber", "reaction_charge", "decline_reaction"):
+            return self._v(False, "no shock combat or reaction window "
+                                  "is open [6.2/8.2-8.5]")
         # pending return-fire window: ONLY the defender may act [8.1.2]
         pf = self.s.get("pending_fire")
         if pf:
@@ -958,10 +1064,11 @@ class NapoleonicGame(GateGame):
         return self._propose_unit_action(side, action)
 
     def _propose_unit_action(self, side, action, budget=None,
-                             avoid_adjacent=False):
+                             avoid_adjacent=False, strat=False):
         """Shared unit-action legality (both schemas). `budget` = the MP
         allowance this activation (None = full MA); `avoid_adjacent` = the
-        limited-activation adjacency ban [4.6.2 + designer Q&A]."""
+        limited-activation adjacency ban [4.6.2 + designer Q&A]; `strat`
+        = the division moves strategically [5.2.1]."""
         t = action.get("type")
         pid = str(action.get("unit"))
         if pid not in self.s["units"]:
@@ -980,10 +1087,15 @@ class NapoleonicGame(GateGame):
             return self._v(False,
                            "unit already acted in this activation "
                            "[4.6.1: one move per unit]")
+        if strat and t == "move" and u["formation"] == "line":
+            return self._v(False, "strategic movement: may not remain "
+                                  "in Line - change formation first "
+                                  "[5.2.1]")
         if t == "move":
             dest = action.get("dest")
             reach = self.reachable(pid, budget=bud,
-                                   avoid_adjacent=avoid_adjacent)
+                                   avoid_adjacent=avoid_adjacent,
+                                   strat=strat)
             facing = action.get("facing")
             if facing is None:      # engine picks the cheapest facing
                 opts = [(v[0], k[2]) for k, v in reach.items()
@@ -1123,12 +1235,20 @@ class NapoleonicGame(GateGame):
             if t == "end_activation":
                 return self._v(True)
             if t == "fire":
+                if self._p4 and act["stage"] == "melee":
+                    return self._v(False,
+                                   "melee combat has begun: all fire "
+                                   "must precede melee [8.1.1]")
                 pid = str(action.get("unit"))
                 if pid not in act["incommand"]:
                     return self._v(False,
                                    "only In Command units of the "
                                    "activated division act [4.3.3]")
                 return self._propose_fire(side, action)
+            if self._p4 and t in ("melee", "charge"):
+                return self._propose_shock(side, action)
+            if self._p4 and t == "declare_strategic":
+                return self._propose_strategic(side)
             if t in ("move", "about_face", "change_formation", "slide",
                      "reverse"):
                 if act["stage"] == "combat":
@@ -1136,6 +1256,10 @@ class NapoleonicGame(GateGame):
                                    "the division has opened fire: no "
                                    "more movement this activation "
                                    "[4.6.1]")
+                if self._p4 and act["stage"] == "melee":
+                    return self._v(False,
+                                   "melee combat has begun: movement is "
+                                   "over [8.1.1/4.6.1]")
                 pid = str(action.get("unit"))
                 if pid not in act["incommand"]:
                     return self._v(False,
@@ -1143,7 +1267,8 @@ class NapoleonicGame(GateGame):
                                    "activated division act [4.3.3]")
                 return self._propose_unit_action(
                     side, action, budget=act["budget"].get(pid),
-                    avoid_adjacent=act["atype"] == "limited")
+                    avoid_adjacent=act["atype"] == "limited",
+                    strat=bool(act.get("strat")))
             return self._v(False, f"unknown action type {t}")
         if ph == "non_lim":
             if side != self.s["mover"]:
@@ -1175,6 +1300,9 @@ class NapoleonicGame(GateGame):
         return self._v(False, f"no {t} in phase {ph}")
 
     def _formation_change_ok(self, u, to):
+        if self._p4 and u.get("blown", 0) >= 2:
+            return False, "Blown-2 cavalry is always disordered - it " \
+                          "may not change formation [8.4.4]"
         cost = self.F.action_cost(u, "change_formation", u["ma"])
         if cost is None:
             return False, "formation change not allowed [TEC 5.0]"
@@ -1355,6 +1483,9 @@ class NapoleonicGame(GateGame):
         ok, why = self._fire_capable(u)
         if not ok:
             return self._v(False, why)
+        if self._p4 and self._in_strat(u):
+            return self._v(False, "strategic movement: may never "
+                                  "initiate combat [5.2.1]")
         if pid in self.s["fired"]:
             return self._v(False, "unit already fired this turn [8.1.1]")
         tid = str(action.get("target"))
@@ -1399,6 +1530,13 @@ class NapoleonicGame(GateGame):
         ok, why = self._fire_capable(d)
         if not ok:
             return self._v(False, why)
+        if self._p4 and self._in_strat(d):
+            return self._v(False, "strategic movement: may not Return "
+                                  "Fire [5.2.1]")
+        if self._p4 and d["arm"].startswith("artillery") \
+                and pf["defender"] in self.s.get("reacted", []):
+            return self._v(False, "artillery may Reaction Fire OR "
+                                  "Return Fire, not both [8.1.4]")
         if pf["defender"] in self.s["returned"]:
             return self._v(False,
                            "already return/reaction fired this "
@@ -1441,6 +1579,13 @@ class NapoleonicGame(GateGame):
         if self._cmd:
             self._mark_combat_fatigue(firer, band)     # [13.1.2]
             self._mark_combat_fatigue(target, band)
+        if self._p4 and band not in ("medium", "long"):
+            # defending in combat (except medium/long artillery fire)
+            # blocks blown recovery [8.4.5]
+            self.s["defended"] = sorted(
+                set(self.s.get("defended", [])) | {target["pid"]})
+            if target.get("blown"):
+                target["recovery"] = False
         return rec, res["effect"]
 
     def _facing_shift(self, firer, target):
@@ -1542,6 +1687,8 @@ class NapoleonicGame(GateGame):
             d.append(1)
         elif u["morale_state"] in ("unsteady", "routed"):
             d.append(2)
+        if self._p4 and self._in_strat(u):
+            d.append(1)     # Strategic Movement +1 [9.1 panel/5.2.1]
         if any(v["arm"] == "leader" and v["side"] == u["side"]
                and (v["col"], v["row"]) == (u["col"], u["row"])
                and self.on_map(v) for v in self.s["units"].values()):
@@ -1651,6 +1798,1668 @@ class NapoleonicGame(GateGame):
         if short > 0 and sp_short:
             self._lose_sp(u, short, out)               # [10.1.1]
 
+    # ---------------------------------------- phase 4: shock combat
+    # Bayonet [8.2] / Assault [8.3] / Charge [8.4] run as a state
+    # machine in s["pending_melee"]: the engine auto-drives every
+    # rolled step and stops only where the DEFENDER owns a decision
+    # (return fire, form square, voluntary withdrawal). All rolls are
+    # seeded and logged; window-open records list who was entitled to
+    # what, so the verifier can prove every opportunity was surfaced.
+
+    def _p4_open_act(self, act):
+        """Per-activation phase-4 trackers (schema 4 only)."""
+        act["spent"] = {}        # pid -> MPs spent (May Charge [5.1.2])
+        act["meleed"] = []       # defender hexes shocked [8.2.1/8.3.1]
+        act["attacked_with"] = []   # attacker hexes that declared shock
+        act["supported"] = []    # pids that supported an attack
+        act["charged"] = []      # defender hexes charged [8.4.2#1]
+        self.s["reacted"] = []   # reaction fire, once/activation [8.1.3]
+        self.s["rev_blocked"] = []   # failed reverse-move checks [6.2.5]
+        self.s["cc_failed"] = []     # failed reaction-charge checks
+                                     # [6.2.3: may not try again]
+
+    def _stack(self, c, r, side=None, exclude_leaders=True):
+        """Living units in a hex in stable (creation) order. The first
+        non-artillery unit is 'top' [7.2/8.5.1] - stack reordering is
+        not modelled (documented in rules_scope)."""
+        out = [u for u in self.s["units"].values()
+               if (u["col"], u["row"]) == (c, r) and self.on_map(u)
+               and not (exclude_leaders and u["arm"] == "leader")
+               and (side is None or u["side"] == side)]
+        return sorted(out, key=lambda u: (u["arm"].startswith("art"),
+                                          int(u["pid"])
+                                          if u["pid"].isdigit()
+                                          else 0, u["pid"]))
+
+    def _top(self, stack):
+        return stack[0] if stack else None
+
+    def _cav_class(self, u):
+        return self._cavtype.get((u["side"], u["slot"]), "light")
+
+    def _aspect(self, defender, from_hex):
+        """Which aspect of `defender` does `from_hex` touch [6.1]."""
+        kind = self._kind(defender)
+        if kind == "all":
+            return "front"
+        args = (self.game, defender["col"], defender["row"],
+                defender["facing"], kind)
+        if tuple(from_hex) in {tuple(h) for h in fm.rear_hexes(*args)}:
+            return "rear"
+        if tuple(from_hex) in {tuple(h) for h in fm.flank_hexes(*args)}:
+            return "flank"
+        return "front"
+
+    def _in_strat(self, u):
+        dk = self._div_key_of(u)
+        return bool(dk and dk in self.s.get("strat", []))
+
+    def _may_initiate_melee(self, u):
+        """[6.4.1 / 9.2.3 / 11.1.1]: disordered, unsteady/routed and
+        breakpoint units never initiate melee; strat-movement units may
+        not initiate combat [5.2.1]."""
+        if u.get("dead") or not self.on_map(u):
+            return False, "unit is gone"
+        if u["morale_state"] in ("unsteady", "routed"):
+            return False, f"{u['morale_state']} units may not initiate " \
+                          "melee [9.2.3/9.2.4]"
+        if u["formation"] == "disorder":
+            return False, "disordered units may not initiate melee [6.4.1]"
+        if self._at_breakpoint(u):
+            return False, "a unit at Breakpoint may never initiate " \
+                          "melee [11.1.1]"
+        if self._in_strat(u):
+            return False, "strategic movement: may never initiate " \
+                          "combat [5.2.1]"
+        return True, ""
+
+    def _melee_rows_between(self, ahex, dhex):
+        """TEC row names the shock crosses: the hexside features plus
+        the defender's hex terrain."""
+        rows, _bridge = self._hexside_rows(ahex, dhex)
+        going_up = self.televation.get(f"{dhex[0]},{dhex[1]}", 0) >= \
+            self.televation.get(f"{ahex[0]},{ahex[1]}", 0)
+        names = []
+        for row in rows:
+            if isinstance(row, tuple):
+                row = row[0] if going_up else row[1]
+            names.append(row)
+        terr = self.hex_terrain(*dhex)
+        if terr in self._eff_rows():
+            names.append(terr)
+        return names
+
+    def _eff_rows(self):
+        return self.game.spec["formations"]["combat_effects"]["rows"]
+
+    # ---------------------------------------------- shock proposals
+    def _propose_shock(self, side, action):
+        import melee as melee_mod
+        act = self.s["act"]
+        t = action["type"]
+        if act["atype"] != "full":
+            return self._v(False, "only a Full Activation may melee "
+                                  "[8.2/8.3/8.4]")
+        pid = str(action.get("unit"))
+        if pid not in self.s["units"]:
+            return self._v(False, f"unknown unit {pid}")
+        u = self.unit(pid)
+        if pid not in act["incommand"]:
+            return self._v(False, "only In Command units of the "
+                                  "activated division act [4.3.3]")
+        ok, why = self._may_initiate_melee(u)
+        if not ok:
+            return self._v(False, why)
+        tid = str(action.get("target"))
+        if tid not in self.s["units"]:
+            return self._v(False, f"unknown target {tid}")
+        tgt = self.unit(tid)
+        if tgt["side"] == side or not self.on_map(tgt) \
+                or tgt["arm"] == "leader":
+            return self._v(False, "invalid melee target")
+        dhex = (tgt["col"], tgt["row"])
+        ahex = (u["col"], u["row"])
+        if t == "melee":
+            if u["arm"] != "infantry":
+                return self._v(False, "only infantry conducts Bayonet/"
+                                      "Assault combat [8.2/8.3]; cavalry "
+                                      "charges [8.4]")
+            front = {tuple(h) for h in fm.front_hexes(
+                self.game, u["col"], u["row"], u["facing"],
+                self._kind(u))}
+            if dhex not in front:
+                return self._v(False, "defender must be adjacent in the "
+                                      "attacker's front hexsides [8.2.1/"
+                                      "8.3.1]")
+            drm, allowed = melee_mod.terrain_melee_drm(
+                self._eff_rows(), self._melee_rows_between(ahex, dhex))
+            if not allowed:
+                return self._v(False, "melee not allowed across that "
+                                      "hexside/terrain [TEC 5.0 Melee "
+                                      "'NA']")
+            if list(dhex) in act["meleed"] or dhex in \
+                    [tuple(h) for h in act["meleed"]]:
+                return self._v(False, "that stack has already been "
+                                      "meleed this activation [8.2.1#1/"
+                                      "8.3.1 Q&A]")
+            if list(ahex) in act["attacked_with"] or ahex in \
+                    [tuple(h) for h in act["attacked_with"]]:
+                return self._v(False, "that stack has already attacked "
+                                      "this activation [8.3.1#1]")
+            for sp_ in action.get("supports", []):
+                ok, why = self._support_ok(str(sp_), dhex, act)
+                if not ok:
+                    return self._v(False, why)
+            return self._v(True)
+        # charge [8.4]
+        if u["arm"] != "cavalry":
+            return self._v(False, "only cavalry charges [8.4]")
+        if u.get("blown", 0) > 0:
+            return self._v(False, "blown cavalry may not charge [8.4.4]")
+        ma = int(u["ma"])
+        if act["spent"].get(pid, 0) > ma // 2 + 1e-9:
+            return self._v(False, "no May Charge marker: the unit moved "
+                                  "more than half its MA [5.1.2]")
+        dist = self._dist(ahex, dhex)
+        ctype = self._cav_class(u)
+        if not melee_mod.charge_range_ok(self.ctables, ctype, dist):
+            return self._v(False, f"charge range is 2-4 hexes (never "
+                                  f"adjacent); target at {dist} "
+                                  "[A8.1.1]")
+        clear, why = self._los(ahex, dhex)
+        if not clear:
+            return self._v(False, f"no LOS to the charge target: {why} "
+                                  "[8.4.1]")
+        if list(dhex) in act["charged"] or dhex in \
+                [tuple(h) for h in act["charged"]]:
+            return self._v(False, "that stack has already been charged "
+                                  "this activation [8.4.2#1]")
+        path = self._charge_path(u, dhex)
+        if path is None:
+            return self._v(False, "no legal charge path: front-hexside "
+                                  "movement over chargeable terrain "
+                                  "[8.4.1/8.4.2#2 + TEC Cav Charge]")
+        return self._v(True)
+
+    def _support_ok(self, pid, dhex, act):
+        """Supporting stack legality [8.2.1#2/8.3.1#2 + Fox Q&A]."""
+        if pid not in self.s["units"]:
+            return False, f"unknown support {pid}"
+        su = self.unit(pid)
+        if pid not in act["incommand"]:
+            return False, "supports must be In Command active units " \
+                          "[4.3.3]"
+        ok, why = self._may_initiate_melee(su)
+        if not ok:
+            return False, f"support {pid}: {why}"
+        if self._dist((su["col"], su["row"]), dhex) != 1:
+            return False, "supports must be adjacent to the defender " \
+                          "[8.2.1#2]"
+        front = {tuple(h) for h in fm.front_hexes(
+            self.game, su["col"], su["row"], su["facing"],
+            self._kind(su))}
+        if tuple(dhex) not in front:
+            return False, "the defender must be in the supporting " \
+                          "stack's front hexsides (Fox Q&A)"
+        if pid in act["supported"]:
+            return False, "a stack may only support one attack per " \
+                          "activation [8.2.1#2]"
+        ahx = [tuple(h) for h in act["attacked_with"]]
+        if (su["col"], su["row"]) in ahx:
+            return False, "an attacking stack may not also support " \
+                          "[8.2.1#2]"
+        return True, ""
+
+    def _charge_path(self, u, dhex, max_len=8):
+        """Charge movement [8.4.2#2]: hex-by-hex toward the target, MPs
+        not counted, always entering through a front hexside, at most
+        one facing change per hex entered, no prohibited/unchargeable
+        terrain, stopping adjacent to the target. BFS over (hex,
+        facing); returns the hex path or None."""
+        import melee as melee_mod
+        from collections import deque
+        kind = self._kind(u)
+        start = (u["col"], u["row"], u["facing"])
+        seen = {start}
+        q = deque([(start, [(u["col"], u["row"])])])
+        while q:
+            (c, r, f), path = q.popleft()
+            if self._dist((c, r), dhex) == 1:
+                # must be able to put the target in a front hexside
+                # (a final one-hexside turn is allowed [8.4.2#2])
+                for df in (0, -2, 2):
+                    pf = (f + df) % fm.FACINGS
+                    fh = {tuple(h) for h in fm.front_hexes(
+                        self.game, c, r, pf, kind)}
+                    if tuple(dhex) in fh:
+                        return path
+                continue
+            if len(path) > max_len:
+                continue
+            # advance through the CURRENT facing's front hexside(s),
+            # then may turn one hexside (60 deg = 2 facing steps) in
+            # the hex entered [8.4.2#2]
+            for s_ in fm.facing_sides(f, kind):
+                nb = fm.side_neighbor(self.game, c, r, s_)
+                if not nb or not self.in_area(*nb):
+                    continue
+                nb = tuple(nb)
+                if nb == tuple(dhex):
+                    continue          # stop ADJACENT, not on top
+                rows, _ = self._hexside_rows((c, r), nb)
+                names = [rw[0] if isinstance(rw, tuple) else rw
+                         for rw in rows]
+                terr = self.hex_terrain(*nb)
+                if terr == "water":
+                    continue
+                if terr in self._eff_rows():
+                    names.append(terr)
+                if not melee_mod.terrain_chargeable(self._eff_rows(),
+                                                    names):
+                    continue
+                if self.occupants(*nb):
+                    continue          # may not charge through units
+                for df in (0, -2, 2):
+                    nf = (f + df) % fm.FACINGS
+                    node = (nb[0], nb[1], nf)
+                    if node in seen:
+                        continue
+                    seen.add(node)
+                    q.append((node, path + [nb]))
+        return None
+
+    # ------------------------------------------------ shock machine
+    def _apply_shock(self, side, action):
+        import melee as melee_mod
+        act = self.s["act"]
+        act["stage"] = "melee"        # fire before melee [8.1.1]
+        pid = str(action["unit"])
+        u = self.unit(pid)
+        tgt = self.unit(str(action["target"]))
+        ahex, dhex = (u["col"], u["row"]), (tgt["col"], tgt["row"])
+        out = {}
+        if action["type"] == "melee":
+            rows = self._melee_rows_between(ahex, dhex)
+            defensive = melee_mod.terrain_defensive(self._eff_rows(),
+                                                    rows)
+            kind = "assault" if defensive else "bayonet"
+            attackers = [v["pid"] for v in self._stack(*ahex, side=side)
+                         if v["arm"] == "infantry"
+                         and self._may_initiate_melee(v)[0]]
+            supports = [str(x) for x in action.get("supports", [])]
+            act["meleed"].append(list(dhex))
+            act["attacked_with"].append(list(ahex))
+            act["supported"].extend(supports)
+            pm = {"kind": kind, "side": side,
+                  "dside": tgt["side"], "ahex": list(ahex),
+                  "dhex": list(dhex), "attackers": attackers,
+                  "supports": supports, "stage": "attacker_check",
+                  "round": 0, "returned_units": [], "charge": None}
+            out["shock"] = {"kind": kind, "attackers": attackers,
+                            "supports": supports, "defenders":
+                            [v["pid"] for v in self._stack(
+                                *dhex, side=tgt["side"])],
+                            "cite": "8.2.1" if kind == "bayonet"
+                            else "8.3.1",
+                            "terrain_rows": rows}
+        else:                          # charge [8.4.2]
+            path = self._charge_path(u, dhex)
+            act["charged"].append(list(dhex))
+            act["attacked_with"].append(list(ahex))
+            if pid not in self.s["moved"]:
+                self.s["moved"].append(pid)
+            pm = {"kind": "charge", "side": side, "dside": tgt["side"],
+                  "ahex": [u["col"], u["row"]], "dhex": list(dhex),
+                  "attackers": [pid], "supports": [],
+                  "stage": "formation_check", "round": 0,
+                  "returned_units": [],
+                  "charge": {"dist": self._dist(ahex, dhex),
+                             "ctype": self._cav_class(u),
+                             "from": list(ahex),
+                             "path": [list(p) for p in path]}}
+            out["shock"] = {"kind": "charge", "unit": pid,
+                            "target": tgt["pid"], "path": pm["charge"]
+                            ["path"], "ctype": pm["charge"]["ctype"],
+                            "dist": pm["charge"]["dist"],
+                            "cite": "8.4.2"}
+            # charge movement executes hex by hex, MPs not counted;
+            # it triggers reactions - even on zone entry [6.2.1] -
+            # from everyone EXCEPT the target stack (whose responses
+            # are the machine's own steps)
+            walk = {"path_left": [list(p) for p in path[1:]],
+                    "final_facing": u["facing"], "nmc": 0,
+                    "dis_left": [], "cost": 0.0, "full_cost": 0.0,
+                    "charge": True, "pm": pm}
+            done = self._walk_move(u, walk, out)
+            if not done:
+                return out             # a reaction window owns the flow
+            self._start_charge_machine(pm, out)
+            return out
+        self.s["pending_melee"] = pm
+        # any routed defender is automatically eliminated [8.2.1#1/
+        # 8.3.1#1/8.4.2#4]
+        for v in self._stack(*dhex, side=pm["dside"]):
+            if v["morale_state"] == "routed":
+                self._destroy(v, out, "routed unit meleed [8.2.1#1]")
+        self._shock_run(pm, out)
+        return out
+
+    def _start_charge_machine(self, pm, out):
+        """The charger has arrived adjacent: face the target and run
+        the charge steps [8.4.2#3-9]."""
+        u = self.unit(pm["attackers"][0])
+        dhex = tuple(pm["dhex"])
+        kindf = self._kind(u)
+        for df in (0, -1, 1, 2, -2):
+            pf = (u["facing"] + df) % fm.FACINGS
+            fh = {tuple(h) for h in fm.front_hexes(
+                self.game, u["col"], u["row"], pf, kindf)}
+            if dhex in fh:
+                u["facing"] = pf
+                break
+        pm["ahex"] = [u["col"], u["row"]]
+        self.s["pending_melee"] = pm
+        for v in self._stack(*dhex, side=pm["dside"]):
+            if v["morale_state"] == "routed":
+                self._destroy(v, out, "routed unit charged [8.4.2#4]")
+        self._shock_run(pm, out)
+
+    def _shock_run(self, pm, out):
+        """Drive the machine until a defender decision or completion."""
+        while True:
+            stage = pm["stage"]
+            if stage == "attacker_check":
+                if not self._shock_attacker_check(pm, out):
+                    return self._shock_finish(pm, out)
+                pm["stage"] = "return_window"
+                continue
+            if stage == "formation_check":
+                # charge step 4: infantry may Stand or try to Form
+                # Square [8.4.2#4]; artillery alone must stand;
+                # strategic movement may not form square [5.2.1] - its
+                # infantry Stands (with the pre-melee check) forced
+                dstack = self._stack(*pm["dhex"], side=pm["dside"])
+                if not dstack:
+                    return self._shock_finish(pm, out, advance=True)
+                inf = [v for v in dstack if v["arm"] == "infantry"]
+                if inf and self._in_strat(inf[0]):
+                    self._stand_check(inf[0], pm, out)
+                    pm["stage"] = "return_window"
+                    continue
+                if inf:
+                    self._open_window(pm, "square_window", out,
+                                      entitled={inf[0]["pid"]:
+                                                ["square_choice"]},
+                                      cite="8.4.2#4")
+                    return
+                pm["stage"] = "return_window"
+                continue
+            if stage == "return_window":
+                ent = self._return_entitled(pm)
+                if not ent:
+                    pm["stage"] = "defender_check" \
+                        if pm["kind"] != "charge" else "melee_round"
+                    continue
+                self._open_window(pm, "return_window", out,
+                                  entitled=ent, cite="8.2.1#3/8.3.1#3/"
+                                  "8.4.2#5")
+                return
+            if stage == "defender_check":
+                self._shock_defender_check(pm, out)
+                if pm["kind"] == "bayonet":
+                    # bayonet has no melee round [8.2.1 steps panel]
+                    return self._shock_finish(pm, out)
+                pm["stage"] = "melee_round"
+                continue
+            if stage == "melee_round":
+                res = self._melee_round(pm, out)
+                if res == "continue":
+                    pm["stage"] = "continue_def"
+                    continue
+                return self._shock_finish(
+                    pm, out, advance=res == "defender_gone")
+            if stage in ("continue_def", "continue_att"):
+                who = pm["dside"] if stage == "continue_def" \
+                    else pm["side"]
+                hexx = pm["dhex"] if stage == "continue_def" \
+                    else pm["ahex"]
+                stack = self._stack(*hexx, side=who)
+                if not stack:
+                    return self._shock_finish(
+                        pm, out, advance=stage == "continue_def")
+                self._open_window(
+                    pm, stage, out,
+                    entitled={self._top(stack)["pid"]:
+                              ["melee_stand", "melee_withdraw"]},
+                    cite="8.5.3 voluntary rout option")
+                return
+            raise RuntimeError(f"unknown shock stage {stage}")
+
+    def _open_window(self, pm, stage, out, entitled, cite):
+        """The honesty record: every window logs who was entitled to
+        which decisions before anyone acts."""
+        pm["stage"] = stage
+        owner = pm["dside"] if stage != "continue_att" else pm["side"]
+        pm["window_owner"] = owner
+        pm["entitled"] = {k: list(v) for k, v in entitled.items()}
+        out.setdefault("windows", []).append(
+            {"stage": stage, "owner": owner, "entitled": pm["entitled"],
+             "cite": cite})
+
+    def _shock_attacker_check(self, pm, out):
+        """Steps 8.2.1#2/8.3.1#2. Returns False if the attack ends."""
+        stack = [self.unit(p) for p in pm["attackers"]
+                 if not self.unit(p).get("dead")]
+        if not stack:
+            return False
+        top = self._top(self._stack(*pm["ahex"], side=pm["side"]))
+        if top is None or top["pid"] not in pm["attackers"]:
+            top = stack[0]
+        drms, detail = self._preshock_drms(top, "attacker", pm)
+        die = self.roll_d10()
+        import melee as melee_mod
+        eff = melee_mod.pre_shock_attacker(die, top["morale"], drms)
+        rec = {"unit": top["pid"], "die": die, "drms": detail,
+               "vs": top["morale"], "result": eff["kind"],
+               "cite": "8.2/8.3 Pre-Shock (attacker)"}
+        out.setdefault("attacker_check", rec)
+        if self._cmd:
+            self._mark_combat_fatigue(top)
+        if eff["kind"] == "may_melee":
+            return True
+        if eff.get("disorder"):
+            self._disorder(top)
+            rec["disordered"] = True
+        if eff.get("levels"):
+            i = self._LADDER.index(top["morale_state"])
+            self._set_morale_state(
+                top, self._LADDER[min(3, i + eff["levels"])], out)
+        return False
+
+    def _return_entitled(self, pm):
+        """Who may return fire inside the melee window [8.2.1#3/
+        8.3.1#3/8.4.2#5]: top defending unit plus one stacked battery
+        [7.2], each under the once-per-activation caps [8.1.2/8.1.4];
+        skirmishers may Reaction Move out instead [8.2.1#3]; strategic
+        movement units never [5.2.1]; charge: only stacks that stood or
+        formed square, with the charger in their front [8.4.2#5]."""
+        atk = self._top(self._stack(*pm["ahex"], side=pm["side"]))
+        if atk is None:
+            return {}
+        ent = {}
+        dstack = self._stack(*pm["dhex"], side=pm["dside"])
+        if pm["kind"] == "charge" and pm.get("square_failed"):
+            return {}
+        troops = [v for v in dstack
+                  if not v["arm"].startswith("artillery")]
+        arts = [v for v in dstack if v["arm"].startswith("artillery")]
+        cands = troops[:1] + arts[:1]
+        for v in cands:
+            if self._in_strat(v):
+                continue
+            kinds = []
+            ok, _ = self._fire_capable(v)
+            if ok and v["pid"] not in self.s["returned"] \
+                    and not (v["arm"].startswith("artillery")
+                             and v["pid"] in self.s["reacted"]):
+                front = {tuple(h) for h in fm.front_hexes(
+                    self.game, v["col"], v["row"], v["facing"],
+                    self._kind(v))}
+                if (atk["col"], atk["row"]) in front and \
+                        self._dist((v["col"], v["row"]),
+                                   (atk["col"], atk["row"])) <= \
+                        self._fire_range(v):
+                    kinds.append("melee_return")
+            if v["formation"] == "skirmish" and pm["kind"] != "charge":
+                if self._skirmish_moves(v):
+                    kinds.append("reaction_move")
+            if kinds:
+                ent[v["pid"]] = kinds
+        return ent
+
+    def _skirmish_moves(self, v):
+        """Adjacent hexes a skirmisher may Reaction Move to [6.2.2/
+        8.2.1#3]: stacking-legal, not adjacent to an enemy."""
+        outs = []
+        for nb in self.game.neighbors(v["col"], v["row"]):
+            nb = tuple(nb)
+            if not self.in_area(*nb) or self.hex_terrain(*nb) == "water":
+                continue
+            cell = self.F.entry(v, self.hex_terrain(*nb))
+            if cell is None or cell.prohibited:
+                continue
+            if not self._stack_ok(v, *nb):
+                continue
+            adj_enemy = any(
+                w["side"] != v["side"] and w["arm"] != "leader"
+                and self.on_map(w)
+                and self._dist((w["col"], w["row"]), nb) <= 1
+                for w in self.s["units"].values())
+            if adj_enemy:
+                continue
+            outs.append(nb)
+        return outs
+
+    def _shock_defender_check(self, pm, out):
+        """Step 8.2.1#4 / 8.3.1#4: artillery alone dies; every defender
+        checks; retreat kills unlimbered guns, limbered guns retreat."""
+        import melee as melee_mod
+        dstack = self._stack(*pm["dhex"], side=pm["dside"])
+        recs = []
+        troops = [v for v in dstack
+                  if not v["arm"].startswith("artillery")]
+        if not troops:
+            for v in dstack:
+                self._destroy(v, out,
+                              "artillery defending alone in melee "
+                              "[8.2.1#4/8.3.1#5]")
+            out["defender_check"] = recs
+            return
+        for v in list(dstack):
+            if v["arm"].startswith("artillery"):
+                continue
+            drms, detail = self._preshock_drms(v, "defender", pm)
+            die = self.roll_d10()
+            eff = melee_mod.pre_shock_defender(die, v["morale"], drms)
+            rec = {"unit": v["pid"], "die": die, "drms": detail,
+                   "vs": v["morale"], "result": eff["kind"]}
+            recs.append(rec)
+            if self._cmd:
+                self._mark_combat_fatigue(v)
+            self.s["defended"] = sorted(set(self.s.get("defended", []))
+                                        | {v["pid"]})
+            if eff["kind"] == "stand":
+                continue
+            self._lose_sp(v, eff["sp"], out)
+            if v.get("dead"):
+                continue
+            if eff.get("disorder"):
+                self._disorder(v)
+            if eff.get("rout"):
+                self._set_morale_state(v, "routed", out)
+                self._capture_rout_path(v, pm, out)
+            elif eff.get("levels"):
+                i = self._LADDER.index(v["morale_state"])
+                self._set_morale_state(
+                    v, self._LADDER[min(3, i + eff["levels"])], out)
+                if eff.get("retreat") and not v.get("dead") \
+                        and (v["col"], v["row"]) == tuple(pm["dhex"]):
+                    self._retreat(v, 1, out, routed=False)
+        # defenders driven out: unlimbered artillery dies, limbered may
+        # retreat [8.2.1#4]
+        if not [v for v in self._stack(*pm["dhex"], side=pm["dside"])
+                if not v["arm"].startswith("artillery")]:
+            for v in list(self._stack(*pm["dhex"], side=pm["dside"])):
+                if v["formation"] == "unlimbered":
+                    self._destroy(v, out, "unlimbered artillery "
+                                          "abandoned in melee [8.2.1#4]")
+                else:
+                    self._retreat(v, 1, out, routed=False)
+        out["defender_check"] = recs
+        self._strat_combat_penalty(pm, out)
+
+    def _stand_check(self, u, pm, out):
+        """Defender Pre-Melee Morale Check for a stack that Stands
+        against a charge (or must - strat movement / errata's declined
+        countercharge) [8.4.2#4 + errata 2000-07-20]."""
+        import melee as melee_mod
+        drms, detail = self._preshock_drms(u, "defender", pm)
+        die = self.roll_d10()
+        eff = melee_mod.pre_shock_defender(die, u["morale"], drms)
+        rec = {"unit": u["pid"], "die": die, "drms": detail,
+               "vs": u["morale"], "result": eff["kind"],
+               "cite": "8.4.2#4 Stand"}
+        out.setdefault("stand_check", rec)
+        if eff["kind"] == "stand":
+            return
+        self._lose_sp(u, eff["sp"], out)
+        if u.get("dead"):
+            return
+        if eff.get("disorder"):
+            self._disorder(u)
+        if eff.get("rout"):
+            self._set_morale_state(u, "routed", out)
+            self._capture_rout_path(u, pm, out)
+        elif eff.get("levels"):
+            i = self._LADDER.index(u["morale_state"])
+            self._set_morale_state(
+                u, self._LADDER[min(3, i + eff["levels"])], out)
+            if eff.get("retreat") and not u.get("dead"):
+                self._retreat(u, 1, out, routed=False)
+
+    def _capture_rout_path(self, u, pm, out):
+        """Remember a routed defender's retreat path for pursuit
+        [8.4.2#8] - read back from the effect record just written."""
+        for e in reversed(out.get("effects", [])):
+            if e.get("unit") == u["pid"] and "retreat" in e:
+                pm.setdefault("rout_paths", {})[u["pid"]] = \
+                    [tuple(p) for p in e["retreat"]]
+                return
+
+    def _preshock_drms(self, u, role, pm):
+        """Pre-Shock Morale Check Table DRMs (charts p4), as printed -
+        no borrowing from the 9.1 list."""
+        d, detail = [], {}
+
+        def add(k, v):
+            d.append(v)
+            detail[k] = v
+        dstack = self._stack(*pm["dhex"], side=pm["dside"])
+        dtop = self._top(dstack)
+        if role == "attacker":
+            if dtop is not None:
+                asp = self._aspect(dtop, pm["ahex"])
+                if asp == "rear":
+                    add("attacking_from_rear", -3)
+                elif asp == "flank":
+                    add("attacking_from_flank", -2)
+                if dtop["formation"] == "skirmish":
+                    add("defenders_are_skirmishers", -1)
+            n = len(pm["supports"])
+            if n:
+                add("supporting_stacks", -1 * n)
+            if self._leader_here(u):
+                add("leader_in_hex", -1)
+            if u.get("elite"):
+                add("elite", -1)
+            if u["formation"] == "line":
+                add("in_line", 1)
+            if u["morale_state"] == "shaken":
+                add("shaken", 1)
+            if u["formation"] == "disorder":
+                add("disordered", 1)
+            return d, detail
+        asp = self._aspect(u, pm["ahex"])
+        if asp == "rear":
+            add("attacked_in_rear", 3)
+        elif asp == "flank":
+            add("attacked_in_flank", 1)
+        if u["formation"] == "skirmish":
+            add("in_skirmish_order", 3)
+        if pm["kind"] != "assault":     # flank support NOT vs assault
+            n = self._flank_supports(u)
+            if n:
+                add("flank_support", -1 * n)
+        if self._leader_here(u):
+            add("leader_in_hex", -1)
+        if u.get("elite"):
+            add("elite", -1)
+        if u["formation"] == "square":
+            add("in_square", -2)
+        if u["formation"] == "line":
+            add("in_line", 1)
+        if u["morale_state"] == "shaken":
+            add("shaken", 1)
+        if u["formation"] == "disorder":
+            add("disordered", 1)
+        if u["morale_state"] == "unsteady":
+            add("unsteady", 2)
+        if self._in_strat(u):
+            add("strategic_movement", 2)
+        import melee as melee_mod
+        if melee_mod.terrain_defensive(
+                self._eff_rows(),
+                self._melee_rows_between(pm["ahex"], pm["dhex"])):
+            add("defensive_terrain", -1)
+        return d, detail
+
+    def _leader_here(self, u):
+        return any(v["arm"] == "leader" and v["side"] == u["side"]
+                   and (v["col"], v["row"]) == (u["col"], u["row"])
+                   and self.on_map(v)
+                   for v in self.s["units"].values())
+
+    def _flank_supports(self, u):
+        """Non-routed friendly combat units adjacent to a flank hexside
+        [8.2.1#4 Flank Support]."""
+        kind = self._kind(u)
+        if kind == "all":
+            return 0
+        fl = {tuple(h) for h in fm.flank_hexes(
+            self.game, u["col"], u["row"], u["facing"], kind)}
+        n = 0
+        for v in self.s["units"].values():
+            if v["side"] != u["side"] or v["arm"] == "leader" \
+                    or not self.on_map(v) or v["pid"] == u["pid"]:
+                continue
+            if (v["col"], v["row"]) in fl \
+                    and v["morale_state"] != "routed":
+                n += 1
+        return n
+
+    def _melee_round(self, pm, out):
+        """One Melee Result Table round [8.3.1#5 / 8.4.2#6 / 8.5].
+        Returns 'continue' / 'defender_gone' / 'attacker_gone' /
+        'done'."""
+        import melee as melee_mod
+        astack = [v for v in self._stack(*pm["ahex"], side=pm["side"])
+                  if v["pid"] in pm["attackers"]
+                  and not v["arm"].startswith("artillery")]
+        dstack = self._stack(*pm["dhex"], side=pm["dside"])
+        dtroops = [v for v in dstack
+                   if not v["arm"].startswith("artillery")]
+        if not dtroops:
+            for v in dstack:
+                if v["formation"] == "unlimbered":
+                    self._destroy(v, out, "artillery alone in melee "
+                                          "[8.3.1#5]")
+                else:
+                    self._retreat(v, 1, out, routed=False)
+            return "defender_gone"
+        if not astack:
+            return "attacker_gone"
+        pm["round"] += 1
+        charging = pm["kind"] == "charge" and pm["round"] == 1
+        att_sp = melee_mod.melee_sp(
+            [(v["sp"], v["arm"], v["formation"],
+              pm["kind"] == "charge") for v in astack])
+        def_sp = melee_mod.melee_sp(
+            [(v["sp"], v["arm"], v["formation"], False)
+             for v in dtroops])
+        drms, detail = self._melee_drms(pm, astack, dtroops,
+                                        att_sp, def_sp,
+                                        charge_bonus_on=charging)
+        die = self.roll_d10()
+        res = melee_mod.resolve_melee(self.ctables, die, sum(drms))
+        rec = {"round": pm["round"], "die": die, "drms": detail,
+               "att_sp": att_sp, "def_sp": def_sp,
+               "modified": res["modified"], "loser": res["loser"],
+               "cite": "8.5"}
+        out.setdefault("melee_rounds", []).append(rec)
+        for v in astack + dtroops:
+            self.s["defended"] = sorted(
+                set(self.s.get("defended", []))
+                | ({v["pid"]} if v in dtroops else set()))
+            if self._cmd:
+                self._mark_combat_fatigue(v)
+        if res["loser"] == "both":      # melee continues [8.5.3]
+            for stack in (astack, dtroops):
+                top = stack[0]
+                self._lose_sp(top, 1, out)
+                if not top.get("dead"):
+                    self._morale_check(top, 0, out)
+            a_left = [v for v in self._stack(*pm["ahex"],
+                                             side=pm["side"])
+                      if v["pid"] in pm["attackers"]]
+            d_left = [v for v in self._stack(*pm["dhex"],
+                                             side=pm["dside"])
+                      if not v["arm"].startswith("artillery")]
+            if not d_left:
+                return "defender_gone"
+            if not a_left:
+                return "attacker_gone"
+            return "continue"
+        loser_stack = astack if res["loser"] == "attacker" else dtroops
+        top = loser_stack[0]
+        self._lose_sp(top, res["sp"], out)
+        if not top.get("dead"):
+            if res["morale"]["kind"] == "rout":
+                self._set_morale_state(top, "routed", out)
+                if res["loser"] == "defender":
+                    self._capture_rout_path(top, pm, out)
+            else:
+                i = self._LADDER.index(top["morale_state"])
+                self._set_morale_state(
+                    top, self._LADDER[min(3, i + res["morale"]
+                                          ["levels"])], out)
+            # 'Retreat' = one extra Unsteady-style retreat (errata
+            # 2000-07-20, AUS-MEL-2) on top of any morale retreat
+            if res["other"] == "retreat" and not top.get("dead"):
+                self._retreat(top, 1, out, routed=False)
+        self._strat_combat_penalty(pm, out)
+        if res["loser"] == "defender":
+            d_left = [v for v in self._stack(*pm["dhex"],
+                                             side=pm["dside"])
+                      if not v["arm"].startswith("artillery")]
+            if not d_left:
+                return "defender_gone"
+        else:
+            a_left = [v for v in self._stack(*pm["ahex"],
+                                             side=pm["side"])
+                      if v["pid"] in pm["attackers"]]
+            if not a_left:
+                return "attacker_gone"
+        return "continue"
+
+    def _melee_drms(self, pm, astack, dtroops, att_sp, def_sp,
+                    charge_bonus_on):
+        """Melee Die Roll Modifiers (charts p4), each recorded."""
+        import melee as melee_mod
+        d, detail = [], {}
+
+        def add(k, v):
+            if v:
+                d.append(v)
+                detail[k] = v
+        atop, dtop = astack[0], dtroops[0]
+        tdrm, _ = melee_mod.terrain_melee_drm(
+            self._eff_rows(),
+            self._melee_rows_between(pm["ahex"], pm["dhex"]))
+        add("terrain", tdrm)
+        asp = self._aspect(dtop, pm["ahex"])
+        if asp == "rear":
+            add("attacking_rear", 2)
+        elif asp == "flank":
+            add("attacking_flank", 1)
+        if self._in_strat(dtop):
+            add("defender_strategic_movement", 2)
+        if dtop["arm"] == "cavalry" and dtop.get("blown", 0) > 0:
+            add("defender_blown_cavalry", 1)
+        # square: pick the formation most favorable to the DEFENDER
+        # when formations are mixed (errata 6.5.6 principle)
+        if any(v["formation"] == "square" for v in dtroops):
+            add("vs_square", -3 if atop["arm"] == "cavalry" else -1)
+        if charge_bonus_on:
+            ch = pm["charge"]
+            bonus = melee_mod.charge_bonus(
+                self.ctables, ch["ctype"], dist=ch["dist"],
+                vs_square=any(v["formation"] == "square"
+                              for v in dtroops),
+                in_column=atop["formation"] == "column",
+                countercharger_bonus=ch.get("cc_bonus", 0))
+            add("charge_bonus", bonus)
+        # fatigue melee DRM [13.3]: against the fatigued side
+        if self._cmd:
+            for stack, sign, key in ((astack, 1, "attacker_fatigue"),
+                                     (dtroops, -1, "defender_fatigue")):
+                dk = self._div_key_of(stack[0])
+                lvl = self.s.get("fatigue", {}).get(dk, 0)
+                m = 0
+                if lvl >= 8:
+                    m = -2
+                elif lvl >= 6:
+                    m = -1
+                add(key, m * sign)
+        # Napoleon / Murat [charts p4] - not present in A15.1, but the
+        # rule is data-driven on leader slots
+        for v in self.s["units"].values():
+            if v["arm"] == "leader" and self.on_map(v):
+                if v["slot"] == "Napoleon" and \
+                        (v["col"], v["row"]) in (tuple(pm["ahex"]),
+                                                 tuple(pm["dhex"])):
+                    add("napoleon", 2 if v["side"] == pm["side"] else -2)
+                if v["slot"] == "Murat" and pm["kind"] == "charge" \
+                        and (v["col"], v["row"]) == tuple(pm["ahex"]):
+                    add("murat_charging", 1)
+        add("size_ratio", melee_mod.size_ratio_drm(att_sp, def_sp))
+        return d, detail
+
+    def _strat_combat_penalty(self, pm, out):
+        """5.2.1: a strat-movement defender loses the marker after all
+        combat is completed."""
+        dtop = self._top(self._stack(*pm["dhex"], side=pm["dside"]))
+        dk = dtop and self._div_key_of(dtop)
+        if dk and dk in self.s.get("strat", []):
+            pm["strat_strip"] = dk
+
+    def _shock_finish(self, pm, out, advance=False):
+        """Close the combat: advance [8.3.1#7], charge pursuit/advance
+        [8.4.2#8], blown markers [8.4.2#9], strat marker strip."""
+        if pm["kind"] == "charge":
+            self._charge_finish(pm, out, advance)
+        elif advance and pm["kind"] == "assault":
+            self._advance_attackers(pm, out)
+        if pm.get("strat_strip"):
+            dk = pm["strat_strip"]
+            if dk in self.s["strat"]:
+                self.s["strat"].remove(dk)
+                out["strategic_marker_removed"] = {
+                    "div": dk, "cite": "5.2.1 (attacked: marker removed "
+                    "after combat)"}
+        self.s["pending_melee"] = None
+        out["shock_over"] = {"kind": pm["kind"], "rounds": pm["round"]}
+        return None
+
+    def _advance_attackers(self, pm, out):
+        """Attacker advance [8.3.1#7]: mandatory, into the vacated hex."""
+        moved = []
+        for p in pm["attackers"]:
+            v = self.unit(p)
+            if v.get("dead") or (v["col"], v["row"]) != tuple(pm["ahex"]):
+                continue
+            if v["morale_state"] in ("unsteady", "routed"):
+                continue
+            v["col"], v["row"] = pm["dhex"]
+            moved.append(p)
+        if moved:
+            out["advance"] = {"units": moved, "into": pm["dhex"],
+                              "cite": "8.3.1#7"}
+
+    def _charge_finish(self, pm, out, advance):
+        """Charge steps 8-9: pursuit check vs routed opponents, else
+        advance; charger disordered + Blown-2 [8.4.2#8-9]."""
+        import melee as melee_mod
+        charger = self.unit(pm["attackers"][0])
+        routed_defs = [self.unit(p) for p in pm.get("rout_paths", {})
+                       if not self.unit(p).get("dead")]
+        if not charger.get("dead") \
+                and charger["morale_state"] not in ("unsteady",
+                                                    "routed"):
+            if routed_defs:
+                pu = routed_defs[0]
+                drms, detail = [], {}
+                ct = pm["charge"]["ctype"]
+                if ct in ("light", "lancer"):
+                    drms.append(1)
+                    detail["light_or_lancer"] = 1
+                if ct == "cossack":
+                    drms.append(3)
+                    detail["cossack"] = 3
+                if self._leader_here(charger):
+                    drms.append(-2)
+                    detail["commander_in_hex"] = -2
+                die = self.roll_d10()
+                hexes = melee_mod.pursuit(die, charger["morale"], drms)
+                rec = {"die": die, "drms": detail,
+                       "vs": charger["morale"], "hexes": hexes,
+                       "cite": "8.4.2#8"}
+                out["pursuit"] = rec
+                if hexes:
+                    path = pm["rout_paths"][pu["pid"]][:hexes]
+                    stepped = 0
+                    for hx in path:
+                        if not self.in_area(*hx) or \
+                                self.hex_terrain(*hx) == "water":
+                            break
+                        charger["col"], charger["row"] = hx
+                        stepped += 1
+                        self._lose_sp(pu, 1, out)      # 1 SP per hex
+                        if pu.get("dead"):
+                            break
+                    rec["pursued"] = stepped
+                    self._disorder(charger)
+            elif advance and not self._stack(*pm["dhex"],
+                                             side=pm["dside"]):
+                charger["col"], charger["row"] = pm["dhex"]
+                out["advance"] = {"units": [charger["pid"]],
+                                  "into": pm["dhex"], "cite": "8.4.2#8"}
+        # step 9: charging cavalry disordered + Blown-2 [8.4.2#9]
+        if not charger.get("dead"):
+            self._disorder(charger)
+            charger["blown"] = 2
+            charger["recovery"] = False
+            out["blown"] = {"unit": charger["pid"], "level": 2,
+                            "cite": "8.4.2#9"}
+
+    # ----------------------------------------- shock window actions
+    def _propose_melee_window(self, side, action):
+        pm = self.s["pending_melee"]
+        t = action.get("type")
+        owner = pm.get("window_owner")
+        if side != owner:
+            return self._v(False, f"the {pm['stage']} decision belongs "
+                                  f"to {owner} [8.2-8.5]")
+        ent = pm.get("entitled", {})
+        if pm["stage"] == "square_window":
+            if t != "square_choice":
+                return self._v(False, "stand or form square: "
+                                      "square_choice {form: bool} "
+                                      "[8.4.2#4]")
+            pid = str(action.get("unit") or next(iter(ent)))
+            if pid not in ent:
+                return self._v(False, "not the checking unit")
+            return self._v(True)
+        if pm["stage"] == "return_window":
+            if t == "melee_no_return":
+                return self._v(True)
+            if t == "reaction_move":
+                pid = str(action.get("unit"))
+                if pid not in ent or "reaction_move" not in ent[pid]:
+                    return self._v(False, "that unit may not reaction "
+                                          "move [6.2.2/8.2.1#3]")
+                dest = action.get("dest")
+                if not dest or tuple(dest) not in \
+                        self._skirmish_moves(self.unit(pid)):
+                    return self._v(False, "illegal skirmish reaction "
+                                          "move destination [6.2.2]")
+                return self._v(True)
+            if t != "melee_return":
+                return self._v(False, "melee_return / reaction_move / "
+                                      "melee_no_return [8.2.1#3]")
+            pid = str(action.get("unit"))
+            if pid not in ent or "melee_return" not in ent.get(pid, []):
+                return self._v(False, "that unit may not return fire "
+                                      "here [8.1.2/8.1.4/7.2]")
+            return self._v(True)
+        if pm["stage"] in ("continue_def", "continue_att"):
+            if t not in ("melee_stand", "melee_withdraw"):
+                return self._v(False, "melee continues: melee_stand or "
+                                      "melee_withdraw (voluntary rout) "
+                                      "[8.5.3]")
+            return self._v(True)
+        return self._v(False, f"no action fits stage {pm['stage']}")
+
+    def _apply_melee_window(self, side, action):
+        pm = self.s["pending_melee"]
+        t = action["type"]
+        out = {}
+        if t == "square_choice":
+            pid = str(action.get("unit")
+                      or next(iter(pm["entitled"])))
+            u = self.unit(pid)
+            if action.get("form"):
+                import melee as melee_mod
+                drms, detail = [], {}
+                if pm["charge"]["dist"] == 2:
+                    drms.append(1)
+                    detail["cavalry_2_hexes_away"] = 1
+                if self._leader_here(u):
+                    drms.append(-2)
+                    detail["leader_in_hex"] = -2
+                if u["formation"] == "column":
+                    drms.append(-1)
+                    detail["in_column"] = -1
+                elif u["formation"] == "line":
+                    drms.append(1)
+                    detail["in_line"] = 1
+                elif u["formation"] == "skirmish":
+                    drms.append(4)
+                    detail["in_skirmish"] = 4
+                die = self.roll_d10()
+                eff = melee_mod.form_square(die, u["morale"], drms)
+                rec = {"unit": pid, "die": die, "drms": detail,
+                       "vs": u["morale"], "result": eff["kind"],
+                       "cite": "8.4.2#4"}
+                out["form_square"] = rec
+                if eff["kind"] == "square_formed":
+                    u["formation"] = "square"
+                    if u["facing"] % 2 == 0:
+                        u["facing"] = (u["facing"] + 1) % fm.FACINGS
+                else:
+                    self._disorder(u)
+                    pm["square_failed"] = True
+                    if eff.get("levels"):
+                        i = self._LADDER.index(u["morale_state"])
+                        self._set_morale_state(
+                            u, self._LADDER[min(3, i + eff["levels"])],
+                            out)
+            else:
+                self._stand_check(u, pm, out)   # [8.4.2#4 Stand]
+            pm["stage"] = "return_window"
+            self._shock_run(pm, out)
+            return out
+        if t == "melee_return":
+            pid = str(action["unit"])
+            v = self.unit(pid)
+            atk = self._top(self._stack(*pm["ahex"], side=pm["side"]))
+            self.s["returned"].append(pid)
+            rec, eff = self._resolve_shot(v, atk)
+            out["melee_return"] = rec
+            self._apply_effect(atk, eff, out)
+            pm["returned_units"].append(pid)
+            pm["entitled"].pop(pid, None)
+            # the attack ends if the attacking stack is broken
+            # [8.2.1#3: survives without becoming Unsteady or Routed]
+            atk2 = [self.unit(p) for p in pm["attackers"]]
+            alive = [a for a in atk2 if not a.get("dead")
+                     and a["morale_state"] not in ("unsteady", "routed")
+                     and (a["col"], a["row"]) == tuple(pm["ahex"])]
+            if not alive:
+                out["attack_broken"] = {"cite": "8.2.1#3/8.3.1#3"}
+                return self._finish_from_window(pm, out) or out
+            if not pm["entitled"]:
+                self._advance_stage_after_return(pm, out)
+            return out
+        if t == "reaction_move":
+            pid = str(action["unit"])
+            v = self.unit(pid)
+            dest = tuple(action["dest"])
+            v["col"], v["row"] = dest
+            out["skirmish_reaction_move"] = {
+                "unit": pid, "dest": list(dest), "cite": "8.2.1#3"}
+            # vacated: the attacker advances, sequence over [8.2.1#3]
+            if not self._stack(*pm["dhex"], side=pm["dside"]):
+                self._advance_attackers(pm, out)
+                return self._finish_from_window(pm, out) or out
+            pm["entitled"].pop(pid, None)
+            if not pm["entitled"]:
+                self._advance_stage_after_return(pm, out)
+            return out
+        if t == "melee_no_return":
+            self._advance_stage_after_return(pm, out)
+            return out
+        if t in ("melee_stand", "melee_withdraw"):
+            if t == "melee_withdraw":
+                hexx = pm["dhex"] if pm["stage"] == "continue_def" \
+                    else pm["ahex"]
+                who = pm["dside"] if pm["stage"] == "continue_def" \
+                    else pm["side"]
+                for v in list(self._stack(*hexx, side=who)):
+                    if v["arm"].startswith("artillery"):
+                        continue
+                    self._set_morale_state(v, "routed", out)
+                out["voluntary_rout"] = {"side": who, "cite": "8.5.3"}
+                adv = pm["stage"] == "continue_def"
+                self._shock_finish(pm, out, advance=adv)
+                return out
+            if pm["stage"] == "continue_def":
+                pm["stage"] = "continue_att"
+            else:
+                pm["stage"] = "melee_round"
+            self._shock_run(pm, out)
+            return out
+        raise RuntimeError(f"unhandled melee window action {t}")
+
+    def _advance_stage_after_return(self, pm, out):
+        pm["stage"] = "defender_check" if pm["kind"] != "charge" \
+            else "melee_round"
+        self._shock_run(pm, out)
+
+    def _finish_from_window(self, pm, out):
+        self._shock_finish(pm, out)
+        return None
+
+    # ------------------------------------ phase 4: strategic movement
+    def _propose_strategic(self, side):
+        """Declare Strategic Movement for the activated division [5.2]:
+        full activation, before anything else has acted."""
+        act = self.s["act"]
+        if act["atype"] != "full" or not act.get("div"):
+            return self._v(False, "strategic movement requires a "
+                                  "division Full Activation [5.2]")
+        if act["div"] in self.s["strat"]:
+            return self._v(False, "the division already carries a "
+                                  "Strategic Movement marker [5.2]")
+        if self.s["moved"] or act["stage"] != "move":
+            return self._v(False, "strategic movement must be declared "
+                                  "before the division acts [5.2.1: "
+                                  "never both strategic and regular "
+                                  "movement]")
+        return self._v(True)
+
+    def _apply_strategic(self, side):
+        act = self.s["act"]
+        dk = act["div"]
+        self.s["strat"].append(dk)
+        self.s["strat_turn"] = sorted(set(self.s["strat_turn"]) | {dk})
+        act["strat"] = True
+        for pid in act["incommand"]:
+            u = self.unit(pid)
+            if u["arm"] != "leader":
+                act["budget"][pid] = float(int(u["ma"]) * 2)   # [5.2]
+        return {"strategic_movement": {
+            "div": dk, "budgets": dict(act["budget"]),
+            "cite": "5.2: double MA; no combat or reactions; must keep "
+                    "3 hexes from the enemy; road movement required "
+                    "into village/woods/swamp and over stream/wall"}}
+
+    def _strat_proximity_sweep(self, acted_side, out):
+        """5.2.1: a marked division loses its marker once enemy combat
+        units have finished an activation (combat included) within 3
+        hexes of any of its units."""
+        for dk in list(self.s.get("strat", [])):
+            if self._divisions()[dk]["side"] == acted_side:
+                continue        # only ENEMY activations strip it
+            if self._enemies_within(dk, 3):
+                self.s["strat"].remove(dk)
+                out.setdefault("strategic_markers_lost", []).append(
+                    {"div": dk, "cite": "5.2.1 (enemy finished an "
+                     "activation within 3 hexes)"})
+
+    def _strat_close_checks(self, out):
+        """End-of-activation duties for a strat-moving division:
+        must-move-as-far-as-possible [5.2.1#4, Fox's liberal reading]
+        and the no-Line rule; violation = marker stripped (the LIM-
+        removal penalty is moot under A15.1's voluntary pool)."""
+        act = self.s.get("act")
+        if not act or not act.get("strat"):
+            return
+        dk = act["div"]
+        violated = None
+        for pid in act["incommand"]:
+            u = self.unit(pid)
+            if u["arm"] == "leader" or u.get("dead"):
+                continue
+            if u["formation"] == "line":
+                violated = f"{pid} remained in Line [5.2.1]"
+                break
+            left = act["budget"].get(pid, 0) - act["spent"].get(pid, 0)
+            if left >= 1 and pid not in self.s["moved"]:
+                if self.reachable(pid, budget=left, strat=True):
+                    violated = f"{pid} did not move as far as " \
+                               "possible [5.2.1#4]"
+                    break
+        if violated and dk in self.s["strat"]:
+            self.s["strat"].remove(dk)
+            out["strategic_violation"] = {
+                "div": dk, "why": violated,
+                "cite": "5.2.1#4 + Fox Q&A (liberal reading: only "
+                        "unforced shortfalls are punished)"}
+
+    # ------------------------------- phase 4: reaction windows [6.2]
+    # The NON-active player acts during the active player's movement.
+    # Movement executes hex by hex; each step computes who may react
+    # BEFORE the step (MP expenditure inside a zone) and AFTER it
+    # (entry into a zone). A non-empty window logs its entitlements
+    # (the honesty record) and hands the flow to the reacting side
+    # until every reactor has acted or declined; then the walk resumes.
+
+    _ZONE_ALL = ("skirmish",)          # all-around zones [6.2.2]
+
+    def _zone(self, e):
+        """Reaction Zone hexes of enemy unit `e` [6.2 + 6.3 diagrams]:
+        front-adjacent for formed units, all-around for skirmishers and
+        lone leaders; limbered foot artillery has none [6.2.4]."""
+        if e["arm"] == "leader":
+            alone = len(self.occupants(e["col"], e["row"])) == 1
+            if not alone:
+                return set()
+            return {tuple(h) for h in
+                    self.game.neighbors(e["col"], e["row"])}
+        if e["morale_state"] == "routed":
+            return set()               # non-routed units only [6.2]
+        if e["formation"] == "skirmish":
+            return {tuple(h) for h in
+                    self.game.neighbors(e["col"], e["row"])}
+        if e["arm"].startswith("artillery"):
+            if e["formation"] != "unlimbered" and \
+                    not (e["arm"] == "artillery_horse"):
+                return set()           # limbered foot: no zone [6.2.4]
+        kind = self._kind(e)
+        if kind == "all":
+            return {tuple(h) for h in
+                    self.game.neighbors(e["col"], e["row"])}
+        return {tuple(h) for h in fm.front_hexes(
+            self.game, e["col"], e["row"], e["facing"], kind)}
+
+    def _flank_zone(self, e):
+        """Cavalry Flank Zone [6.2.3]: extends from the flank
+        hexsides."""
+        if e["arm"] != "cavalry" or e["morale_state"] == "routed" \
+                or e["formation"] == "disorder":
+            return set()               # disordered cavalry has no
+                                       # flank reaction zone [6.4.1]
+        kind = self._kind(e)
+        if kind == "all":
+            return set()
+        return {tuple(h) for h in fm.flank_hexes(
+            self.game, e["col"], e["row"], e["facing"], kind)}
+
+    def _react_kinds(self, e, mover, at_hex, phase, charge=False):
+        """Which reactions may `e` take against `mover` at `at_hex`
+        right now. phase: 'pre' = MP spent inside the zone, 'post' =
+        entry into the zone."""
+        if e.get("dead") or not self.on_map(e):
+            return []
+        if e["side"] == mover["side"]:
+            return []
+        if self._in_strat(e):
+            return []                  # no reactions in strat move
+        kinds = []
+        zone = self._zone(e)
+        in_zone = tuple(at_hex) in zone
+        if e["arm"] == "leader":
+            if in_zone and self._leader_alone(e) \
+                    and self._reaction_moves(e):
+                kinds.append("reaction_move")   # any number [6.2.7]
+            return kinds
+        if e["formation"] == "skirmish":
+            if in_zone:                # entry OR expenditure [6.2.2]
+                if e["pid"] not in self.s["reacted"] \
+                        and self._fire_capable(e)[0]:
+                    kinds.append("reaction_fire")
+                if self._reaction_moves(e):
+                    kinds.append("reaction_move")
+            return kinds
+        if e["arm"] == "infantry":
+            # expenditure only - entry alone does NOT trigger [6.2.1];
+            # charge moves trigger on any movement in the zone
+            if in_zone and (phase == "pre" or charge) \
+                    and e["pid"] not in self.s["reacted"] \
+                    and self._fire_capable(e)[0]:
+                kinds.append("reaction_fire")
+            return kinds
+        if e["arm"].startswith("artillery"):
+            if not in_zone:
+                return []
+            horse = e["arm"] == "artillery_horse"
+            if e["formation"] == "unlimbered":
+                used = e["pid"] in self.s["reacted"] or \
+                    e["pid"] in self.s["returned"]
+                if not used and self._fire_capable(e)[0]:
+                    kinds.append("reaction_fire")   # once [6.2.4/8.1.4]
+                if horse and not used and mover["arm"] != "cavalry":
+                    kinds.append("reaction_limber")  # [6.2.5]
+            elif horse:               # limbered horse: reverse [6.2.5]
+                if e["pid"] not in self.s.get("rev_blocked", []) \
+                        and self._reverse_dest(e):
+                    kinds.append("reaction_reverse")
+            return kinds
+        if e["arm"] == "cavalry":
+            if e["morale_state"] == "unsteady":
+                return []              # may not reaction charge [9.2.3]
+            if mover["arm"] in ("infantry",) or \
+                    mover["arm"].startswith("artillery"):
+                if in_zone:
+                    if self._reverse_dest(e):
+                        kinds.append("reaction_reverse")   # [6.2.3]
+                    okc, _ = self._may_initiate_melee(e)
+                    if okc and not e.get("blown", 0) \
+                            and e["pid"] not in \
+                            self.s.get("cc_failed", []):
+                        kinds.append("reaction_charge")    # [6.2.3]
+            # cavalry movement never triggers reaction charges (Fox
+            # Q&A); countercharge exists only against charges [8.4.2#3]
+            if phase == "post" and tuple(at_hex) in self._flank_zone(e):
+                kinds.append("reaction_face")              # [6.2.3]
+            return kinds
+        return kinds
+
+    def _leader_alone(self, e):
+        return len(self.occupants(e["col"], e["row"])) == 1
+
+    def _reaction_moves(self, e):
+        """Legal reaction-move destinations (skirmisher/leader): any
+        adjacent stacking-legal hex not adjacent to an enemy [6.2.2/
+        6.2.7]."""
+        return self._skirmish_moves(e)
+
+    def _reverse_dest(self, e):
+        """Reverse Movement in Reaction [6.2.6]: one hex through a rear
+        hexside, keeping facing; never into a prohibited hex, an
+        enemy-adjacent hex or an occupied hex (Fox Q&A)."""
+        kind = self._kind(e)
+        if kind == "all":
+            return None
+        rears = fm.rear_hexes(self.game, e["col"], e["row"],
+                              e["facing"], kind)
+        for h in rears:
+            h = tuple(h)
+            if not self.in_area(*h) or self.hex_terrain(*h) == "water":
+                continue
+            cell = self.F.entry(e, self.hex_terrain(*h))
+            if cell is None or cell.prohibited:
+                continue
+            if self.occupants(*h):
+                continue
+            if self._near_enemy(h, 1, e["side"]):
+                continue
+            return h
+        return None
+
+    def _collect_window(self, mover, at_hex, phase, charge=False,
+                        exclude_hex=None):
+        ent = {}
+        for e in self.s["units"].values():
+            if exclude_hex and (e["col"], e["row"]) == exclude_hex:
+                continue        # the charge target reacts through the
+                                # machine's own steps [8.4.2#3-5]
+            ks = self._react_kinds(e, mover, at_hex, phase,
+                                   charge=charge)
+            if ks:
+                ent[e["pid"]] = ks
+        return ent
+
+    def _open_react(self, mover, ent, phase, out, walk=None):
+        pr = {"side": self._enemy(mover["side"]), "mover": mover["pid"],
+              "mover_side": mover["side"],
+              "at": [mover["col"], mover["row"]], "phase": phase,
+              "entitled": ent, "declined": [], "walk": walk}
+        self.s["pending_react"] = pr
+        out.setdefault("reaction_windows", []).append(
+            {"at": pr["at"], "phase": phase, "owner": pr["side"],
+             "entitled": {k: list(v) for k, v in ent.items()},
+             "cite": "6.2 (window logged = opportunity surfaced)"})
+
+    # ------------------------------ the stepwise move walk (schema 4)
+    def _facing_toward(self, frm, to, kind):
+        fx, fy = self.game.grid.hex_to_pixel(*frm)
+        tx, ty = self.game.grid.hex_to_pixel(*to)
+        ang = math.degrees(math.atan2(tx - fx, -(ty - fy))) % 360
+        f = int(round(ang / 30.0)) % 12
+        if kind == "vertex" and f % 2 == 0:
+            f = (f + 1) % fm.FACINGS
+        if kind == "hexside" and f % 2 == 1:
+            f = (f + 1) % fm.FACINGS
+        return f
+
+    def _walk_move(self, u, walk, out):
+        """Execute the remaining steps of a move, opening reaction
+        windows as triggers arise. walk = {path_left, facing, nmc,
+        dis_left, cost, [charge], [pm]}. Returns True when the move is
+        finished."""
+        act = self.s.get("act")
+        chg = bool(walk.get("charge"))
+        excl = tuple(walk["pm"]["dhex"]) if walk.get("pm") else None
+        while walk["path_left"]:
+            frm = (u["col"], u["row"])
+            nxt = tuple(walk["path_left"][0])
+            # PRE window: spending MPs inside enemy zones [6.2.1]
+            ent = self._collect_window(u, frm, "pre", charge=chg,
+                                       exclude_hex=excl)
+            ent = self._filter_declined(ent, walk)
+            if ent:
+                self._open_react(u, ent, "pre", out, walk=walk)
+                return False
+            if not chg:
+                sc, dis, nmc = self.step_cost(u, frm, nxt, walk["nmc"])
+                walk["nmc"] = nmc
+                walk["cost"] += sc or 0
+            u["col"], u["row"] = nxt
+            kind = self._kind(u)
+            u["facing"] = self._facing_toward(frm, nxt, kind)
+            walk["path_left"] = walk["path_left"][1:]
+            # movement-disorder events land at their recorded hexes
+            walk["dis_left"], rolls = self._apply_dis_events(
+                u, walk["dis_left"], nxt)
+            if rolls:
+                out.setdefault("disorder", []).extend(rolls)
+            # POST window: entry into enemy zones [6.2.2/6.2.4/6.2.3]
+            ent = self._collect_window(u, nxt, "post", charge=chg,
+                                       exclude_hex=excl)
+            ent = self._filter_declined(ent, walk)
+            if ent:
+                self._open_react(u, ent, "post", out, walk=walk)
+                return False
+        if walk.get("pm"):
+            self._start_charge_machine(walk["pm"], out)
+            return True
+        u["facing"] = walk["final_facing"]
+        if act is not None and "spent" in act:
+            act["spent"][u["pid"]] = act["spent"].get(u["pid"], 0) + \
+                max(walk["cost"], walk.get("full_cost", 0))
+        out["move_complete"] = {"unit": u["pid"],
+                                "at": [u["col"], u["row"]],
+                                "facing": u["facing"]}
+        return True
+
+    def _filter_declined(self, ent, walk):
+        """A reactor that declined once during this move is not
+        re-prompted at later steps (its later opportunities are logged
+        as declined-in-advance)."""
+        dec = walk.get("declined_all", [])
+        return {k: v for k, v in ent.items() if k not in dec}
+
+    def _apply_dis_events(self, u, dis_left, at_hex):
+        rolls = []
+        keep = []
+        for kind, c, r in dis_left:
+            if (c, r) != tuple(at_hex):
+                keep.append((kind, c, r))
+                continue
+            if u["formation"] == "disorder":
+                continue
+            if kind == "auto":
+                self._disorder(u)
+                rolls.append({"at": [c, r], "auto": True})
+            else:
+                v = self.roll_d10()
+                failed = v > u["morale"]
+                if failed:
+                    self._disorder(u)
+                rolls.append({"at": [c, r], "roll": v,
+                              "vs_morale": u["morale"],
+                              "disordered": failed})
+        return keep, rolls
+
+    # ------------------------------------- reaction window actions
+    def _propose_react_window(self, side, action):
+        pr = self.s["pending_react"]
+        t = action.get("type")
+        if side != pr["side"]:
+            return self._v(False, f"the reaction window belongs to "
+                                  f"{pr['side']} [6.2]")
+        if t == "decline_reaction":
+            return self._v(True)
+        pid = str(action.get("unit"))
+        if pid not in pr["entitled"]:
+            return self._v(False, "that unit is not entitled to react "
+                                  "in this window [6.2]")
+        if t not in pr["entitled"][pid]:
+            return self._v(False, f"{t} is not among that unit's "
+                                  f"reactions here: "
+                                  f"{pr['entitled'][pid]} [6.2]")
+        if t == "reaction_move":
+            dest = action.get("dest")
+            if not dest or tuple(dest) not in \
+                    self._reaction_moves(self.unit(pid)):
+                return self._v(False, "illegal reaction-move "
+                                      "destination [6.2.2/6.2.7]")
+        if t == "reaction_face":
+            df = int(action.get("turn", 2))
+            if df not in (2, -2):
+                return self._v(False, "reaction facing change is one "
+                                      "hexside [6.2.3]")
+        return self._v(True)
+
+    def _apply_react_window(self, side, action):
+        pr = self.s["pending_react"]
+        t = action["type"]
+        mover = self.unit(pr["mover"])
+        out = {}
+        walk = pr.get("walk")
+        if t == "decline_reaction":
+            if walk is not None:
+                walk.setdefault("declined_all", []).extend(
+                    pr["entitled"].keys())
+            out["reactions_declined"] = list(pr["entitled"].keys())
+            return self._close_react(pr, mover, out)
+        pid = str(action["unit"])
+        e = self.unit(pid)
+        before = (mover["morale_state"], mover.get("dead", False),
+                  mover["col"], mover["row"])
+        if t == "reaction_fire":
+            self.s["reacted"].append(pid)
+            rec, eff = self._resolve_shot(e, mover)
+            out["reaction_fire"] = rec
+            self._apply_effect(mover, eff, out)
+            pr["entitled"].pop(pid, None)
+        elif t == "reaction_move":
+            e["col"], e["row"] = tuple(action["dest"])
+            out["reaction_move"] = {"unit": pid,
+                                    "dest": [e["col"], e["row"]],
+                                    "cite": "6.2.2/6.2.7"}
+            pr["entitled"].pop(pid, None)
+        elif t == "reaction_limber":
+            self.s["reacted"].append(pid)   # counts as its reaction
+            e["formation"] = "limbered"
+            if e["facing"] % 2 == 1:
+                e["facing"] = (e["facing"] + 1) % fm.FACINGS
+            out["reaction_limber"] = {"unit": pid, "cite": "6.2.5"}
+            pr["entitled"].pop(pid, None)
+        elif t == "reaction_reverse":
+            dest = self._reverse_dest(e)
+            rec = {"unit": pid, "dest": dest and list(dest),
+                   "cite": "6.2.6"}
+            if e["arm"] == "artillery_horse" \
+                    and e["formation"] != "unlimbered":
+                die = self.roll_d10()
+                rec["disorder_check"] = {"die": die,
+                                         "vs": e["morale"]}
+                if die > e["morale"]:   # artillery never disorders,
+                    # but a failure ends its reverse moves [6.2.5]
+                    self.s.setdefault("rev_blocked", []).append(pid)
+                    rec["blocked"] = True
+            if dest and not rec.get("blocked"):
+                e["col"], e["row"] = dest
+            out["reaction_reverse"] = rec
+            pr["entitled"].pop(pid, None)
+            if e.get("blown"):
+                e["recovery"] = False   # reaction move strips it
+                                        # [8.4.5]
+        elif t == "reaction_face":
+            df = int(action.get("turn", 2))
+            e["facing"] = (e["facing"] + df) % fm.FACINGS
+            out["reaction_face"] = {"unit": pid,
+                                    "facing": e["facing"],
+                                    "cite": "6.2.3 (free movement)"}
+            pr["entitled"].pop(pid, None)
+        elif t == "reaction_charge":
+            pr["entitled"].pop(pid, None)
+            drms, detail = self._preshock_drms(
+                e, "attacker",
+                {"kind": "reaction_charge", "supports": [],
+                 "ahex": [e["col"], e["row"]],
+                 "dhex": [mover["col"], mover["row"]],
+                 "dside": mover["side"]})
+            die = self.roll_d10()
+            import melee as melee_mod
+            eff = melee_mod.pre_shock_attacker(die, e["morale"], drms)
+            rec = {"unit": pid, "die": die, "drms": detail,
+                   "vs": e["morale"], "result": eff["kind"],
+                   "cite": "6.2.3 (reaction charges DO take the "
+                           "pre-melee check - Fox Q&A)"}
+            out["reaction_charge_check"] = rec
+            if eff["kind"] != "may_melee":
+                # failure = immediately disordered, no charge [6.2.3]
+                self._disorder(e)
+                self.s.setdefault("cc_failed", []).append(pid)
+                rec["disordered"] = True
+            else:
+                # the reacting cavalry becomes the ATTACKER [6.2.3];
+                # the mover's movement is over whatever happens (Fox)
+                self.s["pending_react"] = None
+                if walk is not None:
+                    out["movement_ended"] = {
+                        "unit": mover["pid"],
+                        "cite": "Fox Q&A: reaction-charged movement "
+                                "ends"}
+                pm = {"kind": "charge", "side": e["side"],
+                      "dside": mover["side"],
+                      "ahex": [e["col"], e["row"]],
+                      "dhex": [mover["col"], mover["row"]],
+                      "attackers": [pid], "supports": [],
+                      "stage": "formation_check", "round": 0,
+                      "returned_units": [],
+                      "charge": {"dist": None,
+                                 "ctype": self._cav_class(e),
+                                 "from": [e["col"], e["row"]],
+                                 "path": [], "reaction": True}}
+                self.s["pending_melee"] = pm
+                out["reaction_charge"] = {
+                    "unit": pid, "target_hex": pm["dhex"],
+                    "cite": "6.2.3/8.4 (charge bonus applies; "
+                            "may NOT be countercharged)"}
+                self._shock_run(pm, out)
+                return out
+        # window continues while entitlements remain; else resume
+        if pr["entitled"]:
+            changed = (mover["morale_state"], mover.get("dead", False),
+                       mover["col"], mover["row"]) != before
+            if changed and walk is not None:
+                out["movement_ended"] = {
+                    "unit": mover["pid"],
+                    "why": "state changed by the reaction"}
+                self.s["pending_react"] = None
+                return out
+            return out
+        return self._close_react(pr, mover, out)
+
+    def _close_react(self, pr, mover, out):
+        self.s["pending_react"] = None
+        walk = pr.get("walk")
+        if walk is None:
+            return out
+        if mover.get("dead") or mover["morale_state"] in ("unsteady",
+                                                          "routed"):
+            out["movement_ended"] = {
+                "unit": mover["pid"],
+                "why": f"mover is "
+                       f"{'dead' if mover.get('dead') else mover['morale_state']}"}
+            return out
+        self._walk_move(mover, walk, out)
+        return out
+
     # ------------------------------------------------------------ rally
     def _propose_rally(self, side, action):
         if action["type"] == "end_rally":
@@ -1682,6 +3491,18 @@ class NapoleonicGame(GateGame):
         t = action["type"]
         if t == "end_turn":
             return self._end_turn()
+        if t in ("melee", "charge"):
+            return self._apply_shock(side, action)
+        if t in ("melee_return", "melee_no_return", "melee_stand",
+                 "melee_withdraw", "square_choice") or \
+                (t == "reaction_move" and self.s.get("pending_melee")):
+            return self._apply_melee_window(side, action)
+        if t in ("reaction_fire", "reaction_move", "reaction_reverse",
+                 "reaction_face", "reaction_limber", "reaction_charge",
+                 "decline_reaction"):
+            return self._apply_react_window(side, action)
+        if t == "declare_strategic":
+            return self._apply_strategic(side)
         if t == "fire":
             return self._apply_fire(side, action)
         if t in ("return_fire", "decline_return"):
@@ -1700,9 +3521,11 @@ class NapoleonicGame(GateGame):
         act = self.s.get("act") if self._cmd else None
         budget = act["budget"].get(pid) if act else None
         avoid = bool(act and act["atype"] == "limited")
+        strat = bool(act and act.get("strat"))
         if t == "move":
             dest = action["dest"]
-            reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid)
+            reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid,
+                                   strat=strat)
             facing = action.get("facing")
             if facing is None:      # cheapest facing at the destination
                 facing = min(((v[0], k[2]) for k, v in reach.items()
@@ -1711,6 +3534,23 @@ class NapoleonicGame(GateGame):
             facing = int(facing)
             cost, path, dis_events = reach[
                 (int(dest[0]), int(dest[1]), facing)]
+            if self._p4:
+                # schema 4: the move executes hex by hex, opening
+                # reaction windows as it triggers them [6.2]
+                result.update(cost=round(cost, 2),
+                              path=[list(p) for p in path],
+                              facing=facing)
+                walk = {"path_left": [list(p) for p in path[1:]],
+                        "final_facing": facing, "nmc": 0,
+                        "dis_left": list(dis_events), "cost": 0.0,
+                        "full_cost": cost}
+                done = self._walk_move(u, walk, result)
+                if not done:
+                    result["interrupted"] = {
+                        "at": [u["col"], u["row"]],
+                        "cite": "6.2 reaction window"}
+                self.s["moved"].append(pid)
+                return result
             u["col"], u["row"], u["facing"] = int(dest[0]), int(dest[1]), \
                 facing
             result.update(cost=round(cost, 2), path=[list(p) for p in path],
@@ -1754,6 +3594,26 @@ class NapoleonicGame(GateGame):
             u["col"], u["row"] = int(dest[0]), int(dest[1])
             result.update(dest=[u["col"], u["row"]])
         self.s["moved"].append(pid)
+        if self._p4 and act is not None and "spent" in act:
+            # May Charge bookkeeping [5.1.2]: moves record their MP
+            # cost; other actions their TEC cost (slide/reverse are
+            # priced as the full budget - conservative, they end most
+            # units' movement anyway)
+            if t == "move":
+                spent = result.get("cost", 0)
+            elif t in ("about_face", "change_formation"):
+                spent = self.F.action_cost(u, t, u["ma"]) or 0
+            else:
+                spent = float(u["ma"])
+            act["spent"][pid] = act["spent"].get(pid, 0) + spent
+        if self._p4 and t in ("about_face", "change_formation",
+                              "slide", "reverse"):
+            # spending MPs inside an enemy Reaction Zone triggers
+            # reactions - including a formation change in an enemy
+            # front hex (Fox Q&A) [6.2.1/6.2.2]
+            ent = self._collect_window(u, (u["col"], u["row"]), "pre")
+            if ent:
+                self._open_react(u, ent, "pre", result, walk=None)
         return result
 
     def _apply_cmd(self, side, action):
@@ -1838,6 +3698,8 @@ class NapoleonicGame(GateGame):
             self.s["phase"] = "activation"
             self.s["moved"] = []
             self.s["returned"] = []
+            if self._p4:
+                self._p4_open_act(self.s["act"])
             self.s["turn_units"] = sorted(set(self.s["turn_units"])
                                           | {pid})
             out["single_unit"] = {"unit": pid,
@@ -1946,6 +3808,17 @@ class NapoleonicGame(GateGame):
                 if not u.get("dead"):
                     self._retreat(u, 1, sub, routed=True)
                 out["rout_loss"].append({"unit": u["pid"], **sub})
+        if self._p4:
+            # Blown Recovery [8.4.5]: Recovery markers come off and the
+            # Blown level drops one in the Rally Phase
+            rec = []
+            for u in self.s["units"].values():
+                if u.get("recovery") and not u.get("dead"):
+                    u["blown"] = max(0, u.get("blown", 0) - 1)
+                    u["recovery"] = False
+                    rec.append({"unit": u["pid"], "blown": u["blown"]})
+            if rec:
+                out["blown_recovery"] = rec
         if self._cmd:
             self._fatigue_segment(out)
         self._next_turn()
@@ -1994,6 +3867,12 @@ class NapoleonicGame(GateGame):
                                        for s_ in self.game.side_order}
         else:
             self.s["phase"] = "movement"
+        if self._p4:
+            self.s["pending_melee"] = None
+            self.s["pending_react"] = None
+            self.s["reacted"] = []
+            self.s["defended"] = []
+            self.s["strat_turn"] = []
         self.s["victory"] = self._victory_state()
 
     # ---------------------------------------------------------- victory
@@ -2029,10 +3908,26 @@ class NapoleonicGame(GateGame):
                               "formation": u["formation"],
                               "morale": u.get("morale_state", "good"),
                               "sp": u["sp"], "dead": u.get("dead", False),
-                              "slot": u["slot"]}
+                              "slot": u["slot"],
+                              **({"blown": u["blown"]}
+                                 if u.get("blown") else {})}
                    for u in self.s["units"].values()}},
                "over": bool(v.get("winner"))
                or self.s["turn"] > self.turns}
+        if self._p4:
+            pmelee = self.s.get("pending_melee")
+            preact = self.s.get("pending_react")
+            out["shock"] = pmelee and {
+                "kind": pmelee["kind"], "stage": pmelee["stage"],
+                "owner": pmelee.get("window_owner"),
+                "entitled": pmelee.get("entitled", {}),
+                "ahex": pmelee["ahex"], "dhex": pmelee["dhex"],
+                "attackers": pmelee["attackers"]}
+            out["reaction"] = preact and {
+                "owner": preact["side"], "mover": preact["mover"],
+                "at": preact["at"], "phase": preact["phase"],
+                "entitled": preact["entitled"]}
+            out["strat_divs"] = list(self.s.get("strat", []))
         if self._cmd:
             act = self.s.get("act")
             out["command"] = {
@@ -2062,6 +3957,10 @@ class NapoleonicGame(GateGame):
         napoleonic extras (rotations, formations)} — api_legal_sg passes
         dests straight to the map overlay."""
         u = self.unit(pid)
+        if self.s.get("pending_melee") or self.s.get("pending_react"):
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": ["a shock combat / reaction window is "
+                                "open [6.2/8.2-8.5]"]}
         if self.s.get("pending_fire"):
             return {"can_act": False, "budget": 0, "dests": [],
                     "reasons": ["return-fire decision pending [8.1.2]"]}
@@ -2098,7 +3997,9 @@ class NapoleonicGame(GateGame):
                     "reasons": ["destroyed" if u.get("dead") else
                                 "routed: may not move voluntarily "
                                 "[9.2.4]"]}
-        reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid)
+        act_s = self.s.get("act") if self._cmd else None
+        reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid,
+                               strat=bool(act_s and act_s.get("strat")))
         best = {}
         rotations = []
         for (c, r, f), (cost, path, dis) in reach.items():

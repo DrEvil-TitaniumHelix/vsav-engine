@@ -944,6 +944,224 @@
     "morale_check_drm": 1,
     "melee_drm": -2
    }
+  },
+  "melee": {
+   "cite": "PHASE 4 DATA. Charts p4 (auscharts.pdf, 170dpi render) THREE-source verified cell-for-cell vs the GMT-sanctioned Spanish translation (pp.42-43) and the Italian translation (austables4_it) - zero disagreements. Charge ranges/bonuses from playbook A8.1.1-A8.1.2 (Spanish translation; chart panel itself cites [A8.2]; the rulebook's 8.4.1 cross-reference 'A13.1' is a misprint - see source_defects). GMT official errata 2000-07-20 defines the Retreat result and adds the declined-countercharge defender check; David Fox Q&A rulings (grognard.com) fill procedure gaps.",
+   "steps": {
+    "note": "Melee Combat Steps panel (charts p4) - step numbers per combat type; errata 2000-07-20 adds to the Charge column: a charged cavalry stack that declines to Countercharge must make a Defender Pre-Melee Morale Check before Melee",
+    "bayonet": [
+     "1 Declaration [8.2.1]",
+     "2 Attacker's Pre-Melee Check",
+     "3 Return Fire (or Skirmish Move)",
+     "4 Defender's Pre-Melee Morale Check"
+    ],
+    "assault": [
+     "1 Declaration [8.3.1]",
+     "2 Attacker's Pre-Melee Check",
+     "3 Return Fire (or Skirmish Move)",
+     "4 Defender's Pre-Melee Morale Check",
+     "5 Melee",
+     "6 Melee Continues",
+     "7 Advance"
+    ],
+    "charge": [
+     "1 Declaration [8.4.2]",
+     "2 Charge Movement (NO pre-melee check for normal charges; Reaction Charges DO check - Fox Q&A)",
+     "3 Counter-Charge (Pre-Melee Morale Check; decliners still take a Defender Pre-Melee Check - errata)",
+     "4a Formation Check (Square Reaction Check) or 4b Stand (Pre-Melee Morale Check)",
+     "5 Return Fire",
+     "6 Melee",
+     "7 Melee Continues (rulebook says 'repeat step 5' - misprint for step 6, Fox Q&A; no Charge Bonus)",
+     "8 Advance or Pursuit",
+     "9 Mark Blown Cavalry"
+    ]
+   },
+   "result_table": {
+    "note": "modified d10 -> loser / SPs lost / morale / other [8.5]. 'Retreat' = an Unsteady Retreat per errata 2000-07-20 (same rules and restrictions as 10.0), performed IN ADDITION to any retreat required by the morale result; the errata's worked example is the validator's gold case. The earlier Fox Q&A answer (retreat = one hex per morale level lost) is SUPERSEDED by the errata - see source_defects.",
+    "le_0": {
+     "loser": "attacker",
+     "sp_lost": 2,
+     "morale": "routs",
+     "other": "rout_retreat"
+    },
+    "1": {
+     "loser": "attacker",
+     "sp_lost": 2,
+     "morale": "-2 levels",
+     "other": "retreat"
+    },
+    "2": {
+     "loser": "attacker",
+     "sp_lost": 1,
+     "morale": "-1 level",
+     "other": "retreat"
+    },
+    "3": {
+     "loser": "attacker",
+     "sp_lost": 1,
+     "morale": "-1 level",
+     "other": "retreat"
+    },
+    "4": {
+     "loser": "both",
+     "sp_lost": 1,
+     "morale": "check",
+     "other": "melee_continues"
+    },
+    "5": {
+     "loser": "both",
+     "sp_lost": 1,
+     "morale": "check",
+     "other": "melee_continues"
+    },
+    "6": {
+     "loser": "defender",
+     "sp_lost": 1,
+     "morale": "-1 level",
+     "other": "retreat"
+    },
+    "7": {
+     "loser": "defender",
+     "sp_lost": 1,
+     "morale": "-1 level",
+     "other": "retreat"
+    },
+    "8": {
+     "loser": "defender",
+     "sp_lost": 2,
+     "morale": "-2 levels",
+     "other": "retreat"
+    },
+    "ge_9": {
+     "loser": "defender",
+     "sp_lost": 3,
+     "morale": "routs",
+     "other": "rout_retreat"
+    }
+   },
+   "drm": {
+    "note": "attacker-perspective signs as printed (high roll favors the attacker); 'melee continues' rounds lose the Charge Bonus [8.5.3]",
+    "napoleon_in_hex": "+/-2 in favor of the French",
+    "fatigue": "against the fatigued side per Fatigue Effects [13.3]",
+    "terrain": "Melee column on TEC (defender's hex)",
+    "defender_in_strategic_movement": 2,
+    "attacking_rear": 2,
+    "attacking_flank": 1,
+    "defender_blown_cavalry": 1,
+    "infantry_vs_square": -1,
+    "cavalry_vs_square": -3,
+    "charge_bonus": "+ charge bonus of charging/reaction-charging/countercharging cavalry; HALVED (round up) vs Square; HALVED (round up) if charger in Column [8.4.2#6]; countercharge = attacker bonus MINUS countercharger bonus, may go negative (Fox Q&A)",
+    "murat_charging": 1,
+    "overlap_per_hex": 1,
+    "multi_hex_mixed_formations": "defender formation most favorable to the DEFENDER when a multi-hex charge hits several defenders (errata 6.5.6); if attacker adjacent to front+flank (or flank+rear) of one defender, attacker picks the most advantageous aspect (Fox Q&A)"
+   },
+   "size_ratio_drm": {
+    "note": "attacker:defender SP ratio, fractions rounded down [8.3.1#5]; charging cavalry in Column counts one-third of its SPs (rounded down); artillery SPs never count",
+    "1:3_or_lower": -2,
+    "1:2": -1,
+    "1:1": 0,
+    "2:1": 1,
+    "3:1": 2,
+    "4:1_or_higher": 3
+   },
+   "pre_shock": {
+    "note": "Pre-Shock (Pre-Melee) Morale Check Table [8.2, 8.3, 8.4]; d10 + DRM vs morale rating",
+    "attacker_drm": {
+     "attacking_from_rear": -3,
+     "attacking_from_flank": -2,
+     "defenders_are_skirmishers": -1,
+     "supporting_stack_each": -1,
+     "leader_in_hex": -1,
+     "elite": -1,
+     "in_line": 1,
+     "shaken": 1,
+     "disordered": 1
+    },
+    "attacker_results": {
+     "le_morale": "may melee",
+     "above_1_3": "may NOT melee",
+     "above_4_plus": "may NOT melee, disordered, -1 morale level"
+    },
+    "defender_drm": {
+     "attacked_in_rear": 3,
+     "attacked_in_flank": 1,
+     "in_skirmish_order": 3,
+     "flank_support_each": -1,
+     "flank_support_not_vs_assault": true,
+     "leader_in_hex": -1,
+     "elite": -1,
+     "in_square": -2,
+     "in_line": 1,
+     "shaken": 1,
+     "disordered": 1,
+     "unsteady": 2,
+     "strategic_movement": 2,
+     "defensive_terrain": -1
+    },
+    "defender_results": {
+     "le_morale": "stand",
+     "above_1_2": "lose 1 SP, disordered, retreat, -1 morale level",
+     "above_3_5": "lose 2 SPs, disordered, retreat, -2 morale levels",
+     "above_6_plus": "lose 2 SPs, rout & retreat"
+    },
+    "support_rule": "a supporting stack must be active, adjacent to the defender, NOT itself bayonet/assault attacking, may support only one attack per activation [8.2.1#2/8.3.1#2], and must have the defender in its front hexsides (Fox Q&A clarification)"
+   },
+   "form_square": {
+    "note": "Forming Square in Reaction [8.4.2 #4]; d10 + DRM vs morale rating; only the top infantry unit of the target stack checks; the charging cavalry closes to adjacent whether or not the square forms; strategic-movement units may NOT form square [5.2.1]; artillery alone must Stand",
+    "drm": {
+     "cavalry_begins_charge_2_hexes_away": 1,
+     "leader_in_hex": -2,
+     "unit_in_column": -1,
+     "unit_in_line": 1,
+     "unit_in_skirmish": 4
+    },
+    "results": {
+     "le_morale": "square formed",
+     "above_1_2": "square NOT formed, unit disordered",
+     "above_3_plus": "square NOT formed, unit disordered, -1 morale level"
+    }
+   },
+   "pursuit": {
+    "note": "Pursuit Table [8.4.2 #8]; rolled when units opposing a charge rout; pursuing cavalry follows the rout path, eliminates 1 SP of the routing unit per hex entered, then is Disordered and Blown-2; pursuers entering enemy Reaction Zones may be Reacted to normally but may not Countercharge if charged",
+    "drm": {
+     "light_cavalry_or_lancers": 1,
+     "cossacks": 3,
+     "stacked_with_murat": 2,
+     "commander_in_hex_besides_murat": -2
+    },
+    "results": {
+     "le_morale": "no pursuit",
+     "above_1_2": "pursue 1 hex",
+     "above_3_4": "pursue 2 hexes",
+     "above_5_plus": "pursue 3 hexes"
+    }
+   },
+   "charge": {
+    "cite": "playbook A8.1.1 (charge range) + A8.1.2 (charge bonus), GMT-sanctioned Spanish translation; charge legality 8.4/8.4.1 + 5.1.2 (May Charge marker)",
+    "bonus": {
+     "cossack": 0,
+     "light": 1,
+     "medium": 1,
+     "lancer": 2,
+     "heavy": 3,
+     "cuirassier": 4
+    },
+    "range": {
+     "max_hexes": 4,
+     "min_hexes_default": 2,
+     "min_hexes_heavy_cuirassier": 3,
+     "heavy_cuirassier_at_2": "may charge but loses the Charge Bonus in the melee",
+     "adjacent": "may never charge an adjacent unit",
+     "inactive_cavalry": "Charge Range of inactive (reaction/counter) cavalry = its Reaction Zone [8.4.1]"
+    },
+    "may_charge_marker": "only cavalry that moved no more than HALF its MA (rounded down) this activation may charge; charges resolve after all movement and Offensive Fire [5.1.2, 8.4]",
+    "requirements": "non-blown cavalry, Full Activation, LOS to target at declaration, terrain chargeable per TEC cav-charge column along the whole path, target stack charged at most once per activation [8.4.1-8.4.2]",
+    "blown": {
+     "blown_2": "half MA (rounded up), may not charge, always disordered [8.4.4]",
+     "blown_1": "half MA (rounded up), may not charge, may change formation [8.4.4]",
+     "recovery": "cavalry that neither moves nor defends in any combat (except medium/long-range artillery fire) during a turn gets a Recovery marker after its division's activation; in the Rally Phase remove Recovery markers and reduce Blown level by one [8.4.5]"
+    }
+   }
   }
  },
  "credits": {
@@ -1178,6 +1396,27 @@
    "evidence": "3.0 A.3/A.4: the chosen LIM begins the turn; 'All REMAINING available LIMs are placed in an opaque container'; 13.1.1: 'Every time a Division's LIM is drawn from the Command Pool, its Fatigue Level will increase'",
    "resolution": "The Initiative LIM fatigues its division like any committed LIM",
    "authority": "designer clarification (David Fox, grognard.com Q&A: 'Any time a division has its LIM in the Pool it gains fatigue, no matter what it actually does during the turn')"
+  },
+  {
+   "id": "AUS-MEL-1",
+   "defect": "8.4.1 sends the reader to 'the playbook, see A13.1' for cavalry Charge Ranges, but the playbook's combat appendix is numbered A8 (A8.1.1 Charge Range, A8.1.2 Charge Bonus); no A13 section exists",
+   "evidence": "Rulebook 8.4.1: 'Active cavalry has a Charge Range usually dependent upon the type of cavalry [as listed in the playbook, see A13.1]'; sanctioned Spanish playbook: 'A8.1.1 Distancia de Carga'; the charts p4 Charge Bonus panel itself cites '[A8.2]'",
+   "resolution": "Charge ranges and bonuses read from playbook A8.1.1/A8.1.2 (max 4 hexes; min 2, or 3 for Heavy/Cuirassier who may charge at 2 without their bonus; never adjacent)",
+   "authority": "proven outcome-equivalence (the referenced content exists uniquely at A8.1.x; only the pointer is wrong)"
+  },
+  {
+   "id": "AUS-MEL-2",
+   "defect": "The Melee Result Table's 'Retreat' result is undefined in the printed rules (10.0 only covers Unsteady/Rout retreats), and the two official clarifications CONTRADICT each other: the designer's Q&A answer makes the retreat distance equal to the morale levels lost, while the later official errata makes it a fixed one-hex Unsteady Retreat",
+   "evidence": "Fox Q&A (grognard.com): 'The retreat applies to units not unsteady or routed and is equal in number of hexes to the number of morale levels gained by the melee loser'; GMT errata 2000-07-20: 'Treat the Retreat result as an Unsteady Retreat, covered by the same rules and restrictions as section 10.0, and is performed in addition to any retreat results required by Morale', with a worked example where a roll of 1 (-2 morale levels) retreats exactly 1 hex for the Retreat result",
+   "resolution": "The errata is enforced: Retreat = one Unsteady-style retreat move under 10.0 restrictions, in addition to any morale-driven retreat. The engine's validator replays the errata's own worked example.",
+   "authority": "official errata (2000-07-20) supersedes the earlier informal Q&A ruling"
+  },
+  {
+   "id": "AUS-MEL-3",
+   "defect": "8.4.2 step 7 (Melee Continues) instructs 'repeat step 5', but step 5 of the charge procedure is Return Fire; the melee round to repeat is step 6",
+   "evidence": "Rulebook 8.4.2: '7) Melee Continues. If the result is \"melee continues\" ... repeat step 5, except that the Charge Bonus no longer applies'; Fox Q&A: 'Q: 8.4.2 7) \"then repeat step 5\" I guess it is step 6? DF- Step 6 is correct.'",
+   "resolution": "Continued charge melee repeats the Melee step (6) without the Charge Bonus; Return Fire is not repeated",
+   "authority": "designer clarification (David Fox, grognard.com Q&A)"
   }
  ]
 }

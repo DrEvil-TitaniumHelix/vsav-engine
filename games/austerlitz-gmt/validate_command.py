@@ -35,9 +35,12 @@ def check(label, ok):
 
 def fresh(seed):
     live = tempfile.mkdtemp(prefix="aus_cmd_")
+    # tier=1 pins the phase-3 command flow (schema 3): this file is the
+    # mechanics harness for that flow; phase-4 melee/reactions have
+    # their own validator (validate_shock.py)
     g = NapoleonicGame(gamespec.load(HERE),
                        os.path.join(HERE, "scenario_northern_flank.json"),
-                       live, seed=seed)
+                       live, seed=seed, tier=1)
     return g, live
 
 
