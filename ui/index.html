@@ -442,6 +442,49 @@ function renderGuide() {
 // otherwise). The return-fire window overrides everything: the DEFENDER
 // owns the decision even during the enemy activation [8.1.2].
 function napGuide() {
+  // phase-4 windows own the flow completely [6.2/8.2-8.5]
+  const SH = FLOW.shock, RW = FLOW.reaction;
+  if (SH) {
+    const STAGE_TXT = {
+      square_window: `<b>Cavalry charge incoming!</b> Your infantry may
+        try to <b>form square</b> (roll) or <b>stand</b> (pre-melee
+        check) — left panel [8.4.2#4].`,
+      return_window: `<b>Melee declared on your stack</b> — your top
+        unit may <b>return fire</b> before the shock lands (skirmishers
+        may slip away) — left panel [8.2.1#3/8.4.2#5].`,
+      continue_def: `<b>Melee continues</b> [8.5.3] — your defenders:
+        <b>stand</b> for another round or <b>withdraw</b> (voluntary
+        rout). Left panel.`,
+      continue_att: `<b>Melee continues</b> [8.5.3] — your attackers:
+        <b>stand</b> for another round or <b>withdraw</b> (voluntary
+        rout). Left panel.`};
+    if (SH.owner !== mySide) {
+      FRAME.setGuide(`<b>Shock combat</b> — waiting on
+        <b>${sideShort(SH.owner)}</b>'s ${SH.stage.replace('_',' ')}
+        decision [8.2-8.5]. Click <b>${SH.owner}</b> next to "play as:"
+        (hotseat).`);
+      FRAME.soleNext('side-' + SH.owner);
+    } else {
+      FRAME.setGuide(STAGE_TXT[SH.stage] || `<b>Shock combat</b> —
+        decision in the left panel [8.2-8.5].`);
+      FRAME.soleNext(null);
+    }
+    return true;
+  }
+  if (RW) {
+    if (RW.owner !== mySide) {
+      FRAME.setGuide(`<b>Reaction window</b> [6.2] — the enemy's move
+        triggered <b>${sideShort(RW.owner)}</b>'s reaction opportunity.
+        Click <b>${RW.owner}</b> next to "play as:" (hotseat).`);
+      FRAME.soleNext('side-' + RW.owner);
+    } else {
+      FRAME.setGuide(`<b>Reaction window!</b> [6.2] — an enemy unit is
+        moving through your zone. React with the entitled units in the
+        left panel, or <b>Decline</b> (the move then continues).`);
+      FRAME.soleNext(null);
+    }
+    return true;
+  }
   const PF = FLOW.pending_fire;
   if (PF) {
     const dSide = PF.defender_side;
@@ -614,6 +657,7 @@ function tipHTML(u) {
     h += `<br>${FORM_LABEL[u.formation]||u.formation} · SP ${u.sp} · MA ${u.ma}`
        + (u.morale_state && u.morale_state !== 'good'
           ? ` · <b style="color:#e0a34e">${u.morale_state.toUpperCase()}</b>` : '')
+       + (u.blown ? ` · <b style="color:#7cb6e0">BLOWN ${u.blown} [8.4.4]</b>` : '')
        + (u.fired ? ' · fired' : '')
        + (FLOW.command && (FLOW.command.ooc || []).includes(u.id)
           ? ' · <b style="color:#e05a4e">OUT OF COMMAND [4.3.3]</b>' : '');
@@ -672,7 +716,83 @@ const FORM_LABEL = { line:'Line', column:'Column', square:'Square',
   skirmish:'Skirmish', disorder:'Disorder', limbered:'Limber',
   unlimbered:'Unlimber' };
 let NAPHDR = '';   // open-activation header shown above unit controls
+const hx2 = hx => `${String(hx[0]).padStart(2,'0')}${String(hx[1]).padStart(2,'0')}`;
 function renderNapPanel(box) {
+  // ---- phase-4 shock-combat windows [8.2-8.5]
+  const SH = FLOW.shock;
+  if (SH) {
+    if (SH.owner !== mySide) { box.style.display = 'none'; return; }
+    const kindLbl = {bayonet:'Bayonet combat [8.2]',
+                     assault:'Assault [8.3]', charge:'Charge [8.4]'};
+    let h = `<b>${kindLbl[SH.kind] || SH.kind}</b><br>`;
+    if (SH.stage === 'square_window') {
+      const pid = Object.keys(SH.entitled)[0];
+      h += `<span class="dim">${slotOf(pid)} — cavalry bearing down
+        [8.4.2#4]:</span><br>
+        <button class="sidebtn" onclick='sgAction({type:"square_choice",
+          form:true, unit:"${pid}"}, mySide)'>⛨ Form square (roll)</button>
+        <button class="sidebtn" onclick='sgAction({type:"square_choice",
+          form:false, unit:"${pid}"}, mySide)'>Stand (pre-melee check)</button>`;
+    } else if (SH.stage === 'return_window') {
+      Object.entries(SH.entitled).forEach(([pid, kinds]) => {
+        h += `<div style="margin:2px 0">${slotOf(pid)}: `;
+        if (kinds.includes('melee_return'))
+          h += `<button class="sidebtn" style="border-color:#e05a4e"
+            onclick='sgAction({type:"melee_return",unit:"${pid}"}, mySide)'
+            >🔥 Return fire</button> `;
+        ((SH.move_dests || {})[pid] || []).slice(0, 6).forEach(d => {
+          h += `<button class="sidebtn" onclick='sgAction({type:
+            "reaction_move",unit:"${pid}",dest:[${d}]}, mySide)'
+            >↗ ${hx2(d)}</button> `;
+        });
+        h += `</div>`;
+      });
+      h += `<button class="sidebtn" onclick='sgAction({type:
+        "melee_no_return"}, mySide)'>No return fire — resolve</button>`;
+    } else if (SH.stage === 'continue_def' || SH.stage === 'continue_att') {
+      h += `<span class="dim">both sides lost the round — melee
+        continues [8.5.3]:</span><br>
+        <button class="sidebtn" onclick='sgAction({type:"melee_stand"},
+          mySide)'>⚔ Stand — fight another round</button>
+        <button class="sidebtn" onclick='sgAction({type:"melee_withdraw"},
+          mySide)'>Withdraw (voluntary ROUT)</button>`;
+    }
+    box.innerHTML = h; box.style.display = ''; return;
+  }
+  // ---- phase-4 reaction windows [6.2]
+  const RW = FLOW.reaction;
+  if (RW) {
+    if (RW.owner !== mySide) { box.style.display = 'none'; return; }
+    const KL = {reaction_fire:'🔥 Fire', reaction_reverse:'↩ Reverse',
+                reaction_limber:'Limber [6.2.5]',
+                reaction_charge:'🐎 Reaction charge [6.2.3]'};
+    let h = `<b>Reaction window</b> <span class="dim">[6.2] —
+      ${slotOf(RW.mover)} is moving at ${hx2(RW.at)}</span><br>`;
+    Object.entries(RW.entitled).forEach(([pid, kinds]) => {
+      h += `<div style="margin:2px 0">${slotOf(pid)}: `;
+      kinds.forEach(k => {
+        if (k === 'reaction_move') {
+          ((RW.move_dests || {})[pid] || []).slice(0, 6).forEach(d => {
+            h += `<button class="sidebtn" onclick='sgAction({type:
+              "reaction_move",unit:"${pid}",dest:[${d}]}, mySide)'
+              >↗ ${hx2(d)}</button> `;
+          });
+        } else if (k === 'reaction_face') {
+          h += `<button class="sidebtn" onclick='sgAction({type:
+            "reaction_face",unit:"${pid}",turn:-2}, mySide)'>⟲ Face</button>
+            <button class="sidebtn" onclick='sgAction({type:
+            "reaction_face",unit:"${pid}",turn:2}, mySide)'>⟳ Face</button> `;
+        } else {
+          h += `<button class="sidebtn" onclick='sgAction({type:"${k}",
+            unit:"${pid}"}, mySide)'>${KL[k] || k}</button> `;
+        }
+      });
+      h += `</div>`;
+    });
+    h += `<button class="sidebtn" onclick='sgAction({type:
+      "decline_reaction"}, mySide)'>Decline — let the move continue</button>`;
+    box.innerHTML = h; box.style.display = ''; return;
+  }
   const PF = FLOW.pending_fire;
   if (PF) {
     if (PF.defender_side !== mySide) { box.style.display='none'; return; }
@@ -710,9 +830,19 @@ function renderNapPanel(box) {
   }
   const canFire = !(FLOW.fired||[]).includes(u.id)
     && (u.arm === 'infantry' || (u.arm||'').startsWith('artillery'));
-  h += canFire
-    ? `<span class="dim">🔥 click an enemy counter to fire at it [8.1]</span>`
-    : `<span class="dim">no fire available (${(FLOW.fired||[]).includes(u.id)
+  const tier2 = GAME.tier && GAME.tier.active >= 2;
+  if (canFire)
+    h += `<span class="dim">🔥 click an enemy counter to fire at it [8.1]${
+      tier2 && u.arm === 'infantry'
+        ? ' — or melee an adjacent front enemy [8.2/8.3]' : ''}</span>`;
+  else if (tier2 && u.arm === 'cavalry')
+    h += u.blown
+      ? `<span class="dim">BLOWN ${u.blown} — no charging until recovered
+         [8.4.4/8.4.5]</span>`
+      : `<span class="dim">🐎 click an enemy counter to charge it [8.4]
+         (range 2-4, only if it moved ≤ half MA)</span>`;
+  else
+    h += `<span class="dim">no fire available (${(FLOW.fired||[]).includes(u.id)
        ? 'already fired' : 'this arm cannot fire'})</span>`;
   box.innerHTML = h; box.style.display = '';
 }
@@ -786,10 +916,20 @@ function napCmdPanel(box) {
     }
     // an activation is OPEN: header above the selected-unit controls
     const n = (act.incommand || []).filter(p => !(FLOW.moved || []).includes(p)).length;
-    const hdr = `<b>${act.kind === 'nonlim_unit' ? 'Out of Command unit'
+    let hdr = `<b>${act.kind === 'nonlim_unit' ? 'Out of Command unit'
       : divName(act.div)}</b> — ${act.atype} activation
       <span class="dim">[4.6] · ${n} unit(s) still to act${
       act.stage === 'combat' ? ' · FIRING (no more movement)' : ''}</span><br>`;
+    if (act.strat)
+      hdr += `<span style="color:#7ec4e0">STRATEGIC MOVEMENT — double MA,
+        no combat or reactions, keep 3 hexes off the enemy, road-bound
+        into village/woods/swamp [5.2]</span><br>`;
+    else if (act.atype === 'full' && act.kind !== 'nonlim_unit'
+             && act.stage === 'move' && !(FLOW.moved || []).length
+             && GAME.tier && GAME.tier.active >= 2)
+      hdr += `<button class="sidebtn" onclick='sgAction(
+        {type:"declare_strategic"}, mySide)'>🥾 Strategic movement
+        [5.2]</button><br>`;
     if (!selected || selected.side !== mySide) {
       return own(hdr + `<span class="dim">click one of the highlighted
         In Command units, or <b>End activation</b> (top bar)</span>`);
@@ -1292,11 +1432,12 @@ function onCounterDown(ev, u, stackUnits) {
   ev.stopPropagation();
   if (combatActive()) { toggleBattle(u, stackUnits); return; }
   if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
-  // napoleonic: clicking an ENEMY while one of my units is selected = fire
-  // at it — the gate answers with cited reasons if it's not a legal shot
+  // napoleonic: clicking an ENEMY while one of my units is selected =
+  // attack it — fire, or (tier 2) melee/charge; the gate answers with
+  // cited reasons if the pick isn't legal
   if (FLOW && FLOW.mode === 'napoleonic' && selected
       && selected.side === mySide && u.side !== mySide) {
-    sgAction({type:'fire', unit: selected.id, target: u.id}, mySide);
+    napAttackMenu(ev, u);
     return;
   }
   // napoleonic rally phase: clicking my own broken unit attempts the rally
@@ -1307,13 +1448,53 @@ function onCounterDown(ev, u, stackUnits) {
   }
   // free play (no gate): any of your pieces is draggable — markers, track
   // pieces off the playable map, zero-MA units included (VASSAL parity)
-  if (u.side !== mySide || u.status) return;
+  if (u.side !== mySide) return;
+  // napoleonic tier 2: a unit that moved ≤ half MA may still CHARGE
+  // [5.1.2] — keep moved units selectable so the attack click works
+  if (u.status && !(FLOW && FLOW.mode === 'napoleonic'
+                    && u.status === 'moved')) return;
   if (FLOW && (!u.onmap || u.ma === 0)) return;
   const eligible = FLOW
     ? stackUnits.filter(s => s.side===mySide && !s.status && s.ma>0)
     : stackUnits.filter(s => s.side===mySide && !s.status);
   if (eligible.length > 1) showPicker(ev, eligible);
   else select(u, false, ev);
+}
+// tier-2 attack chooser [8.1/8.2-8.4]: every option submits through the
+// gate — illegal picks come back with the rule citation
+function napAttackMenu(ev, tgt) {
+  const arm = selected.arm || '';
+  const tier2 = GAME.tier && GAME.tier.active >= 2;
+  const opts = [];
+  if (arm === 'infantry' || arm.startsWith('artillery'))
+    opts.push([`🔥 Fire [8.1]`,
+               {type:'fire', unit:selected.id, target:tgt.id}]);
+  if (tier2 && arm === 'infantry')
+    opts.push([`⚔ Melee — bayonet/assault [8.2/8.3]`,
+               {type:'melee', unit:selected.id, target:tgt.id}]);
+  if (tier2 && arm === 'cavalry')
+    opts.push([`🐎 Charge [8.4]`,
+               {type:'charge', unit:selected.id, target:tgt.id}]);
+  if (!opts.length) {
+    sgAction({type:'fire', unit:selected.id, target:tgt.id}, mySide);
+    return;
+  }
+  if (opts.length === 1) { sgAction(opts[0][1], mySide); return; }
+  const P = document.getElementById('picker');
+  P.innerHTML = `<div class="hdr">${selected.name} → ${tgt.name}</div>`;
+  opts.forEach(([lbl, act]) => {
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = lbl;
+    d.onclick = () => { P.style.display = 'none'; sgAction(act, mySide); };
+    P.appendChild(d);
+  });
+  const c = document.createElement('div'); c.className = 'item';
+  c.innerHTML = `<span class="dim">cancel</span>`;
+  c.onclick = () => { P.style.display = 'none'; };
+  P.appendChild(c);
+  P.style.left = Math.min(ev.clientX + 8, innerWidth - 260) + 'px';
+  P.style.top = ev.clientY + 8 + 'px';
+  P.style.display = 'block';
 }
 function showPicker(ev, stackUnits) {
   const P = document.getElementById('picker');
