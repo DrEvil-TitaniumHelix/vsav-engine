@@ -1,13 +1,22 @@
 """
 napoleonic.py - NapoleonicGame: the GBoNW-family legality gate.
 
-Tier 1 (this phase): MOVEMENT is enforced — formation-and-facing-true
-movement over the transcribed TEC, stacking [7.1], enemy-front-hex stops
-[5.1.3], road movement [5.3], movement-caused disorder [5.1.1/6.4.1] with
-engine-owned logged dice, one activation per unit per game turn. The
-command system [4.0], combat [8.0], morale [9.0+] and reactions [6.2] are
-NOT enforced yet (umpired; phases 2-4) and the scenario's rules_scope says
-so honestly.
+Enforced through phase 3: movement (formation-and-facing-true over the
+transcribed TEC, stacking [7.1], enemy-front-hex stops [5.1.3], road
+movement [5.3], movement disorder [5.1.1/6.4.1]), fire combat with return
+fire, LOS and the morale/rout/rally ledger [8.1/9.x/10.x/12.x], victory
+[A15.1], and — schema 3 — the COMMAND SYSTEM [3.0/4.0]: voluntary LIM
+pool (A15.1 special rule), seeded initiative and LIM draws, activation
+rolls, the Command Breakdown Table [4.7] including the ENEMY opportunity,
+full/limited activation budgets [4.6], In/Out of Command marking [4.3.3],
+the Non-LIM phase [3.0.C], division fatigue [13.x] and division
+breakpoint LIM withdrawal [11.2.1]. Melee, reactions and strategic
+movement remain umpired (phase 4) and the scenario's rules_scope says so.
+
+Log compatibility: games recorded before phase 3 carry state schema 2 and
+replay through the pre-command flow (side-alternating mass activations);
+new games with scenario `command` data run schema 3. verify_game passes
+the init entry's schema so old logs keep verifying hash-for-hash.
 
 Movement model (engine/formations.py geometry):
   facing 0-11 (even = hexside, odd = vertex); Line-family formations face
@@ -26,6 +35,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import json
 
+import command as cmd_mod
 import fire as fire_mod
 import formations as fm
 from gate import GateGame
@@ -39,15 +49,29 @@ class NapoleonicGame(GateGame):
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None,
+                 command=None):
         super().__init__(game, scenario_path, live_dir)
         self.F = fm.Formations(game)
         self._load_terrain()
         self.ctables = game.spec.get("combat_tables")
         self.schedule = {}          # no reinforcements in this scenario
+        # command=None -> scenario decides; False forces the pre-command
+        # schema-2 flow (old-log replay + mechanics test harnesses)
+        self.CMD = game.spec.get("command")
+        self.SCMD = self.scenario.get("command")
+        self._cmd = bool(self.CMD and self.SCMD) if command is None \
+            else bool(command)
+        # leader ratings are static scenario data (counter art), read at
+        # runtime - NOT copied into hashed unit state (log contract)
+        self._ratings = {(u["side"], u["slot"]): u["command"]
+                         for u in self.scenario["units"]
+                         if u.get("command")}
         self._resolve_tier(tier)
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "moved", "tier", "schema"))
+        if (self.s.get("schema", 2) >= 3) != self._cmd:
+            self.new_game(self._fresh_seed(seed))   # flow mismatch: reset
 
     # ------------------------------------------------------------ terrain
     def _load_terrain(self):
@@ -108,10 +132,29 @@ class NapoleonicGame(GateGame):
                   "pending_fire": None,
                   "seed": seed, "rng_calls": 0,
                   "tier": self.tier, "n": 0}
+        if self._cmd:
+            self.s["schema"] = 3
+            self.s["phase"] = "command"
+            self.s.update({
+                "pool_decl": {},        # side -> this turn's declared LIMs
+                "pool": [],             # undrawn "Side:LIM" refs
+                "initiative": None,
+                "act": None,            # open activation context
+                "act_count": {},        # div_key -> activations this turn
+                "arty_used": {},        # arty pid -> div_key attached to
+                "turn_units": [],       # pids granted an activation
+                "ooc": [],              # pids marked Out of Command [4.3.3]
+                "nonlim_used": {s_: [] for s_ in self.game.side_order},
+                "nonlim_passed": {s_: False for s_ in self.game.side_order},
+                "fatigue": {dk: 0 for dk in self._divisions()},
+                "fat_crossed": {},      # div_key -> [7/8/9 thresholds hit]
+                "fat_lim": [], "fat_combat": [],
+            })
         self._reset_log()
         self._log({"event": "init", "mode": "napoleonic",
                    "scenario": self.scenario["name"],
                    "tier": self.tier, "seed": seed,
+                   "schema": self.s["schema"],
                    "units": self._units_for_log(units)})
         self.save()
 
@@ -119,6 +162,542 @@ class NapoleonicGame(GateGame):
         return [dict(pid=u["pid"], slot=u["slot"], side=u["side"],
                      hex=[u["col"], u["row"]], facing=u["facing"],
                      formation=u["formation"]) for u in units.values()]
+
+    # ==================================================== command system
+    # [3.0/4.0]; schema 3 only. All draws and rolls are the seeded stream.
+    def _divisions(self):
+        """div_key ('French:3') -> scenario command.divisions entry + side/key."""
+        out = {}
+        for side, divs in (self.SCMD or {}).get("divisions", {}).items():
+            for key, d in divs.items():
+                out[f"{side}:{key}"] = dict(d, side=side, key=key)
+        return out
+
+    def _leader_of(self, dk):
+        d = self._divisions()[dk]
+        for u in self.s["units"].values():
+            if u["slot"] == d["leader"] and u["side"] == d["side"]:
+                return u
+        return None
+
+    def _rating(self, dk):
+        """The division leader's printed ratings (activation/personality/
+        range) - static scenario data, cited to the counter art."""
+        d = self._divisions()[dk]
+        return self._ratings[(d["side"], d["leader"])]
+
+    def _div_key_of(self, u):
+        """The unit's division for command/fatigue. Leaders map to the
+        division they lead; artillery to the division it attached to this
+        turn (flexible attachment, A15.1 special rule); combat units to
+        their printed division band."""
+        for dk, d in self._divisions().items():
+            if u["arm"] == "leader":
+                if d["leader"] == u["slot"] and d["side"] == u["side"]:
+                    return dk
+            elif d["side"] == u["side"] and d["key"] == u.get("div"):
+                if u["arm"].startswith("artillery"):
+                    break               # flexible: only via attachment
+                return dk
+        if u["arm"].startswith("artillery"):
+            return self.s["arty_used"].get(u["pid"])
+        return None
+
+    def _organic(self, dk):
+        """Alive organic (non-leader, non-artillery) members [4.3.3]."""
+        d = self._divisions()[dk]
+        return [u for u in self.s["units"].values()
+                if u["side"] == d["side"] and u.get("div") == d["key"]
+                and u["arm"] not in ("leader",)
+                and not u["arm"].startswith("artillery")
+                and self.on_map(u)]
+
+    def _attachable_arty(self, dk):
+        """Artillery eligible to attach to this division's activation:
+        listed for it in the scenario, alive, not yet activated this turn
+        (A15.1 special rule; one activation per unit per turn)."""
+        att = (self.SCMD or {}).get("artillery_attach", {})
+        d = self._divisions()[dk]
+        out = []
+        for u in self.s["units"].values():
+            if not u["arm"].startswith("artillery") or not self.on_map(u):
+                continue
+            if u["side"] != d["side"] or u["pid"] in self.s["turn_units"]:
+                continue
+            if d["key"] in att.get(u["slot"], []):
+                out.append(u)
+        return out
+
+    def _at_div_breakpoint(self, dk):
+        """Division Breakpoint [11.2]: organic combat units at Unit
+        Breakpoint [11.1] (dead units count - they broke past it) >= the
+        division's printed Breakpoint Level."""
+        d = self._divisions()[dk]
+        broke = 0
+        for u in self.s["units"].values():
+            if u["side"] != d["side"] or u.get("div") != d["key"]:
+                continue
+            if u["arm"] == "leader" or u["arm"].startswith("artillery"):
+                continue                # artillery never breaks [11.1]
+            if u.get("dead") or self._at_breakpoint(u):
+                broke += 1
+        return broke >= int(d["breakpoint"])
+
+    def _lim_side(self, ref):
+        return ref.split(":", 1)[0]
+
+    def _lim_name(self, ref):
+        return ref.split(":", 1)[1]
+
+    def _div_by_lim(self, side, lim):
+        """The division a DIVISION LIM belongs to. The Independent LIM
+        maps to no single division: its divisions fatigue only if they
+        activate [13.1.1] and its pool eligibility is per-division at
+        draw time [11.2.1] - so it returns None here."""
+        if lim == "Independent":
+            return None
+        for dk, d in self._divisions().items():
+            if d["side"] == side and d["lim"] == lim:
+                return dk
+        return None
+
+    def _side_key(self, side):
+        """game.json command tables key ('french'/'allied')."""
+        return side.lower()
+
+    def _enemy(self, side):
+        a, b = self.game.side_order
+        return b if side == a else a
+
+    def _enemies_within(self, dk, hexes):
+        """Any organic unit of the division within `hexes` of an enemy
+        combat unit [4.7 RETREAT/CHARGE preconditions]."""
+        d = self._divisions()[dk]
+        foes = [(v["col"], v["row"]) for v in self.s["units"].values()
+                if v["side"] != d["side"] and self.on_map(v)
+                and v["arm"] != "leader"]
+        for u in self._organic(dk):
+            if any(self._dist((u["col"], u["row"]), f) <= hexes
+                   for f in foes):
+                return True
+        return False
+
+    # -------------------------------------------------- pool + initiative
+    def _available_lims(self, side):
+        """LIMs a side may declare: the scenario roster minus LIMs of
+        divisions at Breakpoint [11.2.1 - may NEVER be re-added]."""
+        out = []
+        for lim in self.scenario["initial_lims"][side]:
+            dk = self._div_by_lim(side, lim)
+            if dk and self._at_div_breakpoint(dk):
+                continue
+            if dk and not self._leader_of(dk):
+                continue
+            out.append(lim)
+        return out
+
+    def _both_pools_declared(self, out):
+        """Close the Pool Placement Phase [3.0.A]: fatigue bookings for
+        committed division LIMs (designer Q&A: any LIM in the pool
+        fatigues its division, whatever happens), then the opposed
+        initiative roll [4.4] (ties reroll), then the pool fills."""
+        pool = []
+        for side, lims in self.s["pool_decl"].items():
+            for lim in lims:
+                pool.append(f"{side}:{lim}")
+                dk = self._div_by_lim(side, lim)
+                if dk and dk not in self.s["fat_lim"]:
+                    self.s["fat_lim"].append(dk)
+        self.s["pool"] = sorted(pool)      # draw order is the RNG's job
+        mods = (self.SCMD or {}).get("initiative_mod", {})
+        rolls = []
+        while True:
+            pair = {}
+            for side in self.game.side_order:
+                pair[side] = self.roll_d10() + int(mods.get(side, 0))
+            rolls.append(pair)
+            vals = list(pair.values())
+            if vals[0] != vals[1]:
+                break
+        a, b = self.game.side_order
+        winner = a if pair[a] > pair[b] else b
+        self.s["initiative"] = winner
+        out["initiative"] = {"rolls": rolls, "winner": winner,
+                             "cite": "4.4"}
+        if not self.s["pool"]:
+            out["note"] = "empty pool: no LIM activations this turn"
+            self._enter_nonlim(out)
+        else:
+            self.s["phase"] = "initiative"
+            self.s["mover"] = winner
+
+    # ------------------------------------------------------- activations
+    def _open_lim(self, ref, out):
+        """A LIM comes up (initiative choice or pool draw) [4.5]."""
+        side, lim = self._lim_side(ref), self._lim_name(ref)
+        out["lim"] = ref
+        if lim == "Independent":
+            die = self.roll_d10()
+            allowed = cmd_mod.independent_allowance(
+                self.CMD, self._side_key(side), die)
+            eligible = [dk for dk, d in self._divisions().items()
+                        if d["side"] == side and d["lim"] == "Independent"
+                        and self._leader_of(dk)
+                        and not self._at_div_breakpoint(dk)   # [11.2.1]
+                        and self.s["act_count"].get(dk, 0) == 0]
+            out["independent"] = {"die": die, "allowed": allowed,
+                                  "eligible": eligible, "cite": "A4.3.2"}
+            if allowed == 0 or not eligible:
+                out["note"] = "no independent leader may activate"
+                self._draw_next(out)
+                return
+            self.s["act"] = {"lim": ref, "side": side,
+                             "kind": "independent", "div": None,
+                             "pending": "choice", "atype": None,
+                             "stage": None, "incommand": [], "budget": {},
+                             "indep": {"allowed": allowed, "done": [],
+                                       "eligible": eligible},
+                             "prior_bd": None, "bd_after": None}
+            self.s["mover"] = side
+            return
+        dk = self._div_by_lim(side, lim)
+        self.s["act"] = {"lim": ref, "side": side, "kind": "division",
+                         "div": dk, "pending": "choice", "atype": None,
+                         "stage": None, "incommand": [], "budget": {},
+                         "indep": None, "prior_bd": None, "bd_after": None}
+        self.s["mover"] = side
+
+    def _open_activation(self, dk, atype, out, budget_frac=None):
+        """In Command determination happens NOW [4.3.3]; budgets by
+        activation type [4.6.1/4.6.2]."""
+        act = self.s["act"]
+        leader = self._leader_of(dk)
+        rng = int(self._rating(dk)["range"])
+        frac = budget_frac if budget_frac is not None else \
+            (1.0 if atype == "full" else 0.5)
+        members = []
+        for u in self._organic(dk):
+            if self._dist((u["col"], u["row"]),
+                          (leader["col"], leader["row"])) <= rng:
+                members.append(u)
+            elif u["pid"] not in self.s["ooc"]:
+                self.s["ooc"].append(u["pid"])          # [4.3.3]
+        for u in self._attachable_arty(dk):
+            if self._dist((u["col"], u["row"]),
+                          (leader["col"], leader["row"])) <= rng:
+                members.append(u)
+                self.s["arty_used"][u["pid"]] = dk
+        members.append(leader)
+        act["div"] = dk
+        act["atype"] = atype
+        act["pending"] = None
+        act["stage"] = "move"
+        act["incommand"] = [u["pid"] for u in members]
+        act["budget"] = {
+            u["pid"]: float(int(u["ma"] * frac) if frac < 1.0
+                            else u["ma"]) for u in members}
+        self.s["moved"] = []
+        self.s["returned"] = []      # once per enemy activation (Q&A)
+        self.s["act_count"][dk] = self.s["act_count"].get(dk, 0) + 1
+        self.s["turn_units"] = sorted(set(self.s["turn_units"])
+                                      | set(act["incommand"]))
+        # fatigue: activating under the Independent LIM fatigues [13.1.1];
+        # breakdown free activations don't (designer Q&A)
+        if act["kind"] == "independent" and dk not in self.s["fat_lim"]:
+            self.s["fat_lim"].append(dk)
+        out.setdefault("activation", {}).update(
+            div=dk, type=atype,
+            in_command=list(act["incommand"]),
+            out_of_command=[u["pid"] for u in self._organic(dk)
+                            if u["pid"] not in act["incommand"]],
+            budgets={p: act["budget"][p] for p in act["incommand"]})
+        self.s["mover"] = act["side"]
+
+    def _resolve_choice(self, dk, choice, out):
+        """Activation Procedure (charts p1 / 4.5.1): limited is automatic;
+        full rolls vs the leader's activation rating, failure rolls the
+        Command Breakdown Table on his personality column [4.7]."""
+        act = self.s["act"]
+        leader = self._leader_of(dk)
+        if choice == "limited":
+            self._open_activation(dk, "limited", out)
+            return
+        die = self.roll_d10()
+        rate = self._rating(dk)
+        rating = int(rate["activation"])
+        out["activation_roll"] = {"div": dk, "die": die, "vs": rating,
+                                  "cite": "4.5.1"}
+        if die <= rating:
+            self._open_activation(dk, "full", out)
+            return
+        bd_die = self.roll_d10()
+        res = cmd_mod.breakdown(self.CMD, rate["personality"],
+                                bd_die, prior=act.get("prior_bd"))
+        out["breakdown"] = {"die": bd_die,
+                            "column": rate["personality"],
+                            "result": res, "cite": "4.7"}
+        if res == "charge":
+            # unreachable in validated scope: no Aggressive leader exists
+            # in this scenario; melee lands in phase 4
+            raise RuntimeError("CHARGE breakdown result outside validated "
+                               "scope [4.7; phase 4]")
+        if res == "full":
+            self._open_activation(dk, "full", out)
+        elif res == "limited":
+            self._open_activation(dk, "limited", out)
+        elif res == "stop":
+            out["breakdown"]["effect"] = "commander finished [4.7]"
+            self._close_division(out)
+        elif res == "retreat":
+            self._breakdown_retreat(dk, out)
+            self._close_division(out)
+        elif res == "enemy":
+            out["breakdown"]["effect"] = ("stop; enemy may activate his "
+                                          "closest division [4.7]")
+            self._offer_breakdown(self._enemy(act["side"]),
+                                  (leader["col"], leader["row"]),
+                                  "enemy", out)
+        elif res == "reactivate":
+            act["bd_after"] = {"side": act["side"],
+                               "origin": (leader["col"], leader["row"]),
+                               "result": "reactivate"}
+            self._open_activation(dk, "full", out)
+
+    def _breakdown_retreat(self, dk, out):
+        """RETREAT [4.7]: if any division unit is within 3 hexes of an
+        enemy, all In Command units retreat half MA (rounded up) away
+        (unlimbered artillery limbers first); no SP loss for shortfall -
+        this is not a rout retreat."""
+        if not self._enemies_within(dk, 3):
+            out["breakdown"]["effect"] = \
+                "no enemy within 3 hexes: no retreat; commander finished"
+            return
+        leader = self._leader_of(dk)
+        rng = int(self._rating(dk)["range"])
+        moved = []
+        for u in self._organic(dk) + \
+                [a for a in self._attachable_arty(dk)]:
+            if self._dist((u["col"], u["row"]),
+                          (leader["col"], leader["row"])) > rng:
+                continue                        # In Command units only
+            if u["formation"] == "unlimbered":
+                u["formation"] = "limbered"     # [4.7]
+            sub = {}
+            self._retreat(u, -(-int(u["ma"]) // 2), sub, routed=False,
+                          sp_short=False)
+            moved.append({"unit": u["pid"], **sub})
+        out["breakdown"]["retreat"] = moved
+
+    def _offer_breakdown(self, side, origin, result, out):
+        """ENEMY/REACTIVATE opportunity [4.7]: `side` may activate its
+        division closest to `origin` (leader distance, ties = chooser's
+        pick), even one already activated - but no division reactivates
+        twice. Optional (designer Q&A)."""
+        cands = {}
+        for dk, d in self._divisions().items():
+            if d["side"] != side:
+                continue
+            ldr = self._leader_of(dk)
+            if not ldr:
+                continue
+            cands[dk] = self._dist((ldr["col"], ldr["row"]), origin)
+        if not cands:
+            self._draw_next(out)
+            return
+        best = min(cands.values())
+        closest = sorted(k for k, v in cands.items() if v == best)
+        self.s["act"] = {"lim": None, "side": side, "kind": "breakdown",
+                         "div": None, "pending": "bd_offer", "atype": None,
+                         "stage": None, "incommand": [], "budget": {},
+                         "indep": None, "prior_bd": result,
+                         "bd_after": None,
+                         "bd_closest": closest}
+        self.s["mover"] = side
+        out["breakdown_offer"] = {"side": side, "closest": closest,
+                                  "cite": "4.7 + designer Q&A (optional)"}
+
+    def _close_division(self, out):
+        """One division's activation ends; route the flow onward."""
+        act = self.s["act"]
+        if act.get("bd_after"):
+            after = act.pop("bd_after")
+            self._offer_breakdown(after["side"], after["origin"],
+                                  after["result"], out)
+            return
+        if act["kind"] == "independent":
+            ind = act["indep"]
+            if act["div"] and act["div"] not in ind["done"]:
+                ind["done"].append(act["div"])
+            remaining = [dk for dk in ind["eligible"]
+                         if dk not in ind["done"]
+                         and self.s["act_count"].get(dk, 0) == 0]
+            if remaining and len(ind["done"]) < ind["allowed"]:
+                act["div"] = None
+                act["atype"] = None
+                act["stage"] = None
+                act["incommand"] = []
+                act["budget"] = {}
+                act["pending"] = "choice"
+                self.s["mover"] = act["side"]
+                return
+        if act["kind"] in ("nonlim_div", "nonlim_unit"):
+            self._nonlim_next(out)
+            return
+        self._draw_next(out)
+
+    def _draw_next(self, out):
+        """LIM Selection Segment [3.0.B.2]: seeded blind draw."""
+        self.s["act"] = None
+        if self.s["pool"]:
+            r = self._rng()
+            idx = int(r.random() * len(self.s["pool"]))
+            self.s["rng_calls"] += 1
+            ref = self.s["pool"].pop(idx)
+            out["drawn"] = {"lim": ref, "left": len(self.s["pool"]),
+                            "cite": "3.0.B.2"}
+            self._open_lim(ref, out)
+            return
+        self._enter_nonlim(out)
+
+    # ---------------------------------------------------- non-LIM phase
+    def _nonlim_options(self, side):
+        """Eligible picks [3.0.C.1]: divisions that did not activate and
+        whose own LIM was not committed (Independent-LIM divisions that
+        never activated qualify per A4.3.2), or one Out of Command /
+        never-attached artillery unit [4.6.2.b]."""
+        opts = {"divisions": [], "units": []}
+        declared = self.s["pool_decl"].get(side, [])
+        for dk, d in self._divisions().items():
+            if d["side"] != side or not self._leader_of(dk):
+                continue
+            if self.s["act_count"].get(dk, 0) > 0:
+                continue
+            if dk in self.s["nonlim_used"][side]:
+                continue
+            if d["lim"] != "Independent" and d["lim"] in declared:
+                continue
+            opts["divisions"].append(dk)
+        for u in self.s["units"].values():
+            if u["side"] != side or not self.on_map(u):
+                continue
+            if u["arm"] == "leader" or u["pid"] in self.s["turn_units"]:
+                continue
+            if u.get("morale_state") == "routed":
+                continue        # nothing it could legally do [9.2.4]
+            if f"u:{u['pid']}" in self.s["nonlim_used"][side]:
+                continue
+            if u["pid"] in self.s["ooc"] or (
+                    u["arm"].startswith("artillery")
+                    and u["pid"] not in self.s["arty_used"]):
+                opts["units"].append(u["pid"])
+        return opts
+
+    def _enter_nonlim(self, out):
+        self.s["phase"] = "non_lim"
+        self.s["act"] = None
+        self.s["mover"] = self.s["initiative"]
+        self._nonlim_next(out, entering=True)
+
+    def _nonlim_next(self, out, entering=False):
+        """Alternate C.1/C.2 [3.0]; a side with nothing left is passed
+        automatically (logged); both passed -> Rally Phase."""
+        if not entering:
+            self.s["act"] = None
+        order = [self._enemy(self.s["mover"]), self.s["mover"]] \
+            if not entering else \
+            [self.s["mover"], self._enemy(self.s["mover"])]
+        for side in order:
+            if self.s["nonlim_passed"][side]:
+                continue
+            o = self._nonlim_options(side)
+            if not o["divisions"] and not o["units"]:
+                self.s["nonlim_passed"][side] = True
+                out.setdefault("auto_passed", []).append(side)
+                continue
+            self.s["mover"] = side
+            self.s["phase"] = "non_lim"
+            return
+        self._end_nonlim(out)
+
+    def _end_nonlim(self, out):
+        """LIM Removal Segment [3.0.C.3] is subsumed by the per-turn
+        voluntary pool declaration (A15.1) + the breakpoint LIM ban
+        enforced in _available_lims [11.2.1]. On to the Rally Phase."""
+        needy = any(self.on_map(u) and u.get("morale_state", "good")
+                    != "good" for u in self.s["units"].values())
+        if needy:
+            self.s["phase"] = "rally"
+            self.s["mover"] = self.first_player
+            self.s["rallied"] = []
+            self.s["moved"] = []
+            out["phase"] = "rally"
+            return
+        self._fatigue_segment(out)
+        self._next_turn()
+        out.update(turn=self.s["turn"], mover=self.s["mover"])
+
+    # ------------------------------------------------------ fatigue [13]
+    def _fatigue_segment(self, out):
+        """Fatigue Segment [3.0.D.4]: +1 for a committed LIM or combat
+        [13.1, designer Q&A], -1 for idle rested divisions 3+ hexes from
+        the enemy [13.2]; one-time 7/8/9 immediate effects per the
+        errata [13.3]."""
+        changes = []
+        foes = {s_: [(v["col"], v["row"])
+                     for v in self.s["units"].values()
+                     if v["side"] != s_ and self.on_map(v)
+                     and v["arm"] != "leader"]
+                for s_ in self.game.side_order}
+        for dk in sorted(self._divisions()):
+            lvl = self.s["fatigue"].get(dk, 0)
+            up = dk in self.s["fat_lim"] or dk in self.s["fat_combat"]
+            if up:
+                new = min(9, lvl + 1)
+            else:
+                far = all(min([self._dist((u["col"], u["row"]), f)
+                               for f in foes[u["side"]]] or [99]) >= 3
+                          for u in self._organic(dk))
+                new = max(0, lvl - 1) if (far and lvl > 0) else lvl
+            if new == lvl:
+                continue
+            self.s["fatigue"][dk] = new
+            rec = {"div": dk, "from": lvl, "to": new}
+            if new > lvl:
+                crossed = self.s["fat_crossed"].setdefault(dk, [])
+                effects, newly = cmd_mod.fatigue_threshold_effects(
+                    new, set(crossed))
+                crossed.extend(newly)
+                if effects:
+                    rec["immediate"] = []
+                    for u in self._organic(dk):
+                        for eff in effects:
+                            if eff == "morale_level":
+                                i = self._LADDER.index(u["morale_state"])
+                                sub = {}
+                                self._set_morale_state(
+                                    u, self._LADDER[min(3, i + 1)], sub)
+                                rec["immediate"].append(
+                                    {"unit": u["pid"], **sub})
+                            elif eff == "disorder":
+                                self._disorder(u)
+                                rec["immediate"].append(
+                                    {"unit": u["pid"],
+                                     "formation": "disorder"})
+            changes.append(rec)
+        self.s["fat_lim"] = []
+        self.s["fat_combat"] = []
+        if changes:
+            out["fatigue"] = {"changes": changes, "cite": "13.1-13.3"}
+
+    def _mark_combat_fatigue(self, u, band=None):
+        """[13.1.2]: performing or suffering combat fatigues the unit's
+        division - except medium/long-range artillery fire. Unattached
+        artillery has no division to mark this turn."""
+        if band in ("medium", "long"):
+            return
+        dk = self._div_key_of(u)
+        if dk and dk not in self.s["fat_combat"]:
+            self.s["fat_combat"].append(dk)
 
     # ----------------------------------------------------------- geometry
     def _kind(self, u):
@@ -210,16 +789,28 @@ class NapoleonicGame(GateGame):
         return cost, dis, nmc
 
     # -------------------------------------------------------- reachability
-    def reachable(self, pid):
+    def reachable(self, pid, budget=None, avoid_adjacent=False):
         """Dijkstra over (col,row,facing): every reachable (hex, facing)
         with its cheapest MP cost, its path, and pending disorder events.
         Facing changes cost the TEC row per 30-degree step; advancing goes
         through front hexsides only; entering an enemy front hex is
-        terminal [5.1.3]."""
+        terminal [5.1.3]. `budget` caps spendable MPs below the MA
+        (limited activations [4.6.2]); `avoid_adjacent` bars ENTERING any
+        hex adjacent to an enemy combat unit (limited activations may not
+        move adjacent to enemy units - any hexside, designer Q&A)."""
         u = self.unit(pid)
         if self.F.immobile(u["formation"]):
             return {}
-        ma = float(u["ma"])
+        ma = float(u["ma"]) if budget is None else float(budget)
+        no_adj = set()
+        if avoid_adjacent:
+            for v in self.s["units"].values():
+                if v["side"] == u["side"] or v["arm"] == "leader" \
+                        or not self.on_map(v):
+                    continue
+                no_adj.add((v["col"], v["row"]))
+                for nb in self.game.neighbors(v["col"], v["row"]):
+                    no_adj.add(tuple(nb))
         efh = self.enemy_front_hexes(u["side"])
         start_in_efh = (u["col"], u["row"]) in efh
         adj_start = {tuple(h) for h in
@@ -270,6 +861,8 @@ class NapoleonicGame(GateGame):
                         set(efh.get(tuple(nb), []))
                     if shared:
                         continue
+                if tuple(nb) in no_adj:
+                    continue    # limited: never adjacent to enemy [4.6.2]
                 sc, dis, nmc2 = self.step_cost(u, (c, r), nb, nmc)
                 if sc is None:
                     continue
@@ -353,16 +946,27 @@ class NapoleonicGame(GateGame):
             return self._propose_rally(side, action)
         if t in ("rally", "end_rally"):
             return self._v(False, "not the rally phase [12.0]")
+        if self._cmd:
+            return self._propose_cmd(side, action)
         if side != self.s["mover"]:
             return self._v(False, f"it is {self.s['mover']}'s activation")
         if t == "fire":
             return self._propose_fire(side, action)
         if t == "end_turn":
             return self._v(True)
+        return self._propose_unit_action(side, action)
+
+    def _propose_unit_action(self, side, action, budget=None,
+                             avoid_adjacent=False):
+        """Shared unit-action legality (both schemas). `budget` = the MP
+        allowance this activation (None = full MA); `avoid_adjacent` = the
+        limited-activation adjacency ban [4.6.2 + designer Q&A]."""
+        t = action.get("type")
         pid = str(action.get("unit"))
         if pid not in self.s["units"]:
             return self._v(False, f"unknown unit {pid}")
         u = self.unit(pid)
+        bud = float(u["ma"]) if budget is None else float(budget)
         if u["side"] != side:
             return self._v(False, "not your unit")
         if u.get("dead"):
@@ -373,11 +977,12 @@ class NapoleonicGame(GateGame):
                            "[9.2.4]")
         if pid in self.s["moved"]:
             return self._v(False,
-                           "unit already activated this turn [5.0: one "
-                           "activation per unit per turn]")
+                           "unit already acted in this activation "
+                           "[4.6.1: one move per unit]")
         if t == "move":
             dest = action.get("dest")
-            reach = self.reachable(pid)
+            reach = self.reachable(pid, budget=bud,
+                                   avoid_adjacent=avoid_adjacent)
             facing = action.get("facing")
             if facing is None:      # engine picks the cheapest facing
                 opts = [(v[0], k[2]) for k, v in reach.items()
@@ -385,7 +990,7 @@ class NapoleonicGame(GateGame):
                 if not opts:
                     return self._v(False,
                                    f"({dest[0]},{dest[1]}) is not "
-                                   f"reachable within MA {u['ma']} "
+                                   f"reachable within {bud} MPs "
                                    "through front hexsides "
                                    "[5.1/6.1/TEC 5.0]")
                 return self._v(True)
@@ -393,7 +998,7 @@ class NapoleonicGame(GateGame):
             if key not in reach:
                 return self._v(False,
                                f"({dest[0]},{dest[1]}) facing {facing} is "
-                               f"not reachable within MA {u['ma']} through "
+                               f"not reachable within {bud} MPs through "
                                "front hexsides [5.1/6.1/TEC 5.0]")
             return self._v(True)
         if t == "about_face":
@@ -401,6 +1006,9 @@ class NapoleonicGame(GateGame):
             if cost is None:
                 return self._v(False, "about face not allowed for this "
                                       "unit/formation [TEC 5.0]")
+            if cost > bud + 1e-9:
+                return self._v(False, f"about face costs {cost} MPs, "
+                                      f"budget is {bud} [4.6.2]")
             return self._v(True)
         if t == "change_formation":
             to = action.get("to")
@@ -409,11 +1017,161 @@ class NapoleonicGame(GateGame):
             ok, why = self._formation_change_ok(u, to)
             if not ok:
                 return self._v(False, why)
+            cost = self.F.action_cost(u, "change_formation", u["ma"])
+            if cost is not None and cost > bud + 1e-9:
+                return self._v(False, f"formation change costs {cost} "
+                                      f"MPs, budget is {bud} [4.6.2]")
             return self._v(True)
         if t == "slide" or t == "reverse":
-            ok, why = self._special_move_ok(u, t, action.get("dest"))
+            ok, why = self._special_move_ok(u, t, action.get("dest"),
+                                            budget=bud)
             return self._v(ok, *([why] if why else []))
         return self._v(False, f"unknown action type {t}")
+
+    # ------------------------------------------- command-flow proposals
+    def _propose_cmd(self, side, action):
+        t = action.get("type")
+        ph = self.s["phase"]
+        if ph == "command":
+            if t != "set_pool":
+                return self._v(False, "Pool Placement Phase: declare your "
+                                      "LIMs with set_pool [3.0.A / A15.1]")
+            if side != self.s["mover"]:
+                return self._v(False, f"it is {self.s['mover']}'s pool "
+                                      "declaration")
+            lims = action.get("lims")
+            if not isinstance(lims, list):
+                return self._v(False, "set_pool needs a lims list")
+            avail = self._available_lims(side)
+            if len(set(lims)) != len(lims):
+                return self._v(False, "duplicate LIM")
+            for lim in lims:
+                if lim in avail:
+                    continue
+                if lim in self.scenario["initial_lims"][side]:
+                    return self._v(False,
+                                   f"{lim}: division at Breakpoint - its "
+                                   "LIM may never be added [11.2.1]")
+                return self._v(False, f"{lim} is not one of your LIMs")
+            return self._v(True)
+        if ph == "initiative":
+            if t != "choose_initiative_lim":
+                return self._v(False, "Initiative Choice Segment: pick "
+                                      "the Initiative LIM [3.0.A.3]")
+            if side != self.s["initiative"]:
+                return self._v(False, f"{self.s['initiative']} won the "
+                                      "initiative [4.4]")
+            ref = action.get("lim")
+            if ref not in self.s["pool"]:
+                return self._v(False, f"{ref} is not in the pool "
+                                      "(any pool LIM may be chosen [4.4])")
+            return self._v(True)
+        if ph == "activation":
+            act = self.s["act"]
+            if act is None:
+                return self._v(False, "no activation open")
+            if side != act["side"]:
+                return self._v(False, f"it is {act['side']}'s activation")
+            if act["pending"] == "bd_offer":
+                if t == "bd_decline":
+                    return self._v(True)
+                if t != "bd_activate":
+                    return self._v(False,
+                                   "breakdown opportunity: bd_activate "
+                                   "your closest division or bd_decline "
+                                   "[4.7]")
+                dk = action.get("division")
+                if dk not in act["bd_closest"]:
+                    return self._v(False,
+                                   f"closest division(s): "
+                                   f"{act['bd_closest']} [4.7]")
+                if self.s["act_count"].get(dk, 0) >= 2:
+                    return self._v(False, "no division may be reactivated "
+                                          "more than once per turn [4.7]")
+                return self._v(True)
+            if act["pending"] == "choice":
+                if t == "end_activation":
+                    return self._v(True)    # decline the attempt [4.5.1
+                    # 'may attempt'] / remaining independent leaders
+                if t != "activation_choice":
+                    return self._v(False, "choose full or limited "
+                                          "activation [4.5.1/4.6]")
+                choice = action.get("choice")
+                if choice not in ("full", "limited"):
+                    return self._v(False, "choice must be full or limited")
+                if act["kind"] == "independent":
+                    dk = action.get("division")
+                    ind = act["indep"]
+                    if dk not in ind["eligible"] or dk in ind["done"]:
+                        return self._v(False,
+                                       "not an eligible independent "
+                                       "division [A4.3.2]")
+                    if len(ind["done"]) >= ind["allowed"]:
+                        return self._v(False,
+                                       f"only {ind['allowed']} independent "
+                                       "leaders may activate this draw "
+                                       "[A4.3.2]")
+                else:
+                    dk = act["div"]
+                if choice == "full" and self._at_div_breakpoint(dk):
+                    return self._v(False,
+                                   "division at Breakpoint may not "
+                                   "conduct a Full Activation [11.2.1]")
+                return self._v(True)
+            # an activation is open: unit actions, fire, end_activation
+            if t == "end_activation":
+                return self._v(True)
+            if t == "fire":
+                pid = str(action.get("unit"))
+                if pid not in act["incommand"]:
+                    return self._v(False,
+                                   "only In Command units of the "
+                                   "activated division act [4.3.3]")
+                return self._propose_fire(side, action)
+            if t in ("move", "about_face", "change_formation", "slide",
+                     "reverse"):
+                if act["stage"] == "combat":
+                    return self._v(False,
+                                   "the division has opened fire: no "
+                                   "more movement this activation "
+                                   "[4.6.1]")
+                pid = str(action.get("unit"))
+                if pid not in act["incommand"]:
+                    return self._v(False,
+                                   "only In Command units of the "
+                                   "activated division act [4.3.3]")
+                return self._propose_unit_action(
+                    side, action, budget=act["budget"].get(pid),
+                    avoid_adjacent=act["atype"] == "limited")
+            return self._v(False, f"unknown action type {t}")
+        if ph == "non_lim":
+            if side != self.s["mover"]:
+                return self._v(False, f"it is {self.s['mover']}'s "
+                                      "Non-LIM pick [3.0.C]")
+            if t == "pass_non_lim":
+                return self._v(True)
+            if t != "non_lim":
+                return self._v(False, "Non-LIM Phase: pick a division or "
+                                      "an Out of Command unit, or pass "
+                                      "[3.0.C]")
+            o = self._nonlim_options(side)
+            if action.get("division"):
+                dk = action["division"]
+                if dk not in o["divisions"]:
+                    return self._v(False,
+                                   f"{dk} is not eligible: it activated, "
+                                   "had its LIM committed, or was used "
+                                   "[3.0.C.1]")
+                return self._v(True)
+            if action.get("unit"):
+                pid = str(action["unit"])
+                if pid not in o["units"]:
+                    return self._v(False,
+                                   "not an eligible Out of Command / "
+                                   "unattached unit [3.0.C.1/4.6.2.b]")
+                return self._v(True)
+            return self._v(False, "non_lim needs a division or a unit")
+        return self._v(False, f"no {t} in phase {ph}")
 
     def _formation_change_ok(self, u, to):
         cost = self.F.action_cost(u, "change_formation", u["ma"])
@@ -441,7 +1199,8 @@ class NapoleonicGame(GateGame):
                            "terrain]")
         return True, ""
 
-    def _special_move_ok(self, u, t, dest):
+    def _special_move_ok(self, u, t, dest, budget=None):
+        bud = float(u["ma"]) if budget is None else float(budget)
         row = "slide" if t == "slide" else "reverse"
         cell = self.F.tec.cell(row, fm.column_id(u["arm"], u["formation"]))
         if cell is None or cell.prohibited or cell.not_applicable:
@@ -465,8 +1224,8 @@ class NapoleonicGame(GateGame):
             cost = 2 * base.cost
         else:
             cost = cell.cost
-        if cost > u["ma"] + 1e-9:
-            return False, f"costs {cost} MPs, MA is {u['ma']}"
+        if cost > bud + 1e-9:
+            return False, f"costs {cost} MPs, budget is {bud}"
         if not self._stack_ok(u, *dest):
             return False, "stacking violation [7.1]"
         return True, ""
@@ -678,6 +1437,9 @@ class NapoleonicGame(GateGame):
                "shift": shift}
         if band:
             rec["band"] = band
+        if self._cmd:
+            self._mark_combat_fatigue(firer, band)     # [13.1.2]
+            self._mark_combat_fatigue(target, band)
         return rec, res["effect"]
 
     def _facing_shift(self, firer, target):
@@ -771,6 +1533,10 @@ class NapoleonicGame(GateGame):
             d.append(1)
         if self._at_breakpoint(u):
             d.append(1)
+        if self._cmd and not u["arm"].startswith("artillery"):
+            dk = self._div_key_of(u)
+            if dk and self.s.get("fatigue", {}).get(dk, 0) >= 4:
+                d.append(1)     # Fatigue Effects Table, level 4+ [13.3]
         if u["morale_state"] == "shaken":
             d.append(1)
         elif u["morale_state"] in ("unsteady", "routed"):
@@ -831,11 +1597,12 @@ class NapoleonicGame(GateGame):
             if (v["col"], v["row"]) in here_or_adj:
                 self._morale_check(v, 0, out)
 
-    def _retreat(self, u, dist, out, routed):
+    def _retreat(self, u, dist, out, routed, sp_short=True):
         """Retreat procedure [10.1]: away from enemies, unoccupied
         preferred, no prohibited terrain/enemy hexes, no revisits;
-        1 SP per hex short [10.1.1]. Unsteady keeps facing; routed
-        faces the retreat direction [10.1]."""
+        1 SP per hex short [10.1.1] (sp_short=False for the Command
+        Breakdown RETREAT [4.7], which is not a rout retreat). Unsteady
+        keeps facing; routed faces the retreat direction [10.1]."""
         enemies = [(v["col"], v["row"]) for v in self.s["units"].values()
                    if v["side"] != u["side"] and self.on_map(v)
                    and v["arm"] != "leader"]
@@ -880,7 +1647,7 @@ class NapoleonicGame(GateGame):
         out.setdefault("effects", []).append(
             {"unit": u["pid"], "retreat": [list(p) for p in path[1:]],
              "short": short})
-        if short > 0:
+        if short > 0 and sp_short:
             self._lose_sp(u, short, out)               # [10.1.1]
 
     # ------------------------------------------------------------ rally
@@ -922,12 +1689,19 @@ class NapoleonicGame(GateGame):
             return self._apply_rally(side, action)
         if t == "end_rally":
             return self._end_rally()
+        if t in ("set_pool", "choose_initiative_lim", "activation_choice",
+                 "end_activation", "bd_activate", "bd_decline", "non_lim",
+                 "pass_non_lim"):
+            return self._apply_cmd(side, action)
         pid = str(action["unit"])
         u = self.unit(pid)
         result = {"unit": pid}
+        act = self.s.get("act") if self._cmd else None
+        budget = act["budget"].get(pid) if act else None
+        avoid = bool(act and act["atype"] == "limited")
         if t == "move":
             dest = action["dest"]
-            reach = self.reachable(pid)
+            reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid)
             facing = action.get("facing")
             if facing is None:      # cheapest facing at the destination
                 facing = min(((v[0], k[2]) for k, v in reach.items()
@@ -981,6 +1755,102 @@ class NapoleonicGame(GateGame):
         self.s["moved"].append(pid)
         return result
 
+    def _apply_cmd(self, side, action):
+        """Command-flow transitions [3.0/4.0]; every cascade (draws,
+        rolls, breakdown results) lands in the returned result dict and
+        is therefore in the log, replayable from the seed."""
+        t = action["type"]
+        out = {}
+        if t == "set_pool":
+            lims = list(action["lims"])
+            self.s["pool_decl"][side] = lims
+            out["declared"] = {"side": side, "lims": lims,
+                               "cite": "A15.1 voluntary pool"}
+            if len(self.s["pool_decl"]) == len(self.game.side_order):
+                self._both_pools_declared(out)
+            else:
+                self.s["mover"] = self._enemy(side)
+            return out
+        if t == "choose_initiative_lim":
+            ref = action["lim"]
+            self.s["pool"].remove(ref)
+            out["initiative_lim"] = {"lim": ref, "cite": "3.0.A.3/4.4"}
+            self.s["phase"] = "activation"
+            self._open_lim(ref, out)
+            return out
+        if t == "activation_choice":
+            act = self.s["act"]
+            dk = action.get("division") if act["kind"] == "independent" \
+                else act["div"]
+            out["choice"] = {"div": dk, "choice": action["choice"]}
+            self._resolve_choice(dk, action["choice"], out)
+            return out
+        if t == "end_activation":
+            act = self.s["act"]
+            if act["pending"] == "choice":
+                if act["kind"] == "independent":
+                    out["note"] = "remaining independent leaders " \
+                                  "declined (they may act in the " \
+                                  "Non-LIM Phase [A4.3.2])"
+                else:
+                    out["note"] = "activation attempt declined [4.5.1]"
+                self._draw_next(out)
+                return out
+            self._close_division(out)
+            return out
+        if t == "bd_activate":
+            act = self.s["act"]
+            act["div"] = action["division"]
+            act["pending"] = "choice"
+            out["breakdown_take"] = {"div": act["div"], "cite": "4.7"}
+            return out
+        if t == "bd_decline":
+            out["breakdown_declined"] = {"side": side,
+                                         "cite": "4.7 + designer Q&A "
+                                                 "(optional)"}
+            self._draw_next(out)
+            return out
+        if t == "non_lim":
+            if action.get("division"):
+                dk = action["division"]
+                self.s["nonlim_used"][side].append(dk)
+                self.s["act"] = {"lim": None, "side": side,
+                                 "kind": "nonlim_div", "div": dk,
+                                 "pending": None, "atype": None,
+                                 "stage": None, "incommand": [],
+                                 "budget": {}, "indep": None,
+                                 "prior_bd": None, "bd_after": None}
+                self.s["phase"] = "activation"
+                self._open_activation(dk, "limited", out)
+                out["cite"] = "3.0.C.1/4.6.2.a"
+                return out
+            pid = str(action["unit"])
+            u = self.unit(pid)
+            self.s["nonlim_used"][side].append(f"u:{pid}")
+            self.s["act"] = {"lim": None, "side": side,
+                             "kind": "nonlim_unit", "div": None,
+                             "pending": None, "atype": "limited",
+                             "stage": "move", "incommand": [pid],
+                             "budget": {pid: float(int(u["ma"]) // 3)},
+                             "indep": None, "prior_bd": None,
+                             "bd_after": None}
+            self.s["phase"] = "activation"
+            self.s["moved"] = []
+            self.s["returned"] = []
+            self.s["turn_units"] = sorted(set(self.s["turn_units"])
+                                          | {pid})
+            out["single_unit"] = {"unit": pid,
+                                  "budget": self.s["act"]["budget"][pid],
+                                  "cite": "4.6.2.b: one-third MA "
+                                          "(rounded down)"}
+            return out
+        if t == "pass_non_lim":
+            self.s["nonlim_passed"][side] = True
+            out["passed"] = side
+            self._nonlim_next(out)
+            return out
+        raise RuntimeError(f"unhandled command action {t}")
+
     def _disorder(self, u):
         u["formation"] = "disorder"
         if u["facing"] % 2 == 1:
@@ -998,6 +1868,8 @@ class NapoleonicGame(GateGame):
         u, tgt = self.unit(pid), self.unit(tid)
         self.s["fired"].append(pid)
         self.s["moved"].append(pid) if pid not in self.s["moved"] else None
+        if self._cmd and self.s.get("act"):
+            self.s["act"]["stage"] = "combat"   # movement is over [4.6.1]
         # is the defender entitled to a return-fire decision? [8.1.2]
         can_return = False
         ok, _ = self._fire_capable(tgt)
@@ -1063,7 +1935,8 @@ class NapoleonicGame(GateGame):
         if self.s["mover"] == self.first_player:
             self.s["mover"] = b if self.first_player == a else a
             return {"rally": self.s["mover"]}
-        # both sides done: Rout Loss Segment [12.4], then next turn
+        # both sides done: Rout Loss Segment [12.4], then (schema 3) the
+        # Fatigue Segment [3.0.D.4], then next turn
         out = {"rout_loss": []}
         for u in self.s["units"].values():
             if self.on_map(u) and u["morale_state"] == "routed":
@@ -1072,6 +1945,8 @@ class NapoleonicGame(GateGame):
                 if not u.get("dead"):
                     self._retreat(u, 1, sub, routed=True)
                 out["rout_loss"].append({"unit": u["pid"], **sub})
+        if self._cmd:
+            self._fatigue_segment(out)
         self._next_turn()
         out.update(turn=self.s["turn"], mover=self.s["mover"])
         return out
@@ -1099,11 +1974,25 @@ class NapoleonicGame(GateGame):
     def _next_turn(self):
         self.s["mover"] = self.first_player
         self.s["turn"] += 1
-        self.s["phase"] = "movement"
         self.s["moved"] = []
         self.s["fired"] = []
         self.s["returned"] = []
         self.s["rallied"] = []
+        if self._cmd:
+            self.s["phase"] = "command"        # Pool Placement [3.0.A]
+            self.s["pool_decl"] = {}
+            self.s["pool"] = []
+            self.s["initiative"] = None
+            self.s["act"] = None
+            self.s["act_count"] = {}
+            self.s["arty_used"] = {}
+            self.s["turn_units"] = []
+            self.s["ooc"] = []
+            self.s["nonlim_used"] = {s_: [] for s_ in self.game.side_order}
+            self.s["nonlim_passed"] = {s_: False
+                                       for s_ in self.game.side_order}
+        else:
+            self.s["phase"] = "movement"
         self.s["victory"] = self._victory_state()
 
     # ---------------------------------------------------------- victory
@@ -1127,21 +2016,44 @@ class NapoleonicGame(GateGame):
     # ------------------------------------------------------------ queries
     def flow(self):
         v = self.s.get("victory") or self._victory_state()
-        return {"mode": "napoleonic",
-                "turn": self.s["turn"], "turn_label": self.turn_label(),
-                "mover": self.s["mover"], "phase": self.s["phase"],
-                "moved": list(self.s["moved"]),
-                "fired": list(self.s.get("fired", [])),
-                "pending_fire": self.s.get("pending_fire"),
-                "victory": v,
-                "napoleonic": {"units": {
-                    u["pid"]: {"facing": u["facing"],
-                               "formation": u["formation"],
-                               "morale": u.get("morale_state", "good"),
-                               "sp": u["sp"], "dead": u.get("dead", False)}
-                    for u in self.s["units"].values()}},
-                "over": bool(v.get("winner"))
-                or self.s["turn"] > self.turns}
+        out = {"mode": "napoleonic",
+               "turn": self.s["turn"], "turn_label": self.turn_label(),
+               "mover": self.s["mover"], "phase": self.s["phase"],
+               "moved": list(self.s["moved"]),
+               "fired": list(self.s.get("fired", [])),
+               "pending_fire": self.s.get("pending_fire"),
+               "victory": v,
+               "napoleonic": {"units": {
+                   u["pid"]: {"facing": u["facing"],
+                              "formation": u["formation"],
+                              "morale": u.get("morale_state", "good"),
+                              "sp": u["sp"], "dead": u.get("dead", False)}
+                   for u in self.s["units"].values()}},
+               "over": bool(v.get("winner"))
+               or self.s["turn"] > self.turns}
+        if self._cmd:
+            act = self.s.get("act")
+            out["command"] = {
+                "initiative": self.s.get("initiative"),
+                "pool_left": len(self.s.get("pool", [])),
+                "pool": list(self.s.get("pool", [])),
+                "declared": {s_: s_ in self.s.get("pool_decl", {})
+                             for s_ in self.game.side_order},
+                "available": {s_: self._available_lims(s_)
+                              for s_ in self.game.side_order},
+                "act": act,
+                "ooc": list(self.s.get("ooc", [])),
+                "fatigue": dict(self.s.get("fatigue", {})),
+                "act_count": dict(self.s.get("act_count", {})),
+                "divisions": {dk: {"leader": d["leader"],
+                                   "lim": d["lim"], "side": d["side"],
+                                   "breakpoint": self._at_div_breakpoint(dk)}
+                              for dk, d in self._divisions().items()},
+                "nonlim": {s_: self._nonlim_options(s_)
+                           for s_ in self.game.side_order}
+                if self.s["phase"] == "non_lim" else None,
+            }
+        return out
 
     def legal_moves(self, pid):
         """SG-client contract: {can_act, reasons, budget, dests[], plus
@@ -1154,18 +2066,37 @@ class NapoleonicGame(GateGame):
         if self.s["phase"] == "rally":
             return {"can_act": False, "budget": 0, "dests": [],
                     "reasons": ["rally phase [12.0]"]}
-        if u["side"] != self.s["mover"]:
+        budget = None
+        avoid = False
+        if self._cmd:
+            act = self.s.get("act")
+            if self.s["phase"] != "activation" or not act \
+                    or act.get("pending"):
+                return {"can_act": False, "budget": 0, "dests": [],
+                        "reasons": ["no activation is open "
+                                    f"({self.s['phase']} phase) [3.0]"]}
+            if pid not in act["incommand"]:
+                return {"can_act": False, "budget": 0, "dests": [],
+                        "reasons": ["not In Command of the activated "
+                                    "division [4.3.3]"]}
+            if act["stage"] == "combat":
+                return {"can_act": False, "budget": 0, "dests": [],
+                        "reasons": ["the division has opened fire: no "
+                                    "more movement [4.6.1]"]}
+            budget = act["budget"].get(pid)
+            avoid = act["atype"] == "limited"
+        elif u["side"] != self.s["mover"]:
             return {"can_act": False, "budget": 0, "dests": [],
                     "reasons": [f"it is {self.s['mover']}'s activation"]}
         if pid in self.s["moved"]:
             return {"can_act": False, "budget": 0, "dests": [],
-                    "reasons": ["already activated this turn"]}
+                    "reasons": ["already acted in this activation"]}
         if u.get("dead") or u.get("morale_state") == "routed":
             return {"can_act": False, "budget": 0, "dests": [],
                     "reasons": ["destroyed" if u.get("dead") else
                                 "routed: may not move voluntarily "
                                 "[9.2.4]"]}
-        reach = self.reachable(pid)
+        reach = self.reachable(pid, budget=budget, avoid_adjacent=avoid)
         best = {}
         rotations = []
         for (c, r, f), (cost, path, dis) in reach.items():
@@ -1183,7 +2114,8 @@ class NapoleonicGame(GateGame):
                           "hexnum": self.game.grid.hexnum(c, r),
                           "cost": round(cost, 2), "facing": f,
                           "disorder_risk": risk})
-        return {"can_act": True, "budget": float(u["ma"]),
+        return {"can_act": True,
+                "budget": float(u["ma"]) if budget is None else budget,
                 "reasons": [], "dests": sorted(dests,
                                                key=lambda d: d["cost"]),
                 "rotations": sorted(rotations, key=lambda r_: r_["cost"]),

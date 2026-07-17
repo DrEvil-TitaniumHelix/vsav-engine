@@ -29,7 +29,8 @@ def fresh(seed=7):
     live = tempfile.mkdtemp(prefix="aus_gate_")
     game = gamespec.load(HERE)
     g = NapoleonicGame(game, os.path.join(HERE,
-                       "scenario_northern_flank.json"), live, seed=seed)
+                       "scenario_northern_flank.json"), live, seed=seed,
+                       command=False)   # mechanics harness: pre-command flow
     return g, live
 
 
