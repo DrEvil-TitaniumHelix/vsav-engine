@@ -17,6 +17,9 @@
  },
  "buildfile": "../../../VassalIngest/austerlitz-gmt/extracted/buildFile.xml",
  "moduledata": "../../../VassalIngest/austerlitz-gmt/extracted/moduledata",
+ "guide": {
+  "victory": "The French win the moment 7 Russian battalions, regiments or batteries are destroyed, routed or unsteady; the Russians win at 10 French. If neither happens by the end of the 4:40 pm turn, the battle is a draw [A15.1]. The engine checks this every turn."
+ },
  "assets": {
   "menu_art": "../../../VassalIngest/austerlitz-gmt/extracted/images/Austerlitz Box Cover.png",
   "map": "../../../VassalIngest/austerlitz-gmt/assets/map.png",
@@ -138,7 +141,7 @@
    "unlimbered": {
     "facing": "vertex",
     "immobile": true,
-    "cite": "6.3.8: may not move into another hex; may change facing one vertex per activation"
+    "cite": "6.3.8: hex-bound while unlimbered - facing may shift by one vertex per activation, the gun itself stays put"
    }
   },
   "tec": {
@@ -1108,7 +1111,7 @@
     "support_rule": "a supporting stack must be active, adjacent to the defender, NOT itself bayonet/assault attacking, may support only one attack per activation [8.2.1#2/8.3.1#2], and must have the defender in its front hexsides (Fox Q&A clarification)"
    },
    "form_square": {
-    "note": "Forming Square in Reaction [8.4.2 #4]; d10 + DRM vs morale rating; only the top infantry unit of the target stack checks; the charging cavalry closes to adjacent whether or not the square forms; strategic-movement units may NOT form square [5.2.1]; artillery alone must Stand",
+    "note": "Reaction square attempt [8.4.2 #4]: d10 plus DRMs against the morale rating, checked by the target stack's top infantry unit only; the chargers close to adjacent regardless of the outcome; strategic-movement units may NOT form square [5.2.1]; artillery alone must Stand",
     "drm": {
      "cavalry_begins_charge_2_hexes_away": 1,
      "leader_in_hex": -2,
@@ -1312,13 +1315,13 @@
     }
    },
    "results_key": {
-    "stop": "Commander finished for the turn; no In Command unit of the division may activate this turn [4.7]",
-    "retreat": "If any unit of the division is within 3 hexes of an enemy combat unit, all In Command units must attempt to retreat half MA (rounded up) away from the enemy (unlimbered artillery limbers and moves); may not move closer to any other enemy. Leader finished either way [4.7]",
+    "stop": "The commander is done for this turn - none of the division's In Command units get to act [4.7]",
+    "retreat": "When an enemy combat unit stands within 3 hexes of the division, every In Command unit has to fall back - half its MA, rounded up, directly away (unlimbered guns limber first), never closing the distance to some other enemy. Either way the leader is done [4.7]",
     "limited": "Division may undertake a Limited Activation [4.6.2]",
     "full": "Division may undertake a Full Activation [4.6.1]",
-    "charge": "If any unit of the division is within 4 hexes of an enemy combat unit the entire division must Charge (cavalry) or advance and melee the closest enemy; otherwise treat as FULL [4.7] (melee = phase 4; no Aggressive leader exists in the Northern Flank scenario, so this result is unreachable there)",
-    "reactivate": "Full Activation for the rolling division, then the SAME player may attempt to activate his closest friendly division, even if already activated this turn (no division reactivates twice per turn; Reactivate twice in a row = FULL) [4.7]; the opportunity is optional (designer Q&A) and does not add fatigue (designer Q&A)",
-    "enemy": "Rolling commander takes STOP; the ENEMY player may attempt to activate his division closest to the failing commander (even if already activated this turn; no division reactivates twice per turn; Enemy twice in a row = STOP) [4.7]; optional (designer Q&A), no fatigue (designer Q&A)"
+    "charge": "With an enemy combat unit inside 4 hexes of the division, the whole division is forced onto the attack - cavalry charges, everyone else advances into melee against the nearest enemy; with no enemy that close it simply counts as FULL [4.7] (melee = phase 4; no Aggressive leader exists in the Northern Flank scenario, so this result is unreachable there)",
+    "reactivate": "The rolling division gets a Full Activation, and afterwards the SAME player may try the friendly division nearest to it - one that already went this turn included (no division reactivates twice per turn; Reactivate twice in a row = FULL) [4.7]; the opportunity is optional (designer Q&A) and does not add fatigue (designer Q&A)",
+    "enemy": "The rolling commander is stopped cold, and it is the ENEMY player who may try an activation - his division nearest the failed commander, one that already went this turn included ( no division reactivates twice per turn; Enemy twice in a row = STOP) [4.7]; optional (designer Q&A), no fatigue (designer Q&A)"
    }
   },
   "independent_activation": {
@@ -1367,14 +1370,14 @@
   "activations": {
    "cite": "4.6",
    "full": "All In Command units of the division: full MA movement, then combat; once one unit of the division fires no more movement this activation [4.6.1]",
-   "limited": "Automatic, no roll [4.5.1]. Choose: (a) all In Command units of the division move up to HALF MA (rounded down) then may conduct Fire combat, or (b) any ONE Out of Command unit moves up to ONE-THIRD MA (rounded down) then may fire. Limited-activation units may not move adjacent to enemy units - any hexside, per designer Q&A - and may not melee [4.6.2]",
+   "limited": "Automatic, no roll [4.5.1]. Two options: (a) the division's In Command units all get up to HALF MA (rounded down) plus fire afterwards, or (b) a single Out of Command unit gets a third of its MA (rounded down) plus fire. Under a limited activation a unit is barred from ending adjacent to the enemy (every hexside counts, per designer Q&A) and from melee [4.6.2]",
    "in_command": "Determined the moment the division activates: units within the division commander's command range are In Command; others are marked Out of Command and must act in the Non-LIM Phase [4.3.3]"
   },
   "fatigue_rules": {
    "cite": "13.0-13.3 + errata 2000-07-20 (13.3) + designer Q&A",
    "track": "Per division, level 0-9; all combat units except artillery [13.0]",
-   "increase": "+1 in the Fatigue Segment if the division's LIM was in the Command Pool this turn - regardless of what happened ('Any time a division has its LIM in the Pool it gains fatigue, no matter what it actually does during the turn' - designer Q&A; includes STOP results and limited activations; the chosen Initiative LIM counts: it is one of the LIMs committed this turn) - OR if the division performed or was the victim of any combat other than medium/long-range artillery fire [13.1.2]. Max one level per turn [13.1]. Divisions activating under the Independent LIM gain fatigue only if they activate [13.1.1]. Breakdown free activations (Reactivate/Enemy) add none (designer Q&A)",
-   "decrease": "-1 in the Fatigue Segment if ALL of: LIM not in the pool this turn; no combat performed or suffered (other than medium/long-range artillery fire); every unit 3+ hexes from the nearest enemy combat unit [13.2]",
+   "increase": "+1 in the Fatigue Segment if the division's LIM was in the Command Pool this turn - regardless of what happened ('Any time a division has its LIM in the Pool it gains fatigue, no matter what it actually does during the turn' - designer Q&A; includes STOP results and limited activations; the chosen Initiative LIM counts: it is one of the LIMs committed this turn) - OR when the division dealt or absorbed any combat beyond medium/long-range artillery fire [13.1.2]. Max one level per turn [13.1]. Divisions activating under the Independent LIM gain fatigue only if they activate [13.1.1]. Breakdown free activations (Reactivate/Enemy) add none (designer Q&A)",
+   "decrease": "-1 in the Fatigue Segment only when all three hold: the LIM stayed out of the pool this turn, the division neither dealt nor absorbed combat (medium/long-range artillery fire excepted), and no enemy combat unit stands within 3 hexes of any of its units [13.2]",
    "effects": "Fatigue Effects Table (combat_tables.fatigue_effects) [13.3]: morale-check DRM +1 at level 4+; melee DRM at 6+ (phase 4); IMMEDIATE on reaching 7: all division units lose one morale level (one-time, recoverable only by normal Rally - errata 2000-07-20); on reaching 8: disordered; on reaching 9: lose one morale level + disordered"
   },
   "breakpoint": {

@@ -27,6 +27,9 @@
  },
  "buildfile": "../../../VassalIngest/afrika-korps-classic-ah/extracted/buildFile.xml",
  "moduledata": "../../../VassalIngest/afrika-korps-classic-ah/extracted/moduledata",
+ "guide": {
+  "victory": "The Axis wins by eliminating every Allied combat unit on the board, or by holding both fortresses and both home bases for two consecutive Axis player turns; the Allies win the mirror of that — or simply by denying the Axis a win through the last October 1942 turn. Control means occupation by a combat, supply or Rommel unit, with home bases also free of enemy ZOC [4.1-4.3]. The engine checks this as you play."
+ },
  "assets": {
   "menu_art": "../../../VassalIngest/afrika-korps-classic-ah/menu_art.jpg",
   "map": "../../../VassalIngest/afrika-korps-classic-ah/extracted/images/AK consolidated map.png",

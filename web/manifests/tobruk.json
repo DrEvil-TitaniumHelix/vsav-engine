@@ -11,8 +11,59 @@
     }
   ],
   "assets": {
-    "map":      { "req": "tobruk_v11", "entry": "images/Board_ADBECF.bmp" },
-    "counters": { "req": "tobruk_v11", "prefix": "images/" },
-    "cover":    { "req": "tobruk_v11", "entry": "images/Tobruk_Box_Art.bmp" }
-  }
+    "map": {
+      "req": "tobruk_v11",
+      "entry": "images/Board_ADBECF.bmp"
+    },
+    "counters": {
+      "req": "tobruk_v11",
+      "prefix": "images/"
+    },
+    "cover": {
+      "req": "tobruk_v11",
+      "entry": "images/Tobruk_Box_Art.bmp"
+    }
+  },
+  "docs": [
+    {
+      "label": "Rulebook — 34 scanned pages (from your module)",
+      "req": "tobruk_v11",
+      "entries": [
+        "images/Page_01.png",
+        "images/Page_02.png",
+        "images/Page_03.png",
+        "images/Page_04.png",
+        "images/Page_05.png",
+        "images/Page_06.png",
+        "images/Page_07.png",
+        "images/Page_08.png",
+        "images/Page_09.png",
+        "images/Page_10.png",
+        "images/Page_11.png",
+        "images/Page_12.png",
+        "images/Page_13.png",
+        "images/Page_14.png",
+        "images/Page_15.png",
+        "images/Page_16.png",
+        "images/Page_17.png",
+        "images/Page_18.png",
+        "images/Page_19.png",
+        "images/Page_20.png",
+        "images/Page_21.png",
+        "images/Page_22.png",
+        "images/Page_23.png",
+        "images/Page_24.png",
+        "images/Page_25.png",
+        "images/Page_26.png",
+        "images/Page_27.png",
+        "images/Page_28.png",
+        "images/Page_29.png",
+        "images/Page_30.png",
+        "images/Page_31.png",
+        "images/Page_32.png",
+        "images/Page_33.png",
+        "images/Page_36.png"
+      ]
+    }
+  ]
 }

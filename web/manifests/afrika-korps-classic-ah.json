@@ -11,13 +11,48 @@
     }
   ],
   "assets": {
-    "map":      { "req": "ak", "entry": "images/AK consolidated map.png" },
-    "counters": { "req": "ak", "prefix": "images/" },
-    "cover":    { "req": "ak", "entry": "images/AK consolidated map.png" }
+    "map": {
+      "req": "ak",
+      "entry": "images/AK consolidated map.png"
+    },
+    "counters": {
+      "req": "ak",
+      "prefix": "images/"
+    },
+    "cover": {
+      "req": "ak",
+      "entry": "images/AK consolidated map.png"
+    }
   },
   "engine_files": [
-    { "req": "ak", "entry": "Starting positions Trails on.vsav",
+    {
+      "req": "ak",
+      "entry": "Starting positions Trails on.vsav",
       "fs_path": "setup_from_module.vsav",
-      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime" }
+      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime"
+    }
+  ],
+  "docs": [
+    {
+      "label": "Rulebook — 3rd edition rules PDF (from your module)",
+      "req": "ak",
+      "entries": [
+        "AfrikaKorps_3d_Ed_Rules.pdf"
+      ]
+    },
+    {
+      "label": "Start text PDF (from your module)",
+      "req": "ak",
+      "entries": [
+        "Afrika Korps 3.0 Start text.pdf"
+      ]
+    },
+    {
+      "label": "Rule clarifications PDF (from your module)",
+      "req": "ak",
+      "entries": [
+        "Afrika Korps Rule Clarifications for Vassal.pdf"
+      ]
+    }
   ]
 }

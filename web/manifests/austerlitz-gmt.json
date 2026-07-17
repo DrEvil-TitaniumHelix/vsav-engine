@@ -12,14 +12,38 @@
     }
   ],
   "assets": {
-    "map":      { "req": "austerlitz_100", "entry": "images/Austerlitz.jpg",
-                  "_note": "our baked map.png is a PNG conversion of this JPG at identical pixel dimensions" },
-    "counters": { "req": "austerlitz_100", "prefix": "images/" },
-    "cover":    { "req": "austerlitz_100", "entry": "images/Austerlitz Box Cover.png" }
+    "map": {
+      "req": "austerlitz_100",
+      "entry": "images/Austerlitz.jpg",
+      "_note": "our baked map.png is a PNG conversion of this JPG at identical pixel dimensions"
+    },
+    "counters": {
+      "req": "austerlitz_100",
+      "prefix": "images/"
+    },
+    "cover": {
+      "req": "austerlitz_100",
+      "entry": "images/Austerlitz Box Cover.png"
+    }
   },
   "engine_files": [
-    { "req": "austerlitz_100", "entry": "The Northern Flank.vsav",
+    {
+      "req": "austerlitz_100",
+      "entry": "The Northern Flank.vsav",
       "fs_path": "setup_from_module.vsav",
-      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime" }
+      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime"
+    }
+  ],
+  "docs": [
+    {
+      "label": "Printed chart pages 1-4 (from your module)",
+      "req": "austerlitz_100",
+      "entries": [
+        "images/Charts p1.png",
+        "images/Charts p2.png",
+        "images/Charts p3.png",
+        "images/Charts p4.png"
+      ]
+    }
   ]
 }

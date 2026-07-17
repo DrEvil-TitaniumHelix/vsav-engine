@@ -104,7 +104,9 @@
   }
 
   const MIME = { png: "image/png", gif: "image/gif", jpg: "image/jpeg",
-                 jpeg: "image/jpeg", bmp: "image/bmp", svg: "image/svg+xml" };
+                 jpeg: "image/jpeg", bmp: "image/bmp", svg: "image/svg+xml",
+                 pdf: "application/pdf", txt: "text/plain",
+                 htm: "text/html", html: "text/html" };
   const urlFor = (blob, name) =>
     URL.createObjectURL(new Blob([blob],
       { type: MIME[name.toLowerCase().split(".").pop()] || "application/octet-stream" }));
@@ -192,7 +194,7 @@
     #byogate .msg { font-size:13px; margin-top:10px; line-height:1.5; }
     #byogate .msg.err { color:#e0a0a0; }
     #byogate .msg.busy { color:#9cc4ee; }
-    #byogate .foot { color:#6c7178; font-size:12px; margin-top:22px; line-height:1.6; }
+    #byogate .foot { color:#98a0a8; font-size:12px; margin-top:22px; line-height:1.6; }
   `;
 
   function showGate(missing, files, db, onDone) {

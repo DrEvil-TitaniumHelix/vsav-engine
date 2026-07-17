@@ -178,11 +178,11 @@ def menu_page(metas):
          border:1px solid #4a4f57; color:#b9c2cc; }
   .tag.tier { background:#243447; border-color:#3a6ea5; color:#9cc4ee; }
   .blurb { color:#9aa3ad; font-size:13px; line-height:1.5; flex:1; min-height:20px; }
-  .needs { color:#6c7178; font-size:11.5px; }
+  .needs { color:#98a0a8; font-size:11.5px; }
   .card button { margin-top:6px; padding:10px 0; border:0; border-radius:7px; cursor:pointer;
                  background:#3a6ea5; color:#fff; font-size:15px; font-weight:600; }
   .card button:hover { background:#4880bd; }
-  footer { padding:14px 40px 22px; color:#6c7178; font-size:12px; border-top:1px solid #2a2d33;
+  footer { padding:14px 40px 22px; color:#98a0a8; font-size:12px; border-top:1px solid #2a2d33;
            line-height:1.6; }
   footer b { color:#9aa3ad; font-weight:600; }
 </style>

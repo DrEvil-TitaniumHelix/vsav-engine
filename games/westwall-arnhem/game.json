@@ -25,6 +25,9 @@
  "setup_save": "setup.vsav",
  "terrain_file": "terrain.json",
  "scenario": "scenario_historical.json",
+ "guide": {
+  "victory": "The Allies score for every German unit destroyed, for units banked in the Waal bridgehead zone each turn, and for units across the Rijn when the game ends; the Germans score for destroyed Allied units and for every turn the Allied line of communication is cut. The engine scores both sides live."
+ },
  "assets": {
   "menu_art": "../../ui/assets/westwall_cover.gif",
   "map": "../../ui/assets/map.png",
