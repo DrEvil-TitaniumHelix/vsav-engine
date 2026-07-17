@@ -62,6 +62,17 @@ const FRAME = (() => {
          looking around. Applied via FRAME.soleNext(). */
       .solenext { border:2px solid #ff5040 !important; color:#fff !important;
                   animation: soleglow 1.1s ease-in-out infinite; }
+      /* readable panel typography — no low-contrast text (Bruce 2026-07-17) */
+      #guidepanel { color:#dde3ea; }
+      #guidepanel h2 { color:#fff; font-size:16px; margin:4px 0 8px; }
+      #guidepanel p, #guidepanel li { color:#cfd6dd; }
+      #guidepanel b { color:#fff; }
+      #guidepanel code { background:#2c2f36; color:#ffd75e;
+                         padding:1px 5px; border-radius:4px; }
+      #guidepanel ul, #guidepanel ol { margin:4px 0 8px; padding-left:20px; }
+      #guidepanel li { margin:3px 0; }
+      #rulespanel, #tierpanel { color:#dde3ea; }
+      #rulespanel .dim, #tierpanel .dim, #guidepanel .dim { color:#9aa3ad; }
       @keyframes soleglow {
         0%,100% { box-shadow:0 0 0 0 rgba(255,80,64,.0); }
         50%     { box-shadow:0 0 12px 3px rgba(255,80,64,.7); } }`;
@@ -195,8 +206,10 @@ const FRAME = (() => {
   const $id = (i) => document.getElementById(i);
   const escp = (s) => String(s).replace(/[&<>]/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const PANEL_IDS = ['rulespanel', 'tablespanel', 'tierpanel', 'pbmpanel'];
-  const BTN_FOR = { rulesbtn: 'rulespanel', tablesbtn: 'tablespanel' };
+  const PANEL_IDS = ['rulespanel', 'tablespanel', 'tierpanel', 'pbmpanel',
+                     'guidepanel'];
+  const BTN_FOR = { rulesbtn: 'rulespanel', tablesbtn: 'tablespanel',
+                    guidebtn: 'guidepanel' };
 
   function ensurePanel(id, style) {
     if ($id(id)) return;
@@ -371,7 +384,61 @@ const FRAME = (() => {
       });
       h += `</ul>`;
     }
+    // official rules the PUBLISHER hosts publicly (links, nothing rehosted)
+    const RD = G && G.rules_docs;
+    if (RD) {
+      const links = Object.entries(RD).filter(([k, v]) =>
+        typeof v === 'string' && v.startsWith('http'));
+      if (links.length) {
+        h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Official
+              rules — free from the publisher</div><ul>`;
+        links.forEach(([k, v]) => {
+          h += `<li><a href="${v}" target="_blank" rel="noopener"
+                 style="color:#9cc4ee">${k.replace(/_/g, ' ')}</a></li>`;
+        });
+        h += `</ul>`;
+      }
+    }
+    // original docs packed inside the USER'S OWN module (BYO builds only):
+    // shown from their file, read locally, never shipped by us
+    const DOCS = (window.BYO_MANIFEST && window.BYO && BYO.extract)
+      ? (window.BYO_MANIFEST.docs || []) : [];
+    if (DOCS.length) {
+      h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Rulebook &
+            charts — from your module</div>
+            <div class="dim" style="margin:4px 0 6px">These open the original
+            documents packed inside YOUR module file, read locally in your
+            browser — this site does not ship them.</div>`;
+      DOCS.forEach((d, i) => {
+        h += `<button class="sidebtn" data-doc="${i}"
+               style="margin:2px 6px 2px 0">${d.label}</button>`;
+      });
+    }
+    h += `<div class="dim" style="margin-top:10px">Rules here are restated in our
+          own words for engine enforcement — game mechanics are not copyrightable,
+          but the game's printed text and art are, and remain the publisher's.
+          Support the original game.</div>`;
     P.innerHTML = h;
+    P.querySelectorAll('[data-doc]').forEach(btn => btn.onclick = async () => {
+      const d = DOCS[+btn.dataset.doc];
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Opening…';
+      try {
+        const urls = [];
+        for (const e of d.entries) urls.push(await BYO.entryUrl(d.req, e));
+        if (urls.length === 1) window.open(urls[0], '_blank');
+        else {
+          const w = window.open('', '_blank');
+          w.document.write(`<title>${label}</title>
+            <body style="margin:0; background:#191c22; text-align:center">`
+            + urls.map(u => `<img src="${u}"
+                style="max-width:100%; display:block; margin:8px auto">`).join('')
+            + '</body>');
+          w.document.close();
+        }
+      } catch (e) { (PH.toast || alert)('Could not open: ' + (e.message || e)); }
+      btn.disabled = false; btn.textContent = label;
+    });
   }
   // ---------- tables panel (transcribed CRT / to-hit — the data the gate uses) ----------
   async function renderTables() {
@@ -407,6 +474,103 @@ const FRAME = (() => {
     }
     P.innerHTML = h;
   }
+  // ---------- guide panel (engine-level, Bruce 2026-07-17: every game) -----
+  // Sections are GENERATED from what the engine already knows (game family,
+  // tier, victory text carried as data in game.json "guide") plus any
+  // hand-written per-game sections from that same block — all our own words.
+  const TURN_GUIDE = {
+    tactical:
+      `<h2>How a turn works</h2>
+       <p>Each turn has two segments. In the <b>movement segment</b> the first
+       player moves any of his units — click a unit, then drag it to one of the
+       green hexes the engine lights up — and the other side follows. In the
+       <b>combat segment</b> fire alternates one unit at a time: select your
+       unit, click an enemy in range, and the engine resolves the shot on the
+       validated tables with its own seeded dice. Damage takes effect at once.
+       <b>End movement</b> / <b>Pass fire</b> close your part of a segment.</p>`,
+    strategic:
+      `<h2>How a turn works</h2>
+       <p>Each game turn one side is the phasing player: first it moves — click
+       a unit, drag it to a green legal hex — then it declares battles in the
+       combat phase by clicking its attackers and an adjacent enemy stack. The
+       engine prices the battle, rolls its own seeded die on the validated
+       table, and walks both players through retreats, exchanges and advances.
+       Supply, arrivals and reinforcements appear in their own panel when the
+       scenario uses them. <b>End player turn</b> hands the turn over; the gate
+       refuses (with citations) while you still owe it something.</p>`,
+    napoleonic:
+      `<h2>How a turn works</h2>
+       <p>A turn runs: <b>Pool Placement</b> (tick which commands you commit),
+       <b>Initiative</b>, alternating <b>LIM activations</b> (each drawn
+       command activates Full or Limited), then <b>non-LIM</b> commands, and a
+       closing <b>Rally</b> step. Combat is part of an activation: fire by
+       clicking an enemy in range, shock by clicking an adjacent enemy and
+       choosing the attack. The defender gets real decisions — return fire,
+       forming square, reactions — and the banner always names whose decision
+       the game is waiting on. The turn-flow strip under the banner shows where
+       you are.</p>`,
+    free:
+      `<h2>How a turn works</h2>
+       <p>Free play — the engine enforces nothing at this tier. Move any piece
+       anywhere, exactly as at a physical table or in VASSAL; you are the
+       umpire. The validated rules gate is available from the Tier button.</p>`,
+  };
+  function guideSections() {
+    const G = PH.game(), FLOW = PH.flow();
+    const gd = (G && G.guide) || {};
+    const tierOn = G && G.tier && G.tier.active > 0;
+    const mode = !FLOW ? 'free'
+      : FLOW.mode === 'napoleonic' ? 'napoleonic'
+      : FLOW.segment !== undefined ? 'tactical' : 'strategic';
+    const S = [];
+    S.push(['This game',
+      `<h2>${G.name}</h2>
+       <p>Sides: ${G.sides.map((s) => s.label).join(' vs ')}. Pick yours top-left;
+       switch any time for hot-seat play${tierOn ? ' — every action still goes' +
+       ' through the same rules gate' : ''}.</p>
+       ${G.tier ? `<p>${G.tier.labels[G.tier.active]}${G.tier.choices.length > 1
+          ? ' — other tiers are on the Tier button.' : '.'}</p>` : ''}`]);
+    S.push(['How a turn works', TURN_GUIDE[tierOn ? mode : 'free']]);
+    if (gd.victory)
+      S.push(['How to win', `<h2>How to win</h2><p>${gd.victory}</p>`]);
+    (gd.sections || []).forEach((s) => S.push([s.title, s.html]));
+    S.push(['The interface',
+      `<h2>The interface</h2>
+       <ul><li>The <b>banner</b> under the top bar always says what to do right
+       now; when only one button can advance the game it wears a pulsing red
+       border.</li>
+       <li><b>Hover</b> a counter for its stats card; <b>unit ▶ / ◀ unit</b>
+       (or the N / B keys) jump between your units still to act.</li>
+       <li><b>Rules</b> shows exactly what the engine enforces (with rulebook
+       section numbers) and this game's credits; <b>Tables</b> shows the
+       transcribed data the engine plays on.</li>
+       ${G.tier && G.tier.active >= 3 ? `<li>The <b>AI</b> plays any side you
+       don't — stepped (press SPACE per action) or auto, at slow/medium/fast
+       pace. It proposes through the same gate you play through.</li>` : ''}
+       <li><b>Reset game</b> restarts the scenario; the <b>Tier</b> button
+       replays it at a different enforcement level.</li></ul>`]);
+    return S;
+  }
+  let guideSec = 0;
+  function renderGuidePanel() {
+    const P = $id('guidepanel');
+    if (!P || P.style.display !== 'block') return;
+    const S = guideSections();
+    if (guideSec >= S.length) guideSec = 0;
+    let nav = '';
+    S.forEach(([t], i) => {
+      nav += `<span data-g="${i}" style="display:inline-block; padding:5px 10px;
+        margin:0 4px 6px 0; border-radius:6px; cursor:pointer; font-size:12px;
+        ${i === guideSec ? 'background:#3a6ea5; color:#fff'
+                         : 'background:#2c2f36; color:#b9c2cc'}">${t}</span>`;
+    });
+    P.innerHTML = `<div>${nav}</div><div class="gbody">${S[guideSec][1]}</div>`;
+    P.querySelectorAll('[data-g]').forEach((el) => el.onclick = () => {
+      guideSec = +el.dataset.g;
+      renderGuidePanel();
+    });
+  }
+
   function initPanels(hooks) {
     PH = hooks;
     // panels a screen doesn't declare are created with the standard look
@@ -421,6 +585,17 @@ const FRAME = (() => {
        background:#23262c; border:1px solid #3a3f47; border-radius:10px;
        padding:12px 16px; z-index:60; font-size:13px; line-height:1.45;
        box-shadow:0 6px 24px rgba(0,0,0,.5)`);
+    ensurePanel('guidepanel',
+      `display:none; position:fixed; top:52px; right:8px; width:560px;
+       max-width:56vw; max-height:calc(100vh - 70px); overflow:auto;
+       background:#23262c; border:1px solid #3a3f47; border-radius:10px;
+       padding:12px 16px; z-index:60; font-size:13px; line-height:1.5;
+       box-shadow:0 6px 24px rgba(0,0,0,.5)`);
+    const gb = $id('guidebtn');
+    if (gb) gb.onclick = () => {
+      if (soloPanel('guidepanel')) renderGuidePanel();
+      renderTierBtn();
+    };
     const tb = $id('tierbtn');
     if (tb) tb.onclick = () => {
       const opened = soloPanel('tierpanel');

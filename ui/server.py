@@ -334,6 +334,8 @@ def game_descriptor():
                           3: "Tier 3 — full gate + AI opponent"}),
         source_defects=g.spec.get("source_defects"),
         credits=g.spec.get("credits"),
+        guide=g.spec.get("guide"),
+        rules_docs=g.spec.get("rules_docs"),
     )
 
 

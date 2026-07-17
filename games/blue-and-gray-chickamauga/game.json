@@ -23,6 +23,9 @@
  },
  "buildfile": "../../../VassalBlueGray/extracted/buildFile",
  "moduledata": "../../../VassalBlueGray/extracted/moduledata",
+ "guide": {
+  "victory": "Victory points come from eliminating enemy strength points, exiting units off your map edge (a Confederate exit is worth ten times a Union one), holding the marked objective hexes, catching the Confederate supply train, and control of the eastern road. The engine scores both sides live — the higher total wins."
+ },
  "assets": {
   "menu_art": "../../../VassalBlueGray/extracted/images/Blue and Gray splash.png",
   "map": "../../../VassalBlueGray/extracted/images/Chickamauga.png",
