@@ -86,8 +86,14 @@ for u in brd.units():
     elif r[0].startswith("artillery"):
         arm, name, sp, fire, morale, ma, div = r
         vertex = facing % 2 == 1
+        # gun type for the Artillery Range Table [8.1.6]: printed gun
+        # size (6lb/8lb from counter art) + nationality
+        gun = {"a/B": ("russian", "6pdr_horse"),
+               "a/V": ("french", "8pdr"), "b/V": ("french", "8pdr"),
+               "c/V": ("french", "8pdr")}[name]
         rec.update(arm=arm, formation="unlimbered" if vertex
                    else "limbered", div=div,
+                   gun={"nation": gun[0], "type": gun[1]},
                    stats={"ma": ma, "morale": morale, "sp": sp,
                           "fire": fire})
     else:
@@ -130,8 +136,8 @@ scenario = {
         "russian_win": "10 French battalions/regiments/batteries "
                        "destroyed, routed or unsteady",
         "draw": "neither by the end of the 4:40 pm turn",
-        "cite": "A15.1 VICTORIA (translated); NOT enforced at tier 1 "
-                "(morale states are phase-2 systems)"},
+        "cite": "A15.1 VICTORIA (GMT's sanctioned Spanish translation, "
+                "translated); checked by the engine every turn"},
     "units": units,
     "rules_scope": {
         "enforced": [
@@ -149,10 +155,20 @@ scenario = {
             "Stacking limits by type/formation/division and terrain "
             "class [7.1]",
             "One activation per unit per game turn [3.0/4.6]",
+            "Fire combat: offensive + return fire (simultaneous), "
+            "range/facing arcs/LOS, target hierarchy, once per turn "
+            "[8.1.1-8.1.8]",
+            "Morale: check table + DRMs, shaken/unsteady/rout ladder, "
+            "artillery morale as SP loss, chain checks on rout "
+            "[9.1-9.3]",
+            "Retreats + rout retreats with SP loss for shortfall "
+            "[10.0/10.1]; unit breakpoint [11.1]",
+            "Rally phase incl. routed-rally cap and rout loss "
+            "[12.0-12.4]",
+            "Victory conditions checked every turn [A15.1]",
         ],
         "enforced_tier2": [
-            "Fire combat [8.1], melee/charge [8.2-8.5], morale [9.0], "
-            "rout/rally [10.0/12.0], fatigue [13.0]",
+            "Melee: bayonet/assault/charge combat [8.2-8.5] (phase 4)",
         ],
         "umpired": [
             "Command system: LIM pool, activations, command range "
@@ -161,7 +177,8 @@ scenario = {
             "[6.2/8.4.2] (phase 4)",
             "Strategic movement [5.2]; limited-activation MA "
             "reduction [4.6.2] (needs the command system)",
-            "Victory conditions [A15.1] (need morale states)",
+            "Division fatigue accumulation [13.1] (tracks with the "
+            "command system; fatigue DRMs are wired, level stays 0)",
         ],
     },
 }

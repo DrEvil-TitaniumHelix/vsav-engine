@@ -19,12 +19,14 @@ Movement model (engine/formations.py geometry):
   (col,row,facing) states.
 """
 import heapq
+import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import json
 
+import fire as fire_mod
 import formations as fm
 from gate import GateGame
 
@@ -41,9 +43,10 @@ class NapoleonicGame(GateGame):
         super().__init__(game, scenario_path, live_dir)
         self.F = fm.Formations(game)
         self._load_terrain()
+        self.ctables = game.spec.get("combat_tables")
         self._resolve_tier(tier)
         self._resume_or_new(self._fresh_seed(seed),
-                            required=("units", "moved", "tier"))
+                            required=("units", "moved", "tier", "schema"))
 
     # ------------------------------------------------------------ terrain
     def _load_terrain(self):
@@ -67,6 +70,9 @@ class NapoleonicGame(GateGame):
         c0, c1, r0, r1 = self.area
         return c0 <= c <= c1 and r0 <= r <= r1
 
+
+    def _dist(self, a, b):
+        return self.game.hex_distance(tuple(a), tuple(b))
     def hex_terrain(self, c, r):
         return self.thex.get(f"{c},{r}", "clear")
 
@@ -86,13 +92,20 @@ class NapoleonicGame(GateGame):
                 "arm": u["arm"], "formation": u["formation"],
                 "facing": u["facing"], "ma": u["stats"]["ma"],
                 "morale": u["stats"]["morale"], "sp": u["stats"]["sp"],
+                "fire": u["stats"].get("fire", ""),
+                "gun": u.get("gun"),
                 "skirmish_capable": u.get("skirmish_capable", False),
                 "div": u.get("div", ""),
                 "vertex_turns": 0,
+                # Family C ledger [9.2/11.1]
+                "morale_state": "good", "sp_lost": 0, "r_cap": False,
+                "dead": False,
             }
-        self.s = {"turn": 1, "phase": "movement",
+        self.s = {"turn": 1, "phase": "movement", "schema": 2,
                   "mover": self.first_player, "units": units,
-                  "moved": [], "seed": seed, "rng_calls": 0,
+                  "moved": [], "fired": [], "returned": [],
+                  "pending_fire": None,
+                  "seed": seed, "rng_calls": 0,
                   "tier": self.tier, "n": 0}
         self._reset_log()
         self._log({"event": "init", "mode": "napoleonic",
@@ -316,8 +329,33 @@ class NapoleonicGame(GateGame):
     # ------------------------------------------------------------ propose
     def propose(self, side, action):
         t = action.get("type")
+        # pending return-fire window: ONLY the defender may act [8.1.2]
+        pf = self.s.get("pending_fire")
+        if pf:
+            if t not in ("return_fire", "decline_return"):
+                return self._v(False,
+                               "return-fire decision pending for "
+                               f"{pf['defender_side']} [8.1.2]")
+            if side != pf["defender_side"]:
+                return self._v(False, "the return-fire decision belongs "
+                                      "to the defender [8.1.2]")
+            return self._propose_return(side, action)
+        if t in ("return_fire", "decline_return"):
+            return self._v(False, "no offensive fire is pending")
+        if self.s["phase"] == "rally":
+            if t not in ("rally", "end_rally"):
+                return self._v(False, "rally phase: only rally/end_rally "
+                                      "[12.0]")
+            if side != self.s["mover"]:
+                return self._v(False,
+                               f"it is {self.s['mover']}'s rally")
+            return self._propose_rally(side, action)
+        if t in ("rally", "end_rally"):
+            return self._v(False, "not the rally phase [12.0]")
         if side != self.s["mover"]:
             return self._v(False, f"it is {self.s['mover']}'s activation")
+        if t == "fire":
+            return self._propose_fire(side, action)
         if t == "end_turn":
             return self._v(True)
         pid = str(action.get("unit"))
@@ -326,6 +364,12 @@ class NapoleonicGame(GateGame):
         u = self.unit(pid)
         if u["side"] != side:
             return self._v(False, "not your unit")
+        if u.get("dead"):
+            return self._v(False, "unit is destroyed")
+        if u.get("morale_state") == "routed":
+            return self._v(False,
+                           "routed units may not move voluntarily "
+                           "[9.2.4]")
         if pid in self.s["moved"]:
             return self._v(False,
                            "unit already activated this turn [5.0: one "
@@ -416,11 +460,457 @@ class NapoleonicGame(GateGame):
             return False, "stacking violation [7.1]"
         return True, ""
 
+    # ------------------------------------------------------- fire combat
+    def on_map(self, u):
+        return not u.get("dead")
+
+    def _fire_capable(self, u):
+        if u["arm"] == "leader" or u["arm"] == "cavalry":
+            return False, "only infantry and artillery fire [8.1]"
+        if u.get("dead"):
+            return False, "destroyed"
+        if u.get("morale_state") == "routed":
+            return False, "routed units may not perform combat [9.2.4]"
+        if u["formation"] == "limbered":
+            return False, "limbered artillery may not fire [6.3.7]"
+        return True, ""
+
+    def _fire_range(self, u):
+        """Max range: infantry 1 [8.1.6]; artillery per its gun's range
+        table (last listed hex)."""
+        if not u["arm"].startswith("artillery"):
+            return 1
+        bands = self.ctables["artillery_range"][u["gun"]["nation"]][
+            u["gun"]["type"]]
+        return max(b[1] for k, b in bands.items() if k != "note")
+
+    def _in_fire_arc(self, u, tc, tr):
+        """Target hex within the firer's front arc: all-around for
+        skirmish/square [8.1.5]; otherwise the cone through the front
+        hexside(s) (vertex facing = +/-60deg, hexside = +/-30deg)."""
+        kind = self._kind(u)
+        if kind == "all":
+            return True
+        fx, fy = self.game.grid.hex_to_pixel(u["col"], u["row"])
+        tx, ty = self.game.grid.hex_to_pixel(tc, tr)
+        ang = math.degrees(math.atan2(tx - fx, -(ty - fy))) % 360
+        face = (u["facing"] * 30.0) % 360
+        diff = abs((ang - face + 180) % 360 - 180)
+        halfarc = 60.0 if fm.is_vertex(u["facing"]) else 30.0
+        return diff <= halfarc + 1e-6
+
+    def _los(self, a, b):
+        """Line of Sight [8.1.7]. Returns (clear, why). Conservative on
+        straddles: if the center line passes near a hexside, both hexes
+        are tested (rule: blocking terrain in either straddled hex
+        blocks)."""
+        if a == b:
+            return False, "same hex"
+        na = {tuple(n) for n in self.game.neighbors(*a)}
+        if tuple(b) in na:
+            return True, "adjacent [8.1.7]"
+        ax, ay = self.game.grid.hex_to_pixel(*a)
+        bx, by = self.game.grid.hex_to_pixel(*b)
+        ea = self.televation.get(f"{a[0]},{a[1]}", 0)
+        eb = self.televation.get(f"{b[0]},{b[1]}", 0)
+        lo, hi = min(ea, eb), max(ea, eb)
+        # collect intervening hexes along two offset sample lines
+        steps = max(24, int(math.hypot(bx - ax, by - ay) / 12))
+        px, py = -(by - ay), (bx - ax)
+        norm = math.hypot(px, py) or 1.0
+        px, py = px / norm * 3.0, py / norm * 3.0
+        hexes = set()
+        for off in (-1, 1):
+            for i in range(1, steps):
+                x = ax + (bx - ax) * i / steps + px * off
+                y = ay + (by - ay) * i / steps + py * off
+                c, r, _ = self.game.grid.pixel_to_hex(x, y)
+                if (c, r) not in (tuple(a), tuple(b)):
+                    hexes.add((c, r))
+        occupied = {(v["col"], v["row"]) for v in self.s["units"].values()
+                    if self.on_map(v) and v["arm"] != "leader"}
+        for h in hexes:
+            eh = self.televation.get(f"{h[0]},{h[1]}", 0)
+            terr = self.hex_terrain(*h)
+            blocker = (h in occupied) or terr in ("village", "castle",
+                                                  "woods")
+            if eh > hi:
+                return False, f"higher ground at {h} [8.1.7]"
+            if not blocker:
+                continue
+            if eh < lo:
+                continue                       # below both: clear [8.1.7]
+            if eh > lo or ea == eb:
+                return False, (f"{'unit' if h in occupied else terr} at "
+                               f"{h} blocks [8.1.7]")
+            # blocker on the lower unit's level: blocks if closer to it
+            lower = a if ea < eb else b
+            other = b if lower == a else a
+            if self._dist(h, lower) <= \
+                    self._dist(h, other):
+                return False, f"blocker at {h} near the lower unit [8.1.7]"
+        # steep/sharp hexsides between different elevations [8.1.7]
+        if ea != eb:
+            for pair in self.h_sharp:
+                (c1, r1), (c2, r2) = pair
+                x1, y1 = self.game.grid.hex_to_pixel(c1, r1)
+                x2, y2 = self.game.grid.hex_to_pixel(c2, r2)
+                mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+                t = ((mx - ax) * (bx - ax) + (my - ay) * (by - ay)) / \
+                    ((bx - ax) ** 2 + (by - ay) ** 2)
+                if not 0 < t < 1:
+                    continue
+                lx, ly = ax + (bx - ax) * t, ay + (by - ay) * t
+                if math.hypot(lx - mx, ly - my) > 46:
+                    continue
+                higher = a if ea > eb else b
+                dh = min(self._dist((c1, r1), higher),
+                         self._dist((c2, r2), higher))
+                lowr = b if higher == a else a
+                dl = min(self._dist((c1, r1), lowr),
+                         self._dist((c2, r2), lowr))
+                if dh >= dl:
+                    return False, ("sharp slope hexside blocks from "
+                                   "below [8.1.7]")
+        return True, "clear"
+
+    def _propose_fire(self, side, action):
+        pid = str(action.get("unit"))
+        if pid not in self.s["units"]:
+            return self._v(False, f"unknown unit {pid}")
+        u = self.unit(pid)
+        if u["side"] != side:
+            return self._v(False, "not your unit")
+        ok, why = self._fire_capable(u)
+        if not ok:
+            return self._v(False, why)
+        if pid in self.s["fired"]:
+            return self._v(False, "unit already fired this turn [8.1.1]")
+        tid = str(action.get("target"))
+        if tid not in self.s["units"]:
+            return self._v(False, f"unknown target {tid}")
+        tgt = self.unit(tid)
+        if tgt["side"] == side:
+            return self._v(False, "cannot fire at friends")
+        if not self.on_map(tgt) or tgt["arm"] == "leader":
+            return self._v(False, "invalid target")
+        rng = self._dist((u["col"], u["row"]), (tgt["col"], tgt["row"]))
+        if rng > self._fire_range(u):
+            return self._v(False,
+                           f"range {rng} exceeds {self._fire_range(u)} "
+                           "[8.1.6]")
+        if not self._in_fire_arc(u, tgt["col"], tgt["row"]):
+            return self._v(False, "target outside the front arc "
+                                  "[8.1.5]")
+        clear, why = self._los((u["col"], u["row"]),
+                               (tgt["col"], tgt["row"]))
+        if not clear:
+            return self._v(False, f"no LOS: {why}")
+        # target hierarchy [8.1.1]: an adjacent front-hex enemy must be
+        # targeted before anything farther away
+        front = {tuple(h) for h in fm.front_hexes(
+            self.game, u["col"], u["row"], u["facing"], self._kind(u))}
+        adjacent_enemies = [v for v in self.s["units"].values()
+                            if v["side"] != side and self.on_map(v)
+                            and v["arm"] != "leader"
+                            and (v["col"], v["row"]) in front]
+        if adjacent_enemies and (tgt["col"], tgt["row"]) not in front:
+            return self._v(False,
+                           "an enemy adjacent to a front hexside must "
+                           "be targeted first [8.1.1 hierarchy]")
+        return self._v(True)
+
+    def _propose_return(self, side, action):
+        pf = self.s["pending_fire"]
+        if action["type"] == "decline_return":
+            return self._v(True)
+        d = self.unit(pf["defender"])
+        ok, why = self._fire_capable(d)
+        if not ok:
+            return self._v(False, why)
+        if pf["defender"] in self.s["returned"]:
+            return self._v(False,
+                           "already return/reaction fired this "
+                           "activation [8.1.2/8.1.4]")
+        firer = self.unit(pf["firer"])
+        front = {tuple(h) for h in fm.front_hexes(
+            self.game, d["col"], d["row"], d["facing"], self._kind(d))}
+        if (firer["col"], firer["row"]) not in front:
+            return self._v(False, "firer is not in a front hex [8.1.2]")
+        rng = self._dist((d["col"], d["row"]), (firer["col"], firer["row"]))
+        if rng > self._fire_range(d):
+            return self._v(False, "firer out of range [8.1.2]")
+        return self._v(True)
+
+    def _resolve_shot(self, firer, target):
+        """One shot through fire.py: returns (record, effect)."""
+        T = self.ctables
+        steps = 0
+        band = None
+        if firer["arm"].startswith("artillery"):
+            rng = self._dist((firer["col"], firer["row"]), (target["col"], target["row"]))
+            steps, band = fire_mod.range_adjustment(
+                T, firer["gun"]["nation"], firer["gun"]["type"], rng)
+        letter = fire_mod.firer_letter(
+            T, firer["fire"], firer["formation"],
+            at_breakpoint=self._at_breakpoint(firer), range_steps=steps)
+        cls = fire_mod.defense_class(T, target["side"], target["arm"],
+                                     target["formation"])
+        # column shifts: flank/rear facing + terrain fire shift [8.1.8]
+        shift = self._facing_shift(firer, target)
+        shift += self._terrain_fire_shift(target)
+        die = self.roll_d10()
+        res = fire_mod.resolve(T, cls, letter, die, column_shift=shift)
+        rec = {"firer": firer["pid"], "target": target["pid"],
+               "letter": letter, "class": cls, "die": die,
+               "column": res["column"], "cell": res.get("cell", "off"),
+               "shift": shift}
+        if band:
+            rec["band"] = band
+        return rec, res["effect"]
+
+    def _facing_shift(self, firer, target):
+        """Firing at flank = 1 left, rear = 2 left [8.1.8]; left = lower
+        column = harsher. All-around targets have no flank/rear."""
+        kind = self._kind(target)
+        if kind == "all":
+            return 0
+        fh = {tuple(h) for h in fm.front_hexes(
+            self.game, target["col"], target["row"], target["facing"],
+            kind)}
+        fl = {tuple(h) for h in fm.flank_hexes(
+            self.game, target["col"], target["row"], target["facing"],
+            kind)}
+        re_ = {tuple(h) for h in fm.rear_hexes(
+            self.game, target["col"], target["row"], target["facing"],
+            kind)}
+        # nearest step of the firer->target line = which aspect: use the
+        # adjacent hex of the target closest to the firer's direction
+        fx, fy = self.game.grid.hex_to_pixel(firer["col"], firer["row"])
+        tx, ty = self.game.grid.hex_to_pixel(target["col"], target["row"])
+        best, aspect = None, "front"
+        for h, asp in [(h, "front") for h in fh] + \
+                      [(h, "flank") for h in fl] + \
+                      [(h, "rear") for h in re_]:
+            hx, hy = self.game.grid.hex_to_pixel(*h)
+            d = math.hypot(hx - fx, hy - fy)
+            if best is None or d < best:
+                best, aspect = d, asp
+        return {"front": 0, "flank": -1, "rear": -2}[aspect]
+
+    def _terrain_fire_shift(self, target):
+        """TEC fire column shifts (1R/2R) for the target's hex — columns
+        RIGHT (softer) [TEC 5.0 Combat Effects]."""
+        eff = self.game.spec["formations"].get("combat_effects") or \
+            self.game.spec.get("combat_effects")
+        eff = eff or {}
+        rows = eff.get("rows", {})
+        terr = self.hex_terrain(target["col"], target["row"])
+        cell = rows.get(terr, [None])[0] if terr in rows else None
+        if cell and cell.endswith("R"):
+            return int(cell[0])
+        return 0
+
+    def _at_breakpoint(self, u):
+        """Unit breakpoint: cumulative losses > half original strength
+        [11.1]; artillery never [11.1 exception]."""
+        if u["arm"].startswith("artillery"):
+            return False
+        orig = u["sp"] + u["sp_lost"]
+        return u["sp_lost"] > orig / 2
+
+    # -------------------------------------------------- effects (Family C)
+    def _apply_effect(self, u, effect, out, drm_extra=0):
+        """Apply a typed fire effect [8.1.8] to the ledger [9.x/10/11]."""
+        if effect["kind"] == "no_effect":
+            out.setdefault("effects", []).append(
+                {"unit": u["pid"], "result": "no effect"})
+            return
+        if u["morale_state"] == "routed":
+            # any non-NE fire result destroys a routed unit [9.2.4]
+            self._destroy(u, out, "routed unit hit [9.2.4]")
+            return
+        if effect["kind"] == "sp_loss":
+            self._lose_sp(u, effect["sp"], out)
+            if u.get("dead"):
+                return
+            self._morale_check(u, effect["then"]["drm"], out)
+        elif effect["kind"] == "morale_check":
+            self._morale_check(u, effect["drm"] + drm_extra, out)
+
+    def _lose_sp(self, u, n, out):
+        n = min(n, u["sp"])
+        u["sp"] -= n
+        u["sp_lost"] += n
+        out.setdefault("effects", []).append(
+            {"unit": u["pid"], "sp_loss": n, "sp_left": u["sp"]})
+        if u["sp"] <= 0:
+            self._destroy(u, out, "no strength points remain")
+
+    def _destroy(self, u, out, why):
+        u["dead"] = True
+        out.setdefault("effects", []).append(
+            {"unit": u["pid"], "destroyed": True, "why": why})
+
+    def _morale_drms(self, u):
+        d = []
+        if u["formation"] == "square":
+            d.append(-1)
+        if u["formation"] == "line":
+            d.append(1)
+        if self._at_breakpoint(u):
+            d.append(1)
+        if u["morale_state"] == "shaken":
+            d.append(1)
+        elif u["morale_state"] in ("unsteady", "routed"):
+            d.append(2)
+        if any(v["arm"] == "leader" and v["side"] == u["side"]
+               and (v["col"], v["row"]) == (u["col"], u["row"])
+               and self.on_map(v) for v in self.s["units"].values()):
+            d.append(-1)
+        return d
+
+    _LADDER = ["good", "shaken", "unsteady", "routed"]
+
+    def _morale_check(self, u, drm, out):
+        """Morale Check Table [9.1] with unit-state DRMs [9.1 panel];
+        artillery converts lost levels to SPs [9.3]."""
+        die = self.roll_d10()
+        drms = self._morale_drms(u) + [drm]
+        lost = fire_mod.morale_check(self.ctables, die, u["morale"], drms)
+        rec = {"unit": u["pid"], "morale_die": die, "drms": drms,
+               "vs": u["morale"], "levels_lost": lost}
+        out.setdefault("effects", []).append(rec)
+        if lost == 0:
+            return
+        if u["arm"].startswith("artillery"):
+            rec["artillery_sp_for_levels"] = lost      # [9.3]
+            self._lose_sp(u, lost, out)
+            return
+        i = self._LADDER.index(u["morale_state"])
+        new = self._LADDER[min(3, i + lost)]
+        self._set_morale_state(u, new, out)
+
+    def _set_morale_state(self, u, new, out):
+        old = u["morale_state"]
+        if new == old:
+            return
+        u["morale_state"] = new
+        out.setdefault("effects", []).append(
+            {"unit": u["pid"], "morale_state": new})
+        if new == "routed":
+            self._disorder(u)                          # [9.2.4]
+            self._retreat(u, -(-u["ma"] // 2), out, routed=True)
+            self._neighbor_checks(u, out)
+        elif new == "unsteady":
+            dist = 2 if u["arm"] == "cavalry" else 1   # [9.2.3/10.0]
+            self._retreat(u, dist, out, routed=False)
+            self._neighbor_checks(u, out)
+
+    def _neighbor_checks(self, u, out):
+        """Stacked + adjacent friends check morale on rout/unsteady
+        retreat [9.2.3/9.2.4]; chains bound by the ladder's top."""
+        here_or_adj = {(u["col"], u["row"])} | \
+            {tuple(n) for n in self.game.neighbors(u["col"], u["row"])}
+        for v in list(self.s["units"].values()):
+            if v["pid"] == u["pid"] or v["side"] != u["side"]:
+                continue
+            if not self.on_map(v) or v["arm"] == "leader":
+                continue
+            if (v["col"], v["row"]) in here_or_adj:
+                self._morale_check(v, 0, out)
+
+    def _retreat(self, u, dist, out, routed):
+        """Retreat procedure [10.1]: away from enemies, unoccupied
+        preferred, no prohibited terrain/enemy hexes, no revisits;
+        1 SP per hex short [10.1.1]. Unsteady keeps facing; routed
+        faces the retreat direction [10.1]."""
+        enemies = [(v["col"], v["row"]) for v in self.s["units"].values()
+                   if v["side"] != u["side"] and self.on_map(v)
+                   and v["arm"] != "leader"]
+
+        def edist(c, r):
+            return min([self._dist((c, r), (ec, er))
+                        for ec, er in enemies] or [99])
+
+        path = [(u["col"], u["row"])]
+        for _ in range(dist):
+            c, r = path[-1]
+            best = None
+            for nb in self.game.neighbors(c, r):
+                nb = tuple(nb)
+                if nb in path or not self.in_area(*nb):
+                    continue
+                if self.hex_terrain(*nb) == "water":
+                    continue
+                cell = self.F.entry(u, self.hex_terrain(*nb))
+                if cell is None or cell.prohibited:
+                    continue
+                if any((v["col"], v["row"]) == nb and v["side"] != u["side"]
+                       and self.on_map(v)
+                       for v in self.s["units"].values()):
+                    continue
+                occ = bool(self.occupants(*nb, exclude=u["pid"]))
+                key = (edist(*nb), not occ)
+                if best is None or key > best[0]:
+                    best = (key, nb)
+            if best is None or best[0][0] < edist(c, r):
+                break
+            path.append(best[1])
+        short = dist - (len(path) - 1)
+        if len(path) > 1:
+            u["col"], u["row"] = path[-1]
+            if routed:
+                # face the retreat direction (away from origin)
+                fx, fy = self.game.grid.hex_to_pixel(*path[-2])
+                tx, ty = self.game.grid.hex_to_pixel(*path[-1])
+                ang = math.degrees(math.atan2(tx - fx, -(ty - fy))) % 360
+                u["facing"] = int(round(ang / 30.0)) % 12
+        out.setdefault("effects", []).append(
+            {"unit": u["pid"], "retreat": [list(p) for p in path[1:]],
+             "short": short})
+        if short > 0:
+            self._lose_sp(u, short, out)               # [10.1.1]
+
+    # ------------------------------------------------------------ rally
+    def _propose_rally(self, side, action):
+        if action["type"] == "end_rally":
+            return self._v(True)
+        pid = str(action.get("unit"))
+        if pid not in self.s["units"]:
+            return self._v(False, f"unknown unit {pid}")
+        u = self.unit(pid)
+        if u["side"] != side:
+            return self._v(False, "not your unit")
+        if not self.on_map(u):
+            return self._v(False, "unit is destroyed")
+        if u["morale_state"] == "good":
+            return self._v(False, "already in good morale [12.0]")
+        if pid in self.s.setdefault("rallied", []):
+            return self._v(False, "already attempted this rally phase")
+        enemies_adj = any(
+            v["side"] != side and self.on_map(v) and v["arm"] != "leader"
+            and self._dist((u["col"], u["row"]), (v["col"], v["row"])) == 1
+            for v in self.s["units"].values())
+        if enemies_adj:
+            return self._v(False,
+                           "units adjacent to the enemy may not rally "
+                           "[12.0 exception]")
+        return self._v(True)
+
     # -------------------------------------------------------------- apply
     def _apply(self, side, action, verdict):
         t = action["type"]
         if t == "end_turn":
             return self._end_turn()
+        if t == "fire":
+            return self._apply_fire(side, action)
+        if t in ("return_fire", "decline_return"):
+            return self._apply_return(side, action)
+        if t == "rally":
+            return self._apply_rally(side, action)
+        if t == "end_rally":
+            return self._end_rally()
         pid = str(action["unit"])
         u = self.unit(pid)
         result = {"unit": pid}
@@ -486,22 +976,147 @@ class NapoleonicGame(GateGame):
         self.s["rng_calls"] += 1
         return v
 
+    def _apply_fire(self, side, action):
+        pid, tid = str(action["unit"]), str(action["target"])
+        u, tgt = self.unit(pid), self.unit(tid)
+        self.s["fired"].append(pid)
+        self.s["moved"].append(pid) if pid not in self.s["moved"] else None
+        # is the defender entitled to a return-fire decision? [8.1.2]
+        can_return = False
+        ok, _ = self._fire_capable(tgt)
+        if ok and tid not in self.s["returned"]:
+            front = {tuple(h) for h in fm.front_hexes(
+                self.game, tgt["col"], tgt["row"], tgt["facing"],
+                self._kind(tgt))}
+            if (u["col"], u["row"]) in front and \
+                    self._dist((u["col"], u["row"]), (tgt["col"], tgt["row"])) \
+                    <= self._fire_range(tgt):
+                can_return = True
+        if can_return:
+            self.s["pending_fire"] = {
+                "firer": pid, "defender": tid,
+                "defender_side": tgt["side"]}
+            return {"pending_return": tid,
+                    "note": "defender decides return fire [8.1.2]"}
+        rec, effect = self._resolve_shot(u, tgt)
+        out = {"offensive": rec}
+        self._apply_effect(tgt, effect, out)
+        return out
+
+    def _apply_return(self, side, action):
+        pf = self.s["pending_fire"]
+        self.s["pending_fire"] = None
+        firer = self.unit(pf["firer"])
+        dfn = self.unit(pf["defender"])
+        of_rec, of_eff = self._resolve_shot(firer, dfn)
+        out = {"offensive": of_rec}
+        if action["type"] == "return_fire":
+            self.s["returned"].append(pf["defender"])
+            rf_rec, rf_eff = self._resolve_shot(dfn, firer)
+            out["return"] = rf_rec
+            # simultaneous [8.1.2]: both resolved on pre-fire states,
+            # then both applied
+            self._apply_effect(firer, rf_eff, out)
+        self._apply_effect(dfn, of_eff, out)
+        return out
+
+    def _apply_rally(self, side, action):
+        u = self.unit(str(action["unit"]))
+        self.s.setdefault("rallied", []).append(u["pid"])
+        die = self.roll_d10()
+        drms = self._morale_drms(u)
+        lost = fire_mod.morale_check(self.ctables, die, u["morale"], drms)
+        out = {"unit": u["pid"], "rally_die": die, "drms": drms,
+               "passed": lost == 0}
+        if lost == 0:
+            i = self._LADDER.index(u["morale_state"])
+            new = self._LADDER[max(0, i - 1)]
+            # routed-once units cap at shaken [12.2]; mark the cap
+            if u["morale_state"] == "routed":
+                u["r_cap"] = True
+                u["formation"] = "disorder"    # stays disordered [12.2]
+            if u["r_cap"] and new == "good":
+                new = "shaken"
+            u["morale_state"] = new
+            out["morale_state"] = new
+        return out
+
+    def _end_rally(self):
+        a, b = self.game.side_order
+        if self.s["mover"] == self.first_player:
+            self.s["mover"] = b if self.first_player == a else a
+            return {"rally": self.s["mover"]}
+        # both sides done: Rout Loss Segment [12.4], then next turn
+        out = {"rout_loss": []}
+        for u in self.s["units"].values():
+            if self.on_map(u) and u["morale_state"] == "routed":
+                sub = {}
+                self._lose_sp(u, 1, sub)
+                if not u.get("dead"):
+                    self._retreat(u, 1, sub, routed=True)
+                out["rout_loss"].append({"unit": u["pid"], **sub})
+        self._next_turn()
+        out.update(turn=self.s["turn"], mover=self.s["mover"])
+        return out
+
     def _end_turn(self):
         a, b = self.game.side_order
         if self.s["mover"] == self.first_player:
             self.s["mover"] = b if self.first_player == a else a
-        else:
+            self.s["moved"] = []
+            self.s["returned"] = []
+            return {"turn": self.s["turn"], "mover": self.s["mover"]}
+        # second side finished: rally phase if anyone can/needs it [12.0]
+        needy = any(self.on_map(u) and u.get("morale_state", "good")
+                    != "good" for u in self.s["units"].values())
+        if needy:
+            self.s["phase"] = "rally"
             self.s["mover"] = self.first_player
-            self.s["turn"] += 1
-        self.s["moved"] = []
+            self.s["rallied"] = []
+            self.s["moved"] = []
+            self.s["returned"] = []
+            return {"phase": "rally", "mover": self.s["mover"]}
+        self._next_turn()
         return {"turn": self.s["turn"], "mover": self.s["mover"]}
+
+    def _next_turn(self):
+        self.s["mover"] = self.first_player
+        self.s["turn"] += 1
+        self.s["phase"] = "movement"
+        self.s["moved"] = []
+        self.s["fired"] = []
+        self.s["returned"] = []
+        self.s["rallied"] = []
+        self.s["victory"] = self._victory_state()
+
+    # ---------------------------------------------------------- victory
+    def _victory_state(self):
+        """A15.1: French win at 7 Russian units destroyed/routed/
+        unsteady; Russians at 10 French; first to reach it wins."""
+        counts = {}
+        for side in self.game.side_order:
+            counts[side] = sum(
+                1 for u in self.s["units"].values()
+                if u["side"] == side and u["arm"] != "leader"
+                and (u.get("dead")
+                     or u.get("morale_state") in ("routed", "unsteady")))
+        french_needs, russian_needs = 7, 10
+        if counts.get("Allied", 0) >= french_needs:
+            return {"winner": "French", "cite": "A15.1", "counts": counts}
+        if counts.get("French", 0) >= russian_needs:
+            return {"winner": "Allied", "cite": "A15.1", "counts": counts}
+        return {"winner": None, "counts": counts}
 
     # ------------------------------------------------------------ queries
     def flow(self):
+        v = self.s.get("victory") or self._victory_state()
         return {"turn": self.s["turn"], "turn_label": self.turn_label(),
                 "mover": self.s["mover"], "phase": self.s["phase"],
                 "moved": list(self.s["moved"]),
-                "over": self.s["turn"] > self.turns}
+                "pending_fire": self.s.get("pending_fire"),
+                "victory": v,
+                "over": bool(v.get("winner"))
+                or self.s["turn"] > self.turns}
 
     def legal_moves(self, pid):
         u = self.unit(pid)
