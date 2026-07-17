@@ -56,6 +56,7 @@ import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
+import ai_napoleonic as nai_mod  # noqa: E402
 import pbm as pbm_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
@@ -63,16 +64,27 @@ SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
 
 def sg_earned_tier(scen_mode, spec):
     """Mirror of each SG-family engine's earned-tier logic (spec #13).
-    napoleonic: validated melee tables => tier 2 (napoleonic.py
-    _resolve_tier); others: combat block => 2, plus policy AI => 3."""
+    napoleonic: validated melee tables => tier 2, plus policy AI => 3
+    (napoleonic.py _resolve_tier); others: combat block => 2, plus
+    policy AI => 3."""
     if scen_mode == "napoleonic":
-        return 2 if (spec.get("combat_tables") or {}).get("melee") else 1
+        melee = bool((spec.get("combat_tables") or {}).get("melee"))
+        return (3 if spec.get("policy_ai") else 2) if melee else 1
     return (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
 
 
 def sg_ai_module():
     """The policy-AI module matching the loaded strategic-family gate."""
-    return {"bluegray": bai_mod, "westwall": wai_mod}.get(SCEN_MODE, sai_mod)
+    return {"bluegray": bai_mod, "westwall": wai_mod,
+            "napoleonic": nai_mod}.get(SCEN_MODE, sai_mod)
+
+
+def sg_over():
+    """Game-over for any SG-family gate (napoleonic computes it in
+    flow(); the others keep it in state)."""
+    if SCEN_MODE == "napoleonic":
+        return SG.flow()["over"]
+    return SG.s["over"]
 
 VERSION = "0.1.0-beta"  # shown in-app so a tester's bug report names the build
 
@@ -675,13 +687,21 @@ def api_sg_ai_turn(body):
         return dict(steps=[], flow=SG.flow(),
                     error="play-by-mail: the AI opponent plays by email, "
                           "not locally")
-    if SCEN_MODE == "napoleonic":
-        return dict(steps=[], flow=SG.flow(),
-                    error="no policy AI ships for this game yet "
-                          "(tier 3 is a later phase)")
-    side = body.get("side") or SG.s["mover"]
-    if SG.s["over"]:
+    if sg_over():
         return dict(steps=[], flow=SG.flow(), error="game is over")
+    if SCEN_MODE == "napoleonic":
+        # napoleonic decisions interleave (LIM draws, reaction/shock
+        # windows): the AI plays every decision belonging to `side`
+        # and stops the moment the flow passes to the other side
+        side = body.get("side") or SG.decider()
+        if SG.decider() != side:
+            return dict(steps=[], flow=SG.flow(),
+                        error=f"it is not {side}'s decision")
+        steps = sg_ai_module().take_turn(SG, side)
+        sync_mirror()
+        done.clear()
+        return dict(steps=steps, flow=SG.flow())
+    side = body.get("side") or SG.s["mover"]
     if SG.s["mover"] != side or SG.s["phase"] != "movement":
         return dict(steps=[], flow=SG.flow(),
                     error=f"it is not the start of the {side} player turn")
@@ -706,22 +726,38 @@ def api_ai_step(body):
     if pbm_mod.load_sidecar(LIVE, GAME_SLUG):
         return dict(error="play-by-mail: the AI opponent plays by email, "
                           "not locally")
-    if SG.s["over"]:
+    if sg_over():
         AI_STEP = None
         return dict(done=True, step=None, next=None, flow=SG.flow(),
                     error="game is over")
-    side = body.get("side") or SG.s["mover"]
-    fresh = (AI_STEP is None or AI_STEP.done()
-             or AI_STEP.sg is not SG
-             or getattr(AI_STEP, "_for", None) != (SG.s["turn"], SG.s["mover"]))
-    if fresh:
-        if SG.s["mover"] != side or SG.s["phase"] != "movement":
-            return dict(done=False, step=None, next=None, flow=SG.flow(),
-                        error=f"it is not the start of the {side} player turn")
-        AI_STEP = sg_ai_module().TurnStepper(SG)
-        AI_STEP._for = (SG.s["turn"], SG.s["mover"])
-        return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
-                    flow=SG.flow())          # reveal the first intent, execute nothing
+    if SCEN_MODE == "napoleonic":
+        side = body.get("side") or SG.decider()
+        fresh = (AI_STEP is None or AI_STEP.done()
+                 or AI_STEP.sg is not SG
+                 or getattr(AI_STEP, "side", None) != side)
+        if fresh:
+            if SG.decider() != side:
+                return dict(done=False, step=None, next=None,
+                            flow=SG.flow(),
+                            error=f"it is not {side}'s decision")
+            AI_STEP = sg_ai_module().TurnStepper(SG, side)
+            return dict(done=AI_STEP.done(), step=None,
+                        next=AI_STEP.peek(), flow=SG.flow())
+    else:
+        side = body.get("side") or SG.s["mover"]
+        fresh = (AI_STEP is None or AI_STEP.done()
+                 or AI_STEP.sg is not SG
+                 or getattr(AI_STEP, "_for", None) != (SG.s["turn"],
+                                                       SG.s["mover"]))
+        if fresh:
+            if SG.s["mover"] != side or SG.s["phase"] != "movement":
+                return dict(done=False, step=None, next=None, flow=SG.flow(),
+                            error=f"it is not the start of the {side} "
+                                  "player turn")
+            AI_STEP = sg_ai_module().TurnStepper(SG)
+            AI_STEP._for = (SG.s["turn"], SG.s["mover"])
+            return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
+                        flow=SG.flow())      # reveal the first intent, execute nothing
     entry = AI_STEP.step()
     sync_mirror()
     done.clear()
