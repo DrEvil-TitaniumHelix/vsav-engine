@@ -113,10 +113,16 @@ class NapoleonicGame(GateGame):
     # ---------------------------------------------------------- lifecycle
     def _resolve_tier(self, tier):
         # Napoleonic family earned tier 2 at phase 4 (fire + command +
-        # melee + reactions enforced). Tier 1 = the phase-3 subset
-        # (melee/reactions umpired); a tier change starts a new game.
+        # melee + reactions enforced); tier 3 = tier 2 plus a validated
+        # policy AI declared in game.json `policy_ai` (spec #13 - the
+        # gate is identical, the AI is an opponent offered on top).
+        # Tier 1 = the phase-3 subset (melee/reactions umpired); a tier
+        # change starts a new game.
         self.combat = None
-        self.tier_earned = 2
+        melee = bool((self.game.spec.get("combat_tables") or {})
+                     .get("melee"))
+        self.tier_earned = (3 if self.game.spec.get("policy_ai")
+                            else 2) if melee else 1
         self.tier = self.tier_earned if tier is None \
             else max(1, min(int(tier), self.tier_earned))
 
@@ -3913,12 +3919,30 @@ class NapoleonicGame(GateGame):
         return {"winner": None, "counts": counts}
 
     # ------------------------------------------------------------ queries
+    def decider(self):
+        """The side whose decision the game is waiting on RIGHT NOW.
+        Open windows override the mover: shock windows [8.2-8.5],
+        reaction windows [6.2], the return-fire decision [8.1.2];
+        otherwise the mover (which the command flow keeps pointed at
+        the acting side through every phase [3.0/4.0])."""
+        pm = self.s.get("pending_melee")
+        if pm and pm.get("window_owner"):
+            return pm["window_owner"]
+        pr = self.s.get("pending_react")
+        if pr:
+            return pr["side"]
+        pf = self.s.get("pending_fire")
+        if pf:
+            return pf["defender_side"]
+        return self.s["mover"]
+
     def flow(self):
         v = self.s.get("victory") or self._victory_state()
         out = {"mode": "napoleonic",
                "rules_scope": self.rules_scope(),
                "turn": self.s["turn"], "turn_label": self.turn_label(),
                "mover": self.s["mover"], "phase": self.s["phase"],
+               "decider": self.decider(),
                "moved": list(self.s["moved"]),
                "fired": list(self.s.get("fired", [])),
                "pending_fire": self.s.get("pending_fire"),

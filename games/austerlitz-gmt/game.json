@@ -1164,6 +1164,12 @@
    }
   }
  },
+ "policy_ai": {
+  "kind": "napoleonic",
+  "engine": "engine/ai_napoleonic.py",
+  "validated": "games/austerlitz-gmt/validate_ai.py",
+  "note": "Tier-3: transparent policy AI, submits only through the gate; multi-seed AI-vs-AI campaigns complete the A15.1 scenario (victory or the 4:40pm turn limit) and replay byte-exact through verify_game. Stateless per decision - it answers exactly the windows it owns (reaction/shock/return-fire), so a human opponent keeps every decision of their own. Declared-weak: no melee supports [8.2.1#2], no strategic movement declarations [5.2], no reaction limber [6.2.5], no countercharge play, no multi-turn plans."
+ },
  "credits": {
   "game": {
    "title": "Austerlitz: Napoleon's Greatest Victory (Great Battles of the Napoleonic Wars, Vol. I)",
@@ -1180,7 +1186,7 @@
    "library": "vassalengine.org/library/projects/Austerlitz_clanmacrae (owner clanmacrae)",
    "source": "the module's own readme + the module library listing"
   },
-  "note": "This is a Tier-0 free-play conversion: no rules are enforced or claimed. All game content remains the property of GMT Games; all module art and data remain the work of the module author above. Bring-your-own-module: the module is downloaded by each user from the VASSAL module library, never redistributed here."
+  "note": "All game content remains the property of GMT Games; all module art and data remain the work of the module author above. Bring-your-own-module: the module is downloaded by each user from the VASSAL module library, never redistributed here. Enforcement tier and rules scope: see the scenario's rules_scope block."
  },
  "rules_docs": {
   "living_rules": "https://www.gmtgames.com/living_rules/aus_rules.pdf",

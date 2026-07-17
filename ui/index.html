@@ -460,6 +460,28 @@ function renderGuide() {
 // otherwise). The return-fire window overrides everything: the DEFENDER
 // owns the decision even during the enemy activation [8.1.2].
 function napGuide() {
+  // "the other side must decide" helper: at tier 3 the AI can answer
+  // any decision (sole-next = the AI button, engine rule); below tier 3
+  // it's the hotseat side-switch
+  const ai3 = !PBM && GAME && GAME.tier && GAME.tier.active >= 3;
+  const waitOther = (who, what) => {
+    if (aiActive) {
+      FRAME.setGuide(`The AI is answering for <b>${sideShort(who)}</b>`
+        + (document.getElementById('aimode').value === 'step'
+           ? ' — press <b>SPACE</b> to execute each highlighted action.'
+           : ' — every action animates on its own.'));
+      FRAME.soleNext(null);
+      return true;
+    }
+    FRAME.setGuide(`${what} — it's <b>${sideShort(who)}</b>'s decision. `
+      + (ai3
+         ? `Press <b>▶ AI: ${sideShort(who)}</b> in the top bar to let `
+           + `the AI answer — or click <b>${who}</b> next to “play as:” `
+           + `to answer it yourself.`
+         : `Click <b>${who}</b> next to “play as:” (hotseat).`));
+    FRAME.soleNext(ai3 ? 'aiplaybtn' : 'side-' + who);
+    return true;
+  };
   // phase-4 windows own the flow completely [6.2/8.2-8.5]
   const SH = FLOW.shock, RW = FLOW.reaction;
   if (SH) {
@@ -477,11 +499,8 @@ function napGuide() {
         <b>stand</b> for another round or <b>withdraw</b> (voluntary
         rout). Left panel.`};
     if (SH.owner !== mySide) {
-      FRAME.setGuide(`<b>Shock combat</b> — waiting on
-        <b>${sideShort(SH.owner)}</b>'s ${SH.stage.replace('_',' ')}
-        decision [8.2-8.5]. Click <b>${SH.owner}</b> next to "play as:"
-        (hotseat).`);
-      FRAME.soleNext('side-' + SH.owner);
+      return waitOther(SH.owner, `<b>Shock combat</b> — the
+        ${SH.stage.replace('_',' ')} [8.2-8.5]`);
     } else {
       FRAME.setGuide(STAGE_TXT[SH.stage] || `<b>Shock combat</b> —
         decision in the left panel [8.2-8.5].`);
@@ -491,10 +510,8 @@ function napGuide() {
   }
   if (RW) {
     if (RW.owner !== mySide) {
-      FRAME.setGuide(`<b>Reaction window</b> [6.2] — the enemy's move
-        triggered <b>${sideShort(RW.owner)}</b>'s reaction opportunity.
-        Click <b>${RW.owner}</b> next to "play as:" (hotseat).`);
-      FRAME.soleNext('side-' + RW.owner);
+      return waitOther(RW.owner, `<b>Reaction window</b> [6.2] — the
+        moving unit triggered a reaction opportunity`);
     } else {
       FRAME.setGuide(`<b>Reaction window!</b> [6.2] — an enemy unit is
         moving through your zone. React with the entitled units in the
@@ -511,19 +528,13 @@ function napGuide() {
         + `before results land (simultaneous) — <b>Return Fire</b> or `
         + `<b>Decline</b> in the left panel [8.1.2].`);
     } else {
-      FRAME.setGuide(`Waiting on <b>${sideShort(dSide)}</b>'s return-fire `
-        + `decision [8.1.2] — click <b>${dSide}</b> next to "play as:" `
-        + `to answer it (hotseat).`);
-      FRAME.soleNext('side-' + dSide);
+      return waitOther(dSide, `<b>Return fire</b> [8.1.2]`);
     }
     return true;
   }
   if (FLOW.phase === 'rally') {
     if (FLOW.mover !== mySide) {
-      FRAME.setGuide(`<b>Rally phase</b> — it's ${sideShort(FLOW.mover)}'s `
-        + `rally. Click <b>${FLOW.mover}</b> next to "play as:" (hotseat).`);
-      FRAME.soleNext('side-' + FLOW.mover);
-      return true;
+      return waitOther(FLOW.mover, `<b>Rally phase</b> [12.0]`);
     }
     FRAME.setGuide(`<b>Rally phase</b> [12.0] — click each of your shaken/`
       + `unsteady/routed units to attempt a rally (not adjacent to the `
@@ -538,12 +549,7 @@ function napGuide() {
       + `${v.counts.French || 0}/10 [A15.1]</span>` : '';
   const C3 = FLOW.command;
   if (C3) {                       // schema-3 command flow [3.0/4.0]
-    const needSwitch = (who, what) => {
-      FRAME.setGuide(`${what} — it's <b>${sideShort(who)}</b>'s decision. `
-        + `Click <b>${who}</b> next to "play as:" (hotseat).`);
-      FRAME.soleNext('side-' + who);
-      return true;
-    };
+    const needSwitch = waitOther;
     if (FLOW.phase === 'command') {
       if (FLOW.mover !== mySide)
         return needSwitch(FLOW.mover, `<b>Pool Placement</b> [3.0.A]`);
@@ -648,14 +654,24 @@ function renderFlow() {
       FLOW.phase === 'rally' ? 'End rally' : 'End player turn';
   }
   FRAME.show('endphasebtn', showEnd);
-  // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
+  // the AI opponent is a Tier-3 feature. Strategic family: offered at the
+  // start of a player turn. Napoleonic: decisions interleave (LIM draws,
+  // reaction/shock windows), so the AI is offered whenever the game is
+  // waiting on a side you are NOT playing — it answers exactly that
+  // side's decisions and stops when the flow returns to you.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
-  const aiOK = (!PBM && !FLOW.over && FLOW.phase === 'movement'
-    && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall)
-    && GAME && GAME.tier && GAME.tier.active >= 3);
+  const aiOK = (!PBM && !FLOW.over && GAME && GAME.tier
+    && GAME.tier.active >= 3
+    && (FLOW.mode === 'napoleonic'
+        ? FLOW.decider !== mySide
+        : (FLOW.phase === 'movement'
+           && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall))));
   FRAME.show('aictl', aiOK);
   if (aiOK) document.getElementById('aiplaybtn').textContent =
-    aiActive ? '■ stop' : ('▶ Play ' + sideShort(FLOW.mover) + '’s turn');
+    aiActive ? '■ stop'
+    : (FLOW.mode === 'napoleonic'
+       ? '▶ AI: ' + sideShort(FLOW.decider)
+       : '▶ Play ' + sideShort(FLOW.mover) + '’s turn');
   const PHASE_LBL = { command: 'Pool Placement', initiative: 'Initiative',
                       activation: 'LIM Activation', non_lim: 'Non-LIM',
                       rally: 'Rally' };
@@ -2094,6 +2110,10 @@ function drawAIIntent(nx) {
   (a.defenders || []).forEach(dp => {                            // battle targets: red
     const d = units.find(u => u.id === dp); if (d) ring(d.x, d.y, '#ff6a5e');
   });
+  if (a.target) {                                                // fire/melee/charge target
+    const t = units.find(u => u.id === a.target);
+    if (t) ring(t.x, t.y, '#ff6a5e');
+  }
 }
 async function aiStepOnce() {
   if (aiBusy) return { done: true };
