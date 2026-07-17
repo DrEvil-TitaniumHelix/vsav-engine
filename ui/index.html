@@ -44,6 +44,14 @@
                     box-shadow:0 0 0 7px rgba(255,80,64,.35), 0 0 22px 8px rgba(255,80,64,.8); }
   .counter.seldef { outline:4px solid #4e9de0; outline-offset:2px; z-index:29!important;
                     box-shadow:0 0 0 7px rgba(78,157,224,.35), 0 0 22px 8px rgba(78,157,224,.8); }
+  /* units that may still act this activation/turn (matches unit ▶).
+     Ring width is zoom-compensated (--ringpx set by FRAME.apply) so it
+     stays clearly visible even zoomed all the way out. */
+  .counter.actable { outline: calc(5px * var(--ringpx, 1)) solid #b8ff5e;
+                     outline-offset: calc(2px * var(--ringpx, 1));
+                     box-shadow: 0 0 calc(16px * var(--ringpx, 1))
+                                 calc(6px * var(--ringpx, 1))
+                                 rgba(160,255,90,.7); }
   .counter.flashfocus { animation: flashfocus 1.6s ease-out; }
   @keyframes flashfocus {
     0%,20%,40% { outline:6px solid #fff; box-shadow:0 0 30px 14px rgba(255,255,255,.95); }
@@ -177,7 +185,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js?v=20260717"></script>
+<script src="frame.js?v=20260717d"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay');
@@ -196,6 +204,16 @@ function myMovementTurn() {
   return !!FLOW && FLOW.mover === mySide && FLOW.phase === 'movement';
 }
 function myActableUnits() {
+  // napoleonic command flow: "next unit" = the In Command units of MY
+  // open activation that haven't acted yet [4.3.3/4.6]
+  if (FLOW && FLOW.mode === 'napoleonic' && FLOW.command) {
+    const act = FLOW.command.act;
+    if (FLOW.phase === 'activation' && act && !act.pending
+        && act.side === mySide && act.stage === 'move')
+      return units.filter(u => (act.incommand || []).includes(u.id)
+                               && u.onmap && u.ma > 0 && !u.status);
+    return [];
+  }
   if (!myMovementTurn()) return [];
   return units.filter(u => u.side === mySide && u.onmap && u.ma > 0 && !u.status);
 }
@@ -567,11 +585,19 @@ function napGuide() {
       }
       const label = act.kind === 'nonlim_unit' ? 'single unit (Out of Command)'
         : `${divName(act.div)} — ${act.atype} activation`;
-      FRAME.setGuide(`<b>${label}</b> [4.6] — move your In Command units `
-        + `(highlighted budgets), then click enemies to <b>fire</b>. Once one `
-        + `unit fires, movement is over for the activation. Finished? `
-        + `<b>End activation</b>.` + score);
-      FRAME.soleNext(null);
+      const nleft = myActableUnits().length;
+      if (nleft === 0) {
+        FRAME.setGuide(`<b>${label}</b> — every unit has acted or passed. `
+          + `Fire/melee if you still want to, otherwise press `
+          + `<b>End activation</b>.` + score);
+        FRAME.soleNext('endphasebtn');
+      } else {
+        FRAME.setGuide(`<b>${label}</b> [4.6] — <b>unit ▶</b> (or N) jumps `
+          + `to each green-ringed unit; drag it to a green hex. Click `
+          + `enemies to <b>fire</b> (firing ends the division's movement). `
+          + `Finished? <b>End activation</b>.` + score);
+        FRAME.soleNext(null);
+      }
       return true;
     }
     if (FLOW.phase === 'non_lim') {
@@ -915,7 +941,9 @@ function napCmdPanel(box) {
       return own(h);
     }
     // an activation is OPEN: header above the selected-unit controls
-    const n = (act.incommand || []).filter(p => !(FLOW.moved || []).includes(p)).length;
+    // (count = same set the unit ▶ nav and green rings show: passed
+    // units are done too)
+    const n = myActableUnits().length;
     let hdr = `<b>${act.kind === 'nonlim_unit' ? 'Out of Command unit'
       : divName(act.div)}</b> — ${act.atype} activation
       <span class="dim">[4.6] · ${n} unit(s) still to act${
@@ -1311,11 +1339,15 @@ function submitExchange(winner) {
 
 function render() {
   document.querySelectorAll('.counter,.badge').forEach(n => n.remove());
+  // engine-level "who may act" highlight: the same set unit ▶ steps
+  // through gets a visible ring on the map (Bruce's guidance rule)
+  const ACTABLE = new Set(myActableUnits().map(u => u.id));
   const byhex = {};
   units.forEach(u => { if (u.status !== 'eliminated') (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u); });
   for (const h in byhex) byhex[h].forEach((u, i) => {
     const el = document.createElement('img');
-    el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '');
+    el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '')
+      + (ACTABLE.has(u.id) && !(selected && selected.id===u.id) ? ' actable' : '');
     el.src = GAME.counters_url + encodeURIComponent(u.img || (u.name + '.png'));
     el.style.width = CPX + 'px'; el.style.height = CPX + 'px';
     el.style.margin = `-${CPX/2}px 0 0 -${CPX/2}px`;
@@ -1342,11 +1374,28 @@ function render() {
       W.appendChild(b);
     }
   });
-  const mine = units.filter(u => u.side===mySide && u.onmap && u.ma > 0
-                                 && u.status !== 'reserve');
-  const doneN = mine.filter(u => u.status).length;
-  document.getElementById('progress').textContent =
-    `${sideShort(mySide)} movement: ${doneN} / ${mine.length} units done`;
+  const P = document.getElementById('progress');
+  if (FLOW && FLOW.mode === 'napoleonic' && FLOW.command) {
+    // command flow: whole-side tallies mislead (only the ACTIVATED
+    // division may act) — count the open activation instead
+    const act = FLOW.command.act;
+    if (FLOW.phase === 'activation' && act && !act.pending
+        && act.side === mySide) {
+      const squad = (act.incommand || [])
+        .map(p => unitById(p)).filter(u => u && u.onmap && u.ma > 0);
+      const doneA = squad.filter(u => u.status).length;
+      P.textContent = `${act.div ? divName(act.div)
+        : 'Out of Command unit'}: ${doneA} / ${squad.length} acted`;
+    } else {
+      P.textContent = '';   // no activation of yours open — nothing due
+    }
+  } else {
+    const mine = units.filter(u => u.side===mySide && u.onmap && u.ma > 0
+                                   && u.status !== 'reserve');
+    const doneN = mine.filter(u => u.status).length;
+    P.textContent =
+      `${sideShort(mySide)} movement: ${doneN} / ${mine.length} units done`;
+  }
   FRAME.onRender();     // engine frame: unit-nav visibility + end-turn glow
   renderSelBox();
   drawOverlay();
