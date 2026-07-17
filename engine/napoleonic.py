@@ -44,6 +44,7 @@ class NapoleonicGame(GateGame):
         self.F = fm.Formations(game)
         self._load_terrain()
         self.ctables = game.spec.get("combat_tables")
+        self.schedule = {}          # no reinforcements in this scenario
         self._resolve_tier(tier)
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "moved", "tier", "schema"))
@@ -376,8 +377,18 @@ class NapoleonicGame(GateGame):
                            "activation per unit per turn]")
         if t == "move":
             dest = action.get("dest")
-            facing = action.get("facing", u["facing"])
             reach = self.reachable(pid)
+            facing = action.get("facing")
+            if facing is None:      # engine picks the cheapest facing
+                opts = [(v[0], k[2]) for k, v in reach.items()
+                        if (k[0], k[1]) == (int(dest[0]), int(dest[1]))]
+                if not opts:
+                    return self._v(False,
+                                   f"({dest[0]},{dest[1]}) is not "
+                                   f"reachable within MA {u['ma']} "
+                                   "through front hexsides "
+                                   "[5.1/6.1/TEC 5.0]")
+                return self._v(True)
             key = (int(dest[0]), int(dest[1]), int(facing))
             if key not in reach:
                 return self._v(False,
@@ -916,8 +927,14 @@ class NapoleonicGame(GateGame):
         result = {"unit": pid}
         if t == "move":
             dest = action["dest"]
-            facing = int(action.get("facing", u["facing"]))
-            cost, path, dis_events = self.reachable(pid)[
+            reach = self.reachable(pid)
+            facing = action.get("facing")
+            if facing is None:      # cheapest facing at the destination
+                facing = min(((v[0], k[2]) for k, v in reach.items()
+                              if (k[0], k[1]) == (int(dest[0]),
+                                                  int(dest[1]))))[1]
+            facing = int(facing)
+            cost, path, dis_events = reach[
                 (int(dest[0]), int(dest[1]), facing)]
             u["col"], u["row"], u["facing"] = int(dest[0]), int(dest[1]), \
                 facing
@@ -1110,22 +1127,72 @@ class NapoleonicGame(GateGame):
     # ------------------------------------------------------------ queries
     def flow(self):
         v = self.s.get("victory") or self._victory_state()
-        return {"turn": self.s["turn"], "turn_label": self.turn_label(),
+        return {"mode": "napoleonic",
+                "turn": self.s["turn"], "turn_label": self.turn_label(),
                 "mover": self.s["mover"], "phase": self.s["phase"],
                 "moved": list(self.s["moved"]),
+                "fired": list(self.s.get("fired", [])),
                 "pending_fire": self.s.get("pending_fire"),
                 "victory": v,
+                "napoleonic": {"units": {
+                    u["pid"]: {"facing": u["facing"],
+                               "formation": u["formation"],
+                               "morale": u.get("morale_state", "good"),
+                               "sp": u["sp"], "dead": u.get("dead", False)}
+                    for u in self.s["units"].values()}},
                 "over": bool(v.get("winner"))
                 or self.s["turn"] > self.turns}
 
     def legal_moves(self, pid):
+        """SG-client contract: {can_act, reasons, budget, dests[], plus
+        napoleonic extras (rotations, formations)} — api_legal_sg passes
+        dests straight to the map overlay."""
         u = self.unit(pid)
+        if self.s.get("pending_fire"):
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": ["return-fire decision pending [8.1.2]"]}
+        if self.s["phase"] == "rally":
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": ["rally phase [12.0]"]}
+        if u["side"] != self.s["mover"]:
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": [f"it is {self.s['mover']}'s activation"]}
+        if pid in self.s["moved"]:
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": ["already activated this turn"]}
+        if u.get("dead") or u.get("morale_state") == "routed":
+            return {"can_act": False, "budget": 0, "dests": [],
+                    "reasons": ["destroyed" if u.get("dead") else
+                                "routed: may not move voluntarily "
+                                "[9.2.4]"]}
         reach = self.reachable(pid)
-        out = []
+        best = {}
+        rotations = []
         for (c, r, f), (cost, path, dis) in reach.items():
-            if (c, r, f) == (u["col"], u["row"], u["facing"]):
+            if (c, r) == (u["col"], u["row"]):
+                if f != u["facing"]:
+                    rotations.append({"facing": f, "cost": round(cost, 2)})
                 continue
-            out.append({"dest": [c, r], "facing": f,
-                        "cost": round(cost, 2),
-                        "disorder_risk": bool(dis)})
+            k = (c, r)
+            if k not in best or cost < best[k][0]:
+                best[k] = (cost, f, bool(dis))
+        dests = []
+        for (c, r), (cost, f, risk) in best.items():
+            x, y = self.game.grid.hex_to_pixel(c, r)
+            dests.append({"col": c, "row": r, "x": x, "y": y,
+                          "hexnum": self.game.grid.hexnum(c, r),
+                          "cost": round(cost, 2), "facing": f,
+                          "disorder_risk": risk})
+        return {"can_act": True, "budget": float(u["ma"]),
+                "reasons": [], "dests": sorted(dests,
+                                               key=lambda d: d["cost"]),
+                "rotations": sorted(rotations, key=lambda r_: r_["cost"]),
+                "formations": self._formation_options(u)}
+
+    def _formation_options(self, u):
+        out = []
+        for name in self.F.defs:
+            ok, _ = self._formation_change_ok(u, name)
+            if ok:
+                out.append(name)
         return out
