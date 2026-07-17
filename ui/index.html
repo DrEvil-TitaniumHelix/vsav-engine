@@ -300,10 +300,15 @@ function renderGuide() {
   }
   if (PBM && pbmGuide()) return;
   if (FLOW.over) {
-    FRAME.setGuide(`GAME OVER after ${FLOW.turn - 1} turns — <b>Reset game</b> starts a new one.`, true);
+    const vw = FLOW.victory && FLOW.victory.winner;
+    FRAME.setGuide((vw
+      ? `<b>${sideShort(vw)} WINS</b> [${FLOW.victory.cite}] — `
+      : `GAME OVER after ${FLOW.turn - 1} turns — `)
+      + `<b>Reset game</b> starts a new one.`, true);
     FRAME.soleNext('resetbtn');
     return;
   }
+  if (FLOW.mode === 'napoleonic' && napGuide()) return;
   const mv = sideShort(FLOW.mover);
   if (FLOW.mover !== mySide) {
     if (aiActive) {
@@ -385,6 +390,54 @@ function renderGuide() {
   FRAME.soleNext(null);
 }
 
+// ---------- napoleonic (GBoNW) guidance ----------
+// Returns true when it handled the banner (renderGuide falls through
+// otherwise). The return-fire window overrides everything: the DEFENDER
+// owns the decision even during the enemy activation [8.1.2].
+function napGuide() {
+  const PF = FLOW.pending_fire;
+  if (PF) {
+    const dSide = PF.defender_side;
+    if (dSide === mySide) {
+      FRAME.setGuide(`<b>You are under fire!</b> Your unit may fire back `
+        + `before results land (simultaneous) — <b>Return Fire</b> or `
+        + `<b>Decline</b> in the left panel [8.1.2].`);
+    } else {
+      FRAME.setGuide(`Waiting on <b>${sideShort(dSide)}</b>'s return-fire `
+        + `decision [8.1.2] — click <b>${dSide}</b> next to "play as:" `
+        + `to answer it (hotseat).`);
+      FRAME.soleNext('side-' + dSide);
+    }
+    return true;
+  }
+  if (FLOW.phase === 'rally') {
+    if (FLOW.mover !== mySide) {
+      FRAME.setGuide(`<b>Rally phase</b> — it's ${sideShort(FLOW.mover)}'s `
+        + `rally. Click <b>${FLOW.mover}</b> next to "play as:" (hotseat).`);
+      FRAME.soleNext('side-' + FLOW.mover);
+      return true;
+    }
+    FRAME.setGuide(`<b>Rally phase</b> [12.0] — click each of your shaken/`
+      + `unsteady/routed units to attempt a rally (not adjacent to the `
+      + `enemy), then <b>End player turn</b>. Routed units that stay `
+      + `routed lose 1 SP and fall back [12.4].`);
+    return true;
+  }
+  if (FLOW.mover !== mySide) return false;   // generic hotseat banner
+  const v = FLOW.victory || {};
+  const score = v.counts
+    ? ` &nbsp;<span class="dim">broken units — French need Allied at 7: `
+      + `${v.counts.Allied || 0}/7 · Russians need French at 10: `
+      + `${v.counts.French || 0}/10 [A15.1]</span>` : '';
+  FRAME.setGuide(`<b>Your activation</b> — click a unit, then a highlighted `
+    + `hex (facing follows the cheapest path; use ⟲ ⟳ to wheel). Click an `
+    + `ENEMY counter while one of your units is selected to <b>fire</b> at `
+    + `it [8.1]. Formation buttons are in the left panel. Finished? `
+    + `<b>End player turn</b>.` + score);
+  FRAME.soleNext(null);
+  return true;
+}
+
 function renderFlow() {
   const fb = document.getElementById('flowbar');
   if (!FLOW) { FRAME.show('flowbar', false); FRAME.show('endphasebtn', false);
@@ -418,7 +471,12 @@ const CLS_LABEL = { supply:'Supply unit (non-combat)', hq:'HQ (non-combat)',
 function tipHTML(u) {
   let h = `<b>${u.name}</b><br><span class="dim">${sideLabel(u.side)} — ${
            CLS_LABEL[u.cls] || 'Combat unit'}</span>`;
-  if (u.cls !== 'markers')
+  if (FLOW && FLOW.mode === 'napoleonic' && u.formation)
+    h += `<br>${FORM_LABEL[u.formation]||u.formation} · SP ${u.sp} · MA ${u.ma}`
+       + (u.morale_state && u.morale_state !== 'good'
+          ? ` · <b style="color:#e0a34e">${u.morale_state.toUpperCase()}</b>` : '')
+       + (u.fired ? ' · fired' : '');
+  else if (u.cls !== 'markers')
     h += `<br>Attack ${u.att} · Defense ${u.dfn} · Movement ${u.ma}`;
   if (u.onmap && u.status !== 'at sea' && u.status !== 'reserve')
     h += `<br><span class="dim">Hex</span> ${u.hexname || u.hexnum}`
@@ -469,8 +527,60 @@ async function sgAction(action, side) {
     toast(r.result.result || r.result.note);
   refresh();
 }
+const FORM_LABEL = { line:'Line', column:'Column', square:'Square',
+  skirmish:'Skirmish', disorder:'Disorder', limbered:'Limber',
+  unlimbered:'Unlimber' };
+function renderNapPanel(box) {
+  const PF = FLOW.pending_fire;
+  if (PF) {
+    if (PF.defender_side !== mySide) { box.style.display='none'; return; }
+    box.innerHTML = `<b>Return fire? [8.1.2]</b><br>
+      <span class="dim">Your unit was targeted — it may fire back
+      simultaneously (results land on both after both shots).</span><br>
+      <button class="sidebtn" style="border-color:#e05a4e"
+        onclick='sgAction({type:"return_fire"}, mySide)'>🔥 Return Fire</button>
+      <button class="sidebtn"
+        onclick='sgAction({type:"decline_return"}, mySide)'>Decline</button>`;
+    box.style.display = ''; return;
+  }
+  if (FLOW.phase === 'rally') { box.style.display = 'none'; return; }
+  if (!selected || selected.side !== mySide || FLOW.mover !== mySide) {
+    box.style.display = 'none'; return;
+  }
+  const u = selected;
+  let h = `<b>${u.name}</b> <span class="dim">${FORM_LABEL[u.formation]||u.formation||''}${
+    u.morale_state && u.morale_state !== 'good' ? ' · <b style="color:#e0a34e">'
+    + u.morale_state.toUpperCase() + '</b>' : ''}</span><br>`;
+  const acted = FLOW.moved && FLOW.moved.includes(u.id);
+  if (acted) h += `<span class="dim">already activated this turn</span><br>`;
+  if (!acted && legal && legal.rotations && legal.rotations.length) {
+    const cheap = legal.rotations.reduce((a,b)=>a.cost<b.cost?a:b).cost;
+    h += `wheel: <button class="sidebtn" onclick='napRotate(-2)'>⟲ ${cheap} MP</button>
+          <button class="sidebtn" onclick='napRotate(2)'>⟳ ${cheap} MP</button> `;
+    h += `<button class="sidebtn" onclick='sgAction({type:"about_face",unit:"${u.id}"}, mySide)'>about face</button><br>`;
+  }
+  if (!acted && legal && legal.formations && legal.formations.length) {
+    h += `form: ` + legal.formations.map(f =>
+      `<button class="sidebtn" onclick='sgAction({type:"change_formation",unit:"${u.id}",to:"${f}"}, mySide)'>${FORM_LABEL[f]||f}</button>`).join(' ') + `<br>`;
+  }
+  const canFire = !(FLOW.fired||[]).includes(u.id)
+    && (u.arm === 'infantry' || (u.arm||'').startsWith('artillery'));
+  h += canFire
+    ? `<span class="dim">🔥 click an enemy counter to fire at it [8.1]</span>`
+    : `<span class="dim">no fire available (${(FLOW.fired||[]).includes(u.id)
+       ? 'already fired' : 'this arm cannot fire'})</span>`;
+  box.innerHTML = h; box.style.display = '';
+}
+function napRotate(step) {
+  const f = ((selected.facing || 0) + step + 12) % 12;
+  sgAction({type:'move', unit:selected.id,
+            dest:[selected.col, selected.row], facing:f}, mySide);
+}
 function renderArrivals() {
   const box = document.getElementById('arrivals');
+  if (FLOW && FLOW.mode === 'napoleonic' && !FLOW.over) {
+    renderNapPanel(box); return;
+  }
   if (FLOW && FLOW.mode === 'westwall' && !FLOW.over) {
     const W = FLOW.westwall || {};
     const showR = FLOW.phase === 'movement' && (W.due||[]).length;
@@ -829,6 +939,9 @@ function render() {
     el.dataset.id = u.id;
     if (atkSel.has(u.id)) el.style.outline = '4px solid #e05a4e';
     else if (defSel.has(u.id)) el.style.outline = '4px solid #4e9de0';
+    else if (u.morale_state === 'shaken') el.style.outline = '3px solid #e0c34e';
+    else if (u.morale_state === 'unsteady') el.style.outline = '3px solid #e0862e';
+    else if (u.morale_state === 'routed') el.style.outline = '4px solid #e0342e';
     if (u.facing !== null && u.facing !== undefined && GAME.facing)
       el.style.transform = `rotate(${(GAME.facing.offset_deg||0) + u.facing * GAME.facing.step_deg}deg)`;
     el.addEventListener('pointerenter', ev => { if (!dragging) showTip(u, ev.clientX, ev.clientY); });
@@ -892,6 +1005,19 @@ function onCounterDown(ev, u, stackUnits) {
   ev.stopPropagation();
   if (combatActive()) { toggleBattle(u, stackUnits); return; }
   if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
+  // napoleonic: clicking an ENEMY while one of my units is selected = fire
+  // at it — the gate answers with cited reasons if it's not a legal shot
+  if (FLOW && FLOW.mode === 'napoleonic' && selected
+      && selected.side === mySide && u.side !== mySide) {
+    sgAction({type:'fire', unit: selected.id, target: u.id}, mySide);
+    return;
+  }
+  // napoleonic rally phase: clicking my own broken unit attempts the rally
+  if (FLOW && FLOW.mode === 'napoleonic' && FLOW.phase === 'rally'
+      && u.side === mySide) {
+    sgAction({type:'rally', unit: u.id}, mySide);
+    return;
+  }
   // free play (no gate): any of your pieces is draggable — markers, track
   // pieces off the playable map, zero-MA units included (VASSAL parity)
   if (u.side !== mySide || u.status) return;

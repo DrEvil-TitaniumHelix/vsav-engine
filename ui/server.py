@@ -175,6 +175,13 @@ def unit_view(u):
         su = SG.s["units"].get(u["id"])
         if su:
             v.update(side=su["side"])
+            if SCEN_MODE == "napoleonic":
+                v.update(facing=su["facing"], formation=su["formation"],
+                         morale_state=su.get("morale_state", "good"),
+                         sp=su["sp"], arm=su["arm"],
+                         fired=su["pid"] in SG.s.get("fired", []))
+                if su.get("dead"):
+                    v.update(status="eliminated", onmap=False)
             if SG.on_map(su):
                 v.update(col=su["col"], row=su["row"],
                          status="moved" if u["id"] in SG.s["moved"] else done.get(u["id"]))
@@ -183,6 +190,8 @@ def unit_view(u):
                          hexname=GAME_OBJ.grid.display_name(su["col"], su["row"]),
                          terrain=g.hex_terrain(su["col"], su["row"]),
                          onmap=True)
+            elif SCEN_MODE == "napoleonic":
+                v.update(status="eliminated", onmap=False)
             else:                      # at sea: mirror keeps the last board spot
                 v.update(status="at sea",
                          must_land=su.get("embark_turn", SG.s["turn"]) < SG.s["turn"])
@@ -526,8 +535,12 @@ def api_legal_sg(qs):
             ma = min(ma, lm2["budget"])          # 6.2: slowest unit's MF
             keep = {(d["col"], d["row"]) for d in lm2["dests"]}
             dests = {h: d for h, d in dests.items() if h in keep}
-    return dict(ma=ma, dests=sorted(dests.values(), key=lambda d: d["cost"]),
-                reasons=[])
+    out = dict(ma=ma, dests=sorted(dests.values(), key=lambda d: d["cost"]),
+               reasons=[])
+    for extra in ("rotations", "formations"):    # napoleonic panel data
+        if extra in lm:
+            out[extra] = lm[extra]
+    return out
 
 
 def api_legal_free(qs):
@@ -622,8 +635,12 @@ def api_end_phase():
         return dict(error=blocked, flow=SG.flow())
     # bluegray splits the player turn into movement then combat: the top-bar
     # "End player turn" maps to whichever boundary is next
-    t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
-                           and SG.s["phase"] == "movement") else "end_phase"
+    if SCEN_MODE == "napoleonic":
+        t = "end_rally" if SG.s["phase"] == "rally" else "end_turn"
+    else:
+        t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
+                               and SG.s["phase"] == "movement") \
+            else "end_phase"
     r = SG.submit(SG.s["mover"], {"type": t})
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
     if not r["verdict"]["legal"]:
@@ -641,6 +658,10 @@ def api_sg_ai_turn(body):
         return dict(steps=[], flow=SG.flow(),
                     error="play-by-mail: the AI opponent plays by email, "
                           "not locally")
+    if SCEN_MODE == "napoleonic":
+        return dict(steps=[], flow=SG.flow(),
+                    error="no policy AI ships for this game yet "
+                          "(tier 3 is a later phase)")
     side = body.get("side") or SG.s["mover"]
     if SG.s["over"]:
         return dict(steps=[], flow=SG.flow(), error="game is over")
