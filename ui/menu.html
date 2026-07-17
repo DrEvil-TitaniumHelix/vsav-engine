@@ -22,6 +22,9 @@
   .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
          border:1px solid #4a4f57; color:#b9c2cc; }
   .tag.tier { background:#243447; border-color:#3a6ea5; color:#9cc4ee; }
+  .tag.ai   { background:#2f2740; border-color:#7a5aa5; color:#c9aef0; }
+  .tag.soon { background:#2c2f36; border-color:#4a4f57; color:#98a0a8; }
+  .tag.feature { background:#243d33; border-color:#3a7a5f; color:#8fd8b4; }
   .tag.cur  { background:#2a3a2a; border-color:#5a8a4a; color:#a8d89a; }
   .card .blurb { color:#9aa3ad; font-size:13px; line-height:1.5; flex:1; min-height:20px; }
   .card button { margin-top:6px; padding:10px 0; border:0; border-radius:7px; cursor:pointer;
@@ -74,15 +77,14 @@ async function load(){
       card.innerHTML = `<h2>${g.name}</h2><div class="blurb">Unavailable: ${g.error}</div>`;
       cards.appendChild(card); continue;
     }
-    const earned = g.tier.earned;
-    const tierTxt = TIER_LABEL[earned] || ("Tier " + earned);
+    const tags = (g.tags || []).map(t =>
+      `<span class="tag ${t.kind}">${t.label}</span>`).join('');
     card.innerHTML =
       `<img class="art" src="/gasset/menu_art/${encodeURIComponent(g.slug)}"
             onerror="this.remove()" alt="">
        <h2>${g.name}</h2>
        <div class="meta">
-         <span class="tag">${g.mode}</span>
-         <span class="tag tier">${tierTxt}</span>
+         ${tags}
          ${g.current ? '<span class="tag cur">last played</span>' : ''}
        </div>
        <div class="blurb">${g.blurb || ""}</div>

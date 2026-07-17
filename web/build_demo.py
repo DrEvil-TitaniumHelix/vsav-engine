@@ -147,6 +147,7 @@ location.replace(tactical ? 'tactical.html' : 'board.html');
 
 def menu_page(metas):
     cards = json.dumps([dict(slug=m["slug"], name=m["name"], tier=m["tier"],
+                             tags=m.get("tags") or [],
                              blurb=m.get("blurb") or "",
                              needs=[r["filename"] for r in m["manifest"]["requirements"]],
                              manifest=m["manifest"]) for m in metas],
@@ -177,6 +178,9 @@ def menu_page(metas):
   .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
          border:1px solid #4a4f57; color:#b9c2cc; }
   .tag.tier { background:#243447; border-color:#3a6ea5; color:#9cc4ee; }
+  .tag.ai   { background:#2f2740; border-color:#7a5aa5; color:#c9aef0; }
+  .tag.soon { background:#2c2f36; border-color:#4a4f57; color:#98a0a8; }
+  .tag.feature { background:#243d33; border-color:#3a7a5f; color:#8fd8b4; }
   .blurb { color:#9aa3ad; font-size:13px; line-height:1.5; flex:1; min-height:20px; }
   .needs { color:#98a0a8; font-size:11.5px; }
   .card button { margin-top:6px; padding:10px 0; border:0; border-radius:7px; cursor:pointer;
@@ -229,10 +233,12 @@ const cards = document.getElementById('cards');
 for (const g of GAMES){
   const card = document.createElement('div');
   card.className = 'card';
+  const tags = (g.tags || []).map(t =>
+    `<span class="tag ${t.kind}">${t.label}</span>`).join('');
   card.innerHTML =
     `<div class="noart">🎲</div>
      <h2>${g.name}</h2>
-     <div class="meta"><span class="tag tier">${TIER_LABEL[g.tier.earned] || ('Tier '+g.tier.earned)}</span></div>
+     <div class="meta">${tags}</div>
      <div class="blurb">${g.blurb}</div>
      <div class="needs">needs your module: ${g.needs.join(' + ')}</div>
      <button>Play</button>`;
