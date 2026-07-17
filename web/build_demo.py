@@ -138,7 +138,7 @@ def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
 LOADER = """<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>%(name)s</title></head><body
 style="background:#1a1c20"><script>
-var t = sessionStorage.getItem('tier:%(slug)s');
+var t = localStorage.getItem('tier:%(slug)s');
 var tactical = %(tactical)s && !(t !== null && +t === 0);
 location.replace(tactical ? 'tactical.html' : 'board.html');
 </script></body></html>

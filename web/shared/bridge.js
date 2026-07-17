@@ -12,8 +12,11 @@
  *   3. writes module-provided engine files (setup saves) into the engine FS,
  *   4. srv.load_game(<slug>), builds counter/map blob URLs from the module,
  *   5. answers the queued /api/* calls through srv.route_get/route_post.
- * Per-session state: the engine's live/ dir is in-memory — a reload starts a
- * fresh session (the audit log of the session is still real and downloadable).
+ * Saved games: the engine's live/ dir (work save, JSONL audit log, tier
+ * sidecars) is synced to IndexedDB after every state-changing call and
+ * restored before load_game on the next visit — the engine's own resume
+ * path (log replay) then continues the game exactly where it stood, the
+ * same way the native app survives a restart. "Reset game" starts over.
  */
 (function () {
   "use strict";
@@ -31,6 +34,54 @@
     if (!pill.parentNode && document.body) document.body.appendChild(pill);
     pill.textContent = t;
     pill.style.display = t ? "" : "none";
+  }
+
+  // ---------- saved-game store (IndexedDB: live/ files per game) ----------
+  function sdb() {
+    return new Promise((res, rej) => {
+      const q = indexedDB.open("demo_saves", 1);
+      q.onupgradeneeded = () => q.result.createObjectStore("live");
+      q.onsuccess = () => res(q.result);
+      q.onerror = () => rej(q.error);
+    });
+  }
+  const sGet = (db, k) => new Promise((res, rej) => {
+    const t = db.transaction("live").objectStore("live").get(k);
+    t.onsuccess = () => res(t.result); t.onerror = () => rej(t.error);
+  });
+  const sPut = (db, k, v) => new Promise((res, rej) => {
+    const t = db.transaction("live", "readwrite").objectStore("live").put(v, k);
+    t.onsuccess = () => res(); t.onerror = () => rej(t.error);
+  });
+  let PY = null, saveQueued = false;
+  async function writeSaveNow() {
+    if (!PY) return;
+    try {
+      const files = {};
+      for (const n of PY.FS.readdir("/app/live")) {
+        if (n === "." || n === "..") continue;
+        files[n] = PY.FS.readFile("/app/live/" + n);   // Uint8Array
+      }
+      await sPut(await sdb(), SLUG, files);
+    } catch (e) { console.warn("bridge: game save failed", e); }
+  }
+  async function saveLive() {                 // debounced write-behind
+    if (!PY || saveQueued) return;
+    saveQueued = true;
+    await new Promise((r) => setTimeout(r, 150));
+    saveQueued = false;
+    await writeSaveNow();
+  }
+  async function restoreLive(py) {
+    try {
+      const rec = await sGet(await sdb(), SLUG);
+      if (!rec) return 0;
+      let n = 0;
+      for (const [name, bytes] of Object.entries(rec)) {
+        py.FS.writeFile("/app/live/" + name, bytes); n++;
+      }
+      return n;
+    } catch (e) { console.warn("bridge: game restore failed", e); return 0; }
   }
 
   // ---------- fetch shim: queue /api/* until the engine is up -------------
@@ -63,8 +114,11 @@
     return { path: url.pathname, method, payload };
   }
   function serve(job) {
+    let method = "GET";
     try {
-      const { path, method, payload } = parseReq(job.u, job.opts);
+      const req = parseReq(job.u, job.opts);
+      const { path, payload } = req;
+      method = req.method;
       const out = handle(method, path, JSON.stringify(payload));
       const obj = JSON.parse(out);
       patchAssets(path, obj);
@@ -77,6 +131,7 @@
       }
       job.resolve({ ok: true, status: 200, json: async () => obj,
                     text: async () => out });
+      if (method !== "GET") saveLive();   // state changed — sync the saved game
     } catch (e) {
       console.error("bridge: api error", job.u, e);
       job.resolve({ ok: true, status: 200,
@@ -147,16 +202,15 @@
         "        import traceback; traceback.print_exc()\n" +
         "        return _bridge_json.dumps({'error': str(e)})\n"
       );
-      const savedTier = sessionStorage.getItem("tier:" + SLUG);
+      // restore the saved game BEFORE load_game: the engine resumes from its
+      // own live files (log replay + tier sidecar), same as a native restart
+      const restored = await restoreLive(py);
+      if (restored) setStatus("Resuming your saved game…");
+      if (navigator.storage && navigator.storage.persist)
+        navigator.storage.persist();    // ask the browser not to evict saves
       const loadGame = py.globals.get("srv").load_game;
-      try {
-        if (savedTier !== null) loadGame("/app/games/" + SLUG, Number(savedTier));
-        else loadGame("/app/games/" + SLUG);
-      } catch (e) {                     // stale/invalid stored tier — earned tier
-        console.warn("bridge: stored tier rejected, loading earned tier", e);
-        sessionStorage.removeItem("tier:" + SLUG);
-        loadGame("/app/games/" + SLUG);
-      }
+      loadGame("/app/games/" + SLUG);
+      PY = py;
       const h = py.globals.get("_bridge_handle");
       // map + counters from the module BEFORE releasing the client's calls
       mapBlobUrl = await BYO.entryUrl(M.assets.map.req, M.assets.map.entry);
@@ -171,11 +225,13 @@
     }
   })();
 
-  // tier switches reload this page (engine state is per-session); the frame's
-  // tier control calls this hook instead of navigating to "/"
-  window.DEMO_TIER_HOOK = (r) => {
+  // tier switches reload this page; the engine's tier sidecar (in the saved
+  // live files) is the truth — localStorage only mirrors it so the loader
+  // page can pick the right client (tactical vs board) before Python boots
+  window.DEMO_TIER_HOOK = async (r) => {
     if (r && r.tier !== undefined)
-      sessionStorage.setItem("tier:" + SLUG, r.tier);
+      localStorage.setItem("tier:" + SLUG, r.tier);
+    await writeSaveNow();               // reset already ran — persist it now
     location.href = "./";               // loader picks the right client
   };
 })();
