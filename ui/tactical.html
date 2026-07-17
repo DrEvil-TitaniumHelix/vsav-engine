@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Dr Evil's Game Legality Engine v2 — Tobruk</title>
+<title>VALOR Engine</title>
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#16181c; font-family:Segoe UI,sans-serif; }
   /* Two FIXED rows, no wrapping: every control has a permanent pixel position
@@ -225,7 +225,7 @@ const toMap=e=>{const r=W.getBoundingClientRect();return{x:(e.clientX-r.left)/sc
 function bootGame(g){
   GAME=g; MAPW=g.map_w; MAPH=g.map_h; CPX=g.counter_px;
   document.getElementById('gamename').textContent=g.name.toUpperCase();
-  document.title=g.name+" — Dr Evil's Game Legality Engine";
+  document.title=g.name+" — VALOR Engine";
   HX=g.grid.dy/1.5; HXC=HX/2; HYH=g.grid.dx/2;
   document.querySelector('img.map').src=g.map_url;
   const SB=document.getElementById('sidebtns'); SB.innerHTML='';
