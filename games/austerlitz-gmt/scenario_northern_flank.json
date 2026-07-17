@@ -41,7 +41,7 @@
   "french_win": "7 Russian battalions/regiments/batteries destroyed, routed or unsteady",
   "russian_win": "10 French battalions/regiments/batteries destroyed, routed or unsteady",
   "draw": "neither by the end of the 4:40 pm turn",
-  "cite": "A15.1 VICTORIA (translated); NOT enforced at tier 1 (morale states are phase-2 systems)"
+  "cite": "A15.1 VICTORIA (GMT's sanctioned Spanish translation, translated); checked by the engine every turn"
  },
  "units": [
   {
@@ -271,6 +271,10 @@
    "arm": "artillery_horse",
    "formation": "unlimbered",
    "div": "2",
+   "gun": {
+    "nation": "russian",
+    "type": "6pdr_horse"
+   },
    "stats": {
     "ma": 7,
     "morale": 6,
@@ -576,6 +580,10 @@
    "arm": "artillery_horse",
    "formation": "unlimbered",
    "div": "3",
+   "gun": {
+    "nation": "french",
+    "type": "8pdr"
+   },
    "stats": {
     "ma": 8,
     "morale": 7,
@@ -596,6 +604,10 @@
    "arm": "artillery_foot",
    "formation": "unlimbered",
    "div": "1",
+   "gun": {
+    "nation": "french",
+    "type": "8pdr"
+   },
    "stats": {
     "ma": 8,
     "morale": 6,
@@ -637,6 +649,10 @@
    "arm": "artillery_foot",
    "formation": "unlimbered",
    "div": "3",
+   "gun": {
+    "nation": "french",
+    "type": "8pdr"
+   },
    "stats": {
     "ma": 8,
     "morale": 6,
@@ -699,16 +715,21 @@
    "Line special moves: slide (2x, unoccupied flank), reverse (whole MA), about face (half MA) [6.3.1/6.3.5]",
    "Enemy front hexes end movement; no re-adjacency to the same enemy [5.1.3]",
    "Stacking limits by type/formation/division and terrain class [7.1]",
-   "One activation per unit per game turn [3.0/4.6]"
+   "One activation per unit per game turn [3.0/4.6]",
+   "Fire combat: offensive + return fire (simultaneous), range/facing arcs/LOS, target hierarchy, once per turn [8.1.1-8.1.8]",
+   "Morale: check table + DRMs, shaken/unsteady/rout ladder, artillery morale as SP loss, chain checks on rout [9.1-9.3]",
+   "Retreats + rout retreats with SP loss for shortfall [10.0/10.1]; unit breakpoint [11.1]",
+   "Rally phase incl. routed-rally cap and rout loss [12.0-12.4]",
+   "Victory conditions checked every turn [A15.1]"
   ],
   "enforced_tier2": [
-   "Fire combat [8.1], melee/charge [8.2-8.5], morale [9.0], rout/rally [10.0/12.0], fatigue [13.0]"
+   "Melee: bayonet/assault/charge combat [8.2-8.5] (phase 4)"
   ],
   "umpired": [
    "Command system: LIM pool, activations, command range [4.0] (phase 3)",
    "Reactions: reaction fire, countercharge, form square [6.2/8.4.2] (phase 4)",
    "Strategic movement [5.2]; limited-activation MA reduction [4.6.2] (needs the command system)",
-   "Victory conditions [A15.1] (need morale states)"
+   "Division fatigue accumulation [13.1] (tracks with the command system; fatigue DRMs are wired, level stays 0)"
   ]
  }
 }
