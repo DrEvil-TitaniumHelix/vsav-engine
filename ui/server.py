@@ -188,6 +188,7 @@ def unit_view(u):
                 v.update(facing=su["facing"], formation=su["formation"],
                          morale_state=su.get("morale_state", "good"),
                          sp=su["sp"], arm=su["arm"],
+                         blown=su.get("blown", 0),
                          fired=su["pid"] in SG.s.get("fired", []))
                 if su.get("dead"):
                     v.update(status="eliminated", onmap=False)

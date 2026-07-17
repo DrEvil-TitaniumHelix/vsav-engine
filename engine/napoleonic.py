@@ -3947,6 +3947,21 @@ class NapoleonicGame(GateGame):
                 "owner": preact["side"], "mover": preact["mover"],
                 "at": preact["at"], "phase": preact["phase"],
                 "entitled": preact["entitled"]}
+            # legal reaction-move destinations for the client [6.2.2]
+            if pmelee:
+                md = {p: [list(h) for h in
+                          self._skirmish_moves(self.unit(p))]
+                      for p, ks in (pmelee.get("entitled") or {}).items()
+                      if "reaction_move" in ks}
+                if md:
+                    out["shock"]["move_dests"] = md
+            if preact:
+                md = {p: [list(h) for h in
+                          self._reaction_moves(self.unit(p))]
+                      for p, ks in preact["entitled"].items()
+                      if "reaction_move" in ks}
+                if md:
+                    out["reaction"]["move_dests"] = md
             out["strat_divs"] = list(self.s.get("strat", []))
         if self._cmd:
             act = self.s.get("act")
