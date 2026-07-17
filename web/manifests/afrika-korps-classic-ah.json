@@ -1,0 +1,23 @@
+{
+  "requirements": [
+    {
+      "id": "ak",
+      "title": "Afrika Korps Classic Avalon Hill — VASSAL module",
+      "filename": "Afrika Korps Classic AH 3.0.1.vmod",
+      "size": 11083018,
+      "sha256": "8f71a16a93a8c9c39ef60ce7229a92195a4186d4fcf263d8e99679731626dddb",
+      "page": "https://vassalengine.org/library/projects/Afrika_Korps_Classic_Avalon_Hill",
+      "hint": "Download “Afrika Korps Classic AH 3.0.1.vmod” (v3.0.1) from the VASSAL Module Library page above — that exact file is the version this encoding was validated against."
+    }
+  ],
+  "assets": {
+    "map":      { "req": "ak", "entry": "images/AK consolidated map.png" },
+    "counters": { "req": "ak", "prefix": "images/" },
+    "cover":    { "req": "ak", "entry": "images/AK consolidated map.png" }
+  },
+  "engine_files": [
+    { "req": "ak", "entry": "Starting positions Trails on.vsav",
+      "fs_path": "setup_from_module.vsav",
+      "note": "module-provided setup save — never shipped, extracted from the user's own module at runtime" }
+  ]
+}
