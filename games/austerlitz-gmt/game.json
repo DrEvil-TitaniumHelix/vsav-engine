@@ -151,6 +151,90 @@
                "disorder": {"clear": 9, "woods_swamp": 8, "village_castle": 8}}
   }
  },
+ "combat_tables": {
+  "cite": "Transcribed from GMT updated charts p3 (auscharts.pdf, 170dpi render) and verified against the module's original printed chart scan; Italian translation cross-checked (its Fire Table class-c row 'C-D' is a translation typo — both English printings read 'C'). PHASE 2 DATA — fire combat not yet enforced.",
+  "fire_defense_classes": {
+   "a": ["skirmishers"],
+   "b": ["artillery"],
+   "c": ["french infantry in line", "french infantry in disorder"],
+   "d": ["french infantry in column", "allied infantry in line"],
+   "e": ["allied infantry in column", "allied infantry in disorder", "cavalry in line", "cavalry in disorder"],
+   "f": ["cavalry column"],
+   "g": ["infantry in square"]
+  },
+  "fire_table_columns": {
+   "note": "Fire Rating letter (adjusted) x defense class -> fire column 1-8 [8.1.8]; cells verbatim, column: letters",
+   "a": {"5": "A", "6": "B", "7": "C-E", "8": "F"},
+   "b": {"4": "A", "5": "B", "6": "C-D", "7": "E", "8": "F"},
+   "c": {"4": "A-B", "5": "C", "6": "D-E", "7": "F"},
+   "d": {"3": "A", "4": "B", "5": "C-D", "6": "E", "7": "F"},
+   "e": {"2": "A", "3": "B", "4": "C", "5": "D-E", "6": "F"},
+   "f": {"1": "A", "3": "B", "4": "C-D", "5": "E", "6": "F"},
+   "g": {"1": "A", "2": "B", "3": "C", "4": "D-E", "5": "F"}
+  },
+  "fire_results": {
+   "note": "die 0-9 x fire column 1-8 [8.1.8]; M+1/M/M-1 = morale check w/ DRM; integer = SP loss + morale check modified +(n-1); NE = no effect; verified vs Italian translation cell-for-cell",
+   "0": ["M+1", "M", "M-1", "M-1", "NE", "NE", "NE", "NE"],
+   "1": ["M+1", "M", "M", "M-1", "M-1", "NE", "NE", "NE"],
+   "2": ["1", "M+1", "M", "M", "M-1", "M-1", "NE", "NE"],
+   "3": ["1", "M+1", "M+1", "M", "M", "M-1", "M-1", "NE"],
+   "4": ["1", "1", "M+1", "M+1", "M", "M", "M-1", "M-1"],
+   "5": ["2", "1", "1", "M+1", "M+1", "M", "M", "M-1"],
+   "6": ["2", "1", "1", "1", "M+1", "M+1", "M", "M"],
+   "7": ["2", "2", "1", "1", "1", "M+1", "M+1", "M"],
+   "8": ["2", "2", "2", "1", "1", "1", "M+1", "M"],
+   "9": ["3", "2", "2", "2", "1", "1", "1", "M+1"]
+  },
+  "fire_rating_adjustments": {
+   "firer_in_line": "up 1 letter", "firer_at_breakpoint": "down 1 letter",
+   "firer_in_square": "down 2 letters", "cite": "[8.1.8] chart panel"
+  },
+  "fire_column_modifiers": {
+   "firing_at_rear_hexside": -2, "firing_at_flank_hexside": -1,
+   "massed_target_artillery_only": -1,
+   "terrain": "columns RIGHT per TEC fire column (1R/2R)",
+   "cite": "[8.1.8] chart panel; negative = columns left"
+  },
+  "artillery_range": {
+   "note": "hex range -> fire value adjustment [8.1.6]; bands: grapeshot 1-2 all guns; out of range beyond last listed hex",
+   "french": {
+    "3pdr_4pdr":   {"up2": [1, 2], "base": [3, 5], "down1": [6, 8]},
+    "6pdr":        {"up2": [1, 2], "base": [3, 8], "down1": [9, 11]},
+    "8pdr":        {"up2": [1, 2], "base": [3, 10], "down1": [11, 15]},
+    "12pdr_foot":  {"up2": [1, 2], "base": [3, 12], "down1": [13, 16]}
+   },
+   "russian": {
+    "6pdr_horse":  {"up2": [1, 2], "base": [3, 5], "down2": [6, 8]},
+    "6pdr_foot":   {"up2": [1, 2], "base": [3, 6], "down2": [7, 10]},
+    "12pdr_foot":  {"up2": [1, 2], "base": [3, 10], "down2": [11, 13]}
+   },
+   "austrian": {
+    "6pdr":        {"up2": [1, 2], "base": [3, 4], "down2": [5, 8]},
+    "12pdr_foot":  {"up2": [1, 2], "base": [3, 6], "down2": [7, 12]}
+   }
+  },
+  "morale_check": {
+   "note": "d10 + DRMs vs morale rating [9.1]",
+   "results": {"le_morale": "pass", "above_1_3": "lose 1 morale level",
+               "above_4_6": "lose 2 morale levels",
+               "above_7_plus": "lose 3 morale levels"},
+   "drm": {"unit_in_square": -1, "unit_in_line": 1, "unit_at_breakpoint": 1,
+           "fatigue_level": "per fatigue table", "leader_in_hex": -1,
+           "shaken": 1, "unsteady_or_routed": 2, "strategic_movement": 1}
+  },
+  "morale_levels": {
+   "note": "printed morale -> Shaken -> Unsteady -> Routed; module models these as marker layers on every unit [9.2]",
+   "order": ["normal", "shaken", "unsteady", "routed"]
+  },
+  "fatigue_effects": {
+   "note": "army fatigue level -> effects [13.0]; levels not cumulative",
+   "le_3": {}, "4_5": {"morale_check_drm": 1},
+   "6": {"morale_check_drm": 1, "melee_drm": -1},
+   "7": {"immediate": "lose 1 morale level", "morale_check_drm": 1, "melee_drm": -1},
+   "8": {"immediate": "disordered", "morale_check_drm": 1, "melee_drm": -2},
+   "9": {"immediate": "lose 1 morale level + disordered", "morale_check_drm": 1, "melee_drm": -2}
+  }
+ },
  "credits": {
   "game": {
    "title": "Austerlitz: Napoleon's Greatest Victory (Great Battles of the Napoleonic Wars, Vol. I)",
