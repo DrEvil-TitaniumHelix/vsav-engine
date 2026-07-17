@@ -20,7 +20,9 @@ Output layout (dist/demo — serve statically, e.g. python -m http.server):
 
 Usage: python web/build_demo.py   ->  dist/demo/
 """
-import io, json, os, shutil, struct, sys, zipfile
+import io, json, os, shutil, struct, sys, time, zipfile
+
+BUILD_STAMP = int(time.time())
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "ui"))
@@ -124,7 +126,8 @@ def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
     html = replace_counted(html, "location.href='/menu'",
                            f"location.href='{menu_href}'", 1, "games menu link")
     inject = (f'<script>window.DEMO_SLUG={json.dumps(slug)};'
-              f'window.DEMO_NAME={json.dumps(name)};</script>\n'
+              f'window.DEMO_NAME={json.dumps(name)};'
+              f'window.DEMO_BUILD={BUILD_STAMP};</script>\n'
               '<script src="manifest.js"></script>\n'
               '<script src="../../shared/byo.js"></script>\n'
               '<script src="../../py/pyodide/pyodide.js"></script>\n'
