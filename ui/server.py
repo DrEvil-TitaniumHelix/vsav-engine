@@ -389,6 +389,41 @@ def game_dir(slug):
     return dev
 
 
+# Friendly system names for the menu tags (engine families).
+MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter",
+            "bluegray": "Strategic hex & counter", "westwall": "Strategic hex & counter",
+            "napoleonic": "Napoleonic command", "free": "Free play"}
+TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
+            3: "Full rules"}
+# Champion (trained, graduated) AIs exist per playbook/, but the interactive
+# AI button still plays the baseline policy — flip this when the champion is
+# wired in, and playbook games will honestly advertise "Advanced AI".
+CHAMPION_WIRED = False
+
+
+def game_tags(gdir, spec, scen_mode, earned):
+    """Capability tags for the selection pages — one implementation, both
+    menus (app + browser demo). Every tag states something the build actually
+    does; 'Advanced AI' appears only once the trained champion IS the
+    opponent behind the button."""
+    tags = [dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
+    if earned >= 3:
+        champion = os.path.isdir(os.path.join(gdir, "playbook"))
+        tags.append(dict(
+            label="Advanced AI" if (champion and CHAMPION_WIRED) else "Basic AI",
+            kind="ai"))
+        if champion and not CHAMPION_WIRED:
+            tags.append(dict(label="Trained champion: coming", kind="soon"))
+    m = MODE_TAG.get(scen_mode or "free")
+    if m and earned > 0:
+        tags.append(dict(label=m, kind="mode"))
+    if scen_mode in pbm_mod.PBM_MODES:
+        tags.append(dict(label="Play by mail", kind="feature"))
+    if spec.get("source_defects"):
+        tags.append(dict(label="Defect register", kind="feature"))
+    return tags
+
+
 def game_meta(slug):
     """Cheap menu metadata for one game — reads game.json (+ its scenario's mode)
     only, WITHOUT constructing the engine or touching the loaded-game globals."""
@@ -406,10 +441,12 @@ def game_meta(slug):
             choices = list(range(earned + 1))
         else:
             earned, choices = 3, [0, 3]
+    mode = scen_mode or ("tactical" if has_scen else "free")
     return dict(slug=slug, name=spec.get("name", slug),
-                mode=scen_mode or ("tactical" if has_scen else "free"),
+                mode=mode,
                 client=game_client(scen_mode, has_scen),
                 tier=dict(earned=earned, choices=choices),
+                tags=game_tags(gdir, spec, mode, earned),
                 blurb=spec.get("blurb") or spec.get("description"))
 
 
