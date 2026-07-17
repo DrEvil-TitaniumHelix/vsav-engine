@@ -30,7 +30,8 @@ def fresh(seed=7):
     game = gamespec.load(HERE)
     g = NapoleonicGame(game, os.path.join(HERE,
                        "scenario_northern_flank.json"), live, seed=seed,
-                       command=False)   # mechanics harness: pre-command flow
+                       command=False,   # mechanics harness: pre-command flow
+                       tier=1)          # pinned to the schema-2 subset
     return g, live
 
 
