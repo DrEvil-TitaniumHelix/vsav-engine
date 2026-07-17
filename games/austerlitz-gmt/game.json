@@ -1,5 +1,5 @@
 {
- "name": "Austerlitz: Napoleon's Greatest Victory — Tier 0 free play (no rules enforced)",
+ "name": "Austerlitz: Napoleon's Greatest Victory (GMT, 2000)",
  "map_name": "Main Map",
  "board_name": "Austerlitz",
  "save_key": "a3",
@@ -18,6 +18,7 @@
  "buildfile": "../../../VassalIngest/austerlitz-gmt/extracted/buildFile.xml",
  "moduledata": "../../../VassalIngest/austerlitz-gmt/extracted/moduledata",
  "assets": {
+  "menu_art": "../../../VassalIngest/austerlitz-gmt/extracted/images/Austerlitz Box Cover.png",
   "map": "../../../VassalIngest/austerlitz-gmt/assets/map.png",
   "counters_dir": "../../../VassalIngest/austerlitz-gmt/extracted/images"
  },

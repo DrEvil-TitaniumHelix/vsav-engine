@@ -338,11 +338,11 @@ def game_descriptor():
 
 
 # --- multi-game menu: the release bundles several games behind one engine ---
-# Curated tester menu (order = display order; AK is the flagship). Games not in
-# this list are still loadable via --game / /api/load_game, but the menu shows
-# these. Keep in sync with the release scope.
-RELEASE_GAMES = ["afrika-korps-classic-ah", "blue-and-gray-chickamauga",
-                 "westwall-arnhem", "tobruk"]
+# Curated tester menu (order = display order, simplest -> most complex per
+# Bruce 2026-07-17). Games not in this list are still loadable via --game /
+# /api/load_game, but the menu shows these. Keep in sync with the release scope.
+RELEASE_GAMES = ["tobruk", "blue-and-gray-chickamauga", "westwall-arnhem",
+                 "afrika-korps-classic-ah", "austerlitz-gmt"]
 
 
 def game_client(scen_mode, has_scen):
@@ -413,6 +413,26 @@ def game_meta(slug):
 
 def current_slug():
     return GAME_SLUG
+
+
+def menu_art_path(slug):
+    """Resolve a game's selection-card graphic: spec assets.menu_art (the
+    module's own box/splash art, staged locally), else map_thumb, else the map.
+    BYO posture unchanged — these paths point at the user's own module copy on
+    this machine; nothing is bundled or committed."""
+    gdir = game_dir(slug)
+    try:
+        spec = json.load(open(os.path.join(gdir, "game.json"), encoding="utf-8"))
+    except Exception:
+        return None
+    a = spec.get("assets") or {}
+    for key in ("menu_art", "map_thumb", "map"):
+        p = a.get(key)
+        if p:
+            p = p if os.path.isabs(p) else os.path.join(gdir, p)
+            if os.path.isfile(p):
+                return p
+    return None
 
 
 def api_games():
@@ -1073,7 +1093,9 @@ class H(http.server.SimpleHTTPRequestHandler):
             data = f.read()
         ext = os.path.splitext(path)[1].lower()
         ctype = {"gif": "image/gif", ".gif": "image/gif",
-                 ".svg": "image/svg+xml", ".png": "image/png"}.get(ext, "image/png")
+                 ".svg": "image/svg+xml", ".png": "image/png",
+                 ".bmp": "image/bmp", ".jpg": "image/jpeg",
+                 ".jpeg": "image/jpeg"}.get(ext, "image/png")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
@@ -1127,6 +1149,11 @@ class H(http.server.SimpleHTTPRequestHandler):
                 self.send_header("Content-Length", str(len(data)))
                 self.end_headers()
                 return self.wfile.write(data)
+            if url.path.startswith("/gasset/menu_art/"):
+                slug = urllib.parse.unquote(url.path.rsplit("/", 1)[1])
+                if slug not in set(RELEASE_GAMES) | {current_slug()}:
+                    return self.send_error(404)
+                return self._file(menu_art_path(slug))
             if url.path == "/gasset/map":
                 return self._file(GAME_OBJ.assets.get("map"))
             if url.path.startswith("/gasset/counters/"):

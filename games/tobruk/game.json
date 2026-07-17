@@ -23,6 +23,7 @@
  "moduledata": "../../../VassalTobruk/extracted/moduledata",
  "setup_save": "scenario_firefight_b.vsav",
  "assets": {
+  "menu_art": "../../../VassalTobruk/extracted/images/Tobruk_Box_Art.bmp",
   "map": "../../../VassalTobruk/assets/map.png",
   "map_thumb": "../../../VassalTobruk/assets/map_thumb.png",
   "counters_dir": "../../../VassalTobruk/extracted/images"

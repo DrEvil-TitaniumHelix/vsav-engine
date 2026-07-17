@@ -1,0 +1,17 @@
+{
+  "requirements": [
+    {
+      "id": "tobruk_v11",
+      "title": "Tobruk: Tank Battles in North Africa 1942 — VASSAL module",
+      "filename": "Tobruk_v1.1.vmod",
+      "size": 95539764,
+      "sha256": "80e63688c7a3bea52e3d651bd7be5cb4e45ba47dd04c92c765dc776ad6b382df",
+      "page": "https://vassalengine.org/library/projects/Tobruk_Tank_Battles_in_North_Africa_1942",
+      "hint": "Download “Tobruk_v1.1.vmod” (v1.1) from the VASSAL Module Library page above — that exact file is the version this game was validated against."
+    }
+  ],
+  "assets": {
+    "map":      { "req": "tobruk_v11", "entry": "images/Board_ADBECF.bmp" },
+    "counters": { "req": "tobruk_v11", "prefix": "images/" }
+  }
+}

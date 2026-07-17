@@ -28,6 +28,7 @@
  "buildfile": "../../../VassalIngest/afrika-korps-classic-ah/extracted/buildFile.xml",
  "moduledata": "../../../VassalIngest/afrika-korps-classic-ah/extracted/moduledata",
  "assets": {
+  "menu_art": "../../../VassalIngest/afrika-korps-classic-ah/menu_art.jpg",
   "map": "../../../VassalIngest/afrika-korps-classic-ah/extracted/images/AK consolidated map.png",
   "counters_dir": "../../../VassalIngest/afrika-korps-classic-ah/extracted/images"
  },
