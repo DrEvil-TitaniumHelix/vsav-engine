@@ -33,6 +33,15 @@ MODULES = {
         "scenario": "scenario_firefight_b.json",
         "download": "https://vassalengine.org/wiki/Module:Tobruk",
     },
+    "austerlitz-gmt": {
+        # game.json references ../../../VassalIngest/austerlitz-gmt/*
+        "dir_name": os.path.join("VassalIngest", "austerlitz-gmt"),
+        "map_image": "images/Austerlitz.jpg",
+        "scenario": None,          # scenario JSON ships in the repo; the
+        "setups_from_module": True,  # setup .vsavs come from the module
+        "download": "https://vassalengine.org/library/projects/"
+                    "Austerlitz_clanmacrae",
+    },
 }
 
 
@@ -57,14 +66,31 @@ def setup(game_key, vmod_path):
         Image.MAX_IMAGE_PIXELS = None
         Image.open(map_src).convert("RGB").save(map_dst, optimize=True)
 
-    scen = os.path.join(game_dir, cfg["scenario"])
-    out = os.path.join(game_dir, os.path.splitext(cfg["scenario"])[0] + ".vsav")
-    print(f"building scenario save {os.path.basename(out)} from the module's PieceSlots")
-    sys.path.insert(0, HERE)
-    import gamespec
-    import make_save
-    game = gamespec.Game(game_dir)
-    make_save.build(game, json.load(open(scen, encoding="utf-8")), out)
+    if cfg.get("setups_from_module"):
+        # the module embeds its scenario saves at the zip root; the game
+        # spec's setup_save points into setups/
+        import shutil
+        setups = os.path.join(target, "setups")
+        os.makedirs(setups, exist_ok=True)
+        n = 0
+        for f in os.listdir(extracted):
+            if f.lower().endswith(".vsav"):
+                shutil.copy(os.path.join(extracted, f),
+                            os.path.join(setups, f))
+                n += 1
+        print(f"staged {n} scenario saves -> {setups}")
+
+    if cfg.get("scenario"):
+        scen = os.path.join(game_dir, cfg["scenario"])
+        out = os.path.join(game_dir,
+                           os.path.splitext(cfg["scenario"])[0] + ".vsav")
+        print(f"building scenario save {os.path.basename(out)} "
+              "from the module's PieceSlots")
+        sys.path.insert(0, HERE)
+        import gamespec
+        import make_save
+        game = gamespec.Game(game_dir)
+        make_save.build(game, json.load(open(scen, encoding="utf-8")), out)
     print(f"\ndone. run:  python ui/server.py --game games/{game_key}")
 
 
