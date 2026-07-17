@@ -57,7 +57,8 @@ def verify(game_dir, log_path, verbose=False):
         if mode == "napoleonic":
             tg = nap_mod.NapoleonicGame(game, scen_path, tmp,
                                         seed=init["seed"],
-                                        tier=init.get("tier"))
+                                        tier=init.get("tier"),
+                                        command=init.get("schema", 2) >= 3)
         elif mode == "westwall":
             tg = ww_mod.WestwallGame(game, scen_path, tmp, seed=init["seed"],
                                      tier=init.get("tier"))

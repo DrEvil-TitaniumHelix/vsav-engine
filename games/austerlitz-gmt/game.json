@@ -1,5 +1,5 @@
 {
- "name": "Austerlitz: Napoleon's Greatest Victory \u2014 Tier 0 free play (no rules enforced)",
+ "name": "Austerlitz: Napoleon's Greatest Victory — Tier 0 free play (no rules enforced)",
  "map_name": "Main Map",
  "board_name": "Austerlitz",
  "save_key": "a3",
@@ -12,7 +12,7 @@
   "stagger": true,
   "stagger_sign": 1,
   "odd_row_carry": 1,
-  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=8 vOff=-1 stagger=false \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
+  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=8 vOff=-1 stagger=false — hex LABELS unverified, geometry is what matters for Tier 0",
   "hexnum_digits": 2
  },
  "buildfile": "../../../VassalIngest/austerlitz-gmt/extracted/buildFile.xml",
@@ -46,8 +46,13 @@
   },
   "default": "Allied",
   "detect_tokens": {
-   "French": ["Sheet 1"],
-   "Allied": ["Sheet 2", "Lifeguard"]
+   "French": [
+    "Sheet 1"
+   ],
+   "Allied": [
+    "Sheet 2",
+    "Lifeguard"
+   ]
   },
   "note": "Counter sheets are army sheets: Sheet 1 = French (blue infantry, verified visually), Sheet 2 = Allied (Russian names Bagration/Vorpatzki, verified visually). Stragglers fall to default Allied."
  },
@@ -58,7 +63,7 @@
    0,
    6
   ],
-  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"
  },
  "movement": {
   "impassable_terrain": [],
@@ -80,7 +85,7 @@
     105
    ]
   },
-  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain — piece pushing, not rules"
  },
  "scenario": "scenario_northern_flank.json",
  "facing": {
@@ -92,111 +97,661 @@
  "formations": {
   "cite": "TEC [5.0] + Stacking Chart [7.1], transcribed cell-by-cell from GMT's updated charts PDF (living_rules/auscharts.pdf, errata applied by GMT 2000-07-20), verified against the rendered page image; formation properties from rulebook 6.3.1-6.3.8",
   "formations": {
-   "line":      {"facing": "vertex",  "road_movement": false, "slide": true,  "cite": "6.3.1/6.3.5: vertex facing; no Road/Strategic Movement; slide via flank 2x if unoccupied; reverse = whole MA; facing change beyond 1st vertex per activation = disorder check each"},
-   "column":    {"facing": "hexside", "road_movement": true,  "slide": false, "cite": "6.3.2/6.3.6: hexside facing; road+strategic OK; reverse 2x unoccupied; unlimited facing changes at cost"},
-   "disorder":  {"facing": "hexside", "road_movement": true,  "slide": false, "cite": "6.4.1 + TEC 'na': disordered units have no flank hex (Fig K)"},
-   "square":    {"facing": "all", "immobile": true, "change_formation_override": 2, "cite": "6.3.4: may not move; all-around facing; pays 2 MPs to change formation (TEC note S)"},
-   "skirmish":  {"facing": "all", "road_movement": true, "free_facing": true, "pass_through": true, "cite": "6.3.3: all-around facing, facing changes free; moves through/is moved through at no penalty; only skirmish-capable units"},
-   "limbered":  {"facing": "hexside", "road_movement": true, "no_adjacent_enemy": true, "cite": "6.3.7: may not fire; never moves adjacent to unrouted enemy infantry/cavalry"},
-   "unlimbered": {"facing": "vertex", "immobile": true, "cite": "6.3.8: may not move into another hex; may change facing one vertex per activation"}
+   "line": {
+    "facing": "vertex",
+    "road_movement": false,
+    "slide": true,
+    "cite": "6.3.1/6.3.5: vertex facing; no Road/Strategic Movement; slide via flank 2x if unoccupied; reverse = whole MA; facing change beyond 1st vertex per activation = disorder check each"
+   },
+   "column": {
+    "facing": "hexside",
+    "road_movement": true,
+    "slide": false,
+    "cite": "6.3.2/6.3.6: hexside facing; road+strategic OK; reverse 2x unoccupied; unlimited facing changes at cost"
+   },
+   "disorder": {
+    "facing": "hexside",
+    "road_movement": true,
+    "slide": false,
+    "cite": "6.4.1 + TEC 'na': disordered units have no flank hex (Fig K)"
+   },
+   "square": {
+    "facing": "all",
+    "immobile": true,
+    "change_formation_override": 2,
+    "cite": "6.3.4: may not move; all-around facing; pays 2 MPs to change formation (TEC note S)"
+   },
+   "skirmish": {
+    "facing": "all",
+    "road_movement": true,
+    "free_facing": true,
+    "pass_through": true,
+    "cite": "6.3.3: all-around facing, facing changes free; moves through/is moved through at no penalty; only skirmish-capable units"
+   },
+   "limbered": {
+    "facing": "hexside",
+    "road_movement": true,
+    "no_adjacent_enemy": true,
+    "cite": "6.3.7: may not fire; never moves adjacent to unrouted enemy infantry/cavalry"
+   },
+   "unlimbered": {
+    "facing": "vertex",
+    "immobile": true,
+    "cite": "6.3.8: may not move into another hex; may change facing one vertex per activation"
+   }
   },
   "tec": {
-   "columns": ["infantry_line", "infantry_column", "infantry_disorder",
-               "cavalry_line", "cavalry_column", "cavalry_disorder",
-               "artillery_foot", "artillery_horse", "skirmisher", "leader"],
+   "columns": [
+    "infantry_line",
+    "infantry_column",
+    "infantry_disorder",
+    "cavalry_line",
+    "cavalry_column",
+    "cavalry_disorder",
+    "artillery_foot",
+    "artillery_horse",
+    "skirmisher",
+    "leader"
+   ],
    "rows": {
-    "clear":            ["2", "1", "1", "2", "1", "1", "2", "1", "1", "1"],
-    "woods":            ["2D", "2D", "2", "3D", "3D", "2", "P", "P", "1", "1"],
-    "swamp":            ["2D", "2D", "2", "4D", "3D", "3", "P", "P", "2", "2"],
-    "primary_road":     ["OT", "1/2", "1", "OT", "1/2", "1", "1/2", "1/2", "1/2", "1/2"],
-    "secondary_road":   ["OT", "1", "1", "OT", "1/2", "1", "1", "1/2", "1/2", "1/2"],
-    "stream_hexside":   ["+1d", "+1", "+1", "+3d", "+2", "+2", "+3", "+2", "+1", "+1"],
+    "clear": [
+     "2",
+     "1",
+     "1",
+     "2",
+     "1",
+     "1",
+     "2",
+     "1",
+     "1",
+     "1"
+    ],
+    "woods": [
+     "2D",
+     "2D",
+     "2",
+     "3D",
+     "3D",
+     "2",
+     "P",
+     "P",
+     "1",
+     "1"
+    ],
+    "swamp": [
+     "2D",
+     "2D",
+     "2",
+     "4D",
+     "3D",
+     "3",
+     "P",
+     "P",
+     "2",
+     "2"
+    ],
+    "primary_road": [
+     "OT",
+     "1/2",
+     "1",
+     "OT",
+     "1/2",
+     "1",
+     "1/2",
+     "1/2",
+     "1/2",
+     "1/2"
+    ],
+    "secondary_road": [
+     "OT",
+     "1",
+     "1",
+     "OT",
+     "1/2",
+     "1",
+     "1",
+     "1/2",
+     "1/2",
+     "1/2"
+    ],
+    "stream_hexside": [
+     "+1d",
+     "+1",
+     "+1",
+     "+3d",
+     "+2",
+     "+2",
+     "+3",
+     "+2",
+     "+1",
+     "+1"
+    ],
     "deep_stream_hexside": "No units may cross a Deep Stream hexside except at a Bridge",
-    "bridge_hexside":   "Only units utilizing Road Movement may benefit from bridges (no additional cost)",
-    "pond":             "No units may enter an all-Pond hex",
-    "minor_slope_up":   ["†", "†", "†", "‡", "‡", "‡", "+1", "‡", "0", "0"],
-    "minor_slope_down": ["†", "†", "†", "‡", "‡", "‡", "+1", "‡", "0", "0"],
-    "steep_slope_up":   ["+1d", "+1", "+1", "+2d", "+2", "+2", "+1", "+2", "+1", "+1"],
-    "steep_slope_down": ["+1d", "+1", "+1", "+1d", "+1", "+1", "+1", "+1", "0", "0"],
-    "sharp_slope_up":   ["+2D", "+2d", "+2", "+3D", "+3d", "+3", "P", "P", "+2", "+1"],
-    "sharp_slope_down": ["+1D", "+1d", "+1", "+2D", "+2d", "+2", "P", "P", "+1", "+1"],
-    "village":          ["2D", "2", "2", "3D", "2", "2", "2", "2", "2", "1"],
-    "castle":           ["P", "2", "2", "P", "P", "P", "P", "P", "2", "2"],
-    "wall_hexside":     ["+1d", "+1", "+1", "P", "P", "P", "P", "P", "+1", "+1"],
-    "change_formation": ["2", "1", "1", "2", "1", "1", "3", "2", "1", "0"],
-    "change_facing":    ["2", "1", "1", "1", "1", "1", "2", "1", "0", "0"],
-    "about_face":       ["m", "2", "3", "3", "3", "3", "NA", "NA", "na", "na"],
-    "slide":            ["2x", "NA", "na", "2x", "NA", "na", "NA", "NA", "na", "na"],
-    "reverse":          ["M", "2x", "2x", "M", "2x", "2x", "NA", "NA", "na", "na"]
+    "bridge_hexside": "Only units utilizing Road Movement may benefit from bridges (no additional cost)",
+    "pond": "No units may enter an all-Pond hex",
+    "minor_slope_up": [
+     "†",
+     "†",
+     "†",
+     "‡",
+     "‡",
+     "‡",
+     "+1",
+     "‡",
+     "0",
+     "0"
+    ],
+    "minor_slope_down": [
+     "†",
+     "†",
+     "†",
+     "‡",
+     "‡",
+     "‡",
+     "+1",
+     "‡",
+     "0",
+     "0"
+    ],
+    "steep_slope_up": [
+     "+1d",
+     "+1",
+     "+1",
+     "+2d",
+     "+2",
+     "+2",
+     "+1",
+     "+2",
+     "+1",
+     "+1"
+    ],
+    "steep_slope_down": [
+     "+1d",
+     "+1",
+     "+1",
+     "+1d",
+     "+1",
+     "+1",
+     "+1",
+     "+1",
+     "0",
+     "0"
+    ],
+    "sharp_slope_up": [
+     "+2D",
+     "+2d",
+     "+2",
+     "+3D",
+     "+3d",
+     "+3",
+     "P",
+     "P",
+     "+2",
+     "+1"
+    ],
+    "sharp_slope_down": [
+     "+1D",
+     "+1d",
+     "+1",
+     "+2D",
+     "+2d",
+     "+2",
+     "P",
+     "P",
+     "+1",
+     "+1"
+    ],
+    "village": [
+     "2D",
+     "2",
+     "2",
+     "3D",
+     "2",
+     "2",
+     "2",
+     "2",
+     "2",
+     "1"
+    ],
+    "castle": [
+     "P",
+     "2",
+     "2",
+     "P",
+     "P",
+     "P",
+     "P",
+     "P",
+     "2",
+     "2"
+    ],
+    "wall_hexside": [
+     "+1d",
+     "+1",
+     "+1",
+     "P",
+     "P",
+     "P",
+     "P",
+     "P",
+     "+1",
+     "+1"
+    ],
+    "change_formation": [
+     "2",
+     "1",
+     "1",
+     "2",
+     "1",
+     "1",
+     "3",
+     "2",
+     "1",
+     "0"
+    ],
+    "change_facing": [
+     "2",
+     "1",
+     "1",
+     "1",
+     "1",
+     "1",
+     "2",
+     "1",
+     "0",
+     "0"
+    ],
+    "about_face": [
+     "m",
+     "2",
+     "3",
+     "3",
+     "3",
+     "3",
+     "NA",
+     "NA",
+     "na",
+     "na"
+    ],
+    "slide": [
+     "2x",
+     "NA",
+     "na",
+     "2x",
+     "NA",
+     "na",
+     "NA",
+     "NA",
+     "na",
+     "na"
+    ],
+    "reverse": [
+     "M",
+     "2x",
+     "2x",
+     "M",
+     "2x",
+     "2x",
+     "NA",
+     "NA",
+     "na",
+     "na"
+    ]
    }
   },
   "combat_effects": {
    "note": "TEC right-hand columns (Fire shift / Melee DRM / Cav Charge allowed / Defensive terrain) — transcribed now, ENFORCED IN PHASE 2, unused at Tier 1",
-   "columns": ["fire", "melee", "cav_charge", "defensive"],
+   "columns": [
+    "fire",
+    "melee",
+    "cav_charge",
+    "defensive"
+   ],
    "rows": {
-    "clear": ["NE", "NE", "Yes", "No"], "woods": ["1R", "NE", "No", "No"],
-    "swamp": ["NE", "NE", "No", "No"], "primary_road": ["NE", "NE", "Yes", "No"],
-    "secondary_road": ["NE", "NE", "Yes", "No"], "stream_hexside": ["NE", "-1", "Yes", "No"],
-    "deep_stream_hexside": ["NE", "NA", "No", "No"], "bridge_hexside": ["NE", "-2", "No", "No"],
-    "minor_slope_up": ["1R", "NE", "Yes", "No"], "minor_slope_down": ["1R", "+1", "Yes", "No"],
-    "steep_slope_up": ["1R", "-1", "Yes", "No"], "steep_slope_down": ["1R", "+1", "Yes", "No"],
-    "sharp_slope_up": ["2R", "NA", "No", "No"], "sharp_slope_down": ["1R", "NA", "No", "No"],
-    "village": ["2R", "-2", "No", "Yes"], "castle": ["2R", "-3", "No", "Yes"],
-    "wall_hexside": ["1R", "-1", "No", "Yes"]
+    "clear": [
+     "NE",
+     "NE",
+     "Yes",
+     "No"
+    ],
+    "woods": [
+     "1R",
+     "NE",
+     "No",
+     "No"
+    ],
+    "swamp": [
+     "NE",
+     "NE",
+     "No",
+     "No"
+    ],
+    "primary_road": [
+     "NE",
+     "NE",
+     "Yes",
+     "No"
+    ],
+    "secondary_road": [
+     "NE",
+     "NE",
+     "Yes",
+     "No"
+    ],
+    "stream_hexside": [
+     "NE",
+     "-1",
+     "Yes",
+     "No"
+    ],
+    "deep_stream_hexside": [
+     "NE",
+     "NA",
+     "No",
+     "No"
+    ],
+    "bridge_hexside": [
+     "NE",
+     "-2",
+     "No",
+     "No"
+    ],
+    "minor_slope_up": [
+     "1R",
+     "NE",
+     "Yes",
+     "No"
+    ],
+    "minor_slope_down": [
+     "1R",
+     "+1",
+     "Yes",
+     "No"
+    ],
+    "steep_slope_up": [
+     "1R",
+     "-1",
+     "Yes",
+     "No"
+    ],
+    "steep_slope_down": [
+     "1R",
+     "+1",
+     "Yes",
+     "No"
+    ],
+    "sharp_slope_up": [
+     "2R",
+     "NA",
+     "No",
+     "No"
+    ],
+    "sharp_slope_down": [
+     "1R",
+     "NA",
+     "No",
+     "No"
+    ],
+    "village": [
+     "2R",
+     "-2",
+     "No",
+     "Yes"
+    ],
+    "castle": [
+     "2R",
+     "-3",
+     "No",
+     "Yes"
+    ],
+    "wall_hexside": [
+     "1R",
+     "-1",
+     "No",
+     "Yes"
+    ]
    }
   },
   "stacking": {
    "cite": "Stacking Chart [7.1]: per-hex SP limits; same type+formation+division only; overstack during movement disorders both; leaders free; multi-hex counters may not stack; artillery alone = 2 batteries, with inf/cav = 1 battery; strategic movement = 8 SP inf / 7 SP cav in column",
-   "infantry": {"line": {"clear": 8, "woods_swamp": null, "village_castle": null},
-                "column": {"clear": 10, "woods_swamp": null, "village_castle": 8},
-                "disorder": {"clear": 10, "woods_swamp": 8, "village_castle": 8},
-                "square": {"clear": 10, "woods_swamp": null, "village_castle": null},
-                "skirmish": {"clear": 12, "woods_swamp": 10, "village_castle": 10}},
-   "cavalry": {"line": {"clear": 6, "woods_swamp": null, "village_castle": null},
-               "column": {"clear": 9, "woods_swamp": null, "village_castle": 8},
-               "disorder": {"clear": 9, "woods_swamp": 8, "village_castle": 8}}
+   "infantry": {
+    "line": {
+     "clear": 8,
+     "woods_swamp": null,
+     "village_castle": null
+    },
+    "column": {
+     "clear": 10,
+     "woods_swamp": null,
+     "village_castle": 8
+    },
+    "disorder": {
+     "clear": 10,
+     "woods_swamp": 8,
+     "village_castle": 8
+    },
+    "square": {
+     "clear": 10,
+     "woods_swamp": null,
+     "village_castle": null
+    },
+    "skirmish": {
+     "clear": 12,
+     "woods_swamp": 10,
+     "village_castle": 10
+    }
+   },
+   "cavalry": {
+    "line": {
+     "clear": 6,
+     "woods_swamp": null,
+     "village_castle": null
+    },
+    "column": {
+     "clear": 9,
+     "woods_swamp": null,
+     "village_castle": 8
+    },
+    "disorder": {
+     "clear": 9,
+     "woods_swamp": 8,
+     "village_castle": 8
+    }
+   }
   }
  },
  "combat_tables": {
   "cite": "Transcribed from GMT updated charts p3 (auscharts.pdf, 170dpi render) and verified against the module's original printed chart scan; Italian translation cross-checked (its Fire Table class-c row 'C-D' is a translation typo — both English printings read 'C'). PHASE 2 DATA — fire combat not yet enforced.",
   "fire_defense_classes": {
-   "a": ["skirmishers"],
-   "b": ["artillery"],
-   "c": ["french infantry in line", "french infantry in disorder"],
-   "d": ["french infantry in column", "allied infantry in line"],
-   "e": ["allied infantry in column", "allied infantry in disorder", "cavalry in line", "cavalry in disorder"],
-   "f": ["cavalry column"],
-   "g": ["infantry in square"]
+   "a": [
+    "skirmishers"
+   ],
+   "b": [
+    "artillery"
+   ],
+   "c": [
+    "french infantry in line",
+    "french infantry in disorder"
+   ],
+   "d": [
+    "french infantry in column",
+    "allied infantry in line"
+   ],
+   "e": [
+    "allied infantry in column",
+    "allied infantry in disorder",
+    "cavalry in line",
+    "cavalry in disorder"
+   ],
+   "f": [
+    "cavalry column"
+   ],
+   "g": [
+    "infantry in square"
+   ]
   },
   "fire_table_columns": {
    "note": "Fire Rating letter (adjusted) x defense class -> fire column 1-8 [8.1.8]; cells verbatim, column: letters",
-   "a": {"5": "A", "6": "B", "7": "C-E", "8": "F"},
-   "b": {"4": "A", "5": "B", "6": "C-D", "7": "E", "8": "F"},
-   "c": {"4": "A-B", "5": "C", "6": "D-E", "7": "F"},
-   "d": {"3": "A", "4": "B", "5": "C-D", "6": "E", "7": "F"},
-   "e": {"2": "A", "3": "B", "4": "C", "5": "D-E", "6": "F"},
-   "f": {"1": "A", "3": "B", "4": "C-D", "5": "E", "6": "F"},
-   "g": {"1": "A", "2": "B", "3": "C", "4": "D-E", "5": "F"}
+   "a": {
+    "5": "A",
+    "6": "B",
+    "7": "C-E",
+    "8": "F"
+   },
+   "b": {
+    "4": "A",
+    "5": "B",
+    "6": "C-D",
+    "7": "E",
+    "8": "F"
+   },
+   "c": {
+    "4": "A-B",
+    "5": "C",
+    "6": "D-E",
+    "7": "F"
+   },
+   "d": {
+    "3": "A",
+    "4": "B",
+    "5": "C-D",
+    "6": "E",
+    "7": "F"
+   },
+   "e": {
+    "2": "A",
+    "3": "B",
+    "4": "C",
+    "5": "D-E",
+    "6": "F"
+   },
+   "f": {
+    "1": "A",
+    "3": "B",
+    "4": "C-D",
+    "5": "E",
+    "6": "F"
+   },
+   "g": {
+    "1": "A",
+    "2": "B",
+    "3": "C",
+    "4": "D-E",
+    "5": "F"
+   }
   },
   "fire_results": {
    "note": "die 0-9 x fire column 1-8 [8.1.8]; M+1/M/M-1 = morale check w/ DRM; integer = SP loss + morale check modified +(n-1); NE = no effect; verified vs Italian translation cell-for-cell",
-   "0": ["M+1", "M", "M-1", "M-1", "NE", "NE", "NE", "NE"],
-   "1": ["M+1", "M", "M", "M-1", "M-1", "NE", "NE", "NE"],
-   "2": ["1", "M+1", "M", "M", "M-1", "M-1", "NE", "NE"],
-   "3": ["1", "M+1", "M+1", "M", "M", "M-1", "M-1", "NE"],
-   "4": ["1", "1", "M+1", "M+1", "M", "M", "M-1", "M-1"],
-   "5": ["2", "1", "1", "M+1", "M+1", "M", "M", "M-1"],
-   "6": ["2", "1", "1", "1", "M+1", "M+1", "M", "M"],
-   "7": ["2", "2", "1", "1", "1", "M+1", "M+1", "M"],
-   "8": ["2", "2", "2", "1", "1", "1", "M+1", "M"],
-   "9": ["3", "2", "2", "2", "1", "1", "1", "M+1"]
+   "0": [
+    "M+1",
+    "M",
+    "M-1",
+    "M-1",
+    "NE",
+    "NE",
+    "NE",
+    "NE"
+   ],
+   "1": [
+    "M+1",
+    "M",
+    "M",
+    "M-1",
+    "M-1",
+    "NE",
+    "NE",
+    "NE"
+   ],
+   "2": [
+    "1",
+    "M+1",
+    "M",
+    "M",
+    "M-1",
+    "M-1",
+    "NE",
+    "NE"
+   ],
+   "3": [
+    "1",
+    "M+1",
+    "M+1",
+    "M",
+    "M",
+    "M-1",
+    "M-1",
+    "NE"
+   ],
+   "4": [
+    "1",
+    "1",
+    "M+1",
+    "M+1",
+    "M",
+    "M",
+    "M-1",
+    "M-1"
+   ],
+   "5": [
+    "2",
+    "1",
+    "1",
+    "M+1",
+    "M+1",
+    "M",
+    "M",
+    "M-1"
+   ],
+   "6": [
+    "2",
+    "1",
+    "1",
+    "1",
+    "M+1",
+    "M+1",
+    "M",
+    "M"
+   ],
+   "7": [
+    "2",
+    "2",
+    "1",
+    "1",
+    "1",
+    "M+1",
+    "M+1",
+    "M"
+   ],
+   "8": [
+    "2",
+    "2",
+    "2",
+    "1",
+    "1",
+    "1",
+    "M+1",
+    "M"
+   ],
+   "9": [
+    "3",
+    "2",
+    "2",
+    "2",
+    "1",
+    "1",
+    "1",
+    "M+1"
+   ]
   },
   "fire_rating_adjustments": {
-   "firer_in_line": "up 1 letter", "firer_at_breakpoint": "down 1 letter",
-   "firer_in_square": "down 2 letters", "cite": "[8.1.8] chart panel"
+   "firer_in_line": "up 1 letter",
+   "firer_at_breakpoint": "down 1 letter",
+   "firer_in_square": "down 2 letters",
+   "cite": "[8.1.8] chart panel"
   },
   "fire_column_modifiers": {
-   "firing_at_rear_hexside": -2, "firing_at_flank_hexside": -1,
+   "firing_at_rear_hexside": -2,
+   "firing_at_flank_hexside": -1,
    "massed_target_artillery_only": -1,
    "terrain": "columns RIGHT per TEC fire column (1R/2R)",
    "cite": "[8.1.8] chart panel; negative = columns left"
@@ -204,41 +759,191 @@
   "artillery_range": {
    "note": "hex range -> fire value adjustment [8.1.6]; bands: grapeshot 1-2 all guns; out of range beyond last listed hex",
    "french": {
-    "3pdr_4pdr":   {"up2": [1, 2], "base": [3, 5], "down1": [6, 8]},
-    "6pdr":        {"up2": [1, 2], "base": [3, 8], "down1": [9, 11]},
-    "8pdr":        {"up2": [1, 2], "base": [3, 10], "down1": [11, 15]},
-    "12pdr_foot":  {"up2": [1, 2], "base": [3, 12], "down1": [13, 16]}
+    "3pdr_4pdr": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      5
+     ],
+     "down1": [
+      6,
+      8
+     ]
+    },
+    "6pdr": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      8
+     ],
+     "down1": [
+      9,
+      11
+     ]
+    },
+    "8pdr": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      10
+     ],
+     "down1": [
+      11,
+      15
+     ]
+    },
+    "12pdr_foot": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      12
+     ],
+     "down1": [
+      13,
+      16
+     ]
+    }
    },
    "russian": {
-    "6pdr_horse":  {"up2": [1, 2], "base": [3, 5], "down2": [6, 8]},
-    "6pdr_foot":   {"up2": [1, 2], "base": [3, 6], "down2": [7, 10]},
-    "12pdr_foot":  {"up2": [1, 2], "base": [3, 10], "down2": [11, 13]}
+    "6pdr_horse": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      5
+     ],
+     "down2": [
+      6,
+      8
+     ]
+    },
+    "6pdr_foot": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      6
+     ],
+     "down2": [
+      7,
+      10
+     ]
+    },
+    "12pdr_foot": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      10
+     ],
+     "down2": [
+      11,
+      13
+     ]
+    }
    },
    "austrian": {
-    "6pdr":        {"up2": [1, 2], "base": [3, 4], "down2": [5, 8]},
-    "12pdr_foot":  {"up2": [1, 2], "base": [3, 6], "down2": [7, 12]}
+    "6pdr": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      4
+     ],
+     "down2": [
+      5,
+      8
+     ]
+    },
+    "12pdr_foot": {
+     "up2": [
+      1,
+      2
+     ],
+     "base": [
+      3,
+      6
+     ],
+     "down2": [
+      7,
+      12
+     ]
+    }
    }
   },
   "morale_check": {
    "note": "d10 + DRMs vs morale rating [9.1]",
-   "results": {"le_morale": "pass", "above_1_3": "lose 1 morale level",
-               "above_4_6": "lose 2 morale levels",
-               "above_7_plus": "lose 3 morale levels"},
-   "drm": {"unit_in_square": -1, "unit_in_line": 1, "unit_at_breakpoint": 1,
-           "fatigue_level": "per fatigue table", "leader_in_hex": -1,
-           "shaken": 1, "unsteady_or_routed": 2, "strategic_movement": 1}
+   "results": {
+    "le_morale": "pass",
+    "above_1_3": "lose 1 morale level",
+    "above_4_6": "lose 2 morale levels",
+    "above_7_plus": "lose 3 morale levels"
+   },
+   "drm": {
+    "unit_in_square": -1,
+    "unit_in_line": 1,
+    "unit_at_breakpoint": 1,
+    "fatigue_level": "per fatigue table",
+    "leader_in_hex": -1,
+    "shaken": 1,
+    "unsteady_or_routed": 2,
+    "strategic_movement": 1
+   }
   },
   "morale_levels": {
    "note": "printed morale -> Shaken -> Unsteady -> Routed; module models these as marker layers on every unit [9.2]",
-   "order": ["normal", "shaken", "unsteady", "routed"]
+   "order": [
+    "normal",
+    "shaken",
+    "unsteady",
+    "routed"
+   ]
   },
   "fatigue_effects": {
    "note": "army fatigue level -> effects [13.0]; levels not cumulative",
-   "le_3": {}, "4_5": {"morale_check_drm": 1},
-   "6": {"morale_check_drm": 1, "melee_drm": -1},
-   "7": {"immediate": "lose 1 morale level", "morale_check_drm": 1, "melee_drm": -1},
-   "8": {"immediate": "disordered", "morale_check_drm": 1, "melee_drm": -2},
-   "9": {"immediate": "lose 1 morale level + disordered", "morale_check_drm": 1, "melee_drm": -2}
+   "le_3": {},
+   "4_5": {
+    "morale_check_drm": 1
+   },
+   "6": {
+    "morale_check_drm": 1,
+    "melee_drm": -1
+   },
+   "7": {
+    "immediate": "lose 1 morale level",
+    "morale_check_drm": 1,
+    "melee_drm": -1
+   },
+   "8": {
+    "immediate": "disordered",
+    "morale_check_drm": 1,
+    "melee_drm": -2
+   },
+   "9": {
+    "immediate": "lose 1 morale level + disordered",
+    "morale_check_drm": 1,
+    "melee_drm": -2
+   }
   }
  },
  "credits": {
@@ -270,5 +975,209 @@
   "grid_how": "hexgrid",
   "module_version": "1.0.0"
  },
- "setup_save": "../../../VassalIngest/austerlitz-gmt/setups/The Northern Flank.vsav"
+ "setup_save": "../../../VassalIngest/austerlitz-gmt/setups/The Northern Flank.vsav",
+ "command": {
+  "cite": "4.0-4.8 Sequence of Play & Command System; charts p1 (Command Change [4.2], Command Breakdown [4.7], Independent Activation [A4.3.2], Command Range [A4.2], Sequence of Play [3.0]) cross-verified: chart text layer vs 170dpi render vs GMT sanctioned Spanish translation A4.x; designer rulings from David Fox Q&A (grognard.com); GMT official errata 2000-07-20",
+  "sequence_of_play": {
+   "cite": "3.0",
+   "phases": [
+    "A. Pool Placement: Command Change [4.2] -> Initiative Determination [4.4] -> Initiative Choice -> Pool Placement",
+    "B. LIM Activation: Initiative Activation [4.5] -> LIM Selection (repeat until pool empty)",
+    "C. Non-LIM: Initiative player and non-initiative player alternate Limited Activations of divisions without LIMs in the pool or single Out of Command units -> LIM Removal",
+    "D. Rally: Rally [12.0] -> Rout Loss -> Cavalry Reform -> Fatigue [13.0]"
+   ]
+  },
+  "command_change": {
+   "cite": "4.2 + Command Change Table (charts p1); one attempt per player per turn, normally by the Overall Commander; NOT allowed on turn 1 (designer Q&A: initial LIMs are the starting orders)",
+   "effects_key": {
+    "corps1_or_div3": "Add 1 Corps LIM or 3 Division LIMs",
+    "corps1_or_div2": "Add 1 Corps LIM or 2 Division LIMs",
+    "div1": "Add 1 Division LIM",
+    "none": "No Change"
+   },
+   "french": {
+    "0": "corps1_or_div3",
+    "1": "corps1_or_div2",
+    "2": "corps1_or_div2",
+    "3": "div1",
+    "4": "div1",
+    "5": "none",
+    "6": "none",
+    "7": "none",
+    "8": "none",
+    "9": "none"
+   },
+   "allied": {
+    "0": "corps1_or_div2",
+    "1": "corps1_or_div2",
+    "2": "div1",
+    "3": "div1",
+    "4": "none",
+    "5": "none",
+    "6": "none",
+    "7": "none",
+    "8": "none",
+    "9": "none"
+   },
+   "notes": [
+    "dagger: add one to the die when Buxhowden is rolling for the change (kept secret per errata 2000-07-20 to rule 4.2)",
+    "asterisk (French 0/2, Allied 1): in scenario A18.4 treat as the next higher number",
+    "corps LIM only if corps commander within Overall Commander's range; adding a corps LIM removes that corps' division LIMs from the pool and bars them while it remains [4.2.1]",
+    "division LIM only if division commander within his corps commander's range [4.2.2]",
+    "additions are not revealed; a player may never examine the pool (errata 2000-07-20 to 4.2)"
+   ]
+  },
+  "command_breakdown": {
+   "cite": "4.7 + Command Breakdown Table (charts p1); column = leader personality; rolled when a Full Activation attempt fails [4.5.1]",
+   "columns": {
+    "A": "Aggressive",
+    "N": "Normal",
+    "C": "Cautious"
+   },
+   "by_die": {
+    "0": {
+     "A": "stop",
+     "N": "retreat",
+     "C": "enemy"
+    },
+    "1": {
+     "A": "limited",
+     "N": "stop",
+     "C": "retreat"
+    },
+    "2": {
+     "A": "limited",
+     "N": "stop",
+     "C": "retreat"
+    },
+    "3": {
+     "A": "limited",
+     "N": "limited",
+     "C": "stop"
+    },
+    "4": {
+     "A": "full",
+     "N": "limited",
+     "C": "stop"
+    },
+    "5": {
+     "A": "full",
+     "N": "limited",
+     "C": "limited"
+    },
+    "6": {
+     "A": "full",
+     "N": "limited",
+     "C": "limited"
+    },
+    "7": {
+     "A": "charge",
+     "N": "full",
+     "C": "limited"
+    },
+    "8": {
+     "A": "charge",
+     "N": "full",
+     "C": "limited"
+    },
+    "9": {
+     "A": "reactivate",
+     "N": "full",
+     "C": "full"
+    }
+   },
+   "results_key": {
+    "stop": "Commander finished for the turn; no In Command unit of the division may activate this turn [4.7]",
+    "retreat": "If any unit of the division is within 3 hexes of an enemy combat unit, all In Command units must attempt to retreat half MA (rounded up) away from the enemy (unlimbered artillery limbers and moves); may not move closer to any other enemy. Leader finished either way [4.7]",
+    "limited": "Division may undertake a Limited Activation [4.6.2]",
+    "full": "Division may undertake a Full Activation [4.6.1]",
+    "charge": "If any unit of the division is within 4 hexes of an enemy combat unit the entire division must Charge (cavalry) or advance and melee the closest enemy; otherwise treat as FULL [4.7] (melee = phase 4; no Aggressive leader exists in the Northern Flank scenario, so this result is unreachable there)",
+    "reactivate": "Full Activation for the rolling division, then the SAME player may attempt to activate his closest friendly division, even if already activated this turn (no division reactivates twice per turn; Reactivate twice in a row = FULL) [4.7]; the opportunity is optional (designer Q&A) and does not add fatigue (designer Q&A)",
+    "enemy": "Rolling commander takes STOP; the ENEMY player may attempt to activate his division closest to the failing commander (even if already activated this turn; no division reactivates twice per turn; Enemy twice in a row = STOP) [4.7]; optional (designer Q&A), no fatigue (designer Q&A)"
+   }
+  },
+  "independent_activation": {
+   "cite": "A4.3/A4.3.2 + Independent Activation Table (charts p1): when a side's Independent LIM is drawn, roll; the result is the total number of that side's Independent leaders that may attempt activation. Leaders above the total use a Limited Activation in the Non-LIM Phase or activate in a Corps Activation. Independent leaders activate once per turn however activated.",
+   "french": {
+    "0": 2,
+    "1": 2,
+    "2": 2,
+    "3": 3,
+    "4": 3,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 4,
+    "9": 5
+   },
+   "allied": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 1,
+    "6": 1,
+    "7": 1,
+    "8": 1,
+    "9": 1
+   }
+  },
+  "command_ranges": {
+   "cite": "A4.2 Command Range Chart (charts p1 = Spanish A4.2, identical); a leader counter's printed range overrides where present [4.1.2]",
+   "overall": {
+    "Napoleon": 12,
+    "Tsar Alexander": 10,
+    "Buxhowden": 8
+   },
+   "corps": {
+    "French": 8,
+    "Allied": 6
+   },
+   "division": {
+    "French": 5,
+    "Allied": 4
+   }
+  },
+  "activations": {
+   "cite": "4.6",
+   "full": "All In Command units of the division: full MA movement, then combat; once one unit of the division fires no more movement this activation [4.6.1]",
+   "limited": "Automatic, no roll [4.5.1]. Choose: (a) all In Command units of the division move up to HALF MA (rounded down) then may conduct Fire combat, or (b) any ONE Out of Command unit moves up to ONE-THIRD MA (rounded down) then may fire. Limited-activation units may not move adjacent to enemy units - any hexside, per designer Q&A - and may not melee [4.6.2]",
+   "in_command": "Determined the moment the division activates: units within the division commander's command range are In Command; others are marked Out of Command and must act in the Non-LIM Phase [4.3.3]"
+  },
+  "fatigue_rules": {
+   "cite": "13.0-13.3 + errata 2000-07-20 (13.3) + designer Q&A",
+   "track": "Per division, level 0-9; all combat units except artillery [13.0]",
+   "increase": "+1 in the Fatigue Segment if the division's LIM was in the Command Pool this turn - regardless of what happened ('Any time a division has its LIM in the Pool it gains fatigue, no matter what it actually does during the turn' - designer Q&A; includes STOP results and limited activations; the chosen Initiative LIM counts: it is one of the LIMs committed this turn) - OR if the division performed or was the victim of any combat other than medium/long-range artillery fire [13.1.2]. Max one level per turn [13.1]. Divisions activating under the Independent LIM gain fatigue only if they activate [13.1.1]. Breakdown free activations (Reactivate/Enemy) add none (designer Q&A)",
+   "decrease": "-1 in the Fatigue Segment if ALL of: LIM not in the pool this turn; no combat performed or suffered (other than medium/long-range artillery fire); every unit 3+ hexes from the nearest enemy combat unit [13.2]",
+   "effects": "Fatigue Effects Table (combat_tables.fatigue_effects) [13.3]: morale-check DRM +1 at level 4+; melee DRM at 6+ (phase 4); IMMEDIATE on reaching 7: all division units lose one morale level (one-time, recoverable only by normal Rally - errata 2000-07-20); on reaching 8: disordered; on reaching 9: lose one morale level + disordered"
+  },
+  "breakpoint": {
+   "cite": "11.2/11.2.1 + Command Card 'Divisional Breakpoint' roster (Spanish translation of the Command Card); division breakpoint level = number of its combat units at Unit Breakpoint [11.1]",
+   "effects": "At Division Breakpoint: no Full Activations; LIM withdrawn in the next LIM Removal Segment and may NEVER be re-added; may not activate in a Corps Activation or under the Independent LIM [11.2.1]. Limited Activation in the Non-LIM phase remains legal."
+  }
+ },
+ "source_defects": [
+  {
+   "id": "AUS-CMD-1",
+   "defect": "Command Card lists Suchet as '2 Div/V' (breakpoint 8) while the counters of his battalions carry division band 3 and the A15.2 setup deploys '3 Div/V' at B1414 alongside '1 Div/V' (Caffarelli) - the card and the counters mix numbers for V Corps' infantry divisions",
+   "evidence": "Command Card roster: 'V Cuerpo-Lannes: 1 Div/V-Caffarelli 8, 2 Div/V-Suchet 8' (sanctioned Spanish translation of the card); counters 1/34 Ln etc. show division band '3'; Spanish A15.2 initial placement: 'A dos hexes o menos de B1414: Toda la 3 Div/V'",
+   "resolution": "Units keep their printed counter band (3) as Suchet's division id; his Division Breakpoint Level is 8 as printed on the card. The label mismatch has no play effect.",
+   "authority": "proven outcome-equivalence (identity of the division is unambiguous; only its number label conflicts)"
+  },
+  {
+   "id": "AUS-CMD-2",
+   "defect": "A15.1 gives the Allied player Vorpaizki's LIM, but every Allied infantry battalion in the scenario carries brigade band 2 (Markov); Vorpaizki's own 3rd Brigade (St.P Dragoons, Leib Cuirassiers, Tver Dragoons per A15.2) is not in the scenario, leaving his LIM commanding at most the corps horse battery via the scenario's artillery rule",
+   "evidence": "Counter art: all nine battalions (Arkh/Pskv/O.Ing) show '2', Markov shows '2', Vorpatzki shows '3'; Spanish A15.2 OOB lists all nine under '2a Brigada/Cuerpo de Bagration ... Apilado: Markov'; the module's Northern Flank save nevertheless places Vorpatzki at the head of the Pskov/O.Ingermanland column, hinting the printed playbook page 8 diagram may split the regiments between the two leaders (that page is not in the sanctioned translation, which defers placement to the printed booklet)",
+   "resolution": "Rules-as-written enforced: all nine battalions are Markov's brigade; the a/B horse battery may attach to Markov or Vorpaizki under the A15.1 special artillery rule. Flagged for module-author/expert review against the printed playbook.",
+   "authority": "rules-as-written (counter bands + A15.2 OOB); pending expert review"
+  },
+  {
+   "id": "AUS-CMD-3",
+   "defect": "13.1.1 triggers fatigue when a LIM 'is drawn from the Command Pool', but the Initiative LIM is chosen in the Initiative Choice Segment and never enters the pool [3.0.A.3-4], leaving its fatigue status undefined by the letter of the rule",
+   "evidence": "3.0 A.3/A.4: the chosen LIM begins the turn; 'All REMAINING available LIMs are placed in an opaque container'; 13.1.1: 'Every time a Division's LIM is drawn from the Command Pool, its Fatigue Level will increase'",
+   "resolution": "The Initiative LIM fatigues its division like any committed LIM",
+   "authority": "designer clarification (David Fox, grognard.com Q&A: 'Any time a division has its LIM in the Pool it gains fatigue, no matter what it actually does during the turn')"
+  }
+ ]
 }

@@ -35,7 +35,8 @@ def by_slot(g, slot):
 live = tempfile.mkdtemp(prefix="aus_move_")
 game = gamespec.load(HERE)
 g = NapoleonicGame(game, os.path.join(HERE,
-                   "scenario_northern_flank.json"), live, seed=42)
+                   "scenario_northern_flank.json"), live, seed=42,
+                   command=False)   # mechanics harness: pre-command flow
 
 acted = 0
 # --- French turn 1: advance the line, probe some rejections

@@ -35,7 +35,62 @@
    "Markov",
    "Vorpatzki"
   ],
-  "cite": "A15.1 initial LIMs (command NOT enforced at tier 1)"
+  "cite": "A15.1 initial LIMs; all division leaders begin with their LIMs in the Command Pool (A15.1 special rules)"
+ },
+ "command": {
+  "cite": "A15.1 REGLAS ESPECIALES (GMT sanctioned Spanish translation, translated) + Command Card divisional breakpoint roster + counter art (leader ratings)",
+  "initiative_mod": {
+   "French": 0,
+   "Allied": 0,
+   "cite": "A15.1: initiative is rolled normally (no overall commander on map, no modifiers)"
+  },
+  "pool_management": {
+   "mode": "voluntary",
+   "cite": "A15.1 special rule: both players may add or remove LIMs from the Command Pool voluntarily during the Command Phase of each turn (replaces Command Change rolls [4.2] for this scenario); LIMs of divisions at Breakpoint may never be added [11.2.1]"
+  },
+  "divisions": {
+   "French": {
+    "3": {
+     "leader": "Suchet",
+     "lim": "Suchet",
+     "breakpoint": 8,
+     "cite": "Command Card: Suchet 8 (see source_defects AUS-CMD-1 for the 2-vs-3 numbering)"
+    },
+    "M": {
+     "leader": "Milhaud",
+     "lim": "Independent",
+     "breakpoint": 2,
+     "cite": "Command Card: M/CR-Milhaud 2; A15.1: activates with the Independent LIM"
+    },
+    "T": {
+     "leader": "Treilhard",
+     "lim": "Independent",
+     "breakpoint": 3,
+     "cite": "Command Card: T/CR-Treilhard 3; A15.1: activates with the Independent LIM"
+    }
+   },
+   "Allied": {
+    "2": {
+     "leader": "Markov",
+     "lim": "Markov",
+     "breakpoint": 5,
+     "cite": "Command Card: 2 Bde/B-Markov 5"
+    },
+    "3v": {
+     "leader": "Vorpatzki",
+     "lim": "Vorpatzki",
+     "breakpoint": 2,
+     "cite": "Command Card: 3 Bde/B-Voropaitzki 2; no organic units in this scenario (source_defects AUS-CMD-2)"
+    }
+   }
+  },
+  "artillery_attach": {
+   "a/V": ["3"],
+   "b/V": ["3"],
+   "c/V": ["3"],
+   "a/B": ["2", "3v"],
+   "cite": "A15.1 special rule: artillery of both sides may be under the command of any division leader of its corps, explicitly including the French 1/V foot battery under Suchet; neither Milhaud nor Treilhard may command artillery"
+  }
  },
  "victory": {
   "french_win": "7 Russian battalions/regiments/batteries destroyed, routed or unsteady",
@@ -720,16 +775,18 @@
    "Morale: check table + DRMs, shaken/unsteady/rout ladder, artillery morale as SP loss, chain checks on rout [9.1-9.3]",
    "Retreats + rout retreats with SP loss for shortfall [10.0/10.1]; unit breakpoint [11.1]",
    "Rally phase incl. routed-rally cap and rout loss [12.0-12.4]",
-   "Victory conditions checked every turn [A15.1]"
+   "Victory conditions checked every turn [A15.1]",
+   "Command system: voluntary LIM pool per A15.1, seeded initiative + LIM draws, activation rolls, Command Breakdown [4.7], full/limited activation budgets [4.6], In/Out of Command marking [4.3.3], Non-LIM phase [3.0.C], once-per-turn division rule",
+   "Division fatigue: accumulation/recovery [13.1/13.2 + designer Q&A], effects incl. 7/8/9 thresholds per errata [13.3]",
+   "Division breakpoint: LIM ban + no Full Activations [11.2.1]"
   ],
   "enforced_tier2": [
    "Melee: bayonet/assault/charge combat [8.2-8.5] (phase 4)"
   ],
   "umpired": [
-   "Command system: LIM pool, activations, command range [4.0] (phase 3)",
    "Reactions: reaction fire, countercharge, form square [6.2/8.4.2] (phase 4)",
-   "Strategic movement [5.2]; limited-activation MA reduction [4.6.2] (needs the command system)",
-   "Division fatigue accumulation [13.1] (tracks with the command system; fatigue DRMs are wired, level stays 0)"
+   "Strategic movement [5.2] (interlocks with reactions; phase 4)",
+   "LIM pool secrecy (errata to 3.0.C.3/4.2): draws are engine-owned and the UI shows only your own LIMs, but the audit log necessarily records pool declarations - true concealment needs refereed (server/PBM) play"
   ]
  }
 }
