@@ -109,7 +109,7 @@
 <body>
 <div id="topbar">
   <div class="tbrow"><!-- row 1: permanent controls — NOTHING here ever moves -->
-    <b class="fixw" style="max-width:290px">DR EVIL'S GAME LEGALITY ENGINE <span style="color:#7ce07c">v2</span></b>
+    <b class="fixw" id="gamename" style="max-width:290px">…</b>
     <span class="chip fixw" id="turnchip" style="width:90px; text-align:center">…</span>
     <span class="chip brit fixw" id="vpbrit" style="width:100px; text-align:center">…</span>
     <span class="chip axis fixw" id="vpaxis" style="width:90px; text-align:center">…</span>
@@ -129,8 +129,9 @@
       <option value="off">off</option>
     </select></label>
     <label style="font-size:12px; white-space:nowrap">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-      <option value="1000">1s</option><option value="2000">2s</option>
-      <option value="3000" selected>3s</option><option value="5000">5s</option>
+      <option value="1200">slow</option>
+      <option value="600" selected>medium</option>
+      <option value="250">fast</option>
     </select></label>
     <button class="sidebtn" id="endmove">End movement</button>
     <button class="sidebtn" id="passfire">Pass fire</button>
@@ -233,6 +234,8 @@ const toMap=e=>{const r=W.getBoundingClientRect();return{x:(e.clientX-r.left)/sc
 
 function bootGame(g){
   GAME=g; MAPW=g.map_w; MAPH=g.map_h; CPX=g.counter_px;
+  document.getElementById('gamename').textContent=g.name.toUpperCase();
+  document.title=g.name+" — Dr Evil's Game Legality Engine";
   HX=g.grid.dy/1.5; HXC=HX/2; HYH=g.grid.dx/2;
   document.querySelector('img.map').src=g.map_url;
   const SB=document.getElementById('sidebtns'); SB.innerHTML='';
@@ -836,7 +839,8 @@ async function autoTick(){
 }
 document.addEventListener('DOMContentLoaded',()=>{
   const p=document.getElementById('aipace'), m=document.getElementById('aimode');
-  p.value=localStorage.getItem('aipace')||'3000';
+  const savedPace=localStorage.getItem('aipace');
+  p.value=['1200','600','250'].includes(savedPace)?savedPace:'600';
   p.onchange=()=>localStorage.setItem('aipace',p.value);
   m.value=localStorage.getItem('aimode')||'step';
   m.onchange=()=>{ localStorage.setItem('aimode',m.value); aiStep=null; refresh(); };
