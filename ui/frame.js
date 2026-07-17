@@ -69,7 +69,22 @@ const FRAME = (() => {
   })();
 
   // ---------- guidance banner ----------
-  let guideEl = null;
+  let guideEl = null, guideSuffix = '';
+  function setGuideSuffix(html) { guideSuffix = html || ''; }
+  function guideAvoidPanels() {
+    // the banner must never cover a left-side panel (the Vorpatzki-
+    // overlay bug): start it right of any visible panel anchored left
+    if (!guideEl) return;
+    let left = 0;
+    (H.guideAvoid || ['arrivals', 'tierpanel']).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.style.display === 'none' || !el.offsetParent) return;
+      const r = el.getBoundingClientRect();
+      if (r.left < window.innerWidth * 0.45 && r.width)
+        left = Math.max(left, r.right + 12);
+    });
+    guideEl.style.left = left + 'px';
+  }
   function setGuide(html, over) {   // what should the player do RIGHT NOW?
     if (!guideEl) {
       guideEl = document.createElement('div');
@@ -81,7 +96,9 @@ const FRAME = (() => {
     const pill = guideEl.firstChild;
     pill.className = over ? 'over' : '';
     pill.style.display = html ? '' : 'none';
-    if (pill.innerHTML !== html) pill.innerHTML = html;
+    const full = html ? html + guideSuffix : html;
+    if (pill.innerHTML !== full) pill.innerHTML = full;
+    guideAvoidPanels();
   }
 
   // ---------- sole-way-forward marker ----------
@@ -135,6 +152,7 @@ const FRAME = (() => {
       const el = document.getElementById(id);
       if (el) el.style.top = (h + (gap || 0)) + 'px';
     });
+    guideAvoidPanels();
   }
 
   // ---------- next / previous unit to act ----------
@@ -188,5 +206,5 @@ const FRAME = (() => {
   }
 
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
-           show, setGuide, soleNext };
+           show, setGuide, setGuideSuffix, soleNext };
 })();
