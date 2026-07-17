@@ -660,18 +660,25 @@ function renderFlow() {
   // waiting on a side you are NOT playing — it answers exactly that
   // side's decisions and stops when the flow returns to you.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
-  const aiOK = (!PBM && !FLOW.over && GAME && GAME.tier
-    && GAME.tier.active >= 3
+  const tier3 = !PBM && !FLOW.over && GAME && GAME.tier && GAME.tier.active >= 3;
+  const aiOK = (tier3
     && (FLOW.mode === 'napoleonic'
         ? FLOW.decider !== mySide
         : (FLOW.phase === 'movement'
            && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall))));
-  FRAME.show('aictl', aiOK);
-  if (aiOK) document.getElementById('aiplaybtn').textContent =
+  // napoleonic: the cluster stays VISIBLE whenever the game has an AI —
+  // vanishing controls read as broken (Bruce 2026-07-17). When the decision
+  // is yours the button just waits, disabled.
+  const napAI = tier3 && FLOW.mode === 'napoleonic';
+  FRAME.show('aictl', aiOK || napAI);
+  const AB = document.getElementById('aiplaybtn');
+  AB.disabled = !aiOK;
+  if (aiOK) AB.textContent =
     aiActive ? '■ stop'
     : (FLOW.mode === 'napoleonic'
        ? '▶ AI: ' + sideShort(FLOW.decider)
        : '▶ Play ' + sideShort(FLOW.mover) + '’s turn');
+  else if (napAI) AB.textContent = 'AI waits — your decision';
   const PHASE_LBL = { command: 'Pool Placement', initiative: 'Initiative',
                       activation: 'LIM Activation', non_lim: 'Non-LIM',
                       rally: 'Rally' };

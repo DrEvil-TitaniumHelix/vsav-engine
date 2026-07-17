@@ -483,7 +483,7 @@ def game_tables():
 
     # Strategic CRT (Afrika Korps and kin): odds columns x die rows.
     combat = g.spec.get("combat")
-    if combat and combat.get("crt"):
+    if combat and (combat.get("crt") or {}).get("columns"):
         crt = combat["crt"]
         cols = ["die \\ odds"] + list(crt["columns"])
         rows = [[str(die)] + list(cells) for die, cells in crt["rows"].items()]
@@ -495,6 +495,130 @@ def game_tables():
         ) if n]
         tables.append(dict(title="Combat Results Table", cite=crt.get("cite"),
                            columns=cols, rows=rows, legend=legend, notes=notes))
+
+    # Differential terrain-integrated CRT (Westwall family): each terrain row
+    # carries its own differential brackets, all reading the same die rows
+    # from the LEFT (engine westwall._column_pos / crt_result).
+    if combat and (combat.get("crt") or {}).get("terrain_columns"):
+        crt = combat["crt"]
+        tc, dr = crt["terrain_columns"], crt["die_rows"]
+        width = max(len(v) for v in dr.values())
+        rows = [[t + "  (differential)"] + list(v) + [""] * (width - len(v))
+                for t, v in tc.items()]
+        rows += [["die " + d] + list(v) for d, v in dr.items()]
+        legend = [{"code": k, "text": v} for k, v in crt.get("results", {}).items()]
+        alias = crt.get("terrain_alias") or {}
+        notes = ([f"Find your terrain's row, then the column bracketing your "
+                  f"attack differential (columns count from that row's left); "
+                  f"read down to the die row."]
+                 + ([f"Terrain read as: "
+                     + "; ".join(f"{k} → {v}" for k, v in alias.items())]
+                    if alias else [])
+                 + [n for n in (crt.get("alias_cite"), crt.get("bounds_cite")) if n])
+        tables.append(dict(
+            title="Combat Results Table (differential, terrain-integrated)",
+            cite=crt.get("cite"), columns=[""] + ["c%d" % (i + 1) for i in range(width)],
+            rows=rows, legend=legend, notes=notes))
+
+    # Napoleonic family (Austerlitz and kin): the game.json combat_tables
+    # block — fire, artillery range, morale, fatigue, melee. Rendered
+    # cell-for-cell from the validated transcription.
+    ct = g.spec.get("combat_tables")
+    if ct:
+        def nice(k):
+            if k.startswith("le_"):
+                return "≤ " + k[3:].replace("_", " ")
+            if k.startswith("ge_"):
+                return "≥ " + k[3:].replace("_", " ")
+            if k.startswith("above_"):
+                return "exceeds by " + k[6:].replace("_plus", "+").replace("_", "-")
+            return k.replace("_plus", "+").replace("_", " ")
+
+        fc = ct.get("fire_table_columns") or {}
+        classes = [c for c in fc if c != "note"]
+        if classes:
+            ratings = sorted({r for c in classes for r in fc[c]}, key=int)
+            legend = [{"code": c, "text": ", ".join((ct.get("fire_defense_classes")
+                                                     or {}).get(c, []))}
+                      for c in classes]
+            tables.append(dict(
+                title="Fire Table — fire column [8.1.8]",
+                cite=(fc.get("note") or "") + " " + (ct.get("cite") or ""),
+                columns=["rating \\ class"] + classes,
+                rows=[[r] + [str(fc[c].get(r, "—")) for c in classes]
+                      for r in ratings],
+                legend=legend,
+                notes=[f"{nice(k)}: {v}" for k, v in
+                       (ct.get("fire_rating_adjustments") or {}).items()
+                       if k != "cite"]
+                    + [f"{nice(k)}: {v}" for k, v in
+                       (ct.get("fire_column_modifiers") or {}).items()
+                       if k != "cite"]))
+        fr = ct.get("fire_results") or {}
+        dice = [d for d in fr if d != "note"]
+        if dice:
+            ncol = max(len(fr[d]) for d in dice)
+            tables.append(dict(
+                title="Fire Table — results [8.1.8]",
+                cite=fr.get("note"),
+                columns=["die \\ column"] + [str(i + 1) for i in range(ncol)],
+                rows=[[d] + [str(x) for x in fr[d]] for d in sorted(dice, key=int)],
+                legend=[], notes=[]))
+        ar = ct.get("artillery_range") or {}
+        nations = [n for n in ar if n != "note"]
+        if nations:
+            bands = ["up2", "base", "down1", "down2"]
+            rows = [[f"{n} {nice(gk)}"] + [str(gv.get(b, "—")) for b in bands]
+                    for n in nations for gk, gv in ar[n].items()]
+            tables.append(dict(
+                title="Artillery Range Table [8.1.6]", cite=ar.get("note"),
+                columns=["gun", "up 2", "base", "down 1", "down 2"],
+                rows=rows, legend=[], notes=[]))
+        mc = ct.get("morale_check") or {}
+        if mc.get("results"):
+            tables.append(dict(
+                title="Morale Check Table [9.1]", cite=mc.get("note"),
+                columns=["roll vs morale", "result"],
+                rows=[[nice(k), str(v)] for k, v in mc["results"].items()],
+                legend=[],
+                notes=[f"DRM — {nice(k)}: {v}" for k, v in
+                       (mc.get("drm") or {}).items()]))
+        fe = ct.get("fatigue_effects") or {}
+        levels = [k for k in fe if k != "note"]
+        if levels:
+            tables.append(dict(
+                title="Fatigue Effects [13.0]", cite=fe.get("note"),
+                columns=["army fatigue", "effects"],
+                rows=[[nice(k),
+                       "; ".join(f"{nice(ek)} {ev}" for ek, ev in fe[k].items())
+                       or "no effect"] for k in levels],
+                legend=[], notes=[]))
+        me = ct.get("melee") or {}
+        rt = me.get("result_table") or {}
+        outcomes = [k for k in rt if k != "note"]
+        if outcomes:
+            def okey(k):
+                if k.startswith("le_"):
+                    return -99
+                if k.startswith("ge_") or k.endswith("_plus"):
+                    return 99
+                try:
+                    return int(k)
+                except ValueError:
+                    return 98
+            cols = ["loser", "sp_lost", "morale", "other"]
+            tables.append(dict(
+                title="Melee Result Table [8.5]",
+                cite=(rt.get("note") or "") + " " + (me.get("cite") or ""),
+                columns=["modified die"] + [nice(c) for c in cols],
+                rows=[[nice(k)] + [str(rt[k].get(c, "—")) for c in cols]
+                      for k in sorted(outcomes, key=okey)],
+                legend=[],
+                notes=[f"DRM — {nice(k)}: {v}" for k, v in
+                       (me.get("drm") or {}).items() if k != "note"]
+                    + ["The full shock procedures (bayonet/assault/charge steps, "
+                       "pre-shock checks, squares, pursuit, blown cavalry) are "
+                       "enforced by the engine — see the Rules panel."]))
 
     # Tactical to-hit table (Tobruk and kin): weapon rows x range columns.
     cj = os.path.join(g.dir, "combat.json")

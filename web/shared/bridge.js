@@ -95,7 +95,8 @@
   async function bootPyodide() {
     setStatus("Starting the game engine (first load takes a few seconds)…");
     const pyodide = await loadPyodide({ indexURL: "../../py/pyodide/" });
-    const buf = await (await realFetch("../../py/app.zip")).arrayBuffer();
+    const buf = await (await realFetch("../../py/app.zip?v="
+      + (window.DEMO_BUILD || 0))).arrayBuffer();   // build stamp beats caching
     pyodide.FS.mkdirTree("/app");
     pyodide.unpackArchive(buf, "zip", { extractDir: "/app" });
     return pyodide;
