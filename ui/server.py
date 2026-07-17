@@ -61,6 +61,15 @@ import pbm as pbm_mod  # noqa: E402
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
 
 
+def sg_earned_tier(scen_mode, spec):
+    """Mirror of each SG-family engine's earned-tier logic (spec #13).
+    napoleonic: validated melee tables => tier 2 (napoleonic.py
+    _resolve_tier); others: combat block => 2, plus policy AI => 3."""
+    if scen_mode == "napoleonic":
+        return 2 if (spec.get("combat_tables") or {}).get("melee") else 1
+    return (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
+
+
 def sg_ai_module():
     """The policy-AI module matching the loaded strategic-family gate."""
     return {"bluegray": bai_mod, "westwall": wai_mod}.get(SCEN_MODE, sai_mod)
@@ -378,7 +387,7 @@ def game_meta(slug):
         scen_mode = json.load(open(os.path.join(gdir, scen),
                                    encoding="utf-8")).get("mode")
         if scen_mode in SG_FAMILY:
-            earned = (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
+            earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
         else:
             earned, choices = 3, [0, 3]
@@ -974,11 +983,9 @@ def load_game(game_dir, tier=None):
         SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
         SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
         if SCEN_MODE in SG_FAMILY:
-            # mirror the engine's own earned-tier logic (strategic.py /
-            # bluegray.py): 1 = movement gate, 2 = full combat gate, 3 = + AI
-            TIER_EARNED = (
-                (3 if GAME_OBJ.spec.get("policy_ai") else 2)
-                if GAME_OBJ.spec.get("combat") else 1)
+            # mirror the engine's own earned-tier logic (sg_earned_tier):
+            # 1 = movement gate, 2 = full combat gate, 3 = + AI
+            TIER_EARNED = sg_earned_tier(SCEN_MODE, GAME_OBJ.spec)
             TIER_CHOICES = list(range(TIER_EARNED + 1))
         else:
             # tactical family: validated combat rules + policy AI both ship

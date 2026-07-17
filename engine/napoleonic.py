@@ -1947,7 +1947,8 @@ class NapoleonicGame(GateGame):
                 return self._v(False, "that stack has already attacked "
                                       "this activation [8.3.1#1]")
             for sp_ in action.get("supports", []):
-                ok, why = self._support_ok(str(sp_), dhex, act)
+                ok, why = self._support_ok(str(sp_), dhex, act,
+                                           ahex=ahex)
                 if not ok:
                     return self._v(False, why)
             return self._v(True)
@@ -1981,11 +1982,14 @@ class NapoleonicGame(GateGame):
                                   "[8.4.1/8.4.2#2 + TEC Cav Charge]")
         return self._v(True)
 
-    def _support_ok(self, pid, dhex, act):
+    def _support_ok(self, pid, dhex, act, ahex=None):
         """Supporting stack legality [8.2.1#2/8.3.1#2 + Fox Q&A]."""
         if pid not in self.s["units"]:
             return False, f"unknown support {pid}"
         su = self.unit(pid)
+        if ahex is not None and (su["col"], su["row"]) == tuple(ahex):
+            return False, "the attacking stack may not also support " \
+                          "[8.2.1#2]"
         if pid not in act["incommand"]:
             return False, "supports must be In Command active units " \
                           "[4.3.3]"
@@ -2130,12 +2134,13 @@ class NapoleonicGame(GateGame):
                     "final_facing": u["facing"], "nmc": 0,
                     "dis_left": [], "cost": 0.0, "full_cost": 0.0,
                     "charge": True, "pm": pm}
-            done = self._walk_move(u, walk, out)
-            if not done:
-                return out             # a reaction window owns the flow
-            self._start_charge_machine(pm, out)
+            # _walk_move starts the charge machine itself when the walk
+            # completes [8.4.2#3]; if a reaction window interrupted, the
+            # resumed walk starts it later (_close_react)
+            self._walk_move(u, walk, out)
             return out
         self.s["pending_melee"] = pm
+        self._book_strat_strip(pm)
         # any routed defender is automatically eliminated [8.2.1#1/
         # 8.3.1#1/8.4.2#4]
         for v in self._stack(*dhex, side=pm["dside"]):
@@ -2159,6 +2164,7 @@ class NapoleonicGame(GateGame):
                 break
         pm["ahex"] = [u["col"], u["row"]]
         self.s["pending_melee"] = pm
+        self._book_strat_strip(pm)
         for v in self._stack(*dhex, side=pm["dside"]):
             if v["morale_state"] == "routed":
                 self._destroy(v, out, "routed unit charged [8.4.2#4]")
@@ -2686,7 +2692,19 @@ class NapoleonicGame(GateGame):
 
     def _strat_combat_penalty(self, pm, out):
         """5.2.1: a strat-movement defender loses the marker after all
-        combat is completed."""
+        combat is completed. Booked at declaration (_book_strat_strip)
+        so a routed/eliminated defender still costs the division its
+        marker; this re-check only catches units that entered the hex
+        mid-combat."""
+        dtop = self._top(self._stack(*pm["dhex"], side=pm["dside"]))
+        dk = dtop and self._div_key_of(dtop)
+        if dk and dk in self.s.get("strat", []):
+            pm["strat_strip"] = dk
+
+    def _book_strat_strip(self, pm):
+        """Record the defending division's 5.2.1 marker forfeit when the
+        attack is DECLARED - the penalty applies even if every defender
+        routs or dies before the combat completes."""
         dtop = self._top(self._stack(*pm["dhex"], side=pm["dside"]))
         dk = dtop and self._div_key_of(dtop)
         if dk and dk in self.s.get("strat", []):
@@ -3426,6 +3444,7 @@ class NapoleonicGame(GateGame):
                                  "from": [e["col"], e["row"]],
                                  "path": [], "reaction": True}}
                 self.s["pending_melee"] = pm
+                self._book_strat_strip(pm)
                 out["reaction_charge"] = {
                     "unit": pid, "target_hex": pm["dhex"],
                     "cite": "6.2.3/8.4 (charge bonus applies; "
@@ -3897,6 +3916,7 @@ class NapoleonicGame(GateGame):
     def flow(self):
         v = self.s.get("victory") or self._victory_state()
         out = {"mode": "napoleonic",
+               "rules_scope": self.rules_scope(),
                "turn": self.s["turn"], "turn_label": self.turn_label(),
                "mover": self.s["mover"], "phase": self.s["phase"],
                "moved": list(self.s["moved"]),
