@@ -1,0 +1,17 @@
+{
+  "requirements": [
+    {
+      "id": "westwall_quad",
+      "title": "Westwall: Four Battles to Germany — VASSAL module",
+      "filename": "Westwall Quad.vmod",
+      "size": 32527773,
+      "sha256": "e2ff71a1d3a11b59d92d4c2b26020a8f8f6531eacacd1bd81cf027685c02f278",
+      "page": "https://vassalengine.org/library/projects/Westwall_Four_Battles_to_Germany",
+      "hint": "Download “Westwall Quad.vmod” from the VASSAL Module Library page above — that exact file is the version this game was validated against."
+    }
+  ],
+  "assets": {
+    "map":      { "req": "westwall_quad", "entry": "images/Base Layer.png" },
+    "counters": { "req": "westwall_quad", "prefix": "images/" }
+  }
+}

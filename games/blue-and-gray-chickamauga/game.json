@@ -24,6 +24,7 @@
  "buildfile": "../../../VassalBlueGray/extracted/buildFile",
  "moduledata": "../../../VassalBlueGray/extracted/moduledata",
  "assets": {
+  "menu_art": "../../../VassalBlueGray/extracted/images/Blue and Gray splash.png",
   "map": "../../../VassalBlueGray/extracted/images/Chickamauga.png",
   "counters_dir": "../../../VassalBlueGray/extracted/images"
  },

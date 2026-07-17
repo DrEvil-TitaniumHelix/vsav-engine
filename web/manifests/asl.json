@@ -1,0 +1,26 @@
+{
+  "requirements": [
+    {
+      "id": "vasl",
+      "title": "VASL (Virtual Advanced Squad Leader) — VASSAL module",
+      "filename": "vasl-6.7.3.vmod",
+      "size": 52987453,
+      "sha256": "2a3d5ee878943a7d4969c76773b800a79d46ea6174e544043e34e15d5bb1b4bb",
+      "page": "https://vasl.info/",
+      "hint": "Download VASL 6.7.3 (vasl-6.7.3.vmod) from vasl.info — that exact file is the version this game was validated against."
+    },
+    {
+      "id": "bd03",
+      "title": "VASL board 3 (bd03)",
+      "filename": "bd03.zip",
+      "size": 750656,
+      "sha256": "c67a7b7a29c0d154af64e3e2044896f748902249cfda7645d251e017a59f3169",
+      "page": "https://vasl.info/",
+      "hint": "Download board bd03 from the VASL boards download at vasl.info (bd03.zip) — that exact file is the version this game was validated against."
+    }
+  ],
+  "assets": {
+    "map":      { "req": "bd03", "entry": "bd03.gif" },
+    "counters": { "req": "vasl", "prefix": "images/" }
+  }
+}

@@ -28,21 +28,30 @@
 entirely in your browser. No install, no server — the engine is ~200 lines of
 JavaScript ported from the Python original.</p>
 
+<div class="note"><b>Bring your own module.</b> This release ships no game art.
+The first time you open a game it asks for your own copy of its VASSAL module
+(drag &amp; drop) — the file is checksum-verified, read entirely in your browser,
+never uploaded, and remembered on this device. Each game's page links to the
+exact module version it was validated against.</div>
+
 <div class="cards">
-  <a class="card" href="arnhem/index.html">
-    <h2>Arnhem</h2>
-    <p>SPI, <em>Westwall</em> quad (1976) — Operation Market-Garden.</p>
-    <p class="badge">99 counters &middot; roads &frac12; MP &middot; rivers &amp; bridges &middot; rigid ZOC</p>
-  </a>
   <a class="card" href="tobruk/index.html">
     <h2>Tobruk</h2>
     <p>Avalon Hill (1975) — tank combat in the Western Desert, 1942.</p>
     <p class="badge">8-unit meeting engagement &middot; vehicle facing</p>
+    <p class="badge">needs: Tobruk_v1.1.vmod</p>
+  </a>
+  <a class="card" href="arnhem/index.html">
+    <h2>Arnhem</h2>
+    <p>SPI, <em>Westwall</em> quad (1976) — Operation Market-Garden.</p>
+    <p class="badge">99 counters &middot; roads &frac12; MP &middot; rivers &amp; bridges &middot; rigid ZOC</p>
+    <p class="badge">needs: Westwall Quad.vmod</p>
   </a>
   <a class="card" href="asl/index.html">
     <h2>Advanced Squad Leader</h2>
     <p>VASL board 3 — infantry clash at the crossroads.</p>
     <p class="badge">walls &amp; hedges +1 MF &middot; buildings &middot; squads 4 MF / leaders 6</p>
+    <p class="badge">needs: vasl-6.7.3.vmod + board bd03</p>
   </a>
 </div>
 
@@ -77,7 +86,8 @@ and <em>writes</em> real VASSAL 3.x <code>.vsav</code> saves, so VASSAL, this br
 and an AI opponent are three interchangeable clients of the same file. This browser
 demo keeps moves in memory; the save-file layer lives in the source:
 <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine">github.com/DrEvil-TitaniumHelix/vsav-engine</a> (MIT).</p>
-<p class="sub">Game art belongs to its publishers (Decision Games/SPI, Avalon Hill,
-MMP/VASL) — demo use for the development community.</p>
+<p class="sub">All game art remains the property of its publishers (Decision
+Games/SPI, Avalon Hill, MMP/VASL) and module authors — none of it ships here.
+You bring your own module; it never leaves your machine.</p>
 </body>
 </html>
