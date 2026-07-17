@@ -108,7 +108,8 @@ class NapoleonicGame(GateGame):
         self.tier_earned = 1
         self.tier = 1 if tier is None else max(1, min(int(tier), 1))
 
-    def new_game(self, seed):
+    def new_game(self, seed=None):
+        seed = self._fresh_seed(seed)
         units = {}
         for u in self.scenario["units"]:
             units[u["id"]] = {
@@ -2027,7 +2028,8 @@ class NapoleonicGame(GateGame):
                    u["pid"]: {"facing": u["facing"],
                               "formation": u["formation"],
                               "morale": u.get("morale_state", "good"),
-                              "sp": u["sp"], "dead": u.get("dead", False)}
+                              "sp": u["sp"], "dead": u.get("dead", False),
+                              "slot": u["slot"]}
                    for u in self.s["units"].values()}},
                "over": bool(v.get("winner"))
                or self.s["turn"] > self.turns}

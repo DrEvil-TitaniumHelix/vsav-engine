@@ -248,7 +248,7 @@ function bootGame(g) {
       mySide = s.id; deselect();
       SB.querySelectorAll('.sidebtn').forEach(x => x.classList.remove('on'));
       b.classList.add('on');
-      render();
+      refresh();   // hotseat seat change re-renders panels + guidance
     };
     SB.appendChild(b);
   });
@@ -423,12 +423,80 @@ function napGuide() {
       + `routed lose 1 SP and fall back [12.4].`);
     return true;
   }
-  if (FLOW.mover !== mySide) return false;   // generic hotseat banner
   const v = FLOW.victory || {};
   const score = v.counts
     ? ` &nbsp;<span class="dim">broken units — French need Allied at 7: `
       + `${v.counts.Allied || 0}/7 · Russians need French at 10: `
       + `${v.counts.French || 0}/10 [A15.1]</span>` : '';
+  const C3 = FLOW.command;
+  if (C3) {                       // schema-3 command flow [3.0/4.0]
+    const needSwitch = (who, what) => {
+      FRAME.setGuide(`${what} — it's <b>${sideShort(who)}</b>'s decision. `
+        + `Click <b>${who}</b> next to "play as:" (hotseat).`);
+      FRAME.soleNext('side-' + who);
+      return true;
+    };
+    if (FLOW.phase === 'command') {
+      if (FLOW.mover !== mySide)
+        return needSwitch(FLOW.mover, `<b>Pool Placement</b> [3.0.A]`);
+      FRAME.setGuide(`<b>Pool Placement</b> [3.0.A / A15.1] — tick the LIMs `
+        + `you commit to this turn's Command Pool (left panel), then `
+        + `<b>Commit pool</b>. A committed LIM can be drawn and activated — `
+        + `and its division gains fatigue whatever happens [13.1].` + score);
+      FRAME.soleNext('poolcommit');
+      return true;
+    }
+    if (FLOW.phase === 'initiative') {
+      if (C3.initiative !== mySide)
+        return needSwitch(C3.initiative, `<b>Initiative won</b> [4.4]`);
+      FRAME.setGuide(`<b>You won the initiative</b> [4.4] — pick the LIM `
+        + `that opens the turn in the left panel. ANY pool LIM is legal, `
+        + `the enemy's included (it forces them to show their hand first).`);
+      FRAME.soleNext(FLOW.command.pool.length === 1 ? '#arrivals button' : null);
+      return true;
+    }
+    if (FLOW.phase === 'activation' && C3.act) {
+      const act = C3.act;
+      if (act.side !== mySide)
+        return needSwitch(act.side, `<b>${act.lim || 'Breakdown opportunity'}</b>`);
+      if (act.pending === 'choice') {
+        FRAME.setGuide(`<b>${act.lim || 'Opportunity'} — choose the activation</b> `
+          + `[4.5.1/4.6]: <b>Full</b> rolls against the leader's rating `
+          + `(fail = Command Breakdown Table); <b>Limited</b> is automatic `
+          + `but only half MA, no moving adjacent to the enemy, fire only. `
+          + `Buttons in the left panel.`);
+        FRAME.soleNext(null);
+        return true;
+      }
+      if (act.pending === 'bd_offer') {
+        FRAME.setGuide(`<b>Enemy command breakdown!</b> [4.7] — you may `
+          + `activate your division closest to the failing commander (or `
+          + `decline). Left panel.`);
+        FRAME.soleNext(null);
+        return true;
+      }
+      const label = act.kind === 'nonlim_unit' ? 'single unit (Out of Command)'
+        : `${divName(act.div)} — ${act.atype} activation`;
+      FRAME.setGuide(`<b>${label}</b> [4.6] — move your In Command units `
+        + `(highlighted budgets), then click enemies to <b>fire</b>. Once one `
+        + `unit fires, movement is over for the activation. Finished? `
+        + `<b>End activation</b>.` + score);
+      FRAME.soleNext(null);
+      return true;
+    }
+    if (FLOW.phase === 'non_lim') {
+      if (FLOW.mover !== mySide)
+        return needSwitch(FLOW.mover, `<b>Non-LIM Phase</b> [3.0.C]`);
+      FRAME.setGuide(`<b>Non-LIM Phase</b> [3.0.C] — divisions whose LIM `
+        + `stayed out of the pool (and Out of Command units) may take a `
+        + `LIMITED activation now, alternating with the enemy. Pick in the `
+        + `left panel, or <b>Pass</b>.`);
+      FRAME.soleNext(null);
+      return true;
+    }
+    return false;
+  }
+  if (FLOW.mover !== mySide) return false;   // generic hotseat banner
   FRAME.setGuide(`<b>Your activation</b> — click a unit, then a highlighted `
     + `hex (facing follows the cheapest path; use ⟲ ⟳ to wheel). Click an `
     + `ENEMY counter while one of your units is selected to <b>fire</b> at `
@@ -437,6 +505,11 @@ function napGuide() {
   FRAME.soleNext(null);
   return true;
 }
+// short display name for a division key like "French:3" -> its leader
+function divName(dk) {
+  const d = FLOW.command && FLOW.command.divisions[dk];
+  return d ? `${d.leader} (${dk.split(':')[1]})` : dk;
+}
 
 function renderFlow() {
   const fb = document.getElementById('flowbar');
@@ -444,7 +517,21 @@ function renderFlow() {
                FRAME.show('aictl', false); return; }
   FRAME.show('flowbar', true);
   // in a mailed match, the opponent's turn is untouchable locally
-  FRAME.show('endphasebtn', !PBM || (!FLOW.over && FLOW.mover === mySide));
+  let showEnd = !PBM || (!FLOW.over && FLOW.mover === mySide);
+  const C3 = FLOW.command;
+  if (C3 && !FLOW.over) {
+    // command flow: the top-bar button only ever means "End activation"
+    // (rally keeps its own end) - other phases drive through the panel
+    const open = FLOW.phase === 'activation' && C3.act && !C3.act.pending
+      && C3.act.side === mySide;
+    showEnd = open || (FLOW.phase === 'rally' && FLOW.mover === mySide);
+    document.getElementById('endphasebtn').textContent =
+      FLOW.phase === 'rally' ? 'End rally' : 'End activation';
+  } else if (FLOW.mode === 'napoleonic') {
+    document.getElementById('endphasebtn').textContent =
+      FLOW.phase === 'rally' ? 'End rally' : 'End player turn';
+  }
+  FRAME.show('endphasebtn', showEnd);
   // the AI opponent is a Tier-3 feature: offered at the start of a player turn.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
   const aiOK = (!PBM && !FLOW.over && FLOW.phase === 'movement'
@@ -453,9 +540,14 @@ function renderFlow() {
   FRAME.show('aictl', aiOK);
   if (aiOK) document.getElementById('aiplaybtn').textContent =
     aiActive ? '■ stop' : ('▶ Play ' + sideShort(FLOW.mover) + '’s turn');
+  const PHASE_LBL = { command: 'Pool Placement', initiative: 'Initiative',
+                      activation: 'LIM Activation', non_lim: 'Non-LIM',
+                      rally: 'Rally' };
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`
     : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideShort(FLOW.mover)} moves`
+      + (FLOW.command && PHASE_LBL[FLOW.phase]
+         ? ` · ${PHASE_LBL[FLOW.phase]}` : '')
       + (FLOW.overstacked && FLOW.overstacked.length
          ? `  ⚠ overstacked: ${FLOW.overstacked.join(' ')}` : '');
 }
@@ -475,7 +567,9 @@ function tipHTML(u) {
     h += `<br>${FORM_LABEL[u.formation]||u.formation} · SP ${u.sp} · MA ${u.ma}`
        + (u.morale_state && u.morale_state !== 'good'
           ? ` · <b style="color:#e0a34e">${u.morale_state.toUpperCase()}</b>` : '')
-       + (u.fired ? ' · fired' : '');
+       + (u.fired ? ' · fired' : '')
+       + (FLOW.command && (FLOW.command.ooc || []).includes(u.id)
+          ? ' · <b style="color:#e05a4e">OUT OF COMMAND [4.3.3]</b>' : '');
   else if (u.cls !== 'markers')
     h += `<br>Attack ${u.att} · Defense ${u.dfn} · Movement ${u.ma}`;
   if (u.onmap && u.status !== 'at sea' && u.status !== 'reserve')
@@ -530,6 +624,7 @@ async function sgAction(action, side) {
 const FORM_LABEL = { line:'Line', column:'Column', square:'Square',
   skirmish:'Skirmish', disorder:'Disorder', limbered:'Limber',
   unlimbered:'Unlimber' };
+let NAPHDR = '';   // open-activation header shown above unit controls
 function renderNapPanel(box) {
   const PF = FLOW.pending_fire;
   if (PF) {
@@ -544,15 +639,18 @@ function renderNapPanel(box) {
     box.style.display = ''; return;
   }
   if (FLOW.phase === 'rally') { box.style.display = 'none'; return; }
+  NAPHDR = '';
+  if (FLOW.command && napCmdPanel(box)) return;
   if (!selected || selected.side !== mySide || FLOW.mover !== mySide) {
     box.style.display = 'none'; return;
   }
   const u = selected;
-  let h = `<b>${u.name}</b> <span class="dim">${FORM_LABEL[u.formation]||u.formation||''}${
+  let h = NAPHDR
+    + `<b>${u.name}</b> <span class="dim">${FORM_LABEL[u.formation]||u.formation||''}${
     u.morale_state && u.morale_state !== 'good' ? ' · <b style="color:#e0a34e">'
     + u.morale_state.toUpperCase() + '</b>' : ''}</span><br>`;
   const acted = FLOW.moved && FLOW.moved.includes(u.id);
-  if (acted) h += `<span class="dim">already activated this turn</span><br>`;
+  if (acted) h += `<span class="dim">already acted in this activation</span><br>`;
   if (!acted && legal && legal.rotations && legal.rotations.length) {
     const cheap = legal.rotations.reduce((a,b)=>a.cost<b.cost?a:b).cost;
     h += `wheel: <button class="sidebtn" onclick='napRotate(-2)'>⟲ ${cheap} MP</button>
@@ -575,6 +673,105 @@ function napRotate(step) {
   const f = ((selected.facing || 0) + step + 12) % 12;
   sgAction({type:'move', unit:selected.id,
             dest:[selected.col, selected.row], facing:f}, mySide);
+}
+// ---------- command-flow panel [3.0/4.0] ----------
+// Returns true when it owns the panel this state.
+function slotOf(pid) {
+  const nu = FLOW.napoleonic && FLOW.napoleonic.units[pid];
+  if (nu && nu.slot) return nu.slot;      // printed counter name
+  const u = units.find(x => x.id === pid); return u ? u.name : pid;
+}
+function fatigueLine() {
+  const C3 = FLOW.command;
+  const rows = Object.entries(C3.fatigue || {}).filter(([,l]) => l > 0)
+    .map(([dk, l]) => `${divName(dk)} ${l}`);
+  return rows.length
+    ? `<br><span class="dim">fatigue [13.0]: ${rows.join(' · ')}</span>` : '';
+}
+function napCmdPanel(box) {
+  const C3 = FLOW.command;
+  const own = h => { box.innerHTML = h; box.style.display = ''; return true; };
+  if (FLOW.phase === 'command') {
+    if (FLOW.mover !== mySide) { box.style.display = 'none'; return true; }
+    const avail = C3.available[mySide] || [];
+    const boxes = avail.map((lim, i) =>
+      `<label style="display:block;margin:2px 0"><input type="checkbox"
+        id="pool_${i}" value="${lim}" checked> ${lim}${
+        lim === 'Independent' ? ' <span class="dim">(free: independent cavalry)</span>' : ''}</label>`).join('');
+    return own(`<b>Command Pool — ${sideShort(mySide)}</b> <span class="dim">[3.0.A / A15.1]</span><br>
+      ${boxes || '<span class="dim">no LIMs available</span>'}
+      <button class="sidebtn" id="poolcommit" onclick='napCommitPool(${avail.length})'>Commit pool</button>
+      ${fatigueLine()}`);
+  }
+  if (FLOW.phase === 'initiative') {
+    if (C3.initiative !== mySide) { box.style.display = 'none'; return true; }
+    const btns = (C3.pool || []).map(ref =>
+      `<button class="sidebtn" onclick='sgAction({type:"choose_initiative_lim",lim:"${ref}"}, mySide)'>⚑ ${ref.replace(':', ' — ')}</button>`).join('<br>');
+    return own(`<b>Initiative LIM</b> <span class="dim">[4.4]</span><br>${btns}`);
+  }
+  if (FLOW.phase === 'activation' && C3.act) {
+    const act = C3.act;
+    if (act.side !== mySide) { box.style.display = 'none'; return true; }
+    if (act.pending === 'bd_offer') {
+      const btns = (act.bd_closest || []).map(dk =>
+        `<button class="sidebtn" onclick='sgAction({type:"bd_activate",division:"${dk}"}, mySide)'>⚡ ${divName(dk)}</button>`).join(' ');
+      return own(`<b>Breakdown opportunity</b> <span class="dim">[4.7]</span><br>
+        ${btns}<br><button class="sidebtn" onclick='sgAction({type:"bd_decline"}, mySide)'>Decline</button>`);
+    }
+    if (act.pending === 'choice') {
+      let h = `<b>${act.lim || 'Opportunity'}</b> <span class="dim">[4.5.1/4.6]</span><br>`;
+      if (act.kind === 'independent') {
+        const left = (act.indep.eligible || []).filter(dk => !(act.indep.done || []).includes(dk));
+        h += `<span class="dim">${act.indep.allowed} leader(s) may try [A4.3.2]</span><br>`;
+        left.forEach(dk => {
+          h += `<div style="margin:2px 0">${divName(dk)}:
+            <button class="sidebtn" onclick='sgAction({type:"activation_choice",choice:"full",division:"${dk}"}, mySide)'>Full (roll)</button>
+            <button class="sidebtn" onclick='sgAction({type:"activation_choice",choice:"limited",division:"${dk}"}, mySide)'>Limited</button></div>`;
+        });
+        h += `<button class="sidebtn" onclick='sgAction({type:"end_activation"}, mySide)'>Done — decline the rest</button>`;
+      } else {
+        h += `${divName(act.div)}:
+          <button class="sidebtn" onclick='sgAction({type:"activation_choice",choice:"full"}, mySide)'>Full (roll vs rating)</button>
+          <button class="sidebtn" onclick='sgAction({type:"activation_choice",choice:"limited"}, mySide)'>Limited (auto, ½ MA)</button>
+          <button class="sidebtn" onclick='sgAction({type:"end_activation"}, mySide)'>Decline</button>`;
+      }
+      return own(h);
+    }
+    // an activation is OPEN: header above the selected-unit controls
+    const n = (act.incommand || []).filter(p => !(FLOW.moved || []).includes(p)).length;
+    const hdr = `<b>${act.kind === 'nonlim_unit' ? 'Out of Command unit'
+      : divName(act.div)}</b> — ${act.atype} activation
+      <span class="dim">[4.6] · ${n} unit(s) still to act${
+      act.stage === 'combat' ? ' · FIRING (no more movement)' : ''}</span><br>`;
+    if (!selected || selected.side !== mySide) {
+      return own(hdr + `<span class="dim">click one of the highlighted
+        In Command units, or <b>End activation</b> (top bar)</span>`);
+    }
+    NAPHDR = hdr;   // selected-unit controls render beneath this header
+    return false;
+  }
+  if (FLOW.phase === 'non_lim') {
+    if (FLOW.mover !== mySide) { box.style.display = 'none'; return true; }
+    const o = (C3.nonlim || {})[mySide] || {divisions: [], units: []};
+    let h = `<b>Non-LIM Phase</b> <span class="dim">[3.0.C]</span><br>`;
+    o.divisions.forEach(dk => {
+      h += `<button class="sidebtn" onclick='sgAction({type:"non_lim",division:"${dk}"}, mySide)'>½ ${divName(dk)}</button><br>`;
+    });
+    o.units.forEach(pid => {
+      h += `<button class="sidebtn" onclick='sgAction({type:"non_lim",unit:"${pid}"}, mySide)'>⅓ ${slotOf(pid)}</button> `;
+    });
+    h += `<br><button class="sidebtn" id="nonlimpass" onclick='sgAction({type:"pass_non_lim"}, mySide)'>Pass</button>${fatigueLine()}`;
+    return own(h);
+  }
+  return false;
+}
+function napCommitPool(n) {
+  const lims = [];
+  for (let i = 0; i < n; i++) {
+    const cb = document.getElementById('pool_' + i);
+    if (cb && cb.checked) lims.push(cb.value);
+  }
+  sgAction({type: 'set_pool', lims}, mySide);
 }
 function renderArrivals() {
   const box = document.getElementById('arrivals');

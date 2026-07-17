@@ -636,7 +636,14 @@ def api_end_phase():
     # bluegray splits the player turn into movement then combat: the top-bar
     # "End player turn" maps to whichever boundary is next
     if SCEN_MODE == "napoleonic":
-        t = "end_rally" if SG.s["phase"] == "rally" else "end_turn"
+        if SG.s["phase"] == "rally":
+            t = "end_rally"
+        elif getattr(SG, "_cmd", False):
+            t = "end_activation"    # command flow [3.0]: the top-bar
+            # button closes the open activation; other phases drive
+            # through the left panel
+        else:
+            t = "end_turn"
     else:
         t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
                                and SG.s["phase"] == "movement") \
