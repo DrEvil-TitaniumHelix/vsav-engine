@@ -177,11 +177,14 @@ class GateGame:
         `enforced` (tier-1 systems) + `enforced_tier2` (combat systems); at
         tier 1 the tier-2 items are presented honestly as not enforced."""
         sc = self.scenario.get("rules_scope", {})
+        rulings = sc.get("rulings", [])
         if self.tier >= 2:
             return {"enforced": sc.get("enforced", []) + sc.get("enforced_tier2", []),
-                    "not_enforced": sc.get("umpired", [])}
+                    "not_enforced": sc.get("umpired", []),
+                    "rulings": rulings}
         return {"enforced": sc.get("enforced", []),
                 "not_enforced": sc.get("enforced_tier2", []) + sc.get("umpired", []),
+                "rulings": rulings,
                 "banner": f"TIER {self.tier} MODE selected - combat is umpired"}
 
     # ------------------------------------------------------------ verdicts

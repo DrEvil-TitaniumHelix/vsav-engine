@@ -1519,6 +1519,11 @@ function renderRules() {
       rs.not_enforced.forEach(r => h += `<li>${r}</li>`);
       h += `</ul>`;
     }
+    if (rs.rulings && rs.rulings.length) {
+      h += `<div style="color:#8fb8d8;font-weight:600">Engine rulings & scope notes</div><ul>`;
+      rs.rulings.forEach(r => h += `<li>${r}</li>`);
+      h += `</ul>`;
+    }
   }
   // ---- basic client functions (engine-level; adapts to gate/tier/features)
   const gated = !!FLOW, hasArr = gated && !!FLOW.arrivals,

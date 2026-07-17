@@ -794,12 +794,20 @@
    "Division breakpoint: LIM ban + no Full Activations [11.2.1]"
   ],
   "enforced_tier2": [
-   "Melee: bayonet/assault/charge combat [8.2-8.5] (phase 4)"
+   "Melee: Bayonet + Assault combat [8.2/8.3] with pre-shock morale checks, supporting stacks [8.2.1#2 + Fox Q&A], once-per-activation caps, melee rounds and the continue/withdraw windows [8.5/8.5.3], the errata Retreat result (2000-07-20)",
+   "Cavalry charges [8.4]: May Charge marker [5.1.2], range 2-4 + LOS + front-hexside charge path [8.4.1/8.4.2 + A8.1.1], Stand-or-Square window, charge bonus arithmetic incl. halving [A8.1.2/8.4.2#6], pursuit [8.4.2#8], Blown lifecycle [8.4.4/8.4.5]",
+   "Reaction windows [6.2]: fire/move/reverse/limber/face/charge + decline, expenditure-vs-entry triggers per arm [6.2.1-6.2.7 + Fox Q&A], once-per-activation budgets [8.1.2-8.1.4], reaction charges take the pre-melee check and end the mover's movement (Fox Q&A)",
+   "Strategic movement [5.2]: pre-action declaration, double MA, 3-hex enemy exclusion + road duties, no combat/reactions/square, marker loss on enemy approach and after combat, must-move-as-far + no-Line checks (Fox liberal reading), fatigue exemption"
   ],
   "umpired": [
-   "Reactions: reaction fire, countercharge, form square [6.2/8.4.2] (phase 4)",
-   "Strategic movement [5.2] (interlocks with reactions; phase 4)",
    "LIM pool secrecy (errata to 3.0.C.3/4.2): draws are engine-owned and the UI shows only your own LIMs, but the audit log necessarily records pool declarations - true concealment needs refereed (server/PBM) play"
+  ],
+  "rulings": [
+   "Stack order is fixed at creation order; voluntary stack reordering [7.2] is not modelled - the top unit is the first non-artillery unit placed",
+   "A reaction that changes the mover's state ends the mover's walk only on unsteady/rout/death (or any state change while further reactors are still entitled); lesser effects let the move resume [6.2 + Fox Q&A]",
+   "Free facing changes during a formation change do not take the TEC disorder check (line-in-rough-terrain edge case, not modelled)",
+   "Multi-hex counters [6.5] are out of scope - none exist in A15.1",
+   "Countercharge [8.4.2#3] is scenario-unreachable in A15.1 (the Russians field no cavalry); its arithmetic is table-validated (validate_melee.py) but has no in-game path"
   ]
  }
 }
