@@ -47,6 +47,7 @@ ai_westwall._movement_actions and must stay behavior-compatible with them;
 consolidate when the next family adapter lands rather than fork further.
 """
 import ai_bluegray as abg
+import ai_napoleonic as anp
 import ai_westwall as aww
 
 
@@ -379,16 +380,26 @@ def _mode_of(tg):
     # class-name dispatch: engine modules are importable both as `bluegray`
     # and `engine.bluegray`, so isinstance would see two different classes
     return {"BlueGrayGame": "bluegray",
-            "WestwallGame": "westwall"}.get(type(tg).__name__)
+            "WestwallGame": "westwall",
+            "NapoleonicGame": "napoleonic"}.get(type(tg).__name__)
 
 
 def _policy_of(tg):
-    return {"bluegray": abg, "westwall": aww}.get(_mode_of(tg), abg)
+    return {"bluegray": abg, "westwall": aww,
+            "napoleonic": anp}.get(_mode_of(tg), abg)
 
 
 def take_turn(tg, plan=None, resolve_for=None):
     """Play the current mover's whole player turn from a plan. No plan (or
-    no orders) = the shipped policy AI unchanged."""
+    no orders) = the shipped policy AI unchanged.
+
+    Napoleonic family: decisions interleave between the sides, so there
+    is no turn-plan DSL - the 'plan' IS a strategy_nap doctrine genome
+    (theta), handed to ai_napoleonic, and one call plays every decision
+    the current decider owns (napoleonic keeps game-over in flow, not
+    state, so ai_napoleonic._over is the stop test)."""
+    if _mode_of(tg) == "napoleonic":
+        return anp.take_turn(tg, theta=plan)
     if tg.s["over"]:
         return []
     comp = COMPILERS.get(_mode_of(tg))
@@ -405,8 +416,16 @@ def take_turn(tg, plan=None, resolve_for=None):
 def play_game(tg, planners=None, max_turns=None):
     """AI-vs-AI driver where each side may have a planner. planners maps
     side -> plan dict, or side -> callable(tg, side) returning a fresh plan
-    each player turn; absent sides play pure policy. Returns (turn, log)."""
+    each player turn; absent sides play pure policy. Returns (turn, log).
+
+    Napoleonic family: the 'plan' is a static doctrine genome, so each
+    side's planner is resolved once and ai_napoleonic.play_game drives
+    the interleaved decider flow."""
     planners = planners or {}
+    if _mode_of(tg) == "napoleonic":
+        thetas = {sd: (pl(tg, sd) if callable(pl) else pl)
+                  for sd, pl in planners.items()}
+        return anp.play_game(tg, max_turns=max_turns, thetas=thetas)
     full = []
     guard = 0
     limit = (max_turns or tg.turns) * 2 + 6

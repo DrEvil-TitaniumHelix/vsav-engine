@@ -156,5 +156,29 @@ check(sa == sb and len(sa) > 20,
 check(ga.state_hash() == gb.state_hash(),
       "state hashes identical after the stepped bursts")
 
+# ------------------- strategy family: baseline genome == shipped policy
+# (spec #22: strategy_nap gene baselines are read from
+# ai_napoleonic.DOCTRINE; theta=baseline() must reproduce the shipped
+# policy's action stream exactly - the optimizer's zero point)
+import strategy_nap as sn                       # noqa: E402
+gc, _ = fresh(1)
+gd, _ = fresh(1)
+log_c, log_d = [], []
+for _ in range(25):
+    if ai._over(gc):
+        break
+    log_c.extend(ai.take_turn(gc, gc.decider()))
+for _ in range(25):
+    if ai._over(gd):
+        break
+    log_d.extend(ai.take_turn(gd, gd.decider(), theta=sn.baseline()))
+sc = [(e["side"], json.dumps(e["action"], sort_keys=True)) for e in log_c]
+sd = [(e["side"], json.dumps(e["action"], sort_keys=True)) for e in log_d]
+check(sc == sd and len(sc) > 20,
+      f"strategy_nap.baseline() plays the shipped policy exactly "
+      f"({len(sc)} == {len(sd)} actions) [spec #22]")
+check(gc.state_hash() == gd.state_hash(),
+      "state hashes identical under the baseline genome")
+
 print("ALL PASS" if ok else "FAILURES ABOVE")
 sys.exit(0 if ok else 1)

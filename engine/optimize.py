@@ -65,10 +65,14 @@ def play_one(args):
         if thetaB is not None:
             planners[b] = fam["strategy"].StrategyPlanner(thetaB)
         plans.play_game(tg, planners, max_turns=max_gts)
-        vp = tg.s["vp"]
-        return {"seed": seed, "vp": vp, "winner": tg.s["winner"],
-                "over": tg.s["over"],
-                "margin_a": fam["margin"](vp, game.side_order)}
+        # families whose game keeps victory out of s (napoleonic: flow())
+        # supply a result fn; the strategic default reads s directly
+        res = fam["result"](tg) if "result" in fam else \
+            {"vp": tg.s["vp"], "winner": tg.s["winner"],
+             "over": tg.s["over"]}
+        res["seed"] = seed
+        res["margin_a"] = fam["margin"](res["vp"], game.side_order)
+        return res
 
 
 def matches_for(theta, opponents, seeds, game_dir, max_gts):
