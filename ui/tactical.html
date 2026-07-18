@@ -160,7 +160,7 @@
 <div id="actions"></div>
 <div id="picker"></div>
 
-<script src="frame.js?v=20260718a"></script>
+<script src="frame.js?v=20260718b"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay'), FW = document.getElementById('facewheel');
@@ -277,9 +277,13 @@ function render(){
   } else {
     const stepMode=document.getElementById('aimode').value==='step';
     FRAME.setGuide(myPhase() ? (FLOW.segment==='movement'
-        ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: click a unit, then a destination hex `
-          +`(<b>unit ▶</b> / N finds the next one). Done? <b>End movement</b>.`
-        : `<b>YOUR SHOT</b> — fire ONE unit (then the enemy answers), or <b>Pass fire</b> to finish`)
+        ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: ① click a unit — its reachable hexes `
+          +`light up green; ② press and HOLD the counter, drag it onto a green hex, release `
+          +`to drop, then pick its facing. (<b>unit ▶</b> / N finds the next unmoved unit.) `
+          +`Done? <b>End movement</b>.`
+        : `<b>YOUR SHOT</b> — click one of your units, then click the hit-chance ring on an `
+          +`enemy to fire (one unit per volley; the enemy answers). No shot worth taking? `
+          +`<b>Pass fire</b>.`)
       : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press <b>SPACE</b> to step its actions`
                  : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`);
   }

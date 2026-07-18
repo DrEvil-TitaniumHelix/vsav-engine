@@ -323,7 +323,8 @@ const FRAME = (() => {
     h += `<li><b>Counters</b> — hover for a unit's stats card; click to select (the card
           pins bottom-left). Clicking a stack offers each unit or the whole stack.</li>`;
     h += gated
-      ? `<li><b>Moving</b> — drag the selected counter. Green hexes are the legal
+      ? `<li><b>Moving</b> — click a counter once to select it, then press and HOLD it
+          and drag it to its destination; release to drop. Green hexes are the legal
          destinations the gate computed (numbers = movement points spent); anything
          else snaps back. Illegal proposals are rejected with the rule citation.</li>`
       : `<li><b>Moving</b> — drag the selected counter anywhere on the board, printed
