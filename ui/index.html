@@ -384,6 +384,32 @@ function renderGuide() {
     return;
   }
   if (FLOW.mode === 'napoleonic' && napGuide()) return;
+  const A = FLOW.arrivals, C = FLOW.combat;
+  // A gate-blocking decision outranks EVERY other banner — including
+  // "not your turn": pendings can arise mid-MOVEMENT and belong to the
+  // NON-moving seat (Westwall bridge demolition [12.1], AK Rommel
+  // placement [22.4]) — a tester was left with "Your move" while the
+  // gate refused everything (Bruce 2026-07-18). One check, all phases.
+  if (C && C.pending_rommel) {
+    FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the left panel [22.4].`);
+    FRAME.soleNext(null);
+    return;
+  }
+  if (C && C.pending) {
+    const what = { retreat:  'retreat each losing unit with the buttons',
+                   exchange: 'pick which units to remove [7.6]',
+                   advance:  'advance into the vacated hex (optional)',
+                   demolition: 'decide each bridge demolition — one chance ever [12.1]',
+                   fpf:      'allocate Final Protective Fire (or decline) [8.4]',
+                   train_retreat: 'retreat the Train (or accept its destruction) [18.11]' }[C.pending.kind]
+                 || ('resolve the pending "' + C.pending.kind + '" choice');
+    const who = C.pending.chooser
+      ? `the <b>${sideLabel(C.pending.chooser)}</b> player must ` : '';
+    FRAME.setGuide(`<b>Decision required</b> — ${who}${what}, in the left panel. `
+      + `Nothing else can happen until it is resolved.`);
+    FRAME.soleNext(null);
+    return;
+  }
   const mv = sideShort(FLOW.mover);
   if (FLOW.mover !== mySide) {
     if (aiActive) {
@@ -401,7 +427,6 @@ function renderGuide() {
     }
     return;
   }
-  const A = FLOW.arrivals, C = FLOW.combat;
   if (FLOW.phase === 'movement') {
     const todo = [];
     if (A) {
@@ -435,22 +460,7 @@ function renderGuide() {
     return;
   }
   if (C && C.phase === 'combat') {
-    if (C.pending_rommel) {
-      FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the left panel [22.4].`);
-      FRAME.soleNext(null);
-      return;
-    }
-    if (C.pending) {
-      const what = { retreat:  'retreat each losing unit with the buttons',
-                     exchange: 'pick which of your involved units to remove',
-                     advance:  'advance into the vacated hex (optional)',
-                     demolition: 'decide each bridge demolition — one chance ever [12.1]',
-                     fpf:      'allocate Final Protective Fire (or decline) [8.4]' }[C.pending.kind]
-                   || C.pending.kind;
-      FRAME.setGuide(`<b>Finish the battle</b> — ${what}, in the left panel.`);
-      FRAME.soleNext(null);
-      return;
-    }
+    // pendings already handled above, for every phase
     if (C.must_attack.length || C.must_be_attacked.length) {
       FRAME.setGuide(`<b>Combat</b> — units in enemy contact MUST fight [8.4]: click your attackers, `
         + `then the adjacent enemy defenders, then <b>⚔ Resolve battle</b> in the left panel.`);
@@ -1190,7 +1200,9 @@ function renderCombat() {
   const box = document.getElementById('combat');
   const C = FLOW && FLOW.combat;
   if (!C || FLOW.over) { box.style.display = 'none'; return; }
-  if (C.phase === 'movement') {
+  // pendings render in EVERY phase (movement-phase demolition/Rommel would
+  // otherwise leave the game blocked with no visible way to answer)
+  if (C.phase === 'movement' && !C.pending && !C.pending_rommel) {
     const obligations = C.must_attack.length || C.must_be_attacked.length
                         || (C.av_offers && C.av_offers.length) || (C.av && C.av.length);
     if (!obligations) { box.style.display = 'none'; return; }
@@ -1210,7 +1222,9 @@ function renderCombat() {
     hm += `<br><button class="sidebtn" onclick='sgAction({type:"end_movement"})'>End movement — resolve battles [3.2]</button>`;
     box.innerHTML = hm; box.style.display = ''; return;
   }
-  let h = `<b>${sideLabel(FLOW.mover)} — combat [3.2/3.4]</b><br>`;
+  let h = C.phase === 'combat'
+    ? `<b>${sideLabel(FLOW.mover)} — combat [3.2/3.4]</b><br>`
+    : `<b>Decision required</b><br>`;
   if (C.pending_rommel) {
     const pr = C.pending_rommel, u = unitById(pr.unit);
     h += `<div style="margin-top:6px"><b>${u ? u.name : pr.unit}</b> is alone in an enemy
