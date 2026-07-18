@@ -116,6 +116,15 @@ def game_payload(zf, slug, manifest):
         if fn.endswith((".json", ".vsav")):     # our data + our generated saves
             zf.write(full, f"games/{slug}/{fn}")
 
+    # the trained champion (spec #22): engine/champion.py reads
+    # champion.json so the in-browser AI seat plays the same champion as
+    # the native app; doctrine.md feeds the SALVO challenger payload. The
+    # heavy corpus stays out.
+    for fn in ("champion.json", "doctrine.md"):
+        p = os.path.join(gdir, "playbook", fn)
+        if os.path.isfile(p):
+            zf.write(p, f"games/{slug}/playbook/{fn}")
+
 
 def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
     html = open(os.path.join(ROOT, "ui", src_name), encoding="utf-8").read()
@@ -313,6 +322,8 @@ def main():
                           tactical="true" if tactical else "false"))
         shutil.copy(os.path.join(ROOT, "ui", "frame.js"),
                     os.path.join(gd, "frame.js"))
+        shutil.copy(os.path.join(ROOT, "ui", "salvo.js"),
+                    os.path.join(gd, "salvo.js"))
         n_req = len(manifest["requirements"])
         print(f"{slug}: client={'tactical+board' if tactical else 'board'}, "
               f"earned tier {meta['tier']['earned']}, {n_req} module req(s)")

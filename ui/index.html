@@ -121,7 +121,7 @@
     <span id="note" class="fixw"></span>
     <span id="progress" class="fixw"></span>
     <button class="sidebtn holdspace fixw" id="tierbtn" style="width:120px"></button>
-    <button class="sidebtn" id="pbmbtn">✉ Mail</button>
+    <button class="sidebtn" id="pbmbtn">⚔ Matches</button>
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
@@ -187,6 +187,7 @@
 <div id="toast"></div>
 
 <script src="frame.js?v=20260718a"></script>
+<script src="salvo.js?v=20260718s"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay');
@@ -296,6 +297,10 @@ function bootGame(g) {
   });
   if (!mySide) { mySide = g.sides[0].id; }
   document.getElementById('side-' + mySide).classList.add('on');
+  if (window.SALVO) SALVO.init({
+    slug: g.slug || window.DEMO_SLUG || 'game',
+    onUpdate: () => { refresh(); },
+  });
   fitMap();
 }
 
@@ -308,6 +313,9 @@ async function refresh() {
   FLOW = s.flow || null;
   PBM = s.pbm || null;
   PBM_OK = ('pbm' in s);   // key present = this game family plays by mail
+  SALVO_ST = s.salvo || null;
+  SALVO_OK = ('salvo' in s);   // family supports LLM-seat matches
+  if (window.SALVO) { SALVO.setStatus(SALVO_ST); }
   if (PBM && mySide !== PBM.human_side) {   // a mailed match locks your seat
     mySide = PBM.human_side;
     document.querySelectorAll('#sidebtns .sidebtn').forEach(x => x.classList.remove('on'));
@@ -365,6 +373,7 @@ function renderGuide() {
     return;
   }
   if (PBM && pbmGuide()) return;
+  if (SALVO_ST && salvoGuide()) return;
   if (FLOW.over) {
     const vw = FLOW.victory && FLOW.victory.winner;
     FRAME.setGuide((vw
@@ -1697,11 +1706,13 @@ const renderTierBtn = FRAME.renderTierBtn,
 // Export after your turn; import the reply. Every imported file is replayed
 // move-by-move through a fresh engine before it is accepted (spec #9).
 let PBM_OK = false;   // the loaded game family supports mailed matches
+let SALVO_ST = null;  // SALVO (LLM-seat) match status from the server
+let SALVO_OK = false; // the loaded game family supports SALVO matches
 function pbmOpp() { return (PBM.labels && PBM.labels[PBM.ai_side]) || 'your opponent'; }
 function renderPBMBtn() {
   const B = document.getElementById('pbmbtn');
-  FRAME.show(B, PBM_OK);
-  B.textContent = PBM ? '✉ Mail ●' : '✉ Mail';
+  FRAME.show(B, PBM_OK || SALVO_OK);
+  B.textContent = (PBM || SALVO_ST) ? '⚔ Matches ●' : '⚔ Matches';
   B.classList.toggle('on', document.getElementById('pbmpanel').style.display === 'block');
 }
 function pbmGuide() {   // true = PBM owns the guidance for this state
@@ -1730,28 +1741,91 @@ function pbmGuide() {   // true = PBM owns the guidance for this state
   }
   return false;   // your turn: the normal guidance takes over
 }
+function salvoCard() {
+  const st = SALVO_ST;
+  let h = `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a6ea5;border-radius:8px">
+    <b>🤖 LLM seat active</b> — your LLM plays <b>${sideLabel(st.llm_side)}</b>
+    <span class="dim">(packet #${st.n} · ${st.pbm ? 'remote challenge match' : 'vs the built-in AI'})</span>`;
+  if (!window.SALVO || !SALVO.attached())
+    h += `<div style="color:#ffb45e;margin:6px 0">The match folder is not attached in this
+          browser session (normal after a reload).</div>
+          <button class="sidebtn" id="salvoreattach" onclick="salvoReattach()">📁 Re-attach match folder…</button>`;
+  else
+    h += `<div class="dim" style="margin:4px 0">Folder <b>${SALVO.folderName()}</b> — your LLM
+          reads <b>packet.json</b> and answers by overwriting <b>move.json</b>. The complete
+          verified game log mirrors there as log.jsonl.</div>`;
+  h += `<div style="margin-top:6px">
+        <button class="sidebtn" onclick="salvoPayload(true)">📋 Copy challenger payload</button>
+        <button class="sidebtn" onclick="salvoPayload(false)">⬇ Download payload</button></div>
+        <div class="dim" style="margin-top:2px">Paste the payload into your LLM and tell it the
+        folder path — that is the whole hookup.</div>
+        <div style="margin-top:8px" class="dim">
+        <button class="sidebtn" onclick="salvoStop()">Detach LLM</button> — the position stays
+        on the board; you can play on by hand.</div></div>`;
+  return h;
+}
+function matchesIntro() {
+  const tier3 = GAME && GAME.tier && GAME.tier.earned >= 3;
+  const chrome = window.SALVO && SALVO.supported();
+  let h = `<div class="dim" style="margin:4px 0 8px">Four ways to play — every one of them
+        through the same rules gate, on the same verified log.</div>`;
+  h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
+        <b>1 · You vs the built-in AI</b><div class="dim" style="margin-top:2px">${tier3
+          ? 'Close this panel, pick your side in the top bar, and press <b>▶ Play</b> when it is the other side’s turn.'
+          : 'This game has no AI opponent at its current tier.'}</div></div>`;
+  h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
+        <b>2 · Your LLM takes a seat</b> <span class="dim">(SALVO)</span>
+        <div class="dim" style="margin-top:2px">Hook up your own AI — Claude Code, Codex, any
+        agent that can read and write files. Pick a match folder; the game writes a situation
+        packet there, your LLM writes its move back, the gate referees. You watch the board.</div>`;
+  if (!chrome) {
+    h += `<div style="color:#ffb45e;margin-top:4px">Needs Chrome or Edge (folder access).</div>`;
+  } else {
+    h += `<div style="margin:6px 0 0">Start fresh — your LLM plays:<br>`;
+    GAME.sides.forEach(s => {
+      h += `<button class="sidebtn" style="margin:6px 6px 0 0" onclick='salvoBegin("${s.id}", true)'>${s.label}</button>`;
+    });
+    h += `</div><div class="dim" style="margin-top:4px">or
+          <a href="#" onclick="salvoBegin(mySide, false); return false" style="color:#9ab8d8">attach
+          it to the current position</a> (it takes over ${'your seat'}).</div>`;
+  }
+  h += `</div>`;
+  h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #b58a3a;border-radius:8px">
+        <b>3 · The challenge: your AI vs DrEvil's AI</b>
+        <div class="dim" style="margin-top:2px">Both AIs play as surrogates, by mail. Do mode 2
+        first until your LLM plays smoothly — then: start a mail match below (your opponent is
+        DrEvil's trained champion), hook up your LLM (mode 2), and it fights your side while
+        the mailed replies fight back. Turn files travel by email exactly like mode 4; every
+        file is replay-verified on both ends, so nobody can cheat — or claim the other did.</div></div>`;
+  h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
+        <b>4 · Play by mail vs a person</b>
+        <div class="dim" style="margin:2px 0 6px">Play one side here; any person with this app
+        (or DrEvil's AI General) plays the other by email. Export a small file after your turn;
+        import the reply. Every received file is replayed move-by-move through the rules engine
+        before it is accepted.</div>
+        <div style="margin:6px 0 2px">Opponent (name or email address):</div>
+        <input id="pbmopp" type="text" placeholder="AI General"
+               style="width:95%;background:#2c2f36;color:#ddd;border:1px solid #555;border-radius:4px;padding:4px 6px">
+        <div style="margin:10px 0 0"><b>Start a match</b> — you play:<br>`;
+  GAME.sides.forEach(s => {
+    h += `<button class="sidebtn" style="margin:6px 6px 0 0" onclick='pbmStart("${s.id}")'>${s.label}</button>`;
+  });
+  h += `</div><div class="dim" style="margin-top:4px">Starting a match restarts the game at
+        the full enforcement tier.</div>
+        <div style="margin-top:10px;border-top:1px solid #3a3f47;padding-top:8px">
+        <b>Or join a match</b> — received a turn file by email?<br>
+        <button class="sidebtn" id="pbmimport" style="margin-top:6px"
+                onclick="document.getElementById('pbmfile').click()">Import turn file…</button></div></div>`;
+  return h;
+}
 function renderPBMPanel() {
   const P = document.getElementById('pbmpanel');
-  let h = `<b>✉ Play by mail</b>`;
+  let h = `<b>⚔ Matches</b>`;
+  if (SALVO_ST) h += salvoCard();
   if (!PBM) {
-    h += `<div class="dim" style="margin:4px 0 8px">Play one side here; your opponent —
-          the <b>AI General</b>, or any person with this app — plays the other by email.
-          After your turn you export a small file and email it; when the reply arrives you
-          import it. Every received file is replayed move-by-move through the rules engine
-          before it is accepted, so neither side has to trust the other.</div>
-          <div style="margin:6px 0 2px">Opponent (name or email address):</div>
-          <input id="pbmopp" type="text" placeholder="AI General"
-                 style="width:95%;background:#2c2f36;color:#ddd;border:1px solid #555;border-radius:4px;padding:4px 6px">
-          <div style="margin:10px 0 0"><b>Start a match</b> — you play:<br>`;
-    GAME.sides.forEach(s => {
-      h += `<button class="sidebtn" style="margin:6px 6px 0 0" onclick='pbmStart("${s.id}")'>${s.label}</button>`;
-    });
-    h += `</div><div class="dim" style="margin-top:4px">Starting a match restarts the game at
-          the full enforcement tier.</div>
-          <div style="margin-top:12px;border-top:1px solid #3a3f47;padding-top:8px">
-          <b>Or join a match</b> — received a turn file by email?<br>
-          <button class="sidebtn" id="pbmimport" style="margin-top:6px"
-                  onclick="document.getElementById('pbmfile').click()">Import turn file…</button></div>`;
+    if (!SALVO_ST) h += matchesIntro();
+    else h += `<div class="dim" style="margin-top:6px">Detach the LLM to see the other
+               match modes.</div>`;
   } else {
     const opp = pbmOpp();
     h += `<div style="margin:4px 0 8px">You are <b>${sideLabel(PBM.human_side)}</b> vs
@@ -1770,6 +1844,12 @@ function renderPBMPanel() {
       h += `<div style="margin:8px 0 4px"><b>Reply arrived?</b><br>
             <button class="sidebtn" id="pbmimport" style="margin-top:4px"
                     onclick="document.getElementById('pbmfile').click()">Import reply file…</button></div>`;
+    if (!SALVO_ST && window.SALVO && SALVO.supported())
+      h += `<div style="margin-top:10px;border-top:1px solid #3a3f47;padding-top:8px">
+            <b>🤖 Hook up your LLM</b> <span class="dim">(the challenge, mode 3)</span> — it plays
+            your seat (<b>${sideLabel(PBM.human_side)}</b>) while the mailed opponent fights back.<br>
+            <button class="sidebtn" style="margin-top:6px"
+                    onclick='salvoBegin("${PBM.human_side}", false)'>Attach LLM to my seat</button></div>`;
     h += `<div style="margin-top:12px;border-top:1px solid #3a3f47;padding-top:8px" class="dim">
           <button class="sidebtn" onclick="pbmStop()">End this match</button> — abandons the
           mailed match (the position stays on the board).</div>`;
@@ -1870,6 +1950,73 @@ document.getElementById('pbmbtn').onclick = () => {
   if (soloPanel('pbmpanel')) renderPBMPanel();
   renderTierBtn(); renderPBMBtn();
 };
+
+// ---------- SALVO (Modes 2/3): your own LLM takes a seat ----------
+// Engine-level (salvo.js + /api/salvo/*): the LLM reads packet.json and
+// writes move.json in a folder you pick; the gate referees every action.
+async function salvoBegin(side, fresh) {
+  if (!window.SALVO) { toast('salvo.js failed to load — hard-refresh (Ctrl+F5).'); return; }
+  try {
+    await SALVO.begin(side, { fresh: !!fresh });
+    toast('LLM seat ready — copy the challenger payload into your LLM and give it the folder path.');
+  } catch (e) { toast('' + (e.message || e)); return; }
+  deselect();
+  await refresh();
+  renderPBMPanel();
+}
+async function salvoReattach() {
+  try { await SALVO.reattach(); }
+  catch (e) { toast('' + (e.message || e)); return; }
+  toast('Match folder re-attached — packets flow again.');
+  await refresh();
+  renderPBMPanel();
+}
+async function salvoPayload(copy) {
+  const r = await SALVO.payload();
+  if (r.error) { toast(r.error); return; }
+  if (copy) {
+    try { await navigator.clipboard.writeText(r.text); }
+    catch (e) { toast('Clipboard blocked — use Download instead.'); return; }
+    toast('Challenger payload copied — paste it into your LLM.');
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([r.text], { type: 'text/markdown' }));
+    a.download = r.filename || 'salvo_payload.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+}
+let salvoStopArm = null;
+async function salvoStop() {
+  if (!salvoStopArm || Date.now() - salvoStopArm > 12000) {
+    salvoStopArm = Date.now();
+    toast('Click "Detach LLM" again to confirm — the game stays; the LLM seat closes.');
+    return;
+  }
+  salvoStopArm = null;
+  await SALVO.stop();
+  await refresh();
+  renderPBMPanel();
+}
+function salvoGuide() {   // true = SALVO owns the guidance for this state
+  const st = SALVO_ST;
+  if (!st || FLOW.over) return false;
+  const open = document.getElementById('pbmpanel').style.display === 'block';
+  if (!window.SALVO || !SALVO.attached()) {
+    FRAME.setGuide(`<b>LLM match active</b> — re-attach the match folder so packets flow:
+      open <b>⚔ Matches</b> and press <b>Re-attach match folder</b>.`, true);
+    FRAME.soleNext(open ? '#pbmpanel #salvoreattach' : 'pbmbtn');
+    return true;
+  }
+  if (st.your_llm_up) {
+    FRAME.setGuide(`Your LLM (<b>${sideLabel(st.llm_side)}</b>) is deciding — packet #${st.n}
+      is waiting in <b>${SALVO.folderName()}</b>. It answers by writing move.json; the result
+      plays out here. (No LLM hooked up yet? Copy the payload from <b>⚔ Matches</b>.)`);
+    FRAME.soleNext(null);
+    return true;
+  }
+  return false;   // house AI or mailed opponent up: other guidance applies
+}
 
 // ---------- top bar ----------
 document.getElementById('resetbtn').onclick = async () => {

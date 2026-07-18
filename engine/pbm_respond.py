@@ -25,6 +25,8 @@ import pbm                       # noqa: E402
 import ai_strategic              # noqa: E402
 import ai_bluegray               # noqa: E402
 import ai_westwall               # noqa: E402
+import champion as champ_mod     # noqa: E402
+import plans as plans_mod        # noqa: E402
 
 AI = {"strategic": ai_strategic, "bluegray": ai_bluegray,
       "westwall": ai_westwall}
@@ -59,7 +61,9 @@ def respond(doc, root=None):
                 f"the {side} player turn is already part-played "
                 f"(phase: {flow.get('phase')}) - a mailed turn must start "
                 "at the top of the player turn")
-        steps = AI[doc["mode"]].take_turn(eng)
+        plan = champ_mod.plan_for(eng, game_dir)   # trained champion
+        steps = (plans_mod.take_turn(eng, plan) if plan
+                 else AI[doc["mode"]].take_turn(eng))
         flow = eng.flow()
         full = pbm.read_log(eng.log_path)
         entries = received + full[len(received):]   # sender's bytes + AI delta
