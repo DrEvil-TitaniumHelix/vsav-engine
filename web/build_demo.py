@@ -24,6 +24,10 @@ import io, json, os, shutil, struct, sys, time, zipfile
 
 BUILD_STAMP = int(time.time())
 
+# Cloudflare Web Analytics (cookieless visit counting on the hosted demo
+# only - the local app never carries it)
+BEACON = ("<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{\"token\": \"3c920f185374403bba59be2195c3700e\"}'></script>")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "ui"))
 import server as srv  # noqa: E402  (game_meta/game_dir only — no HTTP)
@@ -131,7 +135,8 @@ def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
               '<script src="manifest.js"></script>\n'
               '<script src="../../shared/byo.js"></script>\n'
               '<script src="../../py/pyodide/pyodide.js"></script>\n'
-              '<script src="../../shared/bridge.js"></script>\n<script>')
+              '<script src="../../shared/bridge.js"></script>\n'
+              + BEACON + '\n<script>')
     return html.replace("<script>", inject, 1)
 
 
@@ -205,7 +210,7 @@ def menu_page(metas):
 <footer>
   <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues" target="_blank" rel="noopener" style="color:#9cc4ee">contact the developer / report a bug</a> &nbsp;·&nbsp; engine + rules data only — all game art
   belongs to its publishers and module authors and comes from your own module &nbsp;·&nbsp;
-  session-based: reloading a game page starts a fresh game
+  games save in this browser, on this device &nbsp;&middot;&nbsp; anonymous visit counting via Cloudflare (no cookies, no personal data)
 </footer>
 <script src="shared/byo.js"></script>
 <script>
@@ -252,6 +257,7 @@ for (const g of GAMES){
   });
 }
 </script>
+""" + BEACON + """
 </body>
 </html>
 """
