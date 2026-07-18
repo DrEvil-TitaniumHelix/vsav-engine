@@ -362,6 +362,49 @@ byte-exactly, so neither side can cheat: every action you submit is judged
 by the legality gate, every die is engine-owned and seeded."""
 
 
+def _genome_section(game_dir):
+    """The champion genome itself - the exact numbers the opponent plays
+    by (Bruce 2026-07-18: the challenger gets the genome, not just the
+    prose; the corpus of played games is what stays home). Rendered as
+    JSON + the family's own gene-by-gene distillation."""
+    import champion
+    g = champion.genome(game_dir)
+    if g is None:
+        return []
+    lines = [
+        "",
+        "## THE CHAMPION GENOME (the exact numbers it plays by)",
+        "",
+        "This is not a summary - it IS the opponent. These parameters, "
+        "plugged into the shipped policy (public code: engine/strategy_*.py "
+        "in the repo), are everything its training learned. Read them as "
+        "precise intelligence: they say exactly when it commits, how much "
+        "force it masses, where it stands off. You may imitate them, "
+        "counter them, or clone the repo and run them as your own advisor.",
+        "",
+        "```json",
+        json.dumps(g, indent=1),
+        "```",
+        "",
+    ]
+    try:
+        import families
+        fam = families.for_game_dir(game_dir)
+        strat = fam["strategy"]
+        lines.append("Gene by gene:")
+        for name, *_ in strat.GENES:
+            if name in g:
+                t = strat.GENE_PROSE.get(name)
+                if t:
+                    v = g[name]
+                    lines.append("- `" + name + "`: "
+                                 + t.format(v=v, alt=("yes" if v >= 0.5
+                                                      else "no")))
+    except Exception:
+        pass                      # the raw JSON above is the contract
+    return lines
+
+
 def payload_text(slug, spec, mode, game_dir, turns=None):
     """The challenger payload: ONE paste-in document that teaches any
     file-capable LLM to play this game through the SALVO folder. Contents:
@@ -416,6 +459,7 @@ def payload_text(slug, spec, mode, game_dir, turns=None):
             "",
             open(doctrine, encoding="utf-8").read(),
         ]
+        lines += _genome_section(game_dir)
     else:
         lines += [
             "",
