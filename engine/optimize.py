@@ -34,6 +34,38 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 TRAIN_SEEDS = list(range(1, 401))
 HELDOUT_SEEDS = list(range(900, 940))
 
+# a single campaign is seconds; 10 minutes only trips when the worker
+# process is gone (OS kill, hard crash) or a game truly hung
+GAME_TIMEOUT_S = 600
+
+
+def _worker_init():
+    # a hard crash in a worker (stack overflow, access violation) prints
+    # its stack to the run log instead of dying silently
+    import faulthandler
+    faulthandler.enable()
+
+
+def pool_run(pool, jobs):
+    """pool.map replacement that survives a killed worker. Plain map
+    waits forever for a job whose worker died (the 2026-07-17 Austerlitz
+    run lost 8 hours to exactly that); here a lost job times out and is
+    resubmitted once. Real exceptions from play_one propagate untouched -
+    an engine bug must fail the run, not be papered over."""
+    if pool is None:
+        return [play_one(j) for j in jobs]
+    handles = [pool.apply_async(play_one, (j,)) for j in jobs]
+    out = []
+    for k, h in enumerate(handles):
+        try:
+            out.append(h.get(timeout=GAME_TIMEOUT_S))
+        except mp.TimeoutError:
+            print(f"lost job {k}/{len(jobs)} (worker died or game hung) - "
+                  "resubmitting once", flush=True)
+            out.append(pool.apply_async(play_one, (jobs[k],))
+                       .get(timeout=GAME_TIMEOUT_S))
+    return out
+
 
 def _load(game_dir):
     import gamespec
@@ -112,7 +144,7 @@ def evaluate(pool, cands, opponents, seeds, game_dir, ledger, max_gts=None):
         j = matches_for(th, opponents, seeds, game_dir, max_gts)
         spans.append((len(jobs), len(j)))
         jobs.extend(j)
-    results = pool.map(play_one, jobs) if pool else [play_one(j) for j in jobs]
+    results = pool_run(pool, jobs)
     for r in results:
         ledger["games"] += 1
     out = []
@@ -178,7 +210,7 @@ def main():
         hof = []
         reigning = None
 
-    pool = mp.Pool(a.procs) if a.procs > 1 else None
+    pool = mp.Pool(a.procs, initializer=_worker_init) if a.procs > 1 else None
     t0 = time.time()
     try:
         for gen in range(gen0, a.gens):

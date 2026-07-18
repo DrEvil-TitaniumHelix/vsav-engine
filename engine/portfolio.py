@@ -90,8 +90,8 @@ def main():
             for sd in seeds:
                 jobs.append((a.game, entrants[i], entrants[j], sd, None))
                 index.append((i, j, sd))
-    with mp.Pool(a.procs) as pl:
-        results = pl.map(optimize.play_one, jobs)
+    with mp.Pool(a.procs, initializer=optimize._worker_init) as pl:
+        results = optimize.pool_run(pl, jobs)
 
     # mean pair margin M[i][j] over seeds (i as side A vs j, minus reverse)
     sums = [[0.0] * n for _ in range(n)]
