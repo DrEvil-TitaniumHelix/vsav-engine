@@ -77,6 +77,19 @@ DOCTRINE = {
     "melee_sp_ratio": 1.0,      # melee only at own SP >= this x theirs [8.2]
     "square_form": 1.0,         # form square against a charge [8.4.2#4]
     "unlimber_slack": 0.0,      # unlimber at fire range + this [6.3.7]
+    # v2 maneuver/targeting doctrine (all 0 = the shipped nearest-foe /
+    # front-arc-first behavior EXACTLY - zero weights take the legacy
+    # code paths). Only units that are destroyed/routed/unsteady count
+    # toward the A15.1 thresholds, so target choice is where strategy
+    # lives: press the nearly-broken, lock the already-broken, mass
+    # effort instead of spreading it.
+    "tgt_weak_w": 0.0,          # movement objective: pull toward damaged/
+                                # shaken enemies (finish them) [9.x/A15.1]
+    "tgt_arty_w": 0.0,          # movement objective: pull toward enemy guns
+    "mass_w": 0.0,              # movement objective: pull toward enemies
+                                # own units already converge on (mass)
+    "fire_finish_w": 0.0,       # fire target: prefer worse-morale/damaged
+    "shock_finish_w": 0.0,      # melee/charge target: prefer worse-morale
 }
 
 
@@ -103,6 +116,45 @@ def _nearest_foe(g, side, at):
         return None
     return min(foes, key=lambda v: (g._dist(at, (v["col"], v["row"])),
                                     v["pid"]))
+
+
+_STATE_I = {"good": 0, "shaken": 1, "unsteady": 2, "routed": 3}
+
+
+def _finish_score(v):
+    """How close a unit is to feeding the A15.1 count: morale ladder
+    position plus a step for SP already lost [9.x/11.1]."""
+    return _STATE_I.get(v.get("morale_state", "good"), 0) \
+        + (1 if v.get("sp_lost") else 0)
+
+
+def _pick_foe(g, side, at, theta=None):
+    """The unit's movement objective. Zero weights (the shipped
+    doctrine) = _nearest_foe exactly; v2 weights re-score the pick:
+    closer is still better, but damaged/shaken enemies (tgt_weak_w),
+    enemy artillery (tgt_arty_w) and enemies own units already
+    converge on (mass_w - friends within 3 hexes) pull the objective
+    [A15.1 threshold arithmetic]."""
+    tw = _th(theta, "tgt_weak_w")
+    aw = _th(theta, "tgt_arty_w")
+    mw = _th(theta, "mass_w")
+    if tw == 0 and aw == 0 and mw == 0:
+        return _nearest_foe(g, side, at)
+    foes = _live_foes(g, side)
+    if not foes:
+        return None
+    own = [(u["col"], u["row"]) for u in g.s["units"].values()
+           if u["side"] == side and g.on_map(u) and u["arm"] != "leader"]
+
+    def key(v):
+        vhex = (v["col"], v["row"])
+        d = g._dist(at, vhex)
+        s = float(d) - tw * _finish_score(v) \
+            - aw * (1.0 if v["arm"].startswith("artillery") else 0.0)
+        if mw:
+            s -= mw * sum(1 for h in own if g._dist(h, vhex) <= 3)
+        return (round(s, 6), d, v["pid"])
+    return min(foes, key=key)
 
 
 def _front_set(g, u, c=None, r=None, f=None):
@@ -142,7 +194,7 @@ def _move_pick(g, u, budget, avoid, strat, cap=None, theta=None):
     movement-disorder risk. `cap` limits spent MPs (cavalry May Charge
     preservation [5.1.2]); `hold_dist` doctrine keeps a stand-off
     distance (never voluntarily closing inside it)."""
-    obj = _nearest_foe(g, u["side"], (u["col"], u["row"]))
+    obj = _pick_foe(g, u["side"], (u["col"], u["row"]), theta)
     if obj is None:
         return None
     ohex = (obj["col"], obj["row"])
@@ -205,7 +257,7 @@ def _unit_action(g, u, budget, avoid, strat, theta=None):
                              "to": form},
                             f"{u['slot']} reforms from disorder [6.4.1]")
         return None
-    obj = _nearest_foe(g, u["side"], (u["col"], u["row"]))
+    obj = _pick_foe(g, u["side"], (u["col"], u["row"]), theta)
     if obj is None:
         return None
     d = g._dist((u["col"], u["row"]), (obj["col"], obj["row"]))
@@ -275,8 +327,12 @@ def _leader_action(g, u, act, budget):
 
 
 # ------------------------------------------------------- combat decisions
-def _fire_pick(g, side, pids):
-    """First legal (proposed) fire action among `pids`."""
+def _fire_pick(g, side, pids, theta=None):
+    """First legal (proposed) fire action among `pids`. fire_finish_w=0
+    keeps the shipped front-arc-first nearest scan (with its early
+    break) byte-for-byte; a positive weight re-scores targets toward
+    the damaged/shaken (the A15.1 count is morale states [9.x])."""
+    fw = _th(theta, "fire_finish_w")
     for pid in sorted(pids):
         u = g.unit(pid)
         if u.get("dead") or pid in g.s["fired"]:
@@ -286,14 +342,30 @@ def _fire_pick(g, side, pids):
         here = (u["col"], u["row"])
         rng = g._fire_range(u)
         front = _front_set(g, u)
+        if fw == 0:
+            foes = sorted(_live_foes(g, side),
+                          key=lambda v: (0 if (v["col"], v["row"]) in front
+                                         else 1,
+                                         g._dist(here, (v["col"], v["row"])),
+                                         v["pid"]))
+            for v in foes:
+                if g._dist(here, (v["col"], v["row"])) > rng:
+                    break
+                a = {"type": "fire", "unit": pid, "target": v["pid"]}
+                if g.propose(side, a)["legal"]:
+                    return (a, f"{u['slot']} fires on {v['slot']} [8.1]")
+            continue
         foes = sorted(_live_foes(g, side),
                       key=lambda v: (0 if (v["col"], v["row"]) in front
                                      else 1,
+                                     round(g._dist(here, (v["col"],
+                                                          v["row"]))
+                                           - fw * _finish_score(v), 6),
                                      g._dist(here, (v["col"], v["row"])),
                                      v["pid"]))
         for v in foes:
             if g._dist(here, (v["col"], v["row"])) > rng:
-                break
+                continue
             a = {"type": "fire", "unit": pid, "target": v["pid"]}
             if g.propose(side, a)["legal"]:
                 return (a, f"{u['slot']} fires on {v['slot']} [8.1]")
@@ -311,10 +383,12 @@ def _shock_pick(g, side, act, theta=None):
         if not g._may_initiate_melee(u)[0]:
             continue
         here = (u["col"], u["row"])
+        sw = _th(theta, "shock_finish_w")
         if u["arm"] == "infantry":
             front = _front_set(g, u)
             for v in sorted(_live_foes(g, side),
-                            key=lambda x: x["pid"]):
+                            key=lambda x: (round(-sw * _finish_score(x),
+                                                 6), x["pid"])):
                 dhex = (v["col"], v["row"])
                 if dhex not in front or g._dist(here, dhex) != 1:
                     continue
@@ -336,7 +410,10 @@ def _shock_pick(g, side, act, theta=None):
                 or u["formation"] == "disorder":
             continue
         for v in sorted(_live_foes(g, side),
-                        key=lambda x: (g._dist(here, (x["col"],
+                        key=lambda x: (round(g._dist(here, (x["col"],
+                                                            x["row"]))
+                                             - sw * _finish_score(x), 6),
+                                       g._dist(here, (x["col"],
                                                       x["row"])),
                                        x["pid"])):
             d = g._dist(here, (v["col"], v["row"]))
@@ -512,7 +589,7 @@ def _activation_pick(g, side, act, tried, theta=None):
             if item and json.dumps(item[0], sort_keys=True) not in tried:
                 return item
     if not strat:
-        item = _fire_pick(g, side, act["incommand"])
+        item = _fire_pick(g, side, act["incommand"], theta)
         if item and json.dumps(item[0], sort_keys=True) not in tried:
             return item
         item = _shock_pick(g, side, act, theta)
@@ -628,7 +705,7 @@ def _next_action(g, side, tried, theta=None):
         if item is None:
             item = _fire_pick(g, side,
                               [u["pid"] for u in s["units"].values()
-                               if u["side"] == side])
+                               if u["side"] == side], theta)
         if item is None or json.dumps(item[0], sort_keys=True) in tried:
             item = ({"type": "end_turn"}, "player turn complete")
     if item and json.dumps(item[0], sort_keys=True) in tried:
