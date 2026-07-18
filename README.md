@@ -1,6 +1,11 @@
-# vsav-engine — Dr Evil's Game Legality Engine for VASSAL (v2)
+# VALOR Engine — VASSAL-Adjudicated Legality Of Rules
 
 [![tests](https://github.com/DrEvil-TitaniumHelix/vsav-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/DrEvil-TitaniumHelix/vsav-engine/actions/workflows/ci.yml)
+
+**▶ Play it in your browser — nothing to install:** https://vassal-test.pages.dev
+
+*(Formerly "Dr Evil's Game Legality Engine for VASSAL". The repo keeps its
+`vsav-engine` slug; the system is the **VALOR Engine**.)*
 
 **This system encodes a printed wargame whole — the map, the counters, the
 rules, the combat tables — and makes it a computerized version of the game.**
@@ -14,7 +19,8 @@ the printed game because it *is* the printed game, executable.
 And **neither side is capable of cheating**: every action either player (human
 or AI) proposes passes through the same deterministic legality gate, every die
 is rolled by the gate from a seeded stream, and the whole game is recorded in
-an append-only log that **anyone can independently re-verify**.
+an append-only log that **anyone can independently re-verify**. That is the
+name: **V**ASSAL-**A**djudicated **L**egality **O**f **R**ules.
 
 Want your own game encoded the same way? See **ENCODING_GUIDE.md** — clone the
 repo, bring your game's VASSAL module and rulebook, and ask Claude (Fable) to
@@ -30,8 +36,9 @@ VERIFIED: 85/85 entries: every verdict, every die, every state hash reproduced
           (0 illegal proposals ever touched the game state)
 ```
 
-**Watch it play:** https://www.youtube.com/watch?v=Afomvk0LjU8 · **Windows
-download:** https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view
+**Play in the browser:** https://vassal-test.pages.dev · **Watch it play:**
+https://www.youtube.com/watch?v=Afomvk0LjU8 · **Windows download:**
+https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view
 
 **Four complete games ship in this repo, playable out of the box:** Avalon
 Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
@@ -39,8 +46,11 @@ Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
 overnight as the platform's second full Tier-3 game), SPI's **Westwall:
 Arnhem** (the 1976 Market-Garden operational battle — airborne drops, bridge
 demolition, engineers) and Avalon Hill's **Tobruk** (a tactical tank
-firefight). v1 (movement legality for ASL) is still here and still works.
-By **DrEvil / Titanium Helix**. MIT licensed.
+firefight). A fifth, GMT's **Austerlitz** (2000, Great Battles of the
+Napoleonic Wars — the chit-pull command system, reaction windows, cavalry
+charges, at full enforcement with an AI opponent), plays in the hosted
+browser demo bring-your-own-module. v1 (movement legality for ASL) is still
+here and still works. By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
 
