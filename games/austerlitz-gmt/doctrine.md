@@ -79,6 +79,47 @@ genome is appended by `make_playbook.py`.
   scenario's ceiling. How much of the gap is doctrine is exactly what
   the tournament run measures.
 
+## Measured result (the run of 2026-07-17/18)
+
+- Tournament: population 16, 150 generations, **43,384 verified games**
+  (engine/optimize.py, seeds 1–400 training, 900–939 gauntlet; run
+  interrupted once at gen 70 by an OS-killed worker — gen 70 replayed
+  clean, the optimizer now survives lost workers, resumed from
+  checkpoint with nothing lost). No in-run graduation (streak never
+  exceeded 1 - the fresh-random gauntlet variance, as in both prior
+  runs).
+- Equilibrium exit (engine/portfolio.py, held-out seeds 940–949, full
+  home-and-away round-robin): **the Nash mixture is 100% BASELINE.**
+  The shipped policy's mean pair margin against the three distinct
+  elite genomes is +3.6 / +0.3 / +4.2 — statistical parity in a game
+  whose decisive margins run ±160. No evolved doctrine-knob setting
+  beats the shipped policy on seeds it never trained on.
+- **Graduation bar (spec #22): NOT MET** — the bar requires dominating
+  the shipped baseline, and the equilibrium of this strategy space IS
+  the shipped baseline.
+- What the verdict means (the elites are NOT baseline clones — they
+  hand the enemy the initiative, stand off at 3.4 hexes, melee only at
+  1.41:1, preserve May Charge to MA+11 — and still only tie): within
+  the 12-knob command-economy space, the A15.1 outcome is driven by
+  the shared per-action core (nearest-enemy maneuver, the 8.1.1 fire
+  hierarchy, always-rally), not by these thresholds. The in-run
+  fitness wins (+133 to +354 per generation) were seed-specific: one
+  training seed per generation lets selection latch onto noise that
+  held-out seeds erase.
+- Two honest readings, both earned by the data: (1) a robustness
+  certificate — 43,384 games of evolutionary attack found no doctrine
+  setting that beats the shipped AI within its own decision space;
+  (2) a boundary marker — beating it will take genes the current
+  genome deliberately does not have: unit-level MANEUVER doctrine
+  (concentration of force, focus-fire target selection, objective
+  steering beyond nearest-foe) rather than thresholds on the existing
+  picks. That is the v2 genome direction, the owner's call.
+- Corpus (runs/…/corpus, every log verified byte-exact): baseline
+  self-play seeds 950/951 (French +145/+186); the final reigning
+  genome as French vs baseline +162/+183 (no better than baseline's
+  own +160 mean), as Allied vs baseline still French +149/+163 — the
+  parity claim, replayable.
+
 ## The strategy space the genome spans (engine/strategy_nap.py)
 
 - Command economy: how deep into the fatigue track a division keeps

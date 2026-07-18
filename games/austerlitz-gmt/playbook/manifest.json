@@ -1,0 +1,35 @@
+{
+ "playbook_version": 1,
+ "game": "austerlitz-gmt",
+ "earned_by": {
+  "games_played": 43384,
+  "generations": 149,
+  "graduation": {
+   "wins": 11.0,
+   "of": 16,
+   "unbeaten": false,
+   "streak": 0,
+   "target": 3
+  },
+  "champion_fitness": {
+   "wins": 8.0,
+   "of": 8,
+   "margin": 133.0
+  },
+  "matrix_evidence": "matrix.json"
+ },
+ "contents": {
+  "champion.json": "portfolio",
+  "doctrine.md": "evidence-cited knowledge + auto-distilled genome",
+  "corpus/": [
+   "baseline_selfplay_s950.log.jsonl",
+   "baseline_selfplay_s951.log.jsonl",
+   "corpus_summary.json",
+   "reigning_allied_vs_baseline_s950.log.jsonl",
+   "reigning_allied_vs_baseline_s951.log.jsonl",
+   "reigning_french_vs_baseline_s950.log.jsonl",
+   "reigning_french_vs_baseline_s951.log.jsonl"
+  ]
+ },
+ "verification": "every corpus log replays byte-exact through engine/verify_game.py; optimization games used seeded dice through the same gate"
+}
