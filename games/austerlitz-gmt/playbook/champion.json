@@ -1,0 +1,19 @@
+{
+ "type": "portfolio",
+ "strategy_family": "engine/strategy_nap.py",
+ "consume": {
+  "execute": "strategy_nap.StrategyPlanner(genome) parameterizes the doctrine knobs of the stateless per-action policy (ai_napoleonic.DOCTRINE) - napoleonic decisions interleave, so there is no turn-plan DSL; every pick still enters through the legality gate",
+  "retrieve": "load doctrine.md + corpus logs into any LLM context; plans are written in the DSL documented in engine/plans.py",
+  "train": "corpus logs are verified, seeded, replayable (engine/verify_game.py) - clean RL/fine-tune trajectories"
+ },
+ "portfolio": {
+  "weights": [
+   [
+    "baseline",
+    0.9999
+   ]
+  ],
+  "worst_case_mean_margin_for_mixture": -0.0,
+  "genomes": {}
+ }
+}

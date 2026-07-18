@@ -1,0 +1,94 @@
+[
+ {
+  "name": "baseline_selfplay_s950",
+  "seed": 950,
+  "champion_seats": [],
+  "winner": "French",
+  "counts": {
+   "French": 5,
+   "Allied": 8
+  },
+  "margin_french": 145.0,
+  "turn": 6,
+  "verified": true,
+  "verify_msg": "222/222 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ },
+ {
+  "name": "baseline_selfplay_s951",
+  "seed": 951,
+  "champion_seats": [],
+  "winner": "French",
+  "counts": {
+   "French": 2,
+   "Allied": 10
+  },
+  "margin_french": 186.0,
+  "turn": 3,
+  "verified": true,
+  "verify_msg": "112/112 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ },
+ {
+  "name": "reigning_french_vs_baseline_s950",
+  "seed": 950,
+  "champion_seats": [
+   "French"
+  ],
+  "winner": "French",
+  "counts": {
+   "French": 4,
+   "Allied": 9
+  },
+  "margin_french": 162.0,
+  "turn": 10,
+  "verified": true,
+  "verify_msg": "296/296 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ },
+ {
+  "name": "reigning_french_vs_baseline_s951",
+  "seed": 951,
+  "champion_seats": [
+   "French"
+  ],
+  "winner": "French",
+  "counts": {
+   "French": 1,
+   "Allied": 9
+  },
+  "margin_french": 183.0,
+  "turn": 14,
+  "verified": true,
+  "verify_msg": "479/479 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ },
+ {
+  "name": "reigning_allied_vs_baseline_s950",
+  "seed": 950,
+  "champion_seats": [
+   "Allied"
+  ],
+  "winner": "French",
+  "counts": {
+   "French": 3,
+   "Allied": 7
+  },
+  "margin_french": 149.0,
+  "turn": 5,
+  "verified": true,
+  "verify_msg": "166/166 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ },
+ {
+  "name": "reigning_allied_vs_baseline_s951",
+  "seed": 951,
+  "champion_seats": [
+   "Allied"
+  ],
+  "winner": "French",
+  "counts": {
+   "French": 1,
+   "Allied": 7
+  },
+  "margin_french": 163.0,
+  "turn": 1,
+  "verified": true,
+  "verify_msg": "43/43 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)"
+ }
+]

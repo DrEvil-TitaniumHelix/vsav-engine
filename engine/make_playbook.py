@@ -77,11 +77,15 @@ def main():
     if a.portfolio:
         champion["portfolio"] = json.load(open(a.portfolio, encoding="utf-8"))
         # distill the portfolio's top-weight genome - the equilibrium winner
-        # may be a hall-of-famer, not the final reigning champion
+        # may be a hall-of-famer, not the final reigning champion. When the
+        # equilibrium kept ONLY the shipped baseline (no elite genome earned
+        # weight), there is nothing to distill - the shipped policy IS the
+        # converged strategy, and distilling the non-graduating reigning
+        # genome would misrepresent the run's verdict.
         port = champion["portfolio"]
         named = [(w, nm) for nm, w in port.get("weights", [])
                  if nm in port.get("genomes", {})]
-        best = port["genomes"][max(named)[1]] if named else ck.get("reigning")
+        best = port["genomes"][max(named)[1]] if named else None
     else:
         champion["genome"] = ck.get("reigning")
         best = ck.get("reigning")
