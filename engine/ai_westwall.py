@@ -499,10 +499,12 @@ class TurnStepper:
     """One gate action at a time - the engine hook for spacebar / animated
     stepping. Identical action stream to take_turn."""
 
-    def __init__(self, ww, resolve_for=None):
+    def __init__(self, ww, resolve_for=None, gen=None):
         self.bg = ww
         self.sg = ww
-        self.gen = turn_actions(ww, resolve_for)
+        # gen: a pre-built action generator (champion plan via
+        # plans.COMPILERS) - absent, the policy's own stream
+        self.gen = gen if gen is not None else turn_actions(ww, resolve_for)
         self._next = None
         try:
             self._next = self.gen.send(None)

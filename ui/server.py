@@ -58,6 +58,9 @@ import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
 import ai_napoleonic as nai_mod  # noqa: E402
 import pbm as pbm_mod  # noqa: E402
+import plans as plans_mod  # noqa: E402
+import champion as champ_mod  # noqa: E402
+import salvo as salvo_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
 
@@ -318,6 +321,7 @@ def game_descriptor():
     w, h = png_size(g.assets["map"])
     return dict(
         name=g.name,
+        slug=GAME_SLUG,
         map_url="/gasset/map", map_w=w, map_h=h,
         counters_url="/gasset/counters/",
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
@@ -395,25 +399,27 @@ MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter"
             "napoleonic": "Napoleonic command", "free": "Free play"}
 TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
             3: "Full rules"}
-# Champion (trained, graduated) AIs exist per playbook/, but the interactive
-# AI button still plays the baseline policy — flip this when the champion is
-# wired in, and playbook games will honestly advertise "Advanced AI".
-CHAMPION_WIRED = False
+# Champion (trained, graduated) AIs are WIRED: the interactive AI seat and
+# the PBM responder play the playbook champion wherever one exists
+# (engine/champion.py), so "Advanced AI" is now the truth for those games.
+CHAMPION_WIRED = True
 
 
 def game_tags(gdir, spec, scen_mode, earned):
     """Capability tags for the selection pages — one implementation, both
     menus (app + browser demo). Every tag states something the build actually
-    does; 'Advanced AI' appears only once the trained champion IS the
-    opponent behind the button."""
+    does; 'Advanced AI' appears only where the trained champion IS the
+    opponent behind the button. A playbook whose self-play run kept the
+    baseline (Austerlitz) shows 'Champion-validated': same policy behind
+    the button, certified by the playbook's 43k-game run."""
     tags = [dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
     if earned >= 3:
-        champion = os.path.isdir(os.path.join(gdir, "playbook"))
+        champion = champ_mod.genome(gdir) is not None
         tags.append(dict(
-            label="Advanced AI" if (champion and CHAMPION_WIRED) else "Basic AI",
+            label="Advanced AI" if champion else "Basic AI",
             kind="ai"))
-        if champion and not CHAMPION_WIRED:
-            tags.append(dict(label="Trained champion: coming", kind="soon"))
+        if not champion and champ_mod.validated(gdir):
+            tags.append(dict(label="Champion-validated", kind="feature"))
     m = MODE_TAG.get(scen_mode or "free")
     if m and earned > 0:
         tags.append(dict(label=m, kind="mode"))
@@ -708,6 +714,8 @@ def api_state():
         out["notes"] = SG.scenario["name"]
     if SCEN_MODE in pbm_mod.PBM_MODES:
         out["pbm"] = pbm_status()
+    if SCEN_MODE in salvo_mod.SALVO_MODES:
+        out["salvo"] = salvo_status()
     return out
 
 
@@ -888,7 +896,9 @@ def api_sg_ai_turn(body):
     if SG.s["mover"] != side or SG.s["phase"] != "movement":
         return dict(steps=[], flow=SG.flow(),
                     error=f"it is not the start of the {side} player turn")
-    steps = sg_ai_module().take_turn(SG)
+    plan = champ_mod.plan_for(SG)      # trained champion where one exists
+    steps = (plans_mod.take_turn(SG, plan) if plan
+             else sg_ai_module().take_turn(SG))
     sync_mirror()
     done.clear()
     return dict(steps=steps, flow=SG.flow())
@@ -937,7 +947,15 @@ def api_ai_step(body):
                 return dict(done=False, step=None, next=None, flow=SG.flow(),
                             error=f"it is not the start of the {side} "
                                   "player turn")
-            AI_STEP = sg_ai_module().TurnStepper(SG)
+            plan = champ_mod.plan_for(SG)
+            comp = plans_mod.COMPILERS.get(SCEN_MODE)
+            if plan and plan.get("orders") and comp:
+                # champion stepping: same planned action stream the
+                # whole-turn path plays, revealed one action at a time
+                AI_STEP = sg_ai_module().TurnStepper(
+                    SG, gen=comp(SG, plan, None))
+            else:
+                AI_STEP = sg_ai_module().TurnStepper(SG)
             AI_STEP._for = (SG.s["turn"], SG.s["mover"])
             return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
                         flow=SG.flow())      # reveal the first intent, execute nothing
@@ -1149,10 +1167,190 @@ def api_pbm_stop():
     return dict(ok=True)
 
 
+# --- SALVO (Modes 2/3): an outside LLM takes a seat via the match folder ----
+# Protocol: SALVO_PROTOCOL.md (repo root). The server owns packet/move
+# semantics; the client (web/shared/salvo.js) only ferries files.
+def salvo_status():
+    sc = salvo_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not sc:
+        return None
+    st = {k: sc[k] for k in ("match_id", "llm_side", "n")}
+    if SG:
+        st["decider"] = salvo_mod.decider(SG)
+        st["over"] = sg_over()
+        st["your_llm_up"] = (not sg_over()
+                             and salvo_mod.decider(SG) == sc["llm_side"])
+    st["pbm"] = bool(pbm_mod.load_sidecar(LIVE, GAME_SLUG))
+    return st
+
+
+def _salvo_packet_now(sc):
+    return salvo_mod.build_packet(SG, sc, GAME_SLUG, SCEN_MODE)
+
+
+def _salvo_advance_ai(sc):
+    """Mode 2: play the house side (champion where one exists) until the
+    game waits on the LLM seat again - whole opponent turns AND the
+    opponent's own pending choices. The LLM seat's pendings are never
+    touched (resolve_for), so they land in a packet. Mode 3 (a mailed
+    match is active) never advances locally - the remote end plays."""
+    if pbm_mod.load_sidecar(LIVE, GAME_SLUG):
+        return
+    llm = sc["llm_side"]
+    house = next(s for s in GAME_OBJ.side_order if s != llm)
+    guard = 0
+    while guard < 300 and not sg_over():
+        guard += 1
+        if salvo_mod.decider(SG) == llm:
+            break
+        if SG.s.get("pending"):
+            item = sg_ai_module()._resolve_pending(SG)
+            if not item:
+                break
+            SG.submit(item[0], item[1])
+            continue
+        if SG.s["mover"] == llm:
+            break                      # LLM's turn, no pending: its packet
+        plan = (champ_mod.plan_for(SG)
+                if SG.s.get("phase") == "movement" else None)
+        if plan:
+            plans_mod.take_turn(SG, plan, resolve_for={house})
+        elif SCEN_MODE == "strategic":
+            sg_ai_module().take_turn(SG)
+        else:
+            sg_ai_module().take_turn(SG, resolve_for={house})
+    sync_mirror()
+    done.clear()
+
+
+def api_salvo_start(body):
+    """Attach the player's own LLM to one seat (Mode 2; with a mailed match
+    active it becomes Mode 3 - same packets, remote opponent). Plays at the
+    earned tier: SALVO is a full-gate feature by construction."""
+    global AI_STEP
+    if SCEN_MODE not in salvo_mod.SALVO_MODES:
+        return dict(error="SALVO v1 plays the strategic-family games "
+                          f"({', '.join(salvo_mod.SALVO_MODES)})")
+    side = body.get("side")
+    if side not in GAME_OBJ.side_order:
+        return dict(error=f"pick a side: {' or '.join(GAME_OBJ.side_order)}")
+    pbm_sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
+    if pbm_sc and side != pbm_sc["human_side"]:
+        return dict(error=f"in this mailed match your seat is "
+                          f"{pbm_sc['human_side']} - the LLM plays YOUR "
+                          "seat; the other side arrives by mail")
+    if body.get("fresh"):
+        r = api_reset(dict(tier=TIER_EARNED))
+        if r.get("error"):
+            return r
+        if body.get("seed") is not None:
+            SG.new_game(int(body["seed"]))
+    elif TIER != TIER_EARNED:
+        return dict(error=f"SALVO plays at the earned tier ({TIER_EARNED}); "
+                          "this game is running at tier "
+                          f"{TIER} - start fresh or switch tier first")
+    AI_STEP = None
+    # s["n"] counts log LINES (init included); action numbering starts at
+    # the next line, so "everything the LLM has seen" = s["n"] - 1
+    sc = dict(match_id=(pbm_sc or {}).get("match_id") or pbm_mod.new_match_id(),
+              game=GAME_SLUG, mode=SCEN_MODE, llm_side=side,
+              n=1, last_n=SG.s["n"] - 1, rejected=None)
+    salvo_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    _salvo_advance_ai(sc)              # the house may have the first move
+    salvo_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    return dict(ok=True, salvo=salvo_status(), packet=_salvo_packet_now(sc),
+                flow=SG.flow())
+
+
+def api_salvo_packet():
+    sc = salvo_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not (SG and sc):
+        return dict(error="no SALVO match is active")
+    return dict(packet=_salvo_packet_now(sc), salvo=salvo_status(),
+                flow=SG.flow())
+
+
+def api_salvo_move(body):
+    """Consume a move file: apply its actions through the gate (accepted
+    prefix stands), advance the house side, hand back the next packet."""
+    sc = salvo_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not (SG and sc):
+        return dict(error="no SALVO match is active")
+    if sg_over():
+        return dict(packet=_salvo_packet_now(sc), salvo=salvo_status(),
+                    flow=SG.flow())
+    blocked = pbm_blocked()
+    if blocked:
+        return dict(error=blocked, packet=_salvo_packet_now(sc),
+                    salvo=salvo_status(), flow=SG.flow())
+    try:
+        acts = salvo_mod.check_move(body.get("move"), sc["n"])
+    except salvo_mod.MoveError as e:
+        return dict(error=str(e), packet=_salvo_packet_now(sc),
+                    salvo=salvo_status(), flow=SG.flow())
+    if salvo_mod.decider(SG) != sc["llm_side"]:
+        return dict(error=f"not {sc['llm_side']}'s decision right now - "
+                          "wait for a decision packet",
+                    packet=_salvo_packet_now(sc), salvo=salvo_status(),
+                    flow=SG.flow())
+    pre_n = SG.s["n"] - 1        # last logged action before this move file
+    sc["rejected"] = None
+    accepted, rejected = salvo_mod.apply_move(SG, sc["llm_side"], acts)
+    if rejected:
+        sc["rejected"] = dict(your_move_n=sc["n"], accepted=len(accepted),
+                              **rejected)
+    sc["last_n"] = pre_n
+    sc["n"] += 1
+    _salvo_advance_ai(sc)
+    salvo_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    sync_mirror()
+    done.clear()
+    return dict(ok=True, accepted=len(accepted), rejected=rejected,
+                packet=_salvo_packet_now(sc), salvo=salvo_status(),
+                flow=SG.flow())
+
+
+def api_salvo_tick():
+    """Advance the house side if the game waits on it (match start, or
+    after a mailed import) and return the current packet."""
+    sc = salvo_mod.load_sidecar(LIVE, GAME_SLUG)
+    if not (SG and sc):
+        return dict(error="no SALVO match is active")
+    _salvo_advance_ai(sc)
+    salvo_mod.save_sidecar(LIVE, GAME_SLUG, sc)
+    return dict(packet=_salvo_packet_now(sc), salvo=salvo_status(),
+                flow=SG.flow())
+
+
+def api_salvo_log():
+    """The complete engine log - salvo.js mirrors it into the match folder
+    as log.jsonl (the durable, independently verifiable game record)."""
+    if not SG or not os.path.exists(SG.log_path):
+        return dict(lines=[])
+    return dict(lines=open(SG.log_path, encoding="utf-8").read()
+                .splitlines())
+
+
+def api_salvo_payload():
+    """The challenger payload for the loaded game - the paste-in document
+    that teaches any file-capable LLM to play this seat."""
+    if SCEN_MODE not in salvo_mod.SALVO_MODES:
+        return dict(error="SALVO v1 plays the strategic-family games")
+    text = salvo_mod.payload_text(GAME_SLUG, GAME_OBJ.spec, SCEN_MODE,
+                                  game_dir(GAME_SLUG), turns=SG.turns)
+    return dict(text=text, filename=f"salvo_payload_{GAME_SLUG}.md")
+
+
+def api_salvo_stop():
+    salvo_mod.clear_sidecar(LIVE, GAME_SLUG)
+    return dict(ok=True)
+
+
 def api_reset(body=None):
     global TIER, AI_STEP
     AI_STEP = None
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
+    salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
     t = (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
@@ -1267,6 +1465,12 @@ def route_get(path, qs):
         return p if p else dict(none=True, flow=flow_view())
     if path == "/api/pbm/export":
         return api_pbm_export()
+    if SG and path == "/api/salvo/packet":
+        return api_salvo_packet()
+    if SG and path == "/api/salvo/log":
+        return api_salvo_log()
+    if SG and path == "/api/salvo/payload":
+        return api_salvo_payload()
     return None
 
 
@@ -1295,6 +1499,14 @@ def route_post(path, body):
         return api_pbm_import(body)
     if path == "/api/pbm/stop":
         return api_pbm_stop()
+    if SG and path == "/api/salvo/start":
+        return api_salvo_start(body)
+    if SG and path == "/api/salvo/move":
+        return api_salvo_move(body)
+    if SG and path == "/api/salvo/tick":
+        return api_salvo_tick()
+    if path == "/api/salvo/stop":
+        return api_salvo_stop()
     if path == "/api/pass":
         return api_pass(body)
     if path == "/api/face":
