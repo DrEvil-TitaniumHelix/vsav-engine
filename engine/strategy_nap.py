@@ -57,6 +57,18 @@ GENES = [
     ("melee_sp_ratio", 0.5, 2.5, _D["melee_sp_ratio"]),       # melee only at this x defender SP [8.2]
     ("square_form", 0.0, 1.0, _D["square_form"]),             # form square against a charge [8.4.2#4]
     ("unlimber_slack", -2.0, 4.0, _D["unlimber_slack"]),      # unlimber at fire range + this [6.3.7]
+    # v2 maneuver/targeting genes (2026-07-18, after the v1 verdict:
+    # the 12 command-economy knobs above are near-insensitive - the
+    # equilibrium was 100% baseline. Only destroyed/routed/unsteady
+    # units count toward the A15.1 thresholds, so these steer WHOM
+    # units close on, shoot at and shock - the objective-steering
+    # lesson from strategy_ww. All baselines 0 = the shipped
+    # nearest-foe / front-arc-first behavior exactly.)
+    ("tgt_weak_w", 0.0, 4.0, _D["tgt_weak_w"]),               # objective pull toward damaged/shaken enemies
+    ("tgt_arty_w", 0.0, 4.0, _D["tgt_arty_w"]),               # objective pull toward enemy artillery
+    ("mass_w", 0.0, 2.0, _D["mass_w"]),                       # objective pull toward enemies own units converge on
+    ("fire_finish_w", 0.0, 4.0, _D["fire_finish_w"]),         # fire targets: finish the damaged/shaken [9.x]
+    ("shock_finish_w", 0.0, 4.0, _D["shock_finish_w"]),       # melee/charge targets: likewise
 ]
 
 
@@ -95,7 +107,14 @@ def corners():
     press.update(pool_enemy_near=8.0, full_enemy_dist=15.0,
                  full_rating_min=5.0, melee_sp_ratio=0.75,
                  cav_preserve_slack=8.0, unlimber_slack=2.0)
-    return [refuse, press]
+    # v2: the HUNTER - concentrate on breaking units, not fighting
+    # them. Only broken units count [A15.1]: press the shaken to
+    # unsteady, kill the unsteady so they can never rally out of the
+    # count [12.0], mass effort on the same targets.
+    hunter = baseline()
+    hunter.update(tgt_weak_w=2.5, tgt_arty_w=1.0, mass_w=1.0,
+                  fire_finish_w=2.5, shock_finish_w=2.0)
+    return [refuse, press, hunter]
 
 
 GENE_PROSE = {
@@ -132,6 +151,19 @@ GENE_PROSE = {
                    "square: {alt} (8.4.2#4)",
     "unlimber_slack": "artillery unlimbers at its fire range {v:+.0f} "
                       "hexes (6.3.7)",
+    "tgt_weak_w": "movement objectives weight damaged/shaken enemies "
+                  "at {v:.2f} per morale/SP step (0 = plain nearest "
+                  "enemy; only broken units count, A15.1)",
+    "tgt_arty_w": "movement objectives weight enemy artillery at "
+                  "{v:.2f}",
+    "mass_w": "movement objectives weight enemies own units already "
+              "converge on at {v:.2f} per friend within 3 hexes "
+              "(concentration of effort)",
+    "fire_finish_w": "fire targets weight the damaged/shaken at "
+                     "{v:.2f} per step over plain front-arc-nearest "
+                     "(morale states are the A15.1 count, 9.x)",
+    "shock_finish_w": "melee/charge targets weight the damaged/shaken "
+                      "at {v:.2f} per step",
 }
 
 
