@@ -59,6 +59,31 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import formations as fm             # noqa: E402
 
 
+# Doctrine knobs (spec #22): the shipped policy's constants, exposed so a
+# strategy genome (engine/strategy_nap.py) can vary them. theta=None (or a
+# missing key) plays the shipped baseline EXACTLY - the values here ARE the
+# policy documented above, and strategy_nap reads its gene baselines from
+# this dict (single source of the shipped constants).
+DOCTRINE = {
+    "pool_fatigue_max": 6.0,    # commit a LIM below this fatigue [13.1/13.2]
+    "pool_enemy_near": 3.0,     # ...or with an enemy this close [13.2]
+    "init_own_first": 1.0,      # initiative picks an own-side LIM first [4.4]
+    "full_enemy_dist": 8.0,     # Full Activation with enemy within this [4.6]
+    "full_rating_min": 7.0,     # ...or leader activation rating >= this [4.5.1]
+    "bd_take": 1.0,             # take breakdown Enemy/Reactivate offers [4.7]
+    "hold_dist": 0.0,           # stand-off: never close inside this range [5.1]
+    "cav_preserve_slack": 4.0,  # May-Charge cap while enemy <= MA+this [5.1.2]
+    "charge_accept": 1.0,       # cavalry declares charges at all [8.4]
+    "melee_sp_ratio": 1.0,      # melee only at own SP >= this x theirs [8.2]
+    "square_form": 1.0,         # form square against a charge [8.4.2#4]
+    "unlimber_slack": 0.0,      # unlimber at fire range + this [6.3.7]
+}
+
+
+def _th(theta, key):
+    return DOCTRINE[key] if theta is None else theta.get(key, DOCTRINE[key])
+
+
 # ----------------------------------------------------------------- helpers
 def _over(g):
     """Game over, exactly as flow() computes it: a victory [A15.1] or
@@ -111,11 +136,12 @@ def _has_target(g, u):
 
 
 # ----------------------------------------------------- movement decisions
-def _move_pick(g, u, budget, avoid, strat, cap=None):
+def _move_pick(g, u, budget, avoid, strat, cap=None, theta=None):
     """Best single move action for `u` (or None to hold): closes on the
     nearest enemy, prefers keeping it in the front arc and avoiding
     movement-disorder risk. `cap` limits spent MPs (cavalry May Charge
-    preservation [5.1.2])."""
+    preservation [5.1.2]); `hold_dist` doctrine keeps a stand-off
+    distance (never voluntarily closing inside it)."""
     obj = _nearest_foe(g, u["side"], (u["col"], u["row"]))
     if obj is None:
         return None
@@ -123,6 +149,7 @@ def _move_pick(g, u, budget, avoid, strat, cap=None):
     here = (u["col"], u["row"])
     d_now = g._dist(here, ohex)
     faced_now = ohex in _front_set(g, u) or d_now > 1
+    hold = _th(theta, "hold_dist")
     try:
         reach = g.reachable(u["pid"], budget=budget,
                             avoid_adjacent=avoid, strat=strat)
@@ -133,6 +160,10 @@ def _move_pick(g, u, budget, avoid, strat, cap=None):
         if cap is not None and cost > cap + 1e-9:
             continue
         d = g._dist((c, r), ohex)
+        # stand-off doctrine: gate the approach, never force a retreat -
+        # a unit already inside the hold range may still fight/refit
+        if hold > 0 and (c, r) != here and d < min(hold, d_now):
+            continue
         front = {tuple(h) for h in fm.front_hexes(
             g.game, c, r, f, g._kind(u))}
         # facing quality: adjacent must hold the enemy in the front
@@ -161,7 +192,7 @@ def _move_pick(g, u, budget, avoid, strat, cap=None):
             f"{u['slot']} {what} {obj['slot']} [5.1/6.1]")
 
 
-def _unit_action(g, u, budget, avoid, strat):
+def _unit_action(g, u, budget, avoid, strat, theta=None):
     """The unit's one action this activation [4.6.1], or None."""
     pid = u["pid"]
     # reform out of disorder before anything else [6.4.1]
@@ -184,23 +215,28 @@ def _unit_action(g, u, budget, avoid, strat):
             if _has_target(g, u):
                 return None                    # hold and fire
             # rotate onto the nearest enemy if that alone finds a shot
-            return _move_pick(g, u, budget, avoid, strat)
+            return _move_pick(g, u, budget, avoid, strat, theta=theta)
         # limbered: unlimber inside range, else keep rolling forward
-        if d <= rng and g._formation_change_ok(u, "unlimbered")[0]:
+        if d <= rng + _th(theta, "unlimber_slack") \
+                and g._formation_change_ok(u, "unlimbered")[0]:
             cost = g.F.action_cost(u, "change_formation", u["ma"])
             if cost is None or cost <= budget + 1e-9:
                 return ({"type": "change_formation", "unit": pid,
                          "to": "unlimbered"},
                         f"{u['slot']} unlimbers in range [6.3.7]")
-        return _move_pick(g, u, budget, avoid, strat)
+        return _move_pick(g, u, budget, avoid, strat, theta=theta)
     if u["arm"] == "cavalry":
         # May Charge preservation: never spend over half MA while a
-        # charge could develop [5.1.2/8.4]
-        cap = int(u["ma"]) // 2 if d <= int(u["ma"]) + 4 else None
-        if 2 <= d <= 4:
+        # charge could develop [5.1.2/8.4]; moot doctrine when this
+        # genome never declares charges
+        chg = _th(theta, "charge_accept") >= 0.5
+        cap = int(u["ma"]) // 2 \
+            if chg and d <= int(u["ma"]) + _th(theta, "cav_preserve_slack") \
+            else None
+        if chg and 2 <= d <= 4:
             return None                        # charge range already
-        return _move_pick(g, u, budget, avoid, strat, cap=cap)
-    return _move_pick(g, u, budget, avoid, strat)
+        return _move_pick(g, u, budget, avoid, strat, cap=cap, theta=theta)
+    return _move_pick(g, u, budget, avoid, strat, theta=theta)
 
 
 def _leader_action(g, u, act, budget):
@@ -264,7 +300,7 @@ def _fire_pick(g, side, pids):
     return None
 
 
-def _shock_pick(g, side, act):
+def _shock_pick(g, side, act, theta=None):
     """Melee / charge declarations for a Full Activation (tier 2+)."""
     if not getattr(g, "_p4", False) or act.get("atype") != "full":
         return None
@@ -286,7 +322,7 @@ def _shock_pick(g, side, act):
                                   if w["arm"] == "infantry"
                                   and g._may_initiate_melee(w)[0]])
                 theirs = _stack_sp(g._stack(*dhex, side=v["side"]))
-                if mine < theirs:
+                if mine < _th(theta, "melee_sp_ratio") * theirs:
                     continue           # no hopeless shocks
                 a = {"type": "melee", "unit": pid, "target": v["pid"]}
                 if g.propose(side, a)["legal"]:
@@ -294,6 +330,8 @@ def _shock_pick(g, side, act):
                                "[8.2/8.3]")
             continue
         # cavalry charge [8.4]
+        if _th(theta, "charge_accept") < 0.5:
+            continue
         if u.get("blown", 0) or u["morale_state"] != "good" \
                 or u["formation"] == "disorder":
             continue
@@ -313,14 +351,16 @@ def _shock_pick(g, side, act):
 
 
 # ------------------------------------------------------- window decisions
-def _melee_window_action(g, side):
+def _melee_window_action(g, side, theta=None):
     pm = g.s["pending_melee"]
     stage = pm["stage"]
     ent = pm.get("entitled") or {}
     if stage == "square_window":
         pid = next(iter(ent))
-        return ({"type": "square_choice", "form": True, "unit": pid},
-                "infantry tries to form square [8.4.2#4]")
+        form = _th(theta, "square_form") >= 0.5
+        return ({"type": "square_choice", "form": form, "unit": pid},
+                "infantry tries to form square [8.4.2#4]" if form else
+                "declines the square - stands in formation [8.4.2#4]")
     if stage == "return_window":
         for pid, kinds in sorted(ent.items()):
             if "reaction_move" in kinds:
@@ -380,30 +420,35 @@ def _react_window_action(g, side):
 
 
 # ------------------------------------------------------ command decisions
-def _pool_pick(g, side):
+def _pool_pick(g, side, theta=None):
     lims = []
+    near = int(round(_th(theta, "pool_enemy_near")))
     for lim in g._available_lims(side):
         dk = g._div_by_lim(side, lim)
         if dk is None:
             lims.append(lim)
             continue
         fat = g.s["fatigue"].get(dk, 0)
-        if fat < 6 or g._enemies_within(dk, 3):
+        if fat < _th(theta, "pool_fatigue_max") or g._enemies_within(dk, near):
             lims.append(lim)
     return ({"type": "set_pool", "lims": lims},
             f"commits {len(lims)} LIM(s) - fatigued divisions rest "
             "[13.1/13.2 + A15.1]")
 
 
-def _initiative_pick(g, side):
+def _initiative_pick(g, side, theta=None):
     pool = g.s["pool"]
     own = [ref for ref in pool if ref.startswith(side + ":")]
-    ref = (own or pool)[0]
+    if _th(theta, "init_own_first") < 0.5:
+        foreign = [ref for ref in pool if not ref.startswith(side + ":")]
+        ref = (foreign or pool)[0]
+    else:
+        ref = (own or pool)[0]
     return ({"type": "choose_initiative_lim", "lim": ref},
             f"initiative opens with {ref} [4.4]")
 
 
-def _want_full(g, dk):
+def _want_full(g, dk, theta=None):
     """Attempt the Full Activation when the division needs to fight
     (enemy within 8 hexes - melee/charge and free adjacency need Full
     [4.6/8.2-8.4]) or when the leader's rating makes the roll safe;
@@ -411,12 +456,12 @@ def _want_full(g, dk):
     gambling the whole activation on the Breakdown Table [4.7]."""
     if g._at_div_breakpoint(dk):
         return False                   # gate forbids Full [11.2.1]
-    if g._enemies_within(dk, 8):
+    if g._enemies_within(dk, int(round(_th(theta, "full_enemy_dist")))):
         return True
-    return int(g._rating(dk)["activation"]) >= 7
+    return int(g._rating(dk)["activation"]) >= _th(theta, "full_rating_min")
 
 
-def _choice_pick(g, side, act, tried):
+def _choice_pick(g, side, act, tried, theta=None):
     if act["kind"] == "independent":
         ind = act["indep"]
         cands = [dk for dk in ind["eligible"] if dk not in ind["done"]]
@@ -428,7 +473,7 @@ def _choice_pick(g, side, act, tried):
     else:
         dk = act["div"]
         base = {"type": "activation_choice"}
-    order = ("full", "limited") if _want_full(g, dk) \
+    order = ("full", "limited") if _want_full(g, dk, theta) \
         else ("limited", "full")
     for choice in order:
         if choice == "full" and g._at_div_breakpoint(dk):
@@ -440,15 +485,16 @@ def _choice_pick(g, side, act, tried):
     return ({"type": "end_activation"}, "activation declined [4.5.1]")
 
 
-def _bd_pick(g, act):
-    for dk in act["bd_closest"]:
-        if g.s["act_count"].get(dk, 0) < 2:
-            return ({"type": "bd_activate", "division": dk},
-                    f"takes the breakdown activation with {dk} [4.7]")
+def _bd_pick(g, act, theta=None):
+    if _th(theta, "bd_take") >= 0.5:
+        for dk in act["bd_closest"]:
+            if g.s["act_count"].get(dk, 0) < 2:
+                return ({"type": "bd_activate", "division": dk},
+                        f"takes the breakdown activation with {dk} [4.7]")
     return ({"type": "bd_decline"}, "breakdown offer declined [4.7]")
 
 
-def _activation_pick(g, side, act, tried):
+def _activation_pick(g, side, act, tried, theta=None):
     """One action inside an open activation: moves, then fire, then
     shock, then close [4.6.1/8.1.1]."""
     strat = bool(act.get("strat"))
@@ -462,14 +508,14 @@ def _activation_pick(g, side, act, tried):
             item = _leader_action(g, u, act, act["budget"].get(pid)) \
                 if u["arm"] == "leader" else \
                 _unit_action(g, u, act["budget"].get(pid, 0.0),
-                             avoid, strat)
+                             avoid, strat, theta)
             if item and json.dumps(item[0], sort_keys=True) not in tried:
                 return item
     if not strat:
         item = _fire_pick(g, side, act["incommand"])
         if item and json.dumps(item[0], sort_keys=True) not in tried:
             return item
-        item = _shock_pick(g, side, act)
+        item = _shock_pick(g, side, act, theta)
         if item and json.dumps(item[0], sort_keys=True) not in tried:
             return item
     return ({"type": "end_activation"}, "activation complete [4.6]")
@@ -503,14 +549,15 @@ def _rally_pick(g, side):
 
 
 # ------------------------------------------------------------ the picker
-def _next_action(g, side, tried):
+def _next_action(g, side, tried, theta=None):
     """The policy's next (action, desc) for `side` given the current
     state, or None to stop. Every branch ends in a guaranteed-legal
-    closer so a rejected pick can never loop."""
+    closer so a rejected pick can never loop. `theta` = optional
+    strategy_nap doctrine genome; None plays the shipped baseline."""
     s = g.s
     if s.get("pending_melee") and \
             s["pending_melee"].get("window_owner") == side:
-        item = _melee_window_action(g, side)
+        item = _melee_window_action(g, side, theta)
         if item and json.dumps(item[0], sort_keys=True) in tried:
             # degradation ladder: the minimal legal answer
             pm = s["pending_melee"]
@@ -543,19 +590,19 @@ def _next_action(g, side, tried):
         item = _rally_pick(g, side)
     elif getattr(g, "_cmd", False):
         if ph == "command":
-            item = _pool_pick(g, side)
+            item = _pool_pick(g, side, theta)
         elif ph == "initiative":
-            item = _initiative_pick(g, side)
+            item = _initiative_pick(g, side, theta)
         elif ph == "activation":
             act = s.get("act")
             if act is None:
                 return None
             if act["pending"] == "bd_offer":
-                item = _bd_pick(g, act)
+                item = _bd_pick(g, act, theta)
             elif act["pending"] == "choice":
-                item = _choice_pick(g, side, act, tried)
+                item = _choice_pick(g, side, act, tried, theta)
             else:
-                item = _activation_pick(g, side, act, tried)
+                item = _activation_pick(g, side, act, tried, theta)
         elif ph == "non_lim":
             item = _nonlim_pick(g, side)
         else:
@@ -574,7 +621,7 @@ def _next_action(g, side, tried):
                                      s["units"].values()
                                      if v["side"] == side]},
                 float(u["ma"])) if u["arm"] == "leader" else \
-                _unit_action(g, u, float(u["ma"]), False, False)
+                _unit_action(g, u, float(u["ma"]), False, False, theta)
             if it and json.dumps(it[0], sort_keys=True) not in tried:
                 item = it
                 break
@@ -590,17 +637,19 @@ def _next_action(g, side, tried):
 
 
 # ---------------------------------------------------------------- drivers
-def turn_actions(g, side=None):
+def turn_actions(g, side=None, theta=None):
     """Generator of (side, action, desc) while the game is waiting on
     `side` (default: the current decider). Stops as soon as a decision
     belongs to the other side - a human opponent answers their own
-    windows and the policy resumes afterwards from state."""
+    windows and the policy resumes afterwards from state. `theta` =
+    optional strategy_nap doctrine genome (spec #22); None plays the
+    shipped baseline exactly."""
     side = side or g.decider()
     tried = set()
     guard = 0
     while not _over(g) and g.decider() == side and guard < 4000:
         guard += 1
-        item = _next_action(g, side, tried)
+        item = _next_action(g, side, tried, theta)
         if item is None:
             return
         action, desc = item
@@ -631,22 +680,22 @@ def _drive(gen, g):
     return log
 
 
-def take_turn(g, side=None):
+def take_turn(g, side=None, theta=None):
     """Play every decision belonging to `side` (default: the current
     decider) until the flow passes to the other side or the game ends."""
     if _over(g):
         return []
-    return _drive(turn_actions(g, side), g)
+    return _drive(turn_actions(g, side, theta), g)
 
 
 class TurnStepper:
     """One gate action at a time - the engine hook for spacebar /
     animated stepping. Identical action stream to take_turn."""
 
-    def __init__(self, g, side=None):
+    def __init__(self, g, side=None, theta=None):
         self.sg = g
         self.side = side or g.decider()
-        self.gen = turn_actions(g, self.side)
+        self.gen = turn_actions(g, self.side, theta)
         try:
             self._next = self.gen.send(None)
         except StopIteration:
@@ -674,15 +723,18 @@ class TurnStepper:
         return entry
 
 
-def play_game(g, max_turns=None, on_turn=None):
+def play_game(g, max_turns=None, on_turn=None, thetas=None):
     """AI-vs-AI: whichever side the game waits on plays, until the game
-    ends (victory [A15.1] or the turn limit)."""
+    ends (victory [A15.1] or the turn limit). `thetas` = optional
+    side -> strategy_nap genome; absent sides play the shipped
+    baseline."""
     full = []
     guard = 0
     limit = (max_turns or g.turns) * 400 + 100
     while not _over(g) and guard < limit:
         before = (g.s["turn"], g.decider(), g.s["n"])
-        log = take_turn(g, g.decider())
+        who = g.decider()
+        log = take_turn(g, who, (thetas or {}).get(who))
         full.extend(log)
         if on_turn:
             on_turn(g, log)

@@ -13,7 +13,12 @@ run tournament evolution on a game:
              game's draw line, positive = first side ahead. This is the
              per-family "graded margin fn" - victory conditions differ
              (B&G: VP difference; Westwall: the 17.4 German:Allied RATIO,
-             draw exactly at Ger = 2 x All).
+             draw exactly at Ger = 2 x All; Austerlitz: broken-unit
+             counts against the asymmetric A15.1 thresholds).
+  result     OPTIONAL: fn(tg) -> {"vp", "winner", "over"} for families
+             whose game keeps victory out of s["vp"]/s["winner"]
+             (napoleonic computes it in flow()); absent = the strategic
+             default, read straight from tg.s.
 
 Detection reads game.json policy_ai.kind - the same field the UI and PBM
 responder dispatch on.
@@ -56,7 +61,49 @@ def _westwall():
     }
 
 
-_LOADERS = {"bluegray": _bluegray, "westwall": _westwall}
+def _nap_margin(vp, order):
+    """A15.1 graded margin from the French seat (side_order[0]). vp =
+    _victory_state()['counts']: each side's OWN units destroyed/routed/
+    unsteady. The French win at 7 Allied broken, the Allied at 10 French
+    [A15.1]; the cross-multiplied differential (10 x Allied broken -
+    7 x French broken) is zero when both sides sit at the same fraction
+    of their own threshold, positive when the French are closer. The
+    +/-100 bonus fires exactly when a threshold was reached - the game
+    ends at that instant, so final counts imply the winner (ordered as
+    _victory_state checks: French first)."""
+    a, b = order                       # French, Allied
+    m = 10.0 * vp[b] - 7.0 * vp[a]
+    if vp[b] >= 7:
+        m += 100.0
+    elif vp[a] >= 10:
+        m -= 100.0
+    return m
+
+
+def _nap_result(tg):
+    """Napoleonic keeps victory in flow(), not s['vp']: mirror flow()'s
+    formula exactly (live victory until the first turn-end stores it)."""
+    v = tg.s.get("victory") or tg._victory_state()
+    return {"vp": v["counts"], "winner": v.get("winner"),
+            "over": bool(v.get("winner")) or tg.s["turn"] > tg.turns}
+
+
+def _napoleonic():
+    import napoleonic
+    import ai_napoleonic
+    import strategy_nap
+    return {
+        "kind": "napoleonic",
+        "game_cls": napoleonic.NapoleonicGame,
+        "ai": ai_napoleonic,
+        "strategy": strategy_nap,
+        "margin": _nap_margin,
+        "result": _nap_result,
+    }
+
+
+_LOADERS = {"bluegray": _bluegray, "westwall": _westwall,
+            "napoleonic": _napoleonic}
 
 
 def kind_of(game):

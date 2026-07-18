@@ -61,9 +61,13 @@ def main():
     champion = {"type": "portfolio" if a.portfolio else "single",
                 "strategy_family": f"engine/{strat.__name__}.py",
                 "consume": {
-                    "execute": f"{strat.__name__}.StrategyPlanner(genome) "
-                               "emits one plans.py-DSL plan per turn; every "
-                               "order is validated by the legality gate",
+                    # a family may describe its own execute contract
+                    # (napoleonic has no turn-plan DSL)
+                    "execute": getattr(
+                        strat, "EXECUTE_NOTE",
+                        f"{strat.__name__}.StrategyPlanner(genome) "
+                        "emits one plans.py-DSL plan per turn; every "
+                        "order is validated by the legality gate"),
                     "retrieve": "load doctrine.md + corpus logs into any LLM "
                                 "context; plans are written in the DSL "
                                 "documented in engine/plans.py",
