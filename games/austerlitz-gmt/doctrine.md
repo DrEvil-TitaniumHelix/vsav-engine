@@ -120,6 +120,49 @@ genome is appended by `make_playbook.py`.
   own +160 mean), as Allied vs baseline still French +149/+163 — the
   parity claim, replayable.
 
+## Measured result — v2, the targeting-gene attack (run of 2026-07-18)
+
+- The v1 verdict's own boundary marker was tested: v2 added **5
+  maneuver/targeting genes** to the genome (tgt_weak_w, tgt_arty_w,
+  mass_w, fire_finish_w, shock_finish_w — weakest-target selection,
+  artillery priority, concentration of force, finish-the-wounded fire
+  and shock; commit e00b190; all baseline-0 = legacy paths exactly,
+  equivalence proven in validate_ai), and training used **2 seeds per
+  generation** to close v1's single-seed overfitting hole.
+- Tournament: population 16, **90 generations / 49,156 verified
+  games**. The run was stopped at gen 91: two passive maneuver-gene
+  candidates produced near-endless "dancer" games (legal play
+  verified live, just unterminating within the optimizer's budget) —
+  future runs need a hard per-game action cap in play_one. The gen-90
+  checkpoint is the run of record. Gauntlet streak was 0 throughout
+  (as in every prior run). The final reigning champion DID carry live
+  targeting genes (tgt_weak_w 2.25, tgt_arty_w 2.34,
+  shock_finish_w 1.39).
+- Equilibrium exit (engine/portfolio.py, held-out seeds 940–949, full
+  home-and-away round-robin, 200 games): the Nash mixture this time is
+  **50.7% elite_0 / 26.2% elite_1 / 23.0% elite_3, baseline 0%** — but
+  every payoff entry against baseline is within ±4 and the mixture's
+  worst case is −0.02, in a game whose decisive margins run ±160.
+  Noise-level weights, not a discovered edge.
+- **Graduation bar (spec #22, held-out seeds 960–979): NOT MET.** The
+  top-weight genome (elite_0) vs the shipped baseline over 20
+  home-and-away pairs: **10/20 pair wins, mean pair margin −5.3** —
+  statistical parity, again. Against 5 fresh random genomes it never
+  trained on (seeds 980–984): 5/5 pairs, total margin +604 — a real
+  player, robust to junk opposition, just not better than the shipped
+  policy.
+- Verdict: **the v2 attack confirms the v1 equilibrium.** Even with
+  focus-fire, artillery-priority, mass and finish-the-kill genes live
+  and selected for, 49,156 further games of evolutionary attack found
+  nothing that beats the shipped per-action core on seeds it never
+  trained on. The robustness certificate now covers the targeting
+  dimension too. The shipped policy remains the champion; no distilled
+  genome is promoted (a parity champion would change behavior without
+  evidence of improvement).
+- Evidence of record: runs/2026-07-18_austerlitz_optimizer_v2/
+  (checkpoint.json gen 90, matrix.json, portfolio.json,
+  portfolio_stdout.txt, grad_bar_stdout.txt, grad_bar_v2.py).
+
 ## The strategy space the genome spans (engine/strategy_nap.py)
 
 - Command economy: how deep into the fatigue track a division keeps
