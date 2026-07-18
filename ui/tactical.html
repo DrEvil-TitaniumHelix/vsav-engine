@@ -277,9 +277,8 @@ function render(){
   } else {
     const stepMode=document.getElementById('aimode').value==='step';
     FRAME.setGuide(myPhase() ? (FLOW.segment==='movement'
-        ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: ① click a unit — its reachable hexes `
-          +`light up green; ② press and HOLD the counter, drag it onto a green hex, release `
-          +`to drop, then pick its facing. (<b>unit ▶</b> / N finds the next unmoved unit.) `
+        ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: ${FRAME.MOVE_HINT}, then pick its `
+          +`facing. (<b>unit ▶</b> / N finds the next unmoved unit.) `
           +`Done? <b>End movement</b>.`
         : `<b>YOUR SHOT</b> — click one of your units, then click the hit-chance ring on an `
           +`enemy to fire (one unit per volley; the enemy answers). No shot worth taking? `

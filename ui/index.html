@@ -422,7 +422,7 @@ function renderGuide() {
     }
     const left = myActableUnits().length;
     if (left) {
-      FRAME.setGuide(`<b>Your move</b> — click a unit, then click a highlighted hex. `
+      FRAME.setGuide(`<b>Your move</b> — ${FRAME.MOVE_HINT}. `
         + `<b>unit ▶</b> (or the N key) jumps to your next unmoved unit — <b>${left}</b> to go. `
         + `Finished? <b>End player turn</b>.`);
       FRAME.soleNext(null);
@@ -629,8 +629,8 @@ function napGuide() {
     return false;
   }
   if (FLOW.mover !== mySide) return false;   // generic hotseat banner
-  FRAME.setGuide(`<b>Your activation</b> — click a unit, then a highlighted `
-    + `hex (facing follows the cheapest path; use ⟲ ⟳ to wheel). Click an `
+  FRAME.setGuide(`<b>Your activation</b> — ${FRAME.MOVE_HINT} `
+    + `(facing follows the cheapest path; use ⟲ ⟳ to wheel). Click an `
     + `ENEMY counter while one of your units is selected to <b>fire</b> at `
     + `it [8.1]. Formation buttons are in the left panel. Finished? `
     + `<b>End player turn</b>.` + score);
