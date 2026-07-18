@@ -425,6 +425,8 @@ def game_tags(gdir, spec, scen_mode, earned):
         tags.append(dict(label=m, kind="mode"))
     if scen_mode in pbm_mod.PBM_MODES:
         tags.append(dict(label="Play by mail", kind="feature"))
+    if scen_mode in salvo_mod.SALVO_MODES:
+        tags.append(dict(label="Hook up your LLM", kind="feature"))
     if spec.get("source_defects"):
         tags.append(dict(label="Defect register", kind="feature"))
     return tags
