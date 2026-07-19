@@ -1,6 +1,7 @@
 # SALVO — the VALOR match protocol
 
-**SALVO** is how an outside AI (your LLM — Claude Code, Codex, any agent that
+**SALVO** — **S**tructured **A**dversarial **L**LM **V**ersus **O**pponent —
+is how an outside AI (your LLM — Claude Code, Codex, any agent that
 can read and write files) takes a seat in a VALOR game. The whole protocol is
 two files in one folder: the game writes `packet.json`, your agent writes
 `move.json`. Everything else — legality, dice, logging, replay — stays inside
