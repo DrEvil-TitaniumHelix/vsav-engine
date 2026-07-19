@@ -1,6 +1,6 @@
 """salvo.py - SALVO: the folder protocol that gives an outside LLM a seat.
 
-SALVO (Send A Legally-Verified Order) is Mode 2/3 of the VALOR match
+SALVO (Structured Adversarial LLM Versus Opponent) is Mode 2/3 of the VALOR match
 system (SALVO_PROTOCOL.md at the repo root is the reference): the game
 writes a self-contained DECISION PACKET describing the situation and what
 kind of answer is required; the player's own LLM (Claude Code, Codex, any
