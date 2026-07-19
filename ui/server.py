@@ -61,6 +61,7 @@ import pbm as pbm_mod  # noqa: E402
 import plans as plans_mod  # noqa: E402
 import champion as champ_mod  # noqa: E402
 import salvo as salvo_mod  # noqa: E402
+import undo as undo_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
 
@@ -251,17 +252,18 @@ def mirror_move(pid, col, row):
 
 
 def sync_mirror():
-    """Diff-sync the work .vsav against the gate state: any on-map SG unit
+    """Diff-sync the work .vsav against the gate state: any on-map gate unit
     whose board position differs gets moved (covers captures, retreats,
-    advances, substitutions, replacements, Rommel displacement — every
-    side effect in one sweep)."""
-    if not SG:
+    advances, substitutions, replacements, Rommel displacement — and undo,
+    which rewinds positions arbitrarily — every side effect in one sweep)."""
+    gate = SG or TG
+    if not gate:
         return
     b = fresh_board()
     pos = {u["id"]: (u["col"], u["row"]) for u in b.units()}
     moved = False
-    for u in SG.s["units"].values():
-        if not SG.on_map(u):
+    for u in gate.s["units"].values():
+        if not gate.on_map(u):
             continue
         if pos.get(u["pid"]) not in (None, (u["col"], u["row"])):
             b.move_piece_by_id(u["pid"],
@@ -271,12 +273,79 @@ def sync_mirror():
         b.write(WORK)
 
 
+# --- undo (engine/undo.py): one USER decision per press, window of 5 --------
+def undo_blocked():
+    """Undo is refused while a mailed/LLM match is attached: accepted
+    prefixes STAND (protocol rule, same as PBM/SALVO import law)."""
+    if pbm_mod.load_sidecar(LIVE, GAME_SLUG):
+        return "play-by-mail match - accepted moves stand"
+    if salvo_mod.load_sidecar(LIVE, GAME_SLUG):
+        return "SALVO match - accepted moves stand"
+    return None
+
+
+def mark_undo(n_before, label):
+    """Record an accepted USER gesture as an undo point. Called only from
+    the endpoints a human drives (moves, panel actions, phase ends) - never
+    from AI/PBM/SALVO paths, so 'undo' always means 'my last decision'."""
+    if undo_blocked():
+        return
+    undo_mod.mark(LIVE, GAME_SLUG, n_before, label)
+
+
+def undo_status():
+    gate = SG or TG
+    if not gate:
+        return None
+    st = undo_mod.status(LIVE, GAME_SLUG, gate.s["n"])
+    st["blocked"] = undo_blocked()
+    return st
+
+
+def api_undo(body=None):
+    """Undo the user's most recent decision: truncate the log to just before
+    it (unwinding every AI reply and consequence after it) and replay the
+    prefix — which re-verifies every verdict, die and state hash on the way.
+    The cut tail is archived, never destroyed. Seeded dice ride the replay:
+    repeating the same action after an undo gives the same result."""
+    global AI_STEP
+    gate = SG or TG
+    if not gate:
+        return dict(error="undo needs the rules gate (tier 1+)")
+    blocked = undo_blocked()
+    if blocked:
+        return dict(error="undo is not available in a match: " + blocked)
+    try:
+        replayed, label = undo_mod.undo_once(GAME_OBJ, LIVE, GAME_SLUG,
+                                             gate.log_path)
+    except ValueError:
+        return dict(error="nothing to undo", undo=undo_status())
+    except undo_mod.replay_mod.ReplayMismatch as e:
+        return dict(error=f"undo aborted - the log failed re-verification: {e}")
+    gate.s = replayed.s
+    if hasattr(gate, "_apply_bridge_state"):
+        gate._apply_bridge_state()    # westwall: hexside truth derives from
+        #                               state (demolitions), re-derive after
+        #                               the swap rather than trust the temp
+        #                               replay's shared-terrain side effect
+    gate.save()
+    AI_STEP = None
+    done.clear()
+    sync_mirror()
+    out = dict(ok=True, undone=label, undo=undo_status(),
+               flow=SG.flow() if SG else flow_view())
+    return out
+
+
 def api_action(body):
     side, action = body["side"], body["action"]
+    n0 = TG.s["n"]
     r = TG.submit(side, action)
-    if r["verdict"]["legal"] and action.get("type") in ("move", "reverse"):
-        u = TG.unit(action["unit"])
-        mirror_move(u["pid"], u["col"], u["row"])
+    if r["verdict"]["legal"]:
+        mark_undo(n0, action.get("type") or "action")
+        if action.get("type") in ("move", "reverse"):
+            u = TG.unit(action["unit"])
+            mirror_move(u["pid"], u["col"], u["row"])
     r["flow"] = flow_view()
     return r
 
@@ -309,6 +378,7 @@ def api_log_tail(qs):
 def api_new_game(body):
     global done
     TG.new_game(body.get("seed"))
+    undo_mod.clear(LIVE, GAME_SLUG)
     done = {}
     if os.path.exists(WORK):
         os.remove(WORK)
@@ -718,6 +788,8 @@ def api_state():
         out["pbm"] = pbm_status()
     if SCEN_MODE in salvo_mod.SALVO_MODES:
         out["salvo"] = salvo_status()
+    if SG or TG:
+        out["undo"] = undo_status()
     return out
 
 
@@ -827,6 +899,7 @@ def api_move_sg(body):
     d = GAME_OBJ.grid.digits
     col, row = int(dest[:d]), int(dest[d:])
     ids = sg_stack_ids(pid) if whole else [pid]
+    n0 = SG.s["n"]          # one drag gesture = one undo point, stack or not
     applied, rejected = [], []
     for mid in ids:
         u = SG.s["units"].get(mid)
@@ -837,6 +910,9 @@ def api_move_sg(body):
             applied.append(mid)
         else:
             rejected.append({"unit": mid, "reasons": r["verdict"]["reasons"]})
+    if applied:
+        mark_undo(n0, f"move {applied[0]}" if len(applied) == 1
+                  else f"move stack ({len(applied)} units)")
     out = dict(ok=not rejected, applied=len(applied),
                rejected=rejected, flow=SG.flow())
     if rejected:
@@ -863,7 +939,10 @@ def api_end_phase():
         t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
                                and SG.s["phase"] == "movement") \
             else "end_phase"
+    n0 = SG.s["n"]
     r = SG.submit(SG.s["mover"], {"type": t})
+    if r["verdict"]["legal"]:
+        mark_undo(n0, t.replace("_", " "))
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
     if not r["verdict"]["legal"]:
         out["error"] = "; ".join(r["verdict"]["reasons"])
@@ -981,8 +1060,10 @@ def api_sg_action(body):
                     error=blocked, flow=SG.flow())
     action = body["action"]
     side = body.get("side") or SG.s["mover"]
+    n0 = SG.s["n"]
     r = SG.submit(side, action)
     if r["verdict"]["legal"]:
+        mark_undo(n0, (action.get("type") or "action").replace("_", " "))
         sync_mirror()
     out = dict(verdict=r["verdict"], result=r.get("result"), flow=SG.flow())
     if not r["verdict"]["legal"]:
@@ -1353,6 +1434,7 @@ def api_reset(body=None):
     AI_STEP = None
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
+    undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window
     t = (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
@@ -1513,6 +1595,8 @@ def route_post(path, body):
         return api_pass(body)
     if path == "/api/face":
         return api_face(body)
+    if path == "/api/undo":
+        return api_undo(body)
     if path == "/api/reset":
         return api_reset(body)
     return None

@@ -118,6 +118,7 @@
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
     <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
+    <button class="sidebtn holdspace fixw" id="undobtn" style="width:110px">↶ Undo</button>
     <button class="sidebtn warn" id="newgame">New game</button>
   </div>
   <div class="tbrow"><!-- row 2: turn-state controls in FIXED slots -->
@@ -247,6 +248,7 @@ async function refresh(){
   OV.setAttribute('width',MAPW); OV.setAttribute('height',MAPH);
   if(first)fitBounds();
   document.getElementById('scen').textContent=FLOW.scenario+`  ·  seed ${FLOW.seed}`;
+  if (FRAME.renderUndo) FRAME.renderUndo(s.undo);   // guard: stale-cached frame.js
   FRAME.renderTierBtn(); FRAME.renderRules();   // shared chrome (engine-level)
   render(); renderLog(); maybeAutoAI();
 }
@@ -843,6 +845,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 // content lives in games/tobruk/game.json "guide".)
 
 // ---------- Tier / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
+FRAME.initUndo({ refresh, toast: (m) => toastReasons([m]) });  // engine-level undo
 FRAME.initPanels({
   game: () => GAME,
   flow: () => FLOW,
