@@ -126,6 +126,7 @@
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
     <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
+    <button class="sidebtn holdspace fixw" id="undobtn" style="width:110px">↶ Undo</button>
     <button class="sidebtn" id="resetbtn">Reset game</button>
   </div>
   <div class="tbrow"><!-- row 2: turn-state controls in FIXED slots (visibility-toggled) -->
@@ -324,6 +325,7 @@ async function refresh() {
   }
   renderPBMBtn();
   if (document.getElementById('pbmpanel').style.display === 'block') renderPBMPanel();
+  if (FRAME.renderUndo) FRAME.renderUndo(s.undo);   // guard: stale-cached frame.js
   renderTierBtn();
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
@@ -1711,6 +1713,7 @@ FRAME.initPanels({
   flow: () => FLOW,
   toast,
 });
+FRAME.initUndo({ refresh, toast });   // engine-level undo button (one decision per press)
 const renderTierBtn = FRAME.renderTierBtn,
       renderRules   = FRAME.renderRules,
       soloPanel     = FRAME.soloPanel;

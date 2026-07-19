@@ -125,7 +125,8 @@ def main():
             print(c(DIM, f"{game}"))
             cur_game = game
         name = os.path.basename(path)
-        extra = ["--smoke"] if (ai_smoke and name == "validate_ai.py") else None
+        extra = ["--smoke"] if (ai_smoke and name in ("validate_ai.py",
+                                                      "validate_undo.py")) else None
         status, secs, tail = run_one(path, extra)
         if extra and status != "SKIP":
             name += " (smoke)"

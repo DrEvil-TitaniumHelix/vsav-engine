@@ -329,6 +329,13 @@ const FRAME = (() => {
       : `<li><b>Moving</b> — drag the selected counter anywhere on the board, printed
          tracks included, exactly as in VASSAL. Nothing is checked in free play.</li>`;
     h += `<li><b>Pass</b> — marks the selected unit done without moving.</li>`;
+    if (gated)
+      h += `<li><b>↶ Undo</b> — takes back your most recent decision (up to 5 in a
+            row), unwinding the AI's replies after it. The engine replays the
+            shortened game log and re-verifies every verdict, die and state hash on
+            the way; repeating an action after an undo reuses the same seeded dice —
+            no reroll fishing. Not available in mailed or LLM matches, where accepted
+            moves stand.</li>`;
     if (G.facing)
       h += `<li><b>Facing</b> — right-click a counter to rotate it.</li>`;
     if (hasArr)
@@ -547,6 +554,9 @@ const FRAME = (() => {
        ${G.tier && G.tier.active >= 3 ? `<li>The <b>AI</b> plays any side you
        don't — stepped (press SPACE per action) or auto, at slow/medium/fast
        pace. It proposes through the same gate you play through.</li>` : ''}
+       ${tierOn ? `<li><b>↶ Undo</b> takes back your last decision (up to 5
+       in a row) — the AI's replies after it are unwound too. Dice are seeded,
+       so redoing the same action gives the same result.</li>` : ''}
        <li><b>Reset game</b> restarts the scenario; the <b>Tier</b> button
        replays it at a different enforcement level.</li></ul>`]);
     return S;
@@ -615,6 +625,46 @@ const FRAME = (() => {
     };
   }
 
+  // ---------- undo (engine rule: one USER decision per press) ----------
+  // The server owns the semantics (log-truncate + verified replay, window
+  // of 5, refused in PBM/SALVO); the frame owns the one button every
+  // screen shares. A screen adds <button id="undobtn"> to its topbar,
+  // calls initUndo once, and renderUndo(state.undo) on every refresh.
+  let undoH = null, undoBusy = false;
+  function initUndo(hooks) {           // {refresh, toast}
+    undoH = hooks || {};
+    const b = $id('undobtn');
+    if (!b) return;
+    b.onclick = async () => {
+      if (undoBusy) return;
+      undoBusy = true;
+      b.disabled = true;
+      try {
+        const r = await (await fetch('/api/undo',
+          {method: 'POST', body: '{}'})).json();
+        if (r.error) (undoH.toast || alert)(r.error);
+        else if (undoH.toast) undoH.toast('Undid: ' + (r.undone || 'last decision'));
+      } catch (e) { (undoH.toast || alert)('Undo failed: ' + (e.message || e)); }
+      undoBusy = false;
+      if (undoH.refresh) undoH.refresh();
+    };
+  }
+  function renderUndo(st) {            // st = /api/state 's undo block
+    const b = $id('undobtn');
+    if (!b) return;
+    const usable = !!(st && !st.blocked);
+    show(b, usable);                   // keeps its layout slot when hidden
+    b.disabled = !(usable && st.available > 0);
+    b.textContent = usable && st.available > 0
+      ? `↶ Undo (${st.available})` : '↶ Undo';
+    b.title = !st ? ''
+      : st.blocked ? 'Undo is not available in a match: ' + st.blocked
+      : st.available > 0
+        ? `take back your last decision${st.last ? ' (' + st.last + ')' : ''} — `
+          + `up to ${st.max} in a row; the AI's replies after it are unwound too`
+        : 'nothing to undo yet';
+  }
+
   // ---------- wiring ----------
   function initFrame(hooks) {
     H = hooks;
@@ -654,5 +704,6 @@ const FRAME = (() => {
 
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
            show, setGuide, setGuideSuffix, soleNext, MOVE_HINT,
+           initUndo, renderUndo,
            initPanels, soloPanel, renderTierBtn, renderRules, renderTables };
 })();
