@@ -57,13 +57,13 @@
 <a class="back" href="../index.html">&larr; back to the games</a>
 <header>
   <h1>Module screener <span style="color:#8a8f98;font-weight:400">— can your game be encoded?</span></h1>
-  <div class="sub">Search the entire VASSAL module library. For each game this
-  page reports how it does against the <b>five-gate pre-screen</b> the engine
-  uses before a module can climb past free play into enforced rules: rules
-  present, rules transcribable, mechanics the engine supports, a defined
-  playable scenario, and tables that can be validated. The screen is advisory
-  — it governs what the automatic pipeline promotes. A deliberate hand
-  encoding can clear gates the automatic screen can't see past (Tobruk did).</div>
+  <div class="sub">Search the entire VASSAL module library. Encoding a game
+  needs <b>four ingredients</b>: the rulebook, the module's board and
+  counters, a defined starting scenario, and charts or worked examples to
+  validate against. For each game this page reports which ingredients are in
+  hand and which are missing — and how to fix each gap. Essentially any
+  board game can be encoded once its ingredients are supplied; the only
+  thing this page judges is what we currently hold.</div>
 </header>
 <div id="searchwrap">
   <input id="q" type="search" autofocus placeholder="type a game or module name — e.g. Afrika Korps, Squad Leader, Paths of Glory"
@@ -81,121 +81,94 @@
   this page ships no module content: only counts and signals derived from each module's structure
 </footer>
 <script>
-const GATE_NAMES = [
-  "1 · Rules present",
-  "2 · Rules transcribable",
-  "3 · Mechanics fit the engine",
-  "4 · Playable scenario",
-  "5 · Tables validatable",
-];
+const ING_NAMES = ["Rulebook", "Module data", "Scenario", "Validation material"];
 const KO_LABEL = { cards:"card play", supply:"supply lines", air:"air power",
                    naval:"naval movement", hidden:"hidden movement" };
 let DB = null;
 
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
 
+// The four ingredients of an encoding. Engine mechanics deliberately play no
+// part here (Bruce 2026-07-19): encodability = are the ingredients in hand.
+// Each entry: [status ok|miss|unk, note]. Order matches ING_NAMES.
+function ingredients(g){
+  const out = [];
+  const deep = g.cov === "deep";
+  // 1 rulebook
+  if (deep && g.text >= 20000)
+    out.push(["ok", "In hand — " + Math.round(g.text/1000) +
+      "k characters of rules text read cleanly."]);
+  else if (deep)
+    out.push(["ok", "In hand, but only " + Math.round(g.text/1000) +
+      "k characters extracted — may need better scans for the full transcription."]);
+  else if (g.grade === "bundled" || g.grade === "html-help" ||
+           (g.rpdf||0) > 0 || (g.ruleish||0) > 0)
+    out.push(["ok", "Rules documents ship inside the module (" +
+      (((g.rpdf||0)+(g.ruleish||0)) || 1) + " file(s)) — not yet read by us."]);
+  else if (g.cov === "listed")
+    out.push(["unk", "Unknown — module not yet analyzed."]);
+  else
+    out.push(["miss", "MISSING — the module ships no rulebook and we hold no copy. " +
+      "Fix: supply the game's rules (bring-your-own, same principle as modules)."]);
+  // 2 module data (board, counters)
+  if (g.cov === "deep" || g.cov === "struct")
+    out.push(["ok", "In hand — board (" + (g.style || "unknown style") + "), " +
+      (g.slots || "?") + " piece types read from the module."]);
+  else
+    out.push(["miss", "MISSING — the module package was not analyzed in our " +
+      "snapshot. Fix: a working .vmod for the game."]);
+  // 3 scenario
+  if ((g.setups||0) > 0)
+    out.push(["ok", "In hand — " + g.setups + " predefined setup" +
+      (g.setups>1?"s":"") + " in the module."]);
+  else if ((g.atstart||0) >= 20)
+    out.push(["ok", "In hand — at-start deployment baked into the module (" +
+      g.atstart + " placed pieces)."]);
+  else if (g.cov === "listed")
+    out.push(["unk", "Unknown — module not yet analyzed."]);
+  else
+    out.push(["miss", "MISSING — no predefined starting setup found. Fix: define " +
+      "one scenario with a starting position and victory conditions, even a small one."]);
+  // 5 validation
+  const vs = g.parts ? g.parts.validation_signals : 0;
+  if ((g.charts||0) > 0)
+    out.push(["ok", "In hand — " + g.charts + " chart" + (g.charts>1?"s":"") +
+      " in the module to check the encoded tables against" +
+      (vs >= 10 ? ", plus worked examples in the rules." : ".")]);
+  else if (vs >= 10)
+    out.push(["ok", "In hand — worked examples found in the rules text."]);
+  else if (g.cov === "listed")
+    out.push(["unk", "Unknown — module not yet analyzed."]);
+  else
+    out.push(["miss", "MISSING — no charts found in the module. Fix: the printed " +
+      "charts or worked examples from the rulebook. No validation, no enforcement."]);
+  return out;
+}
+
 function verdict(g){
   if (g.enc) return ["v-enc", "ENCODED — play it here",
     "Already encoded and validated on this site at full rules enforcement. " +
     "Bring your own copy of the module and play."];
-  if (g.screen){
-    if (g.screen.startsWith("KNOCKOUT")){
-      const kos = g.screen.split(":")[1].split("+").map(k => KO_LABEL[k] || k);
-      return ["v-blocked", "BLOCKED — engine expansion needed",
-        "The rules screen found mechanics the engine does not enforce yet: <b>" +
-        kos.join(", ") + "</b>. Each of these is a planned engine expansion — " +
-        "when it lands, every module waiting on it unlocks at once."];
-    }
-    if (g.screen.startsWith("CLEAN-FIT"))
-      return ["v-strong", "STRONG CANDIDATE",
-        "Passed the automated five-gate screen as a clean fit for the engine. " +
-        "The remaining work is human: transcribing the rules and validating " +
-        "every table against worked examples before enforcement ships."];
-    return ["v-maybe", "POSSIBLE — needs review",
-      "The automated screen found no knockout mechanics, but could not " +
-      "confirm a clean fit from the module alone. A human read of the " +
-      "rulebook decides."];
-  }
-  if (g.cov === "struct"){
-    const hexish = g.style === "hex" || g.style === "square";
-    return ["v-unknown", "NOT YET RULES-SCREENED",
-      "The module's structure was analyzed (see the gates below) but its " +
-      "rulebook has not been through the deep screen. " +
-      (hexish ? "Structurally it looks compatible — a rules read is the next step."
-              : "Its board style (" + (g.style||"unknown") + ") is outside the " +
-                "hex/square grids the engine enforces today, so it would wait " +
-                "on an engine expansion or a hand encoding.")];
-  }
-  return ["v-unknown", "IN THE LIBRARY — NO SIGNALS",
-    "The game is listed in the library but its module package was not " +
-    "harvested in our snapshot, so nothing is known about its structure yet."];
-}
-
-function gates(g){
-  const out = [];
-  const deep = g.cov === "deep";
-  // 1 rules present
-  if (g.grade === "bundled" || g.grade === "html-help")
-    out.push(["ok", "Rulebook bundled in the module" +
-      (g.rpdf ? " (" + g.rpdf + " PDF" + (g.rpdf>1?"s":"") + ")" : " (built-in help)") + "."]);
-  else if ((g.rpdf||0) > 0 || (g.ruleish||0) > 0)
-    out.push(["ok", "Rules-like documents found in the module (" +
-      ((g.rpdf||0)+(g.ruleish||0)) + " file(s))."]);
-  else if (g.cov === "listed")
-    out.push(["unk", "Module not harvested — unknown."]);
-  else
-    out.push(["miss", "No rulebook found inside the module — encoding would need " +
-      "your own sanctioned copy of the rules (same bring-your-own principle as the modules)."]);
-  // 2 transcribable
-  if (deep && g.text >= 20000)
-    out.push(["ok", "Rules text extracts cleanly (" +
-      Math.round(g.text/1000) + "k characters read by the screen)."]);
-  else if (deep && g.text > 0)
-    out.push(["unk", "Only " + Math.round(g.text/1000) + "k characters extracted — " +
-      "may need manual transcription or better scans."]);
-  else if (deep)
-    out.push(["miss", "No machine-readable rules text — transcription would be manual."]);
-  else
-    out.push(["unk", "Not yet deep-screened — no extraction attempted."]);
-  // 3 mechanics
-  if (g.screen && g.screen.startsWith("KNOCKOUT")){
-    const kos = g.screen.split(":")[1].split("+").map(k => KO_LABEL[k] || k);
-    out.push(["miss", "Needs mechanics the engine doesn't enforce yet: " + kos.join(", ") + "."]);
-  } else if (g.screen)
-    out.push(["ok", "No knockout mechanics found — " +
-      (g.style === "hex" ? "hex" : (g.style||"grid")) + " board, engine-supported combat style" +
-      (g.parts ? " (fit " + g.parts.mechanics_fit + "/40)" : "") + "."]);
-  else if (g.style === "hex" || g.style === "square")
-    out.push(["ok", "Board style '" + g.style + "' is engine-supported; rules screen still needed " +
-      "to rule out cards / supply / air / naval / hidden movement."]);
-  else if (g.style)
-    out.push(["miss", "Board style '" + g.style + "' is outside the grids the engine enforces today."]);
-  else
-    out.push(["unk", "Board structure unknown."]);
-  // 4 scenario
-  if ((g.setups||0) > 0)
-    out.push(["ok", g.setups + " predefined setup" + (g.setups>1?"s":"") +
-      " in the module — a defined playable scope exists."]);
-  else if ((g.atstart||0) >= 20)
-    out.push(["ok", "At-start deployment baked into the module (" + g.atstart + " placed pieces)."]);
-  else if (g.cov === "listed")
-    out.push(["unk", "Module not harvested — unknown."]);
-  else
-    out.push(["miss", "No predefined scenario found — encoding needs a defined " +
-      "scenario with victory conditions, even a small one."]);
-  // 5 validation
-  const vs = g.parts ? g.parts.validation_signals : 0;
-  if ((g.charts||0) > 0)
-    out.push(["ok", g.charts + " chart" + (g.charts>1?"s":"") + " in the module to check " +
-      "encoded tables against" + (vs >= 10 ? ", plus worked-example signals in the rules." : ".")]);
-  else if (vs >= 10)
-    out.push(["ok", "Worked-example signals found in the rules text."]);
-  else if (g.cov === "listed")
-    out.push(["unk", "Module not harvested — unknown."]);
-  else
-    out.push(["miss", "No charts found in the module — validating the encoded tables " +
-      "would need the printed charts or an outside source. No validation, no enforcement."]);
-  return out;
+  const ing = ingredients(g);
+  const missing = ING_NAMES.filter((n, i) => ing[i][0] === "miss");
+  const unknown = ING_NAMES.filter((n, i) => ing[i][0] === "unk");
+  if (!missing.length && !unknown.length)
+    return ["v-strong", "CAN BE ENCODED",
+      "All four ingredients are in hand — rulebook, module data, a defined " +
+      "scenario, and material to validate against. What remains is the " +
+      "encoding labor itself: transcribing every rule into enforced data " +
+      "with citations, then proving the transcription against the game's " +
+      "own charts and examples."];
+  if (missing.length)
+    return ["v-maybe", "MISSING: " + missing.join(" + ").toLowerCase(),
+      "This game can be encoded once the missing ingredient" +
+      (missing.length > 1 ? "s are" : " is") + " supplied — the checklist " +
+      "below names each gap and its fix. Nothing here is a judgment against " +
+      "the game; it is an inventory of what we hold."];
+  return ["v-unknown", "NOT YET ANALYZED",
+    "Ingredients unknown — " + unknown.join(" and ").toLowerCase() +
+    " still to be checked. The library snapshot did not analyze this " +
+    "module package, so this is missing data on our side, not a verdict."];
 }
 
 function facts(g){
@@ -208,16 +181,20 @@ function facts(g){
   if (g.players) f.push(g.players[0] === g.players[1] ? "<b>" + g.players[0] + "</b> players"
                         : "<b>" + g.players[0] + "–" + g.players[1] + "</b> players");
   if (g.mods > 1) f.push("<b>" + g.mods + "</b> module packages (screened the primary)");
-  if (g.cov === "deep") f.push("screen score <b>" + g.score + "</b>/100");
+  // engine notes — which engine version PLAYS it; no bearing on encodability
+  if (g.screen && g.screen.startsWith("KNOCKOUT"))
+    f.push("uses: <b>" + g.screen.split(":")[1].split("+")
+      .map(k => KO_LABEL[k] || k).join(", ") +
+      "</b> (engine subsystems on the roadmap — no bearing on encodability)");
   return f.join(" &nbsp;·&nbsp; ");
 }
 
 function card(g){
   const [cls, chip, why] = verdict(g);
-  const rows = gates(g).map((r, i) =>
+  const rows = ingredients(g).map((r, i) =>
     '<div class="gate ' + r[0] + '"><span class="mark">' +
     (r[0] === "ok" ? "✓" : r[0] === "miss" ? "✗" : "?") + '</span>' +
-    '<span class="gname">' + GATE_NAMES[i] + '</span>' +
+    '<span class="gname">' + ING_NAMES[i] + '</span>' +
     '<span class="gnote">' + r[1] + '</span></div>').join("");
   const skim = g.skim ? '<div class="verdictline" style="margin-top:10px">' +
     '<b>Hand review:</b> ' + (g.skim.v === "PROMOTE" ? "promoted — " : g.skim.v + " — ") +
@@ -278,10 +255,20 @@ fetch("index.json").then(r => r.json()).then(d => {
   for (const g of DB.games)
     g._n = norm(g.t + " " + (g.p||"") + " " + (g.y||""));
   document.querySelectorAll(".snap").forEach(e => e.textContent = d.snapshot);
-  const deep = DB.games.filter(g => g.cov === "deep").length;
+  let ready = 0, incomplete = 0, unanalyzed = 0;
+  for (const g of DB.games){
+    if (g.enc) continue;
+    const v = verdict(g)[0];
+    if (v === "v-strong") ready++;
+    else if (v === "v-maybe") incomplete++;
+    else unanalyzed++;
+  }
   document.getElementById("stats").textContent =
-    DB.count + " games in the library snapshot — " + deep +
-    " deep-screened against the rulebook, the rest by module structure.";
+    DB.count + " games in the library snapshot: " +
+    (DB.games.length - ready - incomplete - unanalyzed) + " encoded here · " +
+    ready + " can be encoded today (all ingredients in hand) · " +
+    incomplete + " missing at least one ingredient" +
+    (unanalyzed ? " · " + unanalyzed + " not yet analyzed." : ".");
   const q = document.getElementById("q");
   q.addEventListener("input", () => search(q.value));
   search("");
