@@ -33,6 +33,7 @@
   .v-maybe   { background:#3a3320; border-color:#8a7a3a; color:#e2cf8a; }
   .v-blocked { background:#3a2426; border-color:#8a4a4f; color:#e8a0a5; }
   .v-unknown { background:#2c2f36; border-color:#4a4f57; color:#98a0a8; }
+  .v-green   { background:#1d3a2a; border-color:#3a7a5f; color:#8fd8b4; }
   .card { border-top:1px solid #3a3f47; padding:16px 18px 18px; }
   .verdictline { font-size:14px; line-height:1.5; margin-bottom:12px; color:#c8cfd8; }
   .gates { display:flex; flex-direction:column; gap:7px; }
@@ -84,6 +85,11 @@
 const ING_NAMES = ["Rulebook", "Module data", "Scenario", "Validation material"];
 const KO_LABEL = { cards:"card play", supply:"supply lines", air:"air power",
                    naval:"naval movement", hidden:"hidden movement" };
+const GRID_OK = ["hex", "square", "region-snap"];   // board styles the engine enforces today
+const ISSUES = "https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues/new";
+// Hand-curated: games whose decisive content is outside any rules engine
+// (physical dexterity / real-time). Key = normalized title.
+const RED = { "13 dead end drive": "its heart is a physical 3-D trap gimmick" };
 let DB = null;
 
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
@@ -171,6 +177,88 @@ function verdict(g){
     "module package, so this is missing data on our side, not a verdict."];
 }
 
+// Rules-enforcement outlook: once encoded, can the ENGINE play it with full
+// enforcement (the bar that matters - it is what lets an AI play honestly)?
+// Returns [chipClass, chipText, cardNote].
+function outlook(g){
+  if (g.enc) return ["v-enc", "enforced play: LIVE",
+    "Rules enforcement is live for this game on this site — the legality " +
+    "gate, engine dice, replayable log and AI seat all run today."];
+  const red = RED[g._t];
+  if (red) return ["v-blocked", "outside engine scope",
+    "Likely never playable with rules enforcement: " + red + ". A rules " +
+    "engine can only capture games whose decisive content is in the rules. " +
+    "Free play (piece pushing, VASSAL-style) still works."];
+  const fns = [];
+  if (g.screen && g.screen.startsWith("KNOCKOUT"))
+    g.screen.split(":")[1].split("+").forEach(k => fns.push(KO_LABEL[k] || k));
+  if (g.style && !GRID_OK.includes(g.style))
+    fns.push("non-grid movement (" + g.style + " board)");
+  if (fns.length)
+    return ["v-maybe", "needs engine upgrade: " + fns.join(", "),
+      "Playable with rules enforcement only after the engine grows " +
+      "<b>" + fns.join(", ") + "</b>. That is an engine investment, not a " +
+      "per-game cost — each function is built once, and every game waiting " +
+      "on it becomes playable together. Free play works today."];
+  if (g.cov === "deep")
+    return ["v-green", "plays on today's engine" + (g._sib ? " · encoded-family sibling" : ""),
+      "Its rulebook shows " + (g.style || "grid") + " movement and " +
+      "engine-supported combat, and no mechanic the engine lacks. Once " +
+      "encoded and validated it plays with full enforcement on the current " +
+      "engine" + (g._sib ? " — and it is a sibling of a family already " +
+      "encoded here, which makes it one of the cheapest possible encodings" : "") + "."];
+  return ["v-unknown", "outlook unknown",
+    "Cannot be judged until its rulebook is read — the same rulebook the " +
+    "encodability checklist " + (g.cov === "listed" ? "and module analysis " : "") +
+    "need. One supplied rulebook answers both questions."];
+}
+
+// What the person looking at this game should do next.
+function nextStep(g, missing){
+  const t = encodeURIComponent(g.t);
+  if (g.enc) return "";                                   // the Play button IS the next step
+  const ol = outlook(g)[0];
+  if (ol === "v-blocked")
+    return "<b>Next step:</b> none needed — enjoy it as a physical game; " +
+      "any converted module still works for free play.";
+  if (missing.length)
+    return "<b>Next step:</b> supply what's missing — " +
+      '<a href="' + ISSUES + '?title=' +
+      encodeURIComponent("Ingredients for: " + g.t) +
+      '" target="_blank" rel="noopener">open an ingredients ticket</a> ' +
+      "telling us what you can provide (" + missing.join(", ").toLowerCase() + ").";
+  if (ol === "v-maybe")
+    return "<b>Next step:</b> " +
+      '<a href="' + ISSUES + '?title=' +
+      encodeURIComponent("Engine upgrade interest: " + outlook(g)[1].replace("needs engine upgrade: ", "") + " (" + g.t + ")") +
+      '" target="_blank" rel="noopener">register interest in the engine upgrade</a> ' +
+      "— demand is how upgrade priorities get set. Encoding can even happen " +
+      "ahead of the engine work.";
+  if (ol === "v-green")
+    return "<b>Next step:</b> " +
+      '<a href="' + ISSUES + '?title=' + encodeURIComponent("Encoding request: " + g.t) +
+      '" target="_blank" rel="noopener">request this encoding</a> — ' +
+      "all ingredients are in hand and the engine already supports it.";
+  return "<b>Next step:</b> " +
+    '<a href="' + ISSUES + '?title=' + encodeURIComponent("Rulebook available for: " + g.t) +
+    '" target="_blank" rel="noopener">tell us you can supply the rulebook</a> ' +
+    "— one rulebook resolves both the encodability checklist and the outlook.";
+}
+
+// Related games: same series tag or same title family, encoded first.
+function related(g){
+  const out = [];
+  for (const o of DB.games){
+    if (o === g) continue;
+    let s = 0;
+    if (g._series.length && o._series.some(x => g._series.includes(x))) s += 3;
+    if (g._fam && o._fam === g._fam) s += 2;
+    if (s) out.push([s + (o.enc ? 2 : 0), o]);
+  }
+  out.sort((a, b) => b[0] - a[0] || a[1]._n.localeCompare(b[1]._n));
+  return out.slice(0, 6).map(x => x[1]);
+}
+
 function facts(g){
   const f = [];
   if (g.style) f.push("board: <b>" + g.style + "</b>");
@@ -191,21 +279,35 @@ function facts(g){
 
 function card(g){
   const [cls, chip, why] = verdict(g);
-  const rows = ingredients(g).map((r, i) =>
+  const ing = ingredients(g);
+  const missing = ING_NAMES.filter((n, i) => ing[i][0] === "miss");
+  const rows = ing.map((r, i) =>
     '<div class="gate ' + r[0] + '"><span class="mark">' +
     (r[0] === "ok" ? "✓" : r[0] === "miss" ? "✗" : "?") + '</span>' +
     '<span class="gname">' + ING_NAMES[i] + '</span>' +
     '<span class="gnote">' + r[1] + '</span></div>').join("");
+  const [ocls, ochip, onote] = outlook(g);
   const skim = g.skim ? '<div class="verdictline" style="margin-top:10px">' +
     '<b>Hand review:</b> ' + (g.skim.v === "PROMOTE" ? "promoted — " : g.skim.v + " — ") +
     g.skim.why + '</div>' : "";
+  const rel = related(g);
+  const relRow = rel.length ?
+    '<div class="verdictline" style="margin-top:12px"><b>Related games:</b> ' +
+    rel.map(o => '<a href="#" class="rel" data-t="' +
+      o.t.replace(/"/g, "&quot;") + '">' + o.t +
+      (o.enc ? " ✓" : "") + "</a>").join(" &nbsp;·&nbsp; ") + "</div>" : "";
+  const step = nextStep(g, missing);
   const link = g.slug ?
     '<a href="https://vassalengine.org/library/projects/' + encodeURIComponent(g.slug) +
     '" target="_blank" rel="noopener">module page at vassalengine.org</a>' : "";
   const play = g.enc ?
     '<button class="play" onclick="location.href=\'../g/' + g.enc + '/\'">Play it now</button>' : "";
   return '<div class="card"><div class="verdictline">' + why + '</div>' +
-    '<div class="gates">' + rows + '</div>' + skim +
+    '<div class="gates">' + rows + '</div>' +
+    '<div class="verdictline" style="margin-top:12px"><span class="chip ' + ocls +
+    '">' + ochip + '</span><div style="margin-top:8px">' + onote + '</div></div>' +
+    (step ? '<div class="verdictline" style="margin-top:10px">' + step + '</div>' : "") +
+    skim + relRow +
     (facts(g) ? '<div class="facts">' + facts(g) + '</div>' : "") +
     '<div class="cardfoot">' + play + link + '</div></div>';
 }
@@ -216,10 +318,13 @@ function render(list){
   document.getElementById("none").style.display = list.length ? "none" : "block";
   for (const g of list.slice(0, 40)){
     const [cls, chip] = verdict(g);
+    const [ocls, ochip] = outlook(g);
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML = '<div class="rowhead"><div class="title"><b></b>' +
-      '<div class="pub"></div></div><span class="chip ' + cls + '">' + chip + '</span></div>';
+      '<div class="pub"></div></div>' +
+      (g.enc ? "" : '<span class="chip ' + ocls + '">' + ochip + '</span>') +
+      '<span class="chip ' + cls + '">' + chip + '</span>';
     row.querySelector("b").textContent = g.t;
     row.querySelector(".pub").textContent =
       [g.p, g.y].filter(Boolean).join(", ") || "publisher unknown";
@@ -227,6 +332,13 @@ function render(list){
       const open = row.querySelector(".card");
       if (open) { open.remove(); return; }
       row.insertAdjacentHTML("beforeend", card(g));
+      row.querySelectorAll("a.rel").forEach(a => a.onclick = e => {
+        e.preventDefault(); e.stopPropagation();
+        const q = document.getElementById("q");
+        q.value = a.dataset.t;
+        search(q.value);
+        window.scrollTo(0, 0);
+      });
     };
     box.appendChild(row);
   }
@@ -252,8 +364,18 @@ function search(q){
 
 fetch("index.json").then(r => r.json()).then(d => {
   DB = d;
-  for (const g of DB.games)
+  for (const g of DB.games){
     g._n = norm(g.t + " " + (g.p||"") + " " + (g.y||""));
+    g._t = norm(g.t);
+    g._series = (g.tags||[]).filter(t => t.startsWith("series:"));
+    g._fam = g.t.includes(":") ? norm(g.t.split(":")[0]) : null;
+  }
+  // siblings of already-encoded families (same series tag or title family)
+  const encG = DB.games.filter(g => g.enc);
+  for (const g of DB.games)
+    g._sib = !g.enc && encG.some(e =>
+      (g._fam && e._fam === g._fam) ||
+      (g._series.length && e._series.some(x => g._series.includes(x))));
   document.querySelectorAll(".snap").forEach(e => e.textContent = d.snapshot);
   let ready = 0, incomplete = 0, unanalyzed = 0;
   for (const g of DB.games){
@@ -263,12 +385,14 @@ fetch("index.json").then(r => r.json()).then(d => {
     else if (v === "v-maybe") incomplete++;
     else unanalyzed++;
   }
+  const green = DB.games.filter(g => !g.enc && outlook(g)[0] === "v-green").length;
   document.getElementById("stats").textContent =
     DB.count + " games in the library snapshot: " +
     (DB.games.length - ready - incomplete - unanalyzed) + " encoded here · " +
     ready + " can be encoded today (all ingredients in hand) · " +
     incomplete + " missing at least one ingredient" +
-    (unanalyzed ? " · " + unanalyzed + " not yet analyzed." : ".");
+    (unanalyzed ? " · " + unanalyzed + " not yet analyzed" : "") +
+    " · " + green + " would play on today's engine once encoded.";
   const q = document.getElementById("q");
   q.addEventListener("input", () => search(q.value));
   search("");
