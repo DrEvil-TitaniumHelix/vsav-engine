@@ -17,8 +17,9 @@ policy - doctrine.md there tells the story). genome() returns None for it
 and every caller falls back to the shipped policy, which the playbook
 itself certifies as the strongest known strategy. The honesty rule follows:
 "Advanced AI" appears only where genome() finds a real champion; a
-baseline-equilibrium playbook shows "Champion-validated" instead - the
-button plays the same policy the playbook graduated.
+baseline-equilibrium playbook shows "Advanced AI pending" instead (Bruce
+2026-07-19) - the button plays the same shipped policy the training runs
+failed to beat, and the upgrade is honestly still open.
 
 Napoleonic-family champions would be doctrine thetas, not turn plans
 (plans.take_turn handles both); none exists yet, so the napoleonic path

@@ -479,17 +479,19 @@ def game_tags(gdir, spec, scen_mode, earned):
     """Capability tags for the selection pages — one implementation, both
     menus (app + browser demo). Every tag states something the build actually
     does; 'Advanced AI' appears only where the trained champion IS the
-    opponent behind the button. A playbook whose self-play run kept the
-    baseline (Austerlitz) shows 'Champion-validated': same policy behind
-    the button, certified by the playbook's 43k-game run."""
+    opponent behind the button. A playbook whose training runs kept the
+    baseline (Austerlitz: two evolutionary attacks, 92k games, no genome
+    graduated) shows 'Advanced AI pending' (Bruce 2026-07-19): honest news
+    — the shipped policy is still the reigning champion of its own decision
+    space, and the upgrade remains open."""
     tags = [dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
     if earned >= 3:
         champion = champ_mod.genome(gdir) is not None
         tags.append(dict(
-            label="Advanced AI" if champion else "Basic AI",
+            label="Advanced AI" if champion
+            else "Advanced AI pending" if champ_mod.validated(gdir)
+            else "Basic AI",
             kind="ai"))
-        if not champion and champ_mod.validated(gdir):
-            tags.append(dict(label="Champion-validated", kind="feature"))
     m = MODE_TAG.get(scen_mode or "free")
     if m and earned > 0:
         tags.append(dict(label=m, kind="mode"))
