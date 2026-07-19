@@ -247,6 +247,36 @@ def stub_mirror(on):
     server.mirror_move = (lambda *a: None) if on else _real_mirror_move
 
 
+# The board mirror is built from the game's setup .vsav — a module-derived
+# asset that is deliberately NOT in the public repo (BYO principle), so CI
+# has no board at all. The gate/log/undo claims never touch the board;
+# where the asset is absent the board layer no-ops and the per-undo mirror
+# assertion is SKIPPED with an honest note (it still runs on any checkout
+# with local assets — the release machine).
+class _NoBoard:
+    def units(self):
+        return []
+
+    def __getattr__(self, name):
+        return lambda *a, **k: None
+
+
+_real_fresh_board = server.fresh_board
+
+
+def _fresh_board_safe():
+    if board_available():
+        return _real_fresh_board()
+    return _NoBoard()
+
+
+def board_available():
+    return bool(server.GAME_OBJ) and os.path.exists(server.GAME_OBJ.setup_save)
+
+
+server.fresh_board = _fresh_board_safe
+
+
 def undo_here(expect_hash, expect_n):
     """One undo press; assert it lands exactly on the recorded pre-state and
     leaves the .vsav mirror in step with the gate (undo diff-syncs the whole
@@ -262,13 +292,14 @@ def undo_here(expect_hash, expect_n):
     raw = [l for l in open(g.log_path, encoding="utf-8") if l.strip()]
     if len(raw) != expect_n:
         die(f"log not truncated to {expect_n} lines (has {len(raw)})")
-    b = server.fresh_board()
-    pos = {u["id"]: (u["col"], u["row"]) for u in b.units()}
-    bad = [u["pid"] for u in g.s["units"].values()
-           if g.on_map(u) and u["pid"] in pos
-           and pos[u["pid"]] != (u["col"], u["row"])]
-    if bad:
-        die(f"mirror out of step after undo: {bad[:4]}")
+    if board_available():
+        b = server.fresh_board()
+        pos = {u["id"]: (u["col"], u["row"]) for u in b.units()}
+        bad = [u["pid"] for u in g.s["units"].values()
+               if g.on_map(u) and u["pid"] in pos
+               and pos[u["pid"]] != (u["col"], u["row"])]
+        if bad:
+            die(f"mirror out of step after undo: {bad[:4]}")
 
 
 def sweep(slug, mode, seed, lines, solo_side=None, tune=None):
@@ -433,7 +464,10 @@ def laws(slug, mode):
     server.build_gate()
     check(live_gate().state_hash() == h,
           f"{slug}: state survives a gate rebuild after undo")
-    print(f"       (mirror consistency asserted after every undo press)")
+    print("       (mirror consistency asserted after every undo press)"
+          if board_available() else
+          "       note: board setup .vsav absent (BYO asset, expected in "
+          "CI) - mirror assertions skipped, gate/log/undo claims unaffected")
     # tier 0 = no gate = no undo
     if 0 in server.TIER_CHOICES:
         server.api_reset({"tier": 0})
