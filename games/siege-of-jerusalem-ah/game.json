@@ -1,0 +1,294 @@
+{
+ "name": "The Siege of Jerusalem (Avalon Hill, 1989)",
+ "map_name": "Main Map",
+ "board_name": "MainMap",
+ "save_key": "8e",
+ "grid": {
+  "orient": "flat",
+  "dx": 71.0749,
+  "dy": 82.2902,
+  "x0": 207.6,
+  "y0": -1840.52,
+  "stagger": true,
+  "stagger_sign": 1,
+  "odd_row_carry": 0,
+  "hexnum_digits": 2,
+  "naming": {"style": "colletter_diag", "row0": 1, "num0": -1},
+  "provenance": "Letter-column grid, numbers along diagonals [2.14: 'letters read horizontally... numbers read diagonally along the hexgrain; Damascus Gate W36, Yafo Gate P51, Susa Gate QQ36, Mariam Tower P55']. Engine col = letter index (A=1..Z=26, AA=27..), engine row = N + col//2. Geometry fitted on the 3,251-region RegionGrid of module v2.3 (same 4051x5656 map art as v3.0): 3,071/3,096 parseable region names reproduce EXACTLY through pixel_to_hex+display_name (the 25 misses are module typos, listed in ingest/INGEST_NOTES.md); landmarks W36/P51/G39 verified against map art; ~40 landmark markers byte-decoded from the module's Gallus .vsav all compute to their own printed hex. See ingest/ + validate_grid.py."
+ },
+ "terrain_file": "terrain.json",
+ "scenario": "scenario_gallus.json",
+ "setup_save": null,
+ "guide": {
+  "victory": "Assault of Gallus: the Romans win by controlling ten Built-up hexes at the end of any Judaean Melee Phase (control = last occupant [18.3]); the Judaeans win by preventing that through the end of turn 10. The engine tracks hex control and the Built-up count live."
+ },
+ "assets": {
+  "counters_dir": "../../../VassalIngest/soj/extracted/images"
+ },
+ "ui": {"counter_px": 60},
+ "unit_kinds": ["piece", "mark", "prototype"],
+ "sides": {
+  "order": ["Rom", "Jud"],
+  "labels": {"Rom": "Roman", "Jud": "Judaean"},
+  "default": "Rom",
+  "detect_tokens": {
+   "Rom": ["XII_", "Gallus"],
+   "Jud": ["Jewish_", "Josef_", "Yonathan_", "Eliezer_", "Shimon_"]
+  }
+ },
+ "stats": {
+  "patterns": [],
+  "default": [0, 0, 0],
+  "note": "SoJ stats live in unit_types (fresh/disrupted sides, rally, missile ranges); the generic (att,def,ma) triple does not fit this system."
+ },
+ "unit_types": {
+  "_cite": "[2.41-2.46] unit diagrams pp.4-5, re-read at 260 dpi 2026-08-07; Gallus reverse from module counter art (Gallus_Reverse.gif). melee/ma = [fresh, disrupted]; missile = {range_band: AF} from the Weapons Effect Chart (game card); rock = AF at range 1 from Elevated only [2.523, 10.2].",
+  "roman_veteran":   {"cls": "heavy", "melee": [7, 5], "ma": [8, 5], "rally": 5},
+  "roman_line":      {"cls": "heavy", "melee": [6, 4], "ma": [8, 5], "rally": 4},
+  "roman_recruit":   {"cls": "heavy", "melee": [5, 3], "ma": [8, 5], "rally": 3},
+  "velitae":         {"cls": "light", "melee": [3, 1], "ma": [9, 6], "rally": 3, "missile": {"1-2": 2, "3-4": 1}},
+  "foederatti":      {"cls": "light", "melee": [2, 1], "ma": [10, 8], "rally": 2, "missile": {"1-2": 2, "3-4": 1}},
+  "syrian_archers":  {"cls": "light", "melee": [1, 1], "ma": [9, 7], "rally": 2, "missile": {"1-2": 3, "3-4": 1}},
+  "zealot":          {"cls": "light", "melee": [7, 5], "ma": [7, 5], "rally": 5, "rock": 2},
+  "judaean_regular": {"cls": "light", "melee": [5, 3], "ma": [7, 5], "rally": 4, "missile": {"1-2": 3, "3-4": 1}},
+  "judaean_militia": {"cls": "light", "melee": [2, 1], "ma": [6, 4], "rally": 2, "rock": 2},
+  "roman_cavalry":   {"cls": "cavalry", "melee": [3, 2], "ma": [15, 9], "rally": 4},
+  "roman_leader":    {"cls": "hq", "hq": "leader", "melee": [6, 5], "ma": [10, 8], "rally": 5},
+  "judaean_leader":  {"cls": "hq", "hq": "leader", "melee": [3, 1], "ma": [10, 8], "rally": 5},
+  "gallus":          {"cls": "hq", "hq": "commander", "melee": [4, 2], "ma": [10, 8], "rally": 5},
+  "tower":           {"cls": "siege_engine", "melee": [0, 0], "ma": [4, 4], "rally": null, "facing": true},
+  "ram":             {"cls": "siege_engine", "melee": [0, 0], "ma": [5, 5], "rally": null, "facing": true, "breach_af": 1},
+  "armored_tower":   {"cls": "siege_engine", "melee": [0, 0], "ma": [3, 3], "rally": null, "facing": true, "breach_af": 1},
+  "roman_ballista":  {"cls": "artillery", "melee": [1, 1], "ma": [0, 4], "rally": 4, "missile": {"1-6": 7, "7-9": 5, "10-12": 2}},
+  "roman_onager":    {"cls": "artillery", "melee": [1, 1], "ma": [0, 5], "rally": 4, "missile": {"1-5": 4, "6-7": 3, "8-9": 1}},
+  "roman_catapult":  {"cls": "artillery", "melee": [1, 1], "ma": [0, 6], "rally": 4, "missile": {"1-4": 2, "5-6": 1}},
+  "cauldron":        {"cls": "cauldron", "melee": [1, 1], "ma": [2, 1], "rally": 4, "rock": 2, "fire_drm": 1}
+ },
+ "slot_types": {
+  "_note": "module PieceSlot image basename -> unit_type",
+  "XII_Heavy_Infantry_7-8": "roman_veteran",
+  "XII_Heavy_Infantry_6-8": "roman_line",
+  "XII_Heavy_Infantry_5-8": "roman_recruit",
+  "XII_Velitae": "velitae",
+  "XII_Foederatti": "foederatti",
+  "XII_Syrian_Archers": "syrian_archers",
+  "XII_Cavalry": "roman_cavalry",
+  "XII_Tower": "tower",
+  "XII_Ram": "ram",
+  "XII_Ballista": "roman_ballista",
+  "XII_Onager": "roman_onager",
+  "XII_Catapult": "roman_catapult",
+  "Gallus": "gallus",
+  "Jewish_Zealot": "zealot",
+  "Jewish_Cauldron": "cauldron",
+  "Jewish_ben_Gurion": "judaean_leader",
+  "Jewish_ben_Levi": "judaean_leader",
+  "Jewish_ben_Shimon": "judaean_leader",
+  "Jewish_ben_Giora": "judaean_leader",
+  "Josef_Regular": "judaean_regular",
+  "Josef_Militia": "judaean_militia",
+  "Yonathan_Regular": "judaean_regular",
+  "Yonathan_Militia": "judaean_militia",
+  "Eliezer_Regular": "judaean_regular",
+  "Eliezer_Militia": "judaean_militia",
+  "Shimon_Regular": "judaean_regular",
+  "Shimon_Militia": "judaean_militia"
+ },
+ "movement": {
+  "impassable_terrain": ["offmap"],
+  "terrain_mp": {
+   "clear": 1.0, "slope": 3.0, "builtup": 3.0,
+   "north_wall": 99.0, "wall": 99.0, "bastion": 99.0, "fort": 99.0,
+   "fortress": 99.0, "gate": 99.0, "gate_north_wall": 99.0, "gate_wall": 99.0
+  },
+  "default_mp": 1.0,
+  "hexside_rules": [],
+  "zoc": {"exerts": false, "note": "SoJ ZOC (ground/gate/elevated, hard vs soft, night-off) is family-owned in engine/soj.py - the generic flags cannot express it"},
+  "note": "Generic block covers ROMAN INFANTRY ground movement only (TEC: Clear 1 / Slope 3 / Built-up 3; Judaeans pay 2 in Built-up [8.95]); wall-class hexes are 99 here because entry is staircase/gate/breach-governed [8.91-8.93] - engine/soj.py owns the real per-class TEC below.",
+  "tec": {
+   "_cite": "Terrain Effects Chart (module TEC.jpg, fully legible) + notes; costs per class [Infantry / Artillery / Cavalry / Tower / Ram / Testudo]; X = prohibited; fractions retained and cumulative [2.7]",
+   "clear":    {"infantry": 1, "artillery": 1, "cavalry": 1, "tower": 1, "ram": 1, "testudo": 1},
+   "slope":    {"infantry": 3, "artillery": 3, "cavalry": 7, "tower": 3, "ram": 3, "testudo": 3},
+   "builtup":  {"infantry": {"Jud": 2, "Rom": 3}, "artillery": "road_only", "cavalry": "road_only", "tower": "X", "ram": "X", "testudo": "X"},
+   "breach":   {"infantry": 3, "artillery": "3B", "cavalry": "7B", "tower": "3B", "ram": "3B", "testudo": "3B",
+                "_note": "B = only if adjacent to another connecting Breach of the same wall [8.96]"},
+   "wall_bastion_fortress": {"infantry": "halfC_2S", "artillery": "halfC_H", "cavalry": "X", "tower": "X", "ram": "X", "testudo": "X",
+                "_note": "C = 1/2 MF from connected Elevated (1 MF if breach damage >= half defense [12.4]); S = 2 MF level change via Staircase hexside or Breach [8.93]"},
+   "gate":     {"infantry": "halfC_halfR_1E_2S", "artillery": "halfC_1R_1E_H", "cavalry": "halfR_1E_P", "tower": "1R_1E", "ram": "1R_1E_P", "testudo": "1R_1E_P",
+                "_note": "E = Entrance hexside at ground level; +2 MF up the inherent Interior Staircase [8.91]; P = pass only, no stop; R = road/entrance hexside"},
+   "stacking": {"_cite": "TEC STACKING@ columns [Roman/Judaean], limits apply at END of each phase [6.0]; Artillery/HQ/SE do not count but max one of each per hex (Fortress may hold 2 Artillery if one is a Cauldron [6.3])",
+    "clear": [3, 2], "slope": [3, 2], "builtup": [2, 2], "breach": [3, 2],
+    "north_wall": [1, 1], "wall": [1, 1], "bastion": [2, 2], "fortress": [3, 3],
+    "gate_north_wall": [3, 3], "gate_wall": [3, 3], "fort": [2, 2], "gate": [3, 3]}
+  }
+ },
+ "combat_draft": {
+  "_status": "TRANSCRIBED, NOT YET VALIDATED - stored as combat_draft so the gate honestly resolves tier 1 (gate.py keys tier on 'combat'). Rename to 'combat' only after validate_combat.py passes worked examples + official Q&A cross-checks (spec #12: no wrong rules engine, ever).",
+  "_source": "Game card (module Combat_Tables.jpg, fully legible) transcribed 2026-08-07; cross-checks pending vs official AH Q&A (literature/siege-of-jerusalem/soj_errata1.gif + soj_errata2.gif).",
+  "melee": {
+   "odds_columns": ["1-4", "1-3", "1-2", "1-1", "2-1", "3-1", "4-1", "5-1", "6-1", "7-1"],
+   "rows": {
+    "-1": ["-", "-", "-", "-", "-", "-", "-", "-", "B", "D"],
+    "0":  ["-", "-", "-", "-", "-", "-", "-", "B", "D", "E"],
+    "1":  ["-", "-", "-", "-", "-", "-", "B", "D", "E", "BE"],
+    "2":  ["-", "-", "-", "-", "-", "B", "D", "E", "BE", "DE"],
+    "3":  ["-", "-", "-", "-", "B", "D", "E", "BE", "DE", "EE"],
+    "4":  ["-", "-", "-", "B", "D", "E", "BE", "DE", "EE", "BEE"],
+    "5":  ["-", "-", "B", "D", "E", "BE", "DE", "EE", "BEE", "DEE"],
+    "6":  ["-", "B", "D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE"],
+    "7":  ["B", "D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE", "DEEE"],
+    "8":  ["D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE", "DEEE", "EEEE"]
+   },
+   "row_clamp": ["-1", "8"],
+   "continuous_combat_at": 6,
+   "results_cite": "[14.2 B: all defenders retreat 1-2 hexes, defender may substitute D] [14.3 D: disrupt one Fresh or eliminate one Disrupted, defender's choice] [14.4 E: eliminate one] [11.87 die >= 6 before or after drm: attacker may immediately re-attack, recalculated odds]",
+   "drm": [
+    {"v": -1, "when": "per additional attacking Legion/Faction in same attack", "cite": "[11.842]"},
+    {"v": -1, "when": "defender in Built-up (not Edifice) hex", "cite": "[11.19]"},
+    {"v": -1, "when": "Fresh Heavy Infantry in defender's hex", "cite": "[game card]"},
+    {"v": -1, "when": "attack on Elevated hex not from connected Elevated/Breach/Earth Ramp/Staircase", "cite": "[11.7, 11.18]"},
+    {"v": "-1/+1", "when": "defending/attacking with Commander", "cite": "[game card]"},
+    {"v": "-1/+1", "when": "defending/attacking with complete Fresh cohort (one 7-8 + 6-8 + 5-8, same cohort ID, one hex; max one such drm per attack)", "cite": "[11.841]"},
+    {"v": "-1/+1", "when": "Judaeans defending/attacking in Temple Quarter", "cite": "[11.16]"},
+    {"v": 1, "when": "Judaeans attacking at night", "cite": "[18.25]"},
+    {"v": 1, "when": "Routed defending unit(s) in defender's hex", "cite": "[17.23]"},
+    {"v": 2, "when": "Panicked defending unit(s) in or adjacent to defender's hex", "cite": "[17.23]"},
+    {"v": 2, "when": "per additional defending Legion/Faction", "cite": "[11.842]"},
+    {"v": "+1/-1", "when": "per odds multiple beyond 7-1 / below 1-4", "cite": "[11.83]"}
+   ],
+   "strength_mods": [
+    {"x": 0.5, "when": "attacking through Staircase hexside (total, either direction)", "cite": "[11.11-11.13]"},
+    {"x": 0.5, "when": "attacking upslope through Crest hexside vs Ground-level defender", "cite": "[11.17]"},
+    {"x": 2.0, "when": "flank attack: all six hexes around defender occupied by enemy/impassable/enemy-ZOC", "cite": "[11.85]"},
+    {"x": 2.0, "when": "cavalry attacking both into and from Clear", "cite": "[11.88]"},
+    {"x": 0.5, "when": "cavalry attacking into / while in / defending in Built-up", "cite": "[TEC]"},
+    {"x": 2.0, "when": "defense on Elevated hex", "cite": "[11.7]"},
+    {"x": 3.0, "when": "defense in Fortress (replaces x2)", "cite": "[11.7, TEC]"},
+    {"x": 2.0, "when": "defense in Edifice unless attacked from Edifice of same complex", "cite": "[11.19]"},
+    {"x": 2.0, "when": "Tower riders meleeing connected Elevated through ramp hexside", "cite": "[11.2]"}
+   ]
+  },
+  "missile": {
+   "target_rows": {
+    "fortress":            [4, 8, 16, 24, 32, 40, 48, 56],
+    "fort":                [4, 7, 14, 21, 28, 35, 42, 49],
+    "bastion_armored_tower": [3, 6, 12, 18, 24, 30, 36, 42],
+    "wall_bridge_ram":     [3, 5, 10, 15, 20, 25, 30, 35],
+    "builtup_northwall_tower": [2, 4, 8, 12, 16, 20, 24, 28],
+    "testudo_artillery_ground": [2, 3, 6, 9, 12, 15, 18, 21],
+    "breach_broken_testudo": [1, 2, 4, 6, 8, 10, 12, 14],
+    "clear_slope_ramp_escalade": [null, 1, 2, 3, 4, 5, 6, 7]
+   },
+   "rows_note": "AF total >= threshold at index i -> Attack Multiple i+1 (max 8). Temple Quarter outer wall hexes = Bastions. North Wall row [13.22]: all plain Wall hexes of the New City northern perimeter.",
+   "result_rows": {
+    "-1": ["-", "-", "-", "-", "-", "-", "-", "D"],
+    "0":  ["-", "-", "-", "-", "-", "-", "D", "D"],
+    "1":  ["-", "-", "-", "-", "-", "D", "D", "DD"],
+    "2":  ["-", "-", "-", "-", "D", "D", "DD", "DD"],
+    "3":  ["-", "-", "-", "D", "D", "DD", "DD", "DE"],
+    "4":  ["-", "-", "D", "D", "DD", "DD", "DE", "DE"],
+    "5":  ["-", "D", "D", "DD", "DD", "DE", "DE", "EE"],
+    "6":  ["D", "D", "DD", "DD", "DE", "DE", "EE", "EE"],
+    "7":  ["D", "DD", "DD", "DE", "DE", "EE", "EE", "EE"],
+    "8":  ["DD", "DD", "DE", "DE", "EE", "EE", "EE", "EE"]
+   },
+   "row_clamp": ["-1", "8"],
+   "errant_on_natural_1": "[9.31] artillery vs higher elevation: natural 1 also disrupts one adjacent friendly unit, defender's choice",
+   "drm": [
+    {"v": -1, "when": "per Tower/Armored Tower hex fired through", "cite": "[9.13]"},
+    {"v": -1, "when": "indirect fire", "cite": "[9.9]"},
+    {"v": -1, "when": "Fresh Heavy Infantry in target hex (not if firing at SE/Testudo/Broken Testudo hex, artillery primary target, or Foederatti/Syrian Archers in defending hex)", "cite": "[13.3]"},
+    {"v": -1, "when": "firing from a Breach", "cite": "[game card]"},
+    {"v": -1, "when": "ground-level fire through a Breach at ground-level target", "cite": "[9.5]"},
+    {"v": -1, "when": "Judaean artillery firing outside Primary Range", "cite": "[9.3]"},
+    {"v": 1, "when": "Militia in target hex", "cite": "[13.3]"},
+    {"v": 1, "when": "per attacking Cauldron", "cite": "[13.3]"},
+    {"v": 1, "when": "per Attack Multiple above table maximum (extreme odds)", "cite": "[13.4]"}
+   ],
+   "wall_attack_bonus": "[9.8] missile AF x2 firing straight down a connected Wall/Bridge path from an Elevated hex at units in Wall/Bridge hexes"
+  },
+  "breach": {
+   "table": {"1": [0, 1, 1, 2, 2, 3], "2": [1, 2, 3, 3, 4, 4], "3": [2, 3, 4, 5, 6, 7], "4": [3, 4, 5, 6, 7, 8]},
+   "table_note": "breach factors 1/2/3/4+ x die 1-6 -> damage points, cumulative [12.1]",
+   "defenses": {"fortress": 15, "fort": 12, "bastion": 10, "temple_outer_wall": 10, "wall": 8, "bridge": 5, "north_wall": 6},
+   "gate_entrance_doubles": "[10.1] attacks against a Gate through an Entrance hexside conduct with doubled Attack Factor",
+   "combine": "[12.5] Rams/Armored Towers in different hexes may combine vs one hex"
+  },
+  "rally": {
+   "procedure": "[17.1] die per Disrupted/Routed/Panicked non-Artillery unit each own Rally Phase (Artillery optional); final roll <= Rally Number recovers one level; HQ first, then alpha-numeric hex order. Adjusted 7 = Rout, 8 = Panic, >= 9 = eliminated (Disrupted units) [17.2].",
+   "drm": [
+    {"v": -2, "when": "stacked with own Fresh Leader"}, {"v": -3, "when": "stacked with Fresh Commander"},
+    {"v": -1, "when": "adjacent to own Fresh Leader"}, {"v": -2, "when": "adjacent to Fresh Commander"},
+    {"v": 1, "when": "not in Command Control"},
+    {"v": 1, "when": "within range+LOF of Fresh enemy Missile unit (not Artillery/rock; adjacent-only at night [18.22])"},
+    {"v": 1, "when": "night turn"}, {"v": 1, "when": "in enemy ZOC"},
+    {"v": 1, "when": "adjacent to enemy Combat unit"},
+    {"v": 1, "when": "Routed or stacked with Routed (max +1)"},
+    {"v": 1, "when": "each own Faction/Legion HQ or Commander Routed"},
+    {"v": 2, "when": "each own Faction/Legion HQ or Commander Panicked"},
+    {"v": 2, "when": "Panicked or stacked with/adjacent to friendly Panicked (max +2)"}
+   ],
+   "drm_cite": "Rally Table (TEC.jpg); all cumulative, each cause once per unit; HQ cannot modify own roll [17.3]; Judaean Artillery + Zealots respond only to the Commander [17.3]"
+  }
+ },
+ "credits": {
+  "game": {
+   "title": "The Siege of Jerusalem (third edition)",
+   "publisher": "The Avalon Hill Game Company, 1989",
+   "design": "Fred Schachter, Steve Weiss (research & design)",
+   "development": "Don Greenwood, Bruno Sinigaglio",
+   "art": "George Parrish (cover art), Steve Weiss (counter art), Charles Kibler (mapboard)",
+   "playtesting": "Dave Williams, Rex Martin, Ray Pfeiffer, Joshua Gottesman, Craig Goode, Mark Herman, Chris Cornaghie, R. Neil Moran, George Miksad, P.J. O'Neill, Stephen Geisinger",
+   "production": "Colonial Composition (typesetting), Lou Velenovsky (prep dept.), Monarch Services (printing)",
+   "source": "CREDITS box, rulebook p.15"
+  },
+  "module": {
+   "title": "The Siege of Jerusalem - AH (1989), VASSAL module v3.0.0",
+   "implementation": "Rob McRae (clanmacrae), 2026; v3.0.0 added the embedded rulebook and the standard numbered hex grid after the module screener identified both gaps",
+   "source": "vassalengine.org module library; GitHub issue #2 (first module-screener funnel conversion)",
+   "note": "Module deviations found during encoding are recorded for the author's worksheet: the P51 Yafo Gate name-marker is placed in hex P55; ~25 v2.3 region-name typos (list in ingest/INGEST_NOTES.md)."
+  },
+  "note": "This engine enforces the printed game's rules against the module's own materials. All game content remains the property of its publisher; module art remains the work of the module author. Bring-your-own-module: users download the module from the VASSAL module library."
+ },
+ "source_defects": {
+  "note": "Defects in the ORIGINAL PUBLISHED GAME found during encoding - spec #21. Authority ladder: official errata > tournament/publisher clarification > proven outcome-equivalence > declared umpired.",
+  "list": [
+   {
+    "id": "qq32-hexside-color",
+    "kind": "map_misprint",
+    "rules": ["2.15"],
+    "defect": "The printed map gives hex QQ32 blue (Bastion) hexsides; the rulebook's own errata paragraph corrects it: 'The hexsides of QQ32 should be orange (fort); not blue (bastion).'",
+    "resolution": "QQ32 is encoded as a Fort (breach defense 12, Fort missile row). The v3.0.0 module map art already paints QQ32 orange - the module author pre-applied the official errata.",
+    "authority": "Official errata printed in the rulebook [2.15].",
+    "enforced": true
+   },
+   {
+    "id": "qa-contradiction-rout-from-heavy-zoc",
+    "kind": "contradictory_official_rulings",
+    "rules": ["7.311", "17.21", "17.23"],
+    "defect": "The two official Q&A documents answer the SAME question oppositely. The General's Question Box: 'Can/must Judaean units leave a ground-level Heavy Infantry ZOC when routing/panicking? A. Yes.' The later AH Q&A typescript (dated Monday, January 6, 1992): identical question, 'A. No.'",
+    "resolution": "The later ruling is enforced: Judaean units in Roman Heavy-Infantry ground-level ZOC do NOT move when Routed/Panicked (they remain in place, consistent with the 7.311 freeze). Both rulings quoted in the validation library.",
+    "authority": "Official Q&A, later document supersedes earlier (1/6/1992 typescript over the Question Box printing).",
+    "enforced": true
+   },
+   {
+    "id": "gallus-reinforcement-dice-count",
+    "kind": "ambiguous_wording",
+    "rules": ["Gallus scenario card, special rule 2"],
+    "defect": "The reinforcement rule says the Judaean player 'rolls the dice' (plural) for how many Giora units enter, then 'rolls the die again' (singular) for the entry gate - whether the count roll is one die or two is not defined anywhere in the rules or either official Q&A document.",
+    "resolution": "Encoded as TWO dice for the count (the game's standard is two d6 [2. COMPONENTS: 'two six-sided dice'; Repair and Elevated Hex Damage rolls are explicitly 'two dice']) and one die for the gate, following the card's own singular/plural distinction. Flagged for module-author/expert review.",
+    "authority": "Declared interpretation from the card's wording; expert review pending (no official ruling found).",
+    "enforced": true
+   },
+   {
+    "id": "general-26-4-interphase-sequence",
+    "kind": "editing_error",
+    "rules": ["19", "The General Vol 26 No 4"],
+    "defect": "The Assault Period Interphase sequence printed in The General Vol 26 No 4 is wrong per the corrected sequence-of-play aid reviewed by developer Don Greenwood (Sinigaglio prep+interphase aid).",
+    "resolution": "Campaign-game scope - not reachable from the Gallus scenario. To be registered in full when the campaign game is encoded; the corrected Greenwood-reviewed sequence is preserved in the validation library (atf_interphase.htm).",
+    "authority": "Developer-reviewed correction (semi-official), pending full campaign encoding.",
+    "enforced": false
+   }
+  ]
+ }
+}

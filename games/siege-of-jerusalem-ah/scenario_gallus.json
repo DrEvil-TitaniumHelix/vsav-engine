@@ -1,0 +1,108 @@
+{
+ "name": "The Assault of Gallus, 66 AD - Introductory Scenario",
+ "mode": "soj",
+ "game": {
+  "turns": 10,
+  "first_player": "Rom",
+  "turn_labels": ["Turn 1", "Turn 2", "Turn 3", "Turn 4", "Turn 5", "Turn 6", "Turn 7",
+                  "Turn 8 (night)", "Turn 9 (night)", "Turn 10 (night)"],
+  "night_turns": [8, 9, 10],
+  "night_cite": "card turn track shades 8-10; victory conditions: 'played for ten turns (only the first seven of which may be day turns)'",
+  "opening_phase": "rom_fire",
+  "opening_cite": "card: 'The game begins with a Roman Fire Phase (4.12)'"
+ },
+ "deployment": {
+  "order": ["Jud", "Rom"],
+  "cite": "card: Judaeans set up first inside the New City on or within its outer walls; Romans set up second anywhere outside Jerusalem no closer than five hexes from any Elevated Hex after observing the Judaean deployment",
+  "jud_zone": "new_city_and_north_wall",
+  "rom_zone": "outside_city_min5_from_elevated",
+  "min_force_hexes": ["O50", "M50", "L50", "G43", "G40", "G39", "M36", "P33", "S30", "V27",
+                      "Y24", "AA22", "DD19", "GG17", "JJ17", "MM17", "PP17", "PP20", "PP23",
+                      "QQ25", "QQ29"],
+  "min_force_cite": "special rule 1: >= 1 unit in each Bastion and Fortress of the North Wall O50..QQ29 inclusive (Forts count: 'Fortresses and Forts are considered identical' [2.11]); requirement void from the start of turn 4; a hex vacated by combat results need not be reoccupied",
+  "roman_prohibited_hexes": ["P50", "QQ32"],
+  "roman_prohibited_cite": "card: Roman entry of Garrison Areas is not allowed (e.g., Romans may never enter P50 or QQ32)",
+  "playable_area": {
+   "method": "flood_outside_plus_crescent",
+   "outside_seed": "A25",
+   "row_max": 63,
+   "note": "playable = New City crescent + both wall rings + the outside region (flood fill from A1, barred by wall/strongpoint/garrison hexes, engine rows > 63 excluded). The old city south of the Second Wall is off the Gallus battlefield (card: 'The scenario is played only on the North Wall from O50 to Women's Gate to QQ31'). Routed/Panicked units whose Refuge path leaves the battlefield exit at the south gates and are removed from play (Bruce-approved scope call 2026-08-07; flagged for module-author expert review)."
+  }
+ },
+ "reinforcement": {
+  "pool": "giora",
+  "from_turn": 4,
+  "count_dice": 2,
+  "entry_die": {"odd": "OO33", "even": "Q49"},
+  "blocked_fallback": "other_gate",
+  "cite": "special rule 2: from turn 4, at the start of the Judaean MPh roll the dice and randomly draw that many units plus the Giora Leader from the South Wall force; odd entry roll = Tadi Gate (OO33), even = Q49; if blocked, enter at the other Gate; repeat each turn until all have entered. Count = two dice per source-defect entry 'gallus-reinforcement-dice-count' (declared interpretation, expert review pending)."
+ },
+ "vp": {
+  "roman_win": {"builtup_controlled": 10, "checked_at": "end_of_jud_melee"},
+  "judaean_win": "prevent_through_turn_10",
+  "cite": "special rule 3: Romans win if they control (18.3) ten Built-up hexes at the end of any Judaean Melee Phase; hex control = last occupant [18.3]; Judaeans win by avoiding the Roman victory conditions through turn 10 (or Roman concession)"
+ },
+ "units": [
+  {"id": "J01", "slot": "Jewish_ben_Gurion", "type": "judaean_leader", "side": "Jud", "faction": "J", "name": "Josef ben Gurion"},
+  {"id": "J02", "slot": "Josef_Regular", "type": "judaean_regular", "side": "Jud", "faction": "J", "count": 6},
+  {"id": "J08", "slot": "Josef_Militia", "type": "judaean_militia", "side": "Jud", "faction": "J", "count": 3},
+  {"id": "Y01", "slot": "Jewish_ben_Levi", "type": "judaean_leader", "side": "Jud", "faction": "Y", "name": "Yonathan ben Levi"},
+  {"id": "Y02", "slot": "Yonathan_Regular", "type": "judaean_regular", "side": "Jud", "faction": "Y", "count": 8},
+  {"id": "Y10", "slot": "Yonathan_Militia", "type": "judaean_militia", "side": "Jud", "faction": "Y", "count": 13},
+  {"id": "E01", "slot": "Jewish_ben_Shimon", "type": "judaean_leader", "side": "Jud", "faction": "E", "name": "Eliezer ben Shimon"},
+  {"id": "E02", "slot": "Eliezer_Regular", "type": "judaean_regular", "side": "Jud", "faction": "E", "count": 3},
+  {"id": "E05", "slot": "Eliezer_Militia", "type": "judaean_militia", "side": "Jud", "faction": "E", "count": 7},
+  {"id": "Z01", "slot": "Jewish_Zealot", "type": "zealot", "side": "Jud", "faction": null, "count": 3},
+  {"id": "C01", "slot": "Jewish_Cauldron", "type": "cauldron", "side": "Jud", "faction": null, "count": 5},
+  {"id": "R01", "slot": "Gallus", "type": "gallus", "side": "Rom", "faction": "XII", "name": "Cestius Gallus"},
+  {"id": "RV1", "slot": "XII_Heavy_Infantry_7-8", "type": "roman_veteran", "side": "Rom", "faction": "XII", "count": 10, "cohorts": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]},
+  {"id": "RL1", "slot": "XII_Heavy_Infantry_6-8", "type": "roman_line", "side": "Rom", "faction": "XII", "count": 10, "cohorts": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]},
+  {"id": "RR1", "slot": "XII_Heavy_Infantry_5-8", "type": "roman_recruit", "side": "Rom", "faction": "XII", "count": 10, "cohorts": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]},
+  {"id": "RE1", "slot": "XII_Velitae", "type": "velitae", "side": "Rom", "faction": "XII", "count": 9},
+  {"id": "RF1", "slot": "XII_Foederatti", "type": "foederatti", "side": "Rom", "faction": "XII", "count": 6},
+  {"id": "RS1", "slot": "XII_Syrian_Archers", "type": "syrian_archers", "side": "Rom", "faction": "XII", "count": 3},
+  {"id": "RC1", "slot": "XII_Cavalry", "type": "roman_cavalry", "side": "Rom", "faction": "XII", "count": 6},
+  {"id": "RT1", "slot": "XII_Tower", "type": "tower", "side": "Rom", "faction": "XII", "count": 3},
+  {"id": "RM1", "slot": "XII_Ram", "type": "ram", "side": "Rom", "faction": "XII", "count": 1},
+  {"id": "RA1", "slot": "XII_Catapult", "type": "roman_catapult", "side": "Rom", "faction": "XII", "count": 4},
+  {"id": "RB1", "slot": "XII_Ballista", "type": "roman_ballista", "side": "Rom", "faction": "XII", "count": 1},
+  {"id": "RO1", "slot": "XII_Onager", "type": "roman_onager", "side": "Rom", "faction": "XII", "count": 1}
+ ],
+ "reinforcement_pool": [
+  {"id": "S01", "slot": "Jewish_ben_Giora", "type": "judaean_leader", "side": "Jud", "faction": "S", "name": "Shimon ben Giora", "leader_enters_with_first_draw": true},
+  {"id": "S02", "slot": "Shimon_Regular", "type": "judaean_regular", "side": "Jud", "faction": "S", "count": 9},
+  {"id": "S11", "slot": "Shimon_Militia", "type": "judaean_militia", "side": "Jud", "faction": "S", "count": 14},
+  {"id": "Z04", "slot": "Jewish_Zealot", "type": "zealot", "side": "Jud", "faction": null, "count": 2}
+ ],
+ "oob_cite": "printed scenario card (module board Intro.jpg) - counts byte-verified identical to the module's Gallus .vsav force pool (ingest/gallus_oob.json); 'The Giora Faction and two Zealots are removed temporarily as the garrison of the South Wall'",
+ "rules_scope": {
+  "enforced": [
+   "[2.14] letter-diagonal grid identity (validated on 3,071 module region names)",
+   "Deployment: Judaeans first in the New City / on its outer walls; minimum-force strongpoints O50..QQ29; Romans outside, >= 5 hexes from any Elevated hex, after seeing the Judaean setup (card)",
+   "[TEC] per-class movement costs: Clear/Slope/Built-up (Judaean 2 / Roman 3 [8.95]); wall entry only via Staircase hexside, Breach, Gate or connected Elevated [8.91-8.93]; siege-engine and cavalry terrain prohibitions",
+   "[6.x] stacking limits at phase end, per terrain, per side; Artillery/HQ/SE free-stack with one-each cap",
+   "[7.x] zones of control: ground/gate/elevated ZOC classes, hard-ZOC entry stop, 7.311 exit rule + Judaean freeze in Roman Heavy-Infantry ground ZOC (per the 1/6/1992 official Q&A ruling), soft ZOC +3 MF for HQ/Cavalry, no ZOC at night",
+   "[4.x] phase sequence Rally-Fire-Movement-Melee per side; game opens with the Roman Fire Phase; turns 8-10 are night",
+   "Reinforcement: Giora faction dice-rolled entry from turn 4 at OO33/Q49 (declared two-dice count - see source_defects)",
+   "[18.3] hex control tracking + the ten-Built-up-hex Roman victory check at the end of each Judaean Melee Phase"
+  ],
+  "enforced_tier2": [
+   "[11.x, 14.x] Melee Table with drm/strength modifiers, loss choice, retreats, continuous combat, advance after combat",
+   "[9.x, 13.x] Missile Table: fire concentration, attack multiples, LOF, mandatory targets, wall attack bonus",
+   "[10.1, 12.x] Ram/Armored Tower breach attacks, breach damage accumulation, breach state",
+   "[15.x, 16.x, 17.x] disruption ladder Fresh-Disrupted-Routed-Panicked, rally table with drm, rout/panic movement",
+   "[5.x] Command Control range and penalties"
+  ],
+  "umpired": [
+   "[6.5, 8.7, 11.6] Escalade placement and combat (players adjudicate per the rulebook)",
+   "[6.6, 8.8, 16.4] Testudo formation (players adjudicate)",
+   "[6.4, 8.6, 8.61] siege-engine pushing crews, riding and Tower boarding details beyond basic movement legality",
+   "interior roads (not encoded in v1 - module-author verification pending; TEC road rate not applied)",
+   "[11.17, 9.52] Crest hexsides (none in the primary battlefield; not encoded in v1)"
+  ],
+  "rulings": [
+   "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents' one contradiction (rout from Heavy-Infantry ZOC) resolves to the later document - see source_defects",
+   "Bounded battlefield: the old city beyond the Second Wall is out of play; Routed/Panicked units exiting via the south gates toward Refuge are removed from play (scenario scope statement; Bruce-approved; module-author review pending)"
+  ]
+ }
+}
