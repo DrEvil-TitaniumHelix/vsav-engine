@@ -41,37 +41,36 @@ def submit_no(tg, side, action, why_frag=""):
 
 
 def deploy_all(tg):
-    """A legal deployment: one Judaean combat unit per min-force strongpoint,
-    cauldrons on wall strongpoints, the rest massed inside the crescent;
-    Romans in a block on the northern plain."""
+    """A legal deployment: Judaean wall garrison + crescent mass, then the
+    Roman camp on the northern plain."""
+    deploy_jud(tg)
+    deploy_rom(tg)
+
+
+def deploy_jud(tg):
+    """Judaean half only (for tests that script their own Roman camp)."""
     juds = [u for u in tg.s["units"].values() if u["side"] == "Jud"]
     min_force = [tg.hex_name[h] for h in tg.min_force]
-
     cauldrons = [u for u in juds if u["type"] == "cauldron"]
     combat = [u for u in juds if u["type"] in
               ("zealot", "judaean_regular", "judaean_militia")]
     leaders = [u for u in juds if u["type"] == "judaean_leader"]
-    assert len(combat) >= len(min_force), "not enough combat units for the wall"
-
-    # min-force garrisons
     for hexn, u in zip(min_force, combat):
         submit_ok(tg, "Jud", {"type": "deploy", "pid": u["pid"], "hex": hexn})
     rest = combat[len(min_force):]
-    # cauldrons ride on the first five strongpoints (artillery free-stacks)
     for hexn, u in zip(min_force, cauldrons):
         submit_ok(tg, "Jud", {"type": "deploy", "pid": u["pid"], "hex": hexn})
-    # everyone else inside the crescent: leaders on distinct hexes first,
-    # then 2 per hex (Judaean clear limit)
     crescent_hexes = [tg.hex_name[h] for h in sorted(tg.new_city)
-                      if tg.hex_t[h] in ("clear", "builtup")]
+                      if tg.hex_t0[h] in ("clear", "builtup")]
     spots = crescent_hexes[:3]
     for hexn in crescent_hexes[3:]:
         spots += [hexn, hexn]
     for u, hexn in zip(leaders + rest, spots):
         submit_ok(tg, "Jud", {"type": "deploy", "pid": u["pid"], "hex": hexn})
-
     submit_ok(tg, "Jud", {"type": "deploy_done"})
 
+
+def deploy_rom(tg):
     roms = [u for u in tg.s["units"].values() if u["side"] == "Rom"]
     zone = sorted(tg.rom_zone)
     heavy_first = sorted(
@@ -100,8 +99,8 @@ def main():
         g = gamespec.Game(HERE)
         tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
                          live, seed=7)
-        assert tg.tier == 1 and tg.tier_earned == 1, \
-            "combat tables are draft - SoJ must resolve tier 1 until validated"
+        assert tg.tier == 2 and tg.tier_earned == 2, \
+            f"validated combat => tier 2 earned (got {tg.tier_earned})"
         assert tg.s["phase"] == "deploy_jud"
 
         juds = [u for u in tg.s["units"].values() if u["side"] == "Jud"]
@@ -169,7 +168,7 @@ def deploy_all_probe(tg):
         if hexn != "QQ29":
             submit_ok(tg, "Jud", {"type": "deploy", "pid": u["pid"], "hex": hexn})
     crescent_hexes = [tg.hex_name[h] for h in sorted(tg.new_city)
-                      if tg.hex_t[h] in ("clear", "builtup")]
+                      if tg.hex_t0[h] in ("clear", "builtup")]
     spots = crescent_hexes[:3]              # leaders get distinct hexes first
     for hexn in crescent_hexes[3:]:
         spots += [hexn, hexn]

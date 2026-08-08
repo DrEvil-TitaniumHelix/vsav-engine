@@ -49,7 +49,7 @@ def clear_chain(tg, start, length):
             return chain
         for n in tg._nb(chain[-1]):
             if (n not in seen and n in tg.outside
-                    and tg.hex_t[n] == "clear" and not tg._occupants(n)):
+                    and tg.hex_t0[n] == "clear" and not tg._occupants(n)):
                 r = dfs(chain + [n], seen | {n})
                 if r:
                     return r
@@ -57,6 +57,17 @@ def clear_chain(tg, start, length):
     chain = dfs([start], {start})
     assert chain, f"no clear chain of {length} from {tg.hex_name[start]}"
     return [tg.hex_name[h] for h in chain]
+
+
+def cycle_to(tg, phase, turn=None):
+    """End phases (as whichever side owns the moment) until the target
+    phase (and turn) is reached; returns the last end_phase result."""
+    r = None
+    for _ in range(200):
+        if tg.s["phase"] == phase and (turn is None or tg.s["turn"] == turn):
+            return r
+        r = submit_ok(tg, tg.side_to_move(), {"type": "end_phase"})
+    raise AssertionError(f"never reached {phase} turn {turn}")
 
 
 def main():
@@ -73,8 +84,11 @@ def main():
                      if u["type"] == "roman_veteran")
         chain9 = clear_chain(tg, heavy["hex"], 9)
         no_move(tg, "Rom", heavy["pid"], chain9[:3], "not the Rom Movement Phase")
-        submit_no(tg, "Jud", {"type": "end_phase"}, "not your phase")
-        submit_ok(tg, "Rom", {"type": "end_phase"})       # fire (umpired tier 1)
+        # fire phase: NON-phasing side's segment comes first [4.12]
+        assert tg.side_to_move() == "Jud"
+        submit_no(tg, "Rom", {"type": "end_phase"}, "not your phase")
+        submit_ok(tg, "Jud", {"type": "end_phase"})   # end Judaean segment
+        submit_ok(tg, "Rom", {"type": "end_phase"})   # end Roman segment
         assert tg.s["phase"] == "rom_move"
 
         # -------- Roman march budgets: heavy MA 8, clear = 1 each [TEC]
@@ -101,10 +115,7 @@ def main():
         z23 = tg.name_hex["Z23"]
         assert tg.s["control"][z23] == "Jud"
 
-        submit_ok(tg, "Rom", {"type": "end_phase"})       # -> rom_melee
-        submit_ok(tg, "Rom", {"type": "end_phase"})       # -> jud_rally
-        submit_ok(tg, "Jud", {"type": "end_phase"})       # -> jud_fire
-        submit_ok(tg, "Jud", {"type": "end_phase"})       # -> jud_move
+        cycle_to(tg, "jud_move")
         assert tg.s["phase"] == "jud_move"
 
         # -------- Judaean wall work: climb a staircase through the gate
@@ -113,8 +124,8 @@ def main():
         climb = None
         for pair in sorted(tg.stairs):
             gnd, wall = ((pair[0], pair[1])
-                         if tg.hex_t[pair[1]] in soj.ELEVATED else (pair[1], pair[0]))
-            if tg.hex_t[gnd] in soj.ELEVATED:
+                         if tg.hex_t0[pair[1]] in soj.ELEVATED else (pair[1], pair[0]))
+            if tg.hex_t0[gnd] in soj.ELEVATED:
                 continue
             unit = next((u for u in tg._occupants(gnd)
                          if u["side"] == "Jud" and u["type"] in
@@ -139,17 +150,9 @@ def main():
         assert r["result"]["roman_builtup"] == 0
         assert tg.s["turn"] == 2 and tg.s["phase"] == "rom_rally"
 
-        # advance turns 2-3 for the Giora reinforcement roll at turn 4
-        for _t in (2, 3):
-            for side, n in (("Rom", 4), ("Jud", 4)):
-                for _ in range(n):
-                    submit_ok(tg, side, {"type": "end_phase"})
-        assert tg.s["turn"] == 4 and tg.s["phase"] == "rom_rally"
+        # advance to the turn-4 Judaean MPh for the Giora reinforcement roll
         pool_before = len(tg.s["pool"])
-        for _ in range(4):
-            submit_ok(tg, "Rom", {"type": "end_phase"})
-        submit_ok(tg, "Jud", {"type": "end_phase"})
-        r = submit_ok(tg, "Jud", {"type": "end_phase"})   # -> jud_move + roll
+        r = cycle_to(tg, "jud_move", turn=4)
         rr = r["result"].get("reinforcement")
         assert rr, "Giora reinforcement roll expected at turn-4 jud_move"
         assert rr["gate"] in ("OO33", "Q49")
@@ -202,7 +205,7 @@ def walk(tg, u, dest):
             return names
         for n in tg._nb(path[-1]):
             if (n in seen or n not in tg.new_city
-                    or tg.hex_t[n] not in ("clear", "builtup")
+                    or tg.hex_t0[n] not in ("clear", "builtup")
                     or tg._occupants(n)):
                 continue
             seen.add(n)
@@ -226,28 +229,29 @@ def probes(tg):
         hq = next(u for u in U.values() if u["type"] == "gallus")
         # find a clear outside pocket: three hexes in a row
         a = next(h for h in sorted(tg.outside)
-                 if tg.hex_t[h] == "clear" and not tg._occupants(h)
-                 and sum(1 for n in tg._nb(h) if tg.hex_t[n] == "clear") >= 4)
-        nbs = [n for n in tg._nb(a) if tg.hex_t[n] == "clear"]
+                 if tg.hex_t0[h] == "clear" and not tg._occupants(h)
+                 and sum(1 for n in tg._nb(h) if tg.hex_t0[n] == "clear") >= 4)
+        nbs = [n for n in tg._nb(a) if tg.hex_t0[n] == "clear"]
         b, c = nbs[0], nbs[1]
         rom["hex"], jud["hex"] = a, b        # adjacent ground units
+        hq["hex"] = a                        # commander keeps the probe in CC
         # ground ZOC: Judaean moving out of Roman heavy ground ZOC = frozen
         # [7.311 + official Q&A 1/6/1992]
         v = tg._move_verdict("Jud", jud, [b, c])
         assert not v["legal"] and "7.311" in " ".join(v["reasons"]), v
         # the same Judaean as HQ-class is exempt (soft ZOC)
         jl = next(u for u in U.values() if u["type"] == "judaean_leader")
-        jl["hex"] = b
+        jl["hex"] = b                        # HQ: soft ZOC, and covers CC
         v = tg._move_verdict("Jud", jl, [b, c])
         assert v["legal"], v["reasons"]      # HQ may leave, +3 MF [7.32]
         # hard-ZOC stop on entry [7.31]: Roman moving through Judaean zoc...
         # Judaean militia at b exerts zoc into adjacent ground hexes
-        zoc_t = [n for n in tg._nb(b) if tg.hex_t[n] in ("clear", "slope")
+        zoc_t = [n for n in tg._nb(b) if tg.hex_t0[n] in ("clear", "slope")
                  and n != a and n in tg._nb(a)]
         if zoc_t:
             t0 = zoc_t[0]
             far = next((n for n in tg._nb(t0)
-                        if tg.hex_t[n] == "clear" and n not in tg._nb(b)
+                        if tg.hex_t0[n] == "clear" and n not in tg._nb(b)
                         and n != a), None)
             if far:
                 v = tg._move_verdict("Rom", rom, [a, t0, far])
@@ -273,16 +277,17 @@ def probes(tg):
         assert v["legal"], v["reasons"]
         assert "1.5" in v["reasons"][0], v["reasons"]
         # slope costs 3 for infantry, 7 cavalry [TEC]
-        hz = tg._heavy_ground_zoc("Rom")
+        hz = tg._zoc_map("Rom") | tg._heavy_ground_zoc("Rom")
         s = next(h for h in sorted(tg.playable)
-                 if tg.hex_t[h] == "slope" and h not in hz
+                 if tg.hex_t0[h] == "slope" and h not in hz
                  and not tg._occupants(h)
-                 and any(tg.hex_t[n] == "clear" and n not in hz
+                 and any(tg.hex_t0[n] == "clear" and n not in hz
                          and not tg._occupants(n) for n in tg._nb(h)))
         cl = next(n for n in tg._nb(s)
-                  if tg.hex_t[n] == "clear" and n not in hz
+                  if tg.hex_t0[n] == "clear" and n not in hz
                   and not tg._occupants(n))
         jud2["hex"] = cl
+        jl["hex"] = cl                       # leader holds the probe in CC
         v = tg._move_verdict("Jud", jud2, [cl, s])
         assert v["legal"] and "3" in v["reasons"][0], v
         # siege engine without a pushing crew may not move [8.6]
@@ -290,7 +295,7 @@ def probes(tg):
         se["hex"] = c
         crewless = tg._move_verdict("Rom", se,
                                     [c, next(n for n in tg._nb(c)
-                                             if tg.hex_t[n] == "clear")])
+                                             if tg.hex_t0[n] == "clear")])
         assert not crewless["legal"] and "8.6" in " ".join(crewless["reasons"])
         # cauldron: elevated-to-elevated at 1/2, ground prohibited [8.5]
         cd = next(u for u in U.values() if u["type"] == "cauldron")
