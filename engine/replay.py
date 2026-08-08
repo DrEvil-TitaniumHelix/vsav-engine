@@ -26,8 +26,9 @@ import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod   # noqa: E402
 import westwall as ww_mod   # noqa: E402
 import napoleonic as nap_mod  # noqa: E402
+import soj as soj_mod       # noqa: E402
 
-STRATEGIC_MODES = ("strategic", "bluegray", "westwall", "napoleonic")
+STRATEGIC_MODES = ("strategic", "bluegray", "westwall", "napoleonic", "soj")
 
 
 class ReplayMismatch(Exception):
@@ -48,6 +49,9 @@ def find_scenario(game_dir, init):
 def make_gate(game, scen_path, workdir, init):
     """A fresh gate of the family the init entry names, seeded from the log."""
     mode = init.get("mode")
+    if mode == "soj":
+        return soj_mod.SoJGame(game, scen_path, workdir,
+                               seed=init["seed"], tier=init.get("tier"))
     if mode == "napoleonic":
         return nap_mod.NapoleonicGame(game, scen_path, workdir,
                                       seed=init["seed"],
@@ -68,6 +72,13 @@ def make_gate(game, scen_path, workdir, init):
 
 def check_init(tg, init):
     """Confirm the fresh gate's starting positions match the log's record."""
+    if init.get("mode") == "soj":
+        # soj units carry a single hex key (None before deployment)
+        for lu in init["units"]:
+            u = tg.s["units"][lu["pid"]]
+            if u["hex"] != lu["hex"] or u["side"] != lu["side"]:
+                raise ReplayMismatch(f"init mismatch for {lu['pid']}")
+        return
     strategic = init.get("mode") in STRATEGIC_MODES
     for lu in init["units"]:
         u = tg.s["units"][lu["pid"]]
