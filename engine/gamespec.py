@@ -80,6 +80,10 @@ class Grid:
                 return f"{self._letters(li)}{col + li // 2 + self.name_num0 + 1}"
         if style == "colletter":        # ASL geoboards: letter COLUMNS (A..Z,AA..GG) + row
             return f"{self._letters(col)}{row}"
+        if style == "colletter_diag":   # SoJ: letter COLUMNS, numbers along diagonals [2.14]
+            li = col - self.name_row0   # name_row0 = engine col of column "A"
+            if li >= 0:
+                return f"{self._letters(li)}{row - col // 2 + self.name_num0 + 1}"
         return self.hexnum(col, row)
 
 
