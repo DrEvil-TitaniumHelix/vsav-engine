@@ -122,7 +122,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.5 | 8.95 | Built-up entry: Jud 2 / Rom 3; stacking 2 | ENFORCED — `_ground_cost`/TEC; VM. **42-hex Built-up data correction OPEN → A3** |
 | M.6 | 8.94/8.95/12.4 | interior roads: ½ MF; Cavalry/Artillery enter/exit Built-up only via road hexsides; road rate lost at half-damage | OPEN → **B8** (no road data; cav/art currently barred from Built-up entirely) |
 | M.7 | 8.96 | Breach entry for Art/Testudo/Cav/SE only if adjacent connecting Breach of same wall | OPEN → **N19** (engine allows breach entry per GROUND costs without the connecting-breach test) |
-| M.8 | 7.31/7.311 | hard ZOC: stop on entry; exit only into ZOC-free first hex; Judaean freeze in Roman HI ground ZOC (Q&A 1/6/1992) | ENFORCED — `_move_verdict`; VM; source_defect entry **to be corrected by A1** |
+| M.8 | 7.31/7.311 | hard ZOC: stop on entry; exit only into ZOC-free first hex; Judaean freeze in Roman HI ground ZOC (official Q&A, both docs agree) | ENFORCED — `_move_verdict`; VM; register corrected (A1 done, ac848ec) |
 | M.9 | 7.32/7.4 | soft ZOC (HQ/Cavalry): +3 MF to leave, paid once per hex left | ENFORCED — `_move_verdict`; VM |
 | M.10 | 7.321 | soft ZOC exit is FREE if the first hex entered is ZOC-free | OPEN → **N6** (engine always charges +3) |
 | M.11 | 7.2 | no ZOC at night / by Disrupted / Artillery / SE / Testudo / SE-or-Escalade-stacked Romans; no cross-level ZOC | ENFORCED — `_zoc_map` (night: Q&A 18.23 confirmed); VC |
@@ -291,8 +291,9 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **A3–A9 (data), B1–B19 (engine), N1–N24 (this file), R1/R2/R4/R7/R8
-(blocked on Rob — cells stay open until his answers land).** The scenario ships when this section
-reads "PLAYABLE: every row ENFORCED or UNREACHABLE" and `run_all` + all four validators prove it.
+**NOT PLAYABLE.** Open rows: **A3–A7, A9 (data; A1/A2/A8 done ac848ec), B1–B19 (engine),
+N1–N24 (this file), R1/R2/R4/R7/R8 (blocked on Rob — cells stay open until his answers land).**
+The scenario ships when this section reads "PLAYABLE: every row ENFORCED or UNREACHABLE" and
+`run_all` + all four validators prove it.
 
 *Maintained by hand during the build; every closed row must name its validator in the same commit.*
