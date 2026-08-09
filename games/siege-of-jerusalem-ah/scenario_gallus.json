@@ -385,7 +385,7 @@
    "interior roads (not encoded in v1 - module-author verification pending; TEC road rate not applied)"
   ],
   "rulings": [
-   "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents' one contradiction (rout from Heavy-Infantry ZOC) resolves to the later document - see source_defects",
+   "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents AGREE everywhere (decode-prep 6, item by item) - their one discrepancy is a rule-citation mismatch (17.23 vs 17.3) registered in source_defects",
    "Bounded battlefield: the old city beyond the Second Wall is out of play; Routed/Panicked units exiting via the south gates toward Refuge are removed from play (scenario scope statement; Bruce-approved; module-author review pending)"
   ]
  }

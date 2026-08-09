@@ -64,8 +64,10 @@ edifice = dark-gray background hex.) Everything else in crescent: clear (+ some 
    sides Romans/Judaeans, unit stats (2.41-2.46 transcribed), terrain MP table (TEC transcribed),
    Melee Table + Missile Table + Breach Table + Weapons Effect + LOF + Rally (all transcribed,
    game-card image legible), credits (printed p.15 + module credits), source_defects (4 known:
-   QQ32 errata 2.15 [module art already applies it]; Q&A 7.311/17.3 contradiction 1990-QB-Yes vs
-   1992-typescript-No — encode the LATER official ruling (No) w/ both quoted; General 26-4
+   QQ32 errata 2.15 [module art already applies it]; Q&A 7.311 rout-from-Heavy-ZOC — RETRACTED
+   2026-08-09: decode-prep 6 re-read both scans, BOTH documents answer "No" (the contradiction
+   claim was our transcription error); registered instead as citation mismatch 17.23-vs-17.3,
+   ruling enforced unchanged; General 26-4
    interphase sequence wrong per Greenwood-reviewed aid [campaign scope, register on later
    touch]; card reinforcement "rolls the dice" 1d-vs-2d ambiguity — no official ruling found,
    resolution TBD [module behavior/Rob as expert review]).
