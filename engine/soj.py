@@ -16,9 +16,10 @@ allowed vs any adjacent Elevated hex); Escalades and Testudo are not
 available in v1; multi-hex advance after combat is limited to the vacated
 hex; CC tracing and Refuge routing use documented approximations.
 
-Authority: official Q&A > rulebook; the one Q&A self-contradiction
-(7.311/17.3) resolves to the later 1/6/1992 typescript - see game.json
-source_defects. Every enforcement carries its citation.
+Authority: official Q&A > rulebook; the two official Q&A documents agree
+everywhere (decode-prep 6) - their one citation mismatch (17.23 vs 17.3)
+is registered in game.json source_defects. Every enforcement carries its
+citation.
 """
 import os
 import sys

@@ -244,14 +244,15 @@
   },
   "module": {
    "title": "The Siege of Jerusalem - AH (1989), VASSAL module v3.0.0",
-   "implementation": "Rob McRae (clanmacrae), 2026; v3.0.0 added the embedded rulebook and the standard numbered hex grid after the module screener identified both gaps",
-   "source": "vassalengine.org module library; GitHub issue #2 (first module-screener funnel conversion)",
-   "note": "Module deviations found during encoding are recorded for the author's worksheet: the P51 Yafo Gate name-marker is placed in hex P55; ~25 v2.3 region-name typos (list in ingest/INGEST_NOTES.md)."
+   "implementation": "Rob McRae (vassalengine.org: clanmacrae; GitHub: clanmacrae9) - v2.0 (2015) through v3.0.0 (2026); v3.0.0 added the embedded rulebook and the standard numbered hex grid after the module screener identified both gaps",
+   "contributors": "Built on earlier module versions (module release notes): v1.02 (2010; library record published by uckelman), v1.03/1.33 (2013; Mjr). Library project owners of record: MartenJan, clanmacrae, jimpyle.",
+   "source": "vassalengine.org module library (/api/gls/v1/projects/The_Siege_of_Jerusalem) + the module's own release notes (SOJ notes.txt); GitHub issue #2 (first module-screener funnel conversion)",
+   "note": "Module deviations found during encoding are recorded for the author's worksheet: the P51 Yafo Gate name-marker is placed in hex P55 (re-identify first - the rulebook puts Mariam Tower at P55); ~25 v2.3 region-name typos (list in ingest/INGEST_NOTES.md)."
   },
   "note": "This engine enforces the printed game's rules against the module's own materials. All game content remains the property of its publisher; module art remains the work of the module author. Bring-your-own-module: users download the module from the VASSAL module library."
  },
  "source_defects": {
-  "note": "Defects in the ORIGINAL PUBLISHED GAME found during encoding - spec #21. Authority ladder: official errata > tournament/publisher clarification > proven outcome-equivalence > declared umpired.",
+  "note": "Defects in the ORIGINAL PUBLISHED GAME found during encoding - spec #21. Authority ladder (as amended 2026-08-09): official errata > publisher/tournament clarification or the game/module creator's answer > proven outcome-equivalence. 'Declared umpired' is no longer a valid resolution: an unresolvable defect blocks playability until resolved by authority.",
   "list": [
    {
     "id": "qq32-hexside-color",
@@ -263,12 +264,21 @@
     "enforced": true
    },
    {
-    "id": "qa-contradiction-rout-from-heavy-zoc",
-    "kind": "contradictory_official_rulings",
-    "rules": ["7.311", "17.21", "17.23"],
-    "defect": "The two official Q&A documents answer the SAME question oppositely. The General's Question Box: 'Can/must Judaean units leave a ground-level Heavy Infantry ZOC when routing/panicking? A. Yes.' The later AH Q&A typescript (dated Monday, January 6, 1992): identical question, 'A. No.'",
-    "resolution": "The later ruling is enforced: Judaean units in Roman Heavy-Infantry ground-level ZOC do NOT move when Routed/Panicked (they remain in place, consistent with the 7.311 freeze). Both rulings quoted in the validation library.",
-    "authority": "Official Q&A, later document supersedes earlier (1/6/1992 typescript over the Question Box printing).",
+    "id": "qa-cross-reference-mismatch-17-23-vs-17-3",
+    "kind": "inconsistent_cross_reference",
+    "rules": ["7.311", "17.21", "17.23", "17.3"],
+    "defect": "The two official Q&A documents print the SAME ruling under different rule citations. The General's Question Box (Vol 26 No 4 p.58): '7.311/17.23 Can/must Judaean units leave a ground-level Heavy Infantry ZOC when routing/panicking? A. No.' The 1/6/1992 AH typescript: identical question and answer, cited '7.311/17.3'. The rulings agree; the cross-reference does not.",
+    "resolution": "The ruling is identical in both documents and is enforced: Judaean units in Roman Heavy-Infantry ground-level ZOC do not move when Routed/Panicked (the 7.311 freeze). RETRACTION 2026-08-09: an earlier register entry claimed the two documents answered oppositely; decode-prep 6 re-read both scans (9x off soj_errata1.gif, 300 dpi off The_General_Vol26i4.pdf p.58) and both print 'A. No.' - the contradiction claim was our transcription error. Schachter's design notes (The General 26-4 p.11) confirm the rule as deliberate design.",
+    "authority": "Official Q&A, both documents in agreement; designer's notes corroborate.",
+    "enforced": true
+   },
+   {
+    "id": "qa-14-2-nonresponsive-answer",
+    "kind": "ambiguous_wording",
+    "rules": ["14.2", "official Q&A"],
+    "defect": "Both official Q&A documents print a non-responsive answer: '14.2 If as a result of Melee, all units in a fort, testudo or siege engine hex accept a B result, must they all retreat one or two hexes? A. Yes.' - 'Yes' does not choose between one and two.",
+    "resolution": "Read as answering 'must they all retreat (together)?' - yes. The Melee Table's own B text ('Retreat all units one or two hexes') already makes the distance the retreating player's choice; the engine enforces B as: all defending units retreat, each one or two hexes at the owning player's option [14.2].",
+    "authority": "Declared interpretation from the Melee Table's printed text; the Q&A's own wording defect is what this entry registers.",
     "enforced": true
    },
    {
