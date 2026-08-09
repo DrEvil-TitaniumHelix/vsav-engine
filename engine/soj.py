@@ -38,22 +38,22 @@ INF_COST = {"clear": 1.0, "slope": 3.0, "breach": 3.0}
 CAV_COST = {"clear": 1.0, "slope": 7.0, "breach": 7.0}
 SE_COST = {"clear": 1.0, "slope": 3.0, "breach": 3.0}
 
-# missile target rows: terrain class -> row key in combat tables
+# missile target rows: terrain class -> row key in combat tables.
+# Gates are absent by design: neither printed table has a Gate row, so a
+# gate resolves on its printed strongpoint ring class (decode-prep 6) -
+# see _breach_def / _target_row, which read the hex's "ring".
 ROW_OF_TERRAIN = {
     "fortress": "fortress", "fort": "fort",
     "bastion": "bastion_armored_tower",
-    "wall": "wall_bridge_ram", "gate_wall": "wall_bridge_ram",
+    "wall": "wall_bridge_ram",
     "north_wall": "builtup_northwall_tower",
-    "gate_north_wall": "builtup_northwall_tower",
-    "gate": "wall_bridge_ram",
     "builtup": "builtup_northwall_tower",
     "breach": "breach_broken_testudo",
     "clear": "clear_slope_ramp_escalade", "slope": "clear_slope_ramp_escalade",
 }
-# breach defense by hex class [12.1 / game card]
+# breach defense by hex class [12.1 / game card]; gates via ring, as above
 BREACH_DEF = {"fortress": 15, "fort": 12, "bastion": 10, "wall": 8,
-              "north_wall": 6, "gate_wall": 8, "gate_north_wall": 6,
-              "gate": 8}
+              "north_wall": 6}
 
 DISR_LADDER = ["fresh", "disrupted", "routed", "panicked"]
 
@@ -89,6 +89,7 @@ class SoJGame(GateGame):
         g = self.game.grid
         for k in th:
             self.px[k] = g.hex_to_pixel(int(k[:2]), int(k[2:]))
+        self.hex_ring = {k: v["ring"] for k, v in th.items() if "ring" in v}
         self.stairs = set()
         self.entrances = set()
         for k, v in self.terr.get("sides", {}).items():
@@ -115,11 +116,20 @@ class SoJGame(GateGame):
         self.breach_t = cd.get("breach")
         self.rally_t = cd.get("rally")
 
+    def _breach_def(self, h):
+        """[12.1] Breach Defense of a hex. A gate resolves on its printed
+        strongpoint ring class (decode-prep 6); a gate without a recorded
+        ring is a data bug and fails loudly here."""
+        t = self.hex_t0[h]
+        if t in GATES:
+            return BREACH_DEF[self.hex_ring[h]]
+        return BREACH_DEF.get(t, 99)
+
     def hex_t(self, h):
         """Dynamic terrain: a breached Elevated hex is a Breach [12.2]."""
         t = self.hex_t0[h]
         if t in ELEVATED and self.s.get("breach", {}).get(h, 0) >= \
-                BREACH_DEF.get(t, 99):
+                self._breach_def(h):
             return "breach"
         return t
 
@@ -478,7 +488,7 @@ class SoJGame(GateGame):
     def _half_damaged(self, h):
         t = self.hex_t0[h]
         d = self.s.get("breach", {}).get(h, 0)
-        return t in ELEVATED and d * 2 >= BREACH_DEF.get(t, 99)
+        return t in ELEVATED and d * 2 >= self._breach_def(h)
 
     def _ground_cost(self, u, to, side):
         t = self.hex_t(to)
@@ -790,6 +800,8 @@ class SoJGame(GateGame):
         if t in GROUND and any(self.utype(o)["cls"] in ("artillery",)
                                for o in occ):
             return "testudo_artillery_ground"
+        if t in GATES:
+            return ROW_OF_TERRAIN[self.hex_ring[tgt]]
         return ROW_OF_TERRAIN[t]
 
     def _resolve_missile(self, side, action, verdict):
@@ -960,7 +972,7 @@ class SoJGame(GateGame):
         for pid in action["attackers"]:
             self.s["fired"].append(str(pid))
         total = self.s["breach"][tgt]
-        defense = BREACH_DEF[self.hex_t0[tgt]]
+        defense = self._breach_def(tgt)
         detail = {"bf": bf, "die": die, "damage": dmg, "total": total,
                   "defense": defense}
         if total >= defense:

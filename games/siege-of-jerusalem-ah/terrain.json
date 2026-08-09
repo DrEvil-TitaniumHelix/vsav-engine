@@ -23,7 +23,8 @@
 "PP23",
 "S30",
 "Y24"
-]
+],
+"amended": "2026-08-09 A5+A6: 4 gate hexes retyped per gates_overlay.json (G40/R49/LL30/MM32); ring class added to all 9 gate hexes (decode-prep 6: gate breach/missile defense = printed ring colour); entrance sides added for G40/R49/LL30/MM32/P51 and corrected for W36 (W35->V36) + OO33 (PP32->OO34); 10 non-adjacent staircase hexsides deleted + Z33|Z34 added per staircases_evidence.json. 19 doubtful staircases untouched (R4)."
 },
 "hexes": {
 "0125": {
@@ -1599,8 +1600,9 @@
 "name": "G39"
 },
 "0743": {
-"t": "fort",
-"name": "G40"
+"t": "gate_north_wall",
+"name": "G40",
+"ring": "fort"
 },
 "0744": {
 "t": "north_wall",
@@ -3912,7 +3914,8 @@
 },
 "1659": {
 "t": "gate",
-"name": "P51"
+"name": "P51",
+"ring": "fortress"
 },
 "1660": {
 "t": "fortress",
@@ -4156,7 +4159,8 @@
 },
 "1757": {
 "t": "gate_wall",
-"name": "Q49"
+"name": "Q49",
+"ring": "bastion"
 },
 "1758": {
 "t": "fortress",
@@ -4407,8 +4411,9 @@
 "name": "R48"
 },
 "1858": {
-"t": "fort",
-"name": "R49"
+"t": "gate_wall",
+"name": "R49",
+"ring": "fort"
 },
 "1859": {
 "t": "clear",
@@ -5616,7 +5621,8 @@
 },
 "2347": {
 "t": "gate_wall",
-"name": "W36"
+"name": "W36",
+"ring": "fortress"
 },
 "2348": {
 "t": "wall",
@@ -6320,7 +6326,8 @@
 },
 "2636": {
 "t": "gate_north_wall",
-"name": "Z23"
+"name": "Z23",
+"ring": "fortress"
 },
 "2637": {
 "t": "clear",
@@ -9371,8 +9378,9 @@
 "name": "LL29"
 },
 "3849": {
-"t": "bastion",
-"name": "LL30"
+"t": "gate_wall",
+"name": "LL30",
+"ring": "bastion"
 },
 "3850": {
 "t": "clear",
@@ -9631,8 +9639,9 @@
 "name": "MM31"
 },
 "3951": {
-"t": "bastion",
-"name": "MM32"
+"t": "gate_wall",
+"name": "MM32",
+"ring": "bastion"
 },
 "3952": {
 "t": "fortress",
@@ -10140,7 +10149,8 @@
 },
 "4153": {
 "t": "gate_wall",
-"name": "OO33"
+"name": "OO33",
+"ring": "fortress"
 },
 "4154": {
 "t": "clear",
@@ -12528,43 +12538,27 @@
 }
 },
 "sides": {
-"1641|1642": {
-"staircase": true,
-"inferred": false
+"0643|0743": {
+"entrance": true
 },
-"1641|1741": {
+"0743|0844": {
 "staircase": true,
-"inferred": false
+"inferred": true,
+"entrance": true
 },
-"1939|1940": {
-"staircase": true,
-"inferred": false
-},
-"1939|2040": {
-"staircase": true,
-"inferred": false
-},
-"2536|2537": {
-"staircase": true,
-"inferred": false
-},
-"2536|2637": {
-"staircase": true,
-"inferred": false
-},
-"2735|2736": {
+"0746|0846": {
 "staircase": true,
 "inferred": true
 },
-"2735|2836": {
+"0746|0847": {
 "staircase": true,
 "inferred": true
 },
-"2238|2239": {
+"1255|1256": {
 "staircase": true,
 "inferred": true
 },
-"2238|2338": {
+"1256|1355": {
 "staircase": true,
 "inferred": true
 },
@@ -12584,27 +12578,113 @@
 "staircase": true,
 "inferred": true
 },
-"1255|1256": {
+"1556|1557": {
 "staircase": true,
 "inferred": true
 },
-"1256|1355": {
+"1557|1657": {
 "staircase": true,
 "inferred": true
 },
-"0746|0846": {
+"1559|1659": {
+"entrance": true
+},
+"1641|1642": {
+"staircase": true,
+"inferred": false
+},
+"1641|1741": {
+"staircase": true,
+"inferred": false
+},
+"1659|1758": {
+"entrance": true
+},
+"1756|1757": {
+"entrance": true
+},
+"1757|1758": {
+"entrance": true
+},
+"1758|1858": {
+"entrance": true
+},
+"1854|1954": {
 "staircase": true,
 "inferred": true
 },
-"0746|0847": {
+"1858|1957": {
+"entrance": true
+},
+"1939|1940": {
+"staircase": true,
+"inferred": false
+},
+"1939|2040": {
+"staircase": true,
+"inferred": false
+},
+"2238|2239": {
 "staircase": true,
 "inferred": true
 },
-"0743|0844": {
+"2238|2338": {
 "staircase": true,
 "inferred": true
 },
-"0742|0844": {
+"2247|2347": {
+"entrance": true
+},
+"2250|2349": {
+"staircase": true,
+"inferred": true
+},
+"2250|2350": {
+"staircase": true,
+"inferred": true
+},
+"2253|2353": {
+"staircase": true,
+"inferred": true
+},
+"2347|2448": {
+"entrance": true
+},
+"2536|2537": {
+"staircase": true,
+"inferred": false
+},
+"2536|2637": {
+"staircase": true,
+"inferred": false
+},
+"2635|2636": {
+"entrance": true
+},
+"2636|2637": {
+"entrance": true
+},
+"2646|2647": {
+"staircase": true,
+"inferred": false
+},
+"2646|2746": {
+"staircase": true,
+"inferred": true
+},
+"2735|2736": {
+"staircase": true,
+"inferred": true
+},
+"2735|2836": {
+"staircase": true,
+"inferred": true
+},
+"2944|2945": {
+"staircase": true,
+"inferred": true
+},
+"2944|3045": {
 "staircase": true,
 "inferred": true
 },
@@ -12612,7 +12692,15 @@
 "staircase": true,
 "inferred": true
 },
+"3244|3245": {
+"staircase": true,
+"inferred": true
+},
 "3333|3334": {
+"staircase": true,
+"inferred": true
+},
+"3544|3545": {
 "staircase": true,
 "inferred": true
 },
@@ -12620,15 +12708,39 @@
 "staircase": true,
 "inferred": true
 },
-"3635|3736": {
+"3748|3849": {
+"entrance": true
+},
+"3749|3849": {
 "staircase": true,
 "inferred": true
+},
+"3849|3949": {
+"entrance": true
+},
+"3852|3951": {
+"entrance": true
 },
 "3936|3937": {
 "staircase": true,
 "inferred": true
 },
-"3936|4038": {
+"3949|4050": {
+"staircase": true,
+"inferred": true
+},
+"3950|4051": {
+"staircase": true,
+"inferred": true
+},
+"3951|4051": {
+"entrance": true
+},
+"3951|4052": {
+"staircase": true,
+"inferred": true
+},
+"3952|3953": {
 "staircase": true,
 "inferred": true
 },
@@ -12652,6 +12764,12 @@
 "staircase": true,
 "inferred": false
 },
+"4152|4153": {
+"entrance": true
+},
+"4153|4154": {
+"entrance": true
+},
 "4247|4346": {
 "staircase": true,
 "inferred": true
@@ -12664,125 +12782,9 @@
 "staircase": true,
 "inferred": true
 },
-"1556|1557": {
-"staircase": true,
-"inferred": true
-},
-"1557|1657": {
-"staircase": true,
-"inferred": true
-},
-"1854|1954": {
-"staircase": true,
-"inferred": true
-},
-"1854|1955": {
-"staircase": true,
-"inferred": true
-},
-"2253|2353": {
-"staircase": true,
-"inferred": true
-},
-"2253|2354": {
-"staircase": true,
-"inferred": true
-},
-"2250|2349": {
-"staircase": true,
-"inferred": true
-},
-"2250|2350": {
-"staircase": true,
-"inferred": true
-},
-"2646|2746": {
-"staircase": true,
-"inferred": true
-},
-"2646|2747": {
-"staircase": true,
-"inferred": true
-},
-"2944|2945": {
-"staircase": true,
-"inferred": true
-},
-"2944|3045": {
-"staircase": true,
-"inferred": true
-},
-"3244|3245": {
-"staircase": true,
-"inferred": true
-},
-"3244|3345": {
-"staircase": true,
-"inferred": true
-},
-"3544|3545": {
-"staircase": true,
-"inferred": true
-},
-"3544|3646": {
-"staircase": true,
-"inferred": true
-},
-"3846|3947": {
-"staircase": true,
-"inferred": true
-},
-"3749|3849": {
-"staircase": true,
-"inferred": true
-},
-"3949|4050": {
-"staircase": true,
-"inferred": true
-},
-"3950|4051": {
-"staircase": true,
-"inferred": true
-},
-"3951|4052": {
-"staircase": true,
-"inferred": true
-},
-"3952|3953": {
-"staircase": true,
-"inferred": true
-},
 "4254|4255": {
 "staircase": true,
 "inferred": true
-},
-"1858|1959": {
-"staircase": true,
-"inferred": true
-},
-"2635|2636": {
-"entrance": true
-},
-"2636|2637": {
-"entrance": true
-},
-"2346|2347": {
-"entrance": true
-},
-"2347|2448": {
-"entrance": true
-},
-"1756|1757": {
-"entrance": true
-},
-"1757|1758": {
-"entrance": true
-},
-"4152|4153": {
-"entrance": true
-},
-"4153|4253": {
-"entrance": true
 }
 },
 "areas": {

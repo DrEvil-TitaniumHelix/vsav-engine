@@ -96,6 +96,67 @@ def engine_math(tg):
     print("engine math: PASS (11.81/11.83/13.4 worked examples)")
 
 
+def gate_ring_checks(tg):
+    """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
+    row, so a gate's breach defense and missile row resolve on its printed
+    strongpoint ring class (red=Fortress orange=Fort blue=Bastion).
+    Entrance hexsides per the module's own gate overlay (PREP-2, 53 arrows
+    incl. the 8.91 printed example QQ36); staircase set per the PREP-3
+    art-confirmation pass."""
+    import json
+    exp = {"G40": (12, "fort"), "R49": (12, "fort"),
+           "LL30": (10, "bastion_armored_tower"),
+           "MM32": (10, "bastion_armored_tower"),
+           "P51": (15, "fortress"), "W36": (15, "fortress"),
+           "Z23": (15, "fortress"), "Q49": (10, "bastion_armored_tower"),
+           "OO33": (15, "fortress")}
+    for name, (deff, row) in exp.items():
+        h = tg.name_hex[name]
+        assert tg.hex_t0[h].startswith("gate"), (name, tg.hex_t0[h])
+        assert tg._breach_def(h) == deff, (name, tg._breach_def(h))
+        assert tg._target_row(h) == row, (name, tg._target_row(h))
+    E = tg.entrances
+    # the two overlay-contradicted entrance sides are corrected
+    assert ("2346", "2347") not in E and ("2247", "2347") in E, \
+        "W36 Damascus entrance must be V36, not W35"
+    assert ("4153", "4253") not in E and ("4153", "4154") in E, \
+        "OO33 Tadi entrance must be OO34, not PP32"
+    for k in ("0643|0743", "0743|0844", "1758|1858", "1858|1957",
+              "3748|3849", "3849|3949", "3852|3951", "3951|4051",
+              "1559|1659", "1659|1758"):
+        assert tuple(k.split("|")) in E, f"missing entrance side {k}"
+    # sweep: every overlay gate inside the playable area must be
+    # gate-typed with a ring and at least one entrance side. The A4
+    # playable-area leak (Old City reachable; strongpoints there zeroed
+    # to clear by design, plus V42/Q52 outside the Gallus scope) exposes
+    # exactly these gates today; A4 must shrink the set to EMPTY, and the
+    # equality assert self-tightens the moment it does. Never add to it.
+    A4_LEAK_GATES = {"N55", "P54", "Q52", "U50", "V42", "X48", "FF47",
+                     "II34", "JJ43", "KK41", "NN42", "OO38", "QQ36"}
+    ov = json.load(open(os.path.join(HERE, "ingest", "gates_overlay.json"),
+                        encoding="utf-8"))
+    failing = set()
+    for gt in ov["gates"]:
+        h = tg.name_hex.get(gt["gate"])
+        if h is None or h not in tg.playable:
+            continue
+        if (not tg.hex_t0[h].startswith("gate") or h not in tg.hex_ring
+                or not any(h in pair for pair in E)):
+            failing.add(gt["gate"])
+    expected = {n for n in A4_LEAK_GATES
+                if tg.name_hex.get(n) in tg.playable}
+    assert failing == expected, \
+        f"overlay-gate sweep: unexpected {sorted(failing - expected)}, " \
+        f"stale expectation {sorted(expected - failing)}"
+    # staircases: the ten non-adjacent phantoms are gone; Z33|Z34 is in
+    for k in ("0742|0844 1854|1955 1858|1959 2253|2354 2646|2747 3244|3345 "
+              "3544|3646 3635|3736 3846|3947 3936|4038").split():
+        assert tuple(k.split("|")) not in tg.stairs, f"phantom stair {k} back"
+    assert ("2646", "2647") in tg.stairs, "Z33|Z34 staircase missing"
+    print("gate ring/entrance/staircase checks: PASS "
+          "(9 gates, overlay sweep, 10 phantoms out, Z33|Z34 in)")
+
+
 def walk_phase(tg, pid, dest, max_turns=8):
     """Move a unit toward dest across successive own Movement Phases."""
     u = tg.s["units"][pid]
@@ -163,6 +224,7 @@ def main():
         assert tg.tier == 2 and tg.tier_earned == 2, \
             f"combat validated => tier 2 earned (got {tg.tier_earned})"
         engine_math(tg)
+        gate_ring_checks(tg)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)

@@ -85,7 +85,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.16 | 9.4 + Q&A 11.1 | units beneath a SE may not fire; **riders atop a Tower may**; Fresh Velitae in Testudo may | OPEN → **B14** (gate refuses all fire from SE hexes — denies legal fire) |
 | F.17 | 9.7 | adjacent enemies are mandatory targets (SE/Artillery never mandatory) | ENFORCED — `_fire_verdict`; VC |
 | F.18 | 9.7 | among multiple adjacent targets: may not ignore a ZOC-exerter for a non-exerter | OPEN → **N3** |
-| F.19 | 9.8 + Q&A | Wall attack bonus ×2 straight down connected Wall/Bridge path; **not over intervening units** | partial — path check ENFORCED (`_wall_bonus`; VC); intervening-units denial OPEN → **B5** |
+| F.19 | 9.8 + Q&A | Wall attack bonus ×2 straight down connected Wall/Bridge path; **not over intervening units** | partial — path check ENFORCED (`_wall_bonus`; VC); intervening-units denial OPEN → **B5**. B5 must also settle the gate-type inconsistency: `_wall_bonus` accepts `gate_wall`/`gate_north_wall` targets but not bare `gate` (P51) — decide whether a First-Wall gate is a 9.8 Wall hex and make the three gate types consistent |
 | F.20 | 13.2 | column = Primary Target type row; minimum AF per column; attack-multiple ladder | ENFORCED — `_target_row`/`_resolve_missile`; VC (tables cell-exact) |
 | F.21 | 13.2 + Q&A | most severe result **must** go to the Primary Target | OPEN → **B4** |
 | F.22 | 13.3 | drm: −1 Fresh HI (with the full exception list), +1 Militia, +1 per Cauldron | partial — basic cases ENFORCED; exception list wrong (Testudo/SE-hex, artillery-primary) OPEN → **B2** |
@@ -107,7 +107,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.38 | 12.1/12.2 | cumulative damage; breach at ≥ defense; occupants eliminated at that instant; damage markers | ENFORCED — `_resolve_breach` + `breach` state + `hex_t` dynamic terrain; VC |
 | F.39 | 12.2/card | Breach Defense values per hex class (incl. printed-errata QQ32 = Fort) | ENFORCED — `BREACH_DEF` = card values; VC; source_defect `qq32-hexside-color` |
 | F.40 | 12.3 | multi-wall junction hex breached once (e.g. R51) | OPEN → **N18** — verify `hex_t`/`BREACH_DEF` treat junction hexes as one breach; then enforce or evidence |
-| F.41 | decode-prep 6 | a Gate's breach & missile defense = its printed strongpoint ring class | OPEN → **A5** (per-gate ring class data lands with the gates overlay) |
+| F.41 | decode-prep 6 | a Gate's breach & missile defense = its printed strongpoint ring class | ENFORCED — `_breach_def`/`_target_row` read the hex `ring` (9 gates, gates overlay); gate rows removed from `BREACH_DEF`/`ROW_OF_TERRAIN` so a ringless gate fails loudly; VC `gate_ring_checks` |
 | F.42 | 18.21 | night: fire adjacent-only | ENFORCED — `_fire_verdict`; VC |
 | F.43 | 5.3 | out of CC: fire at adjacent targets only | ENFORCED — `_fire_verdict` |
 
@@ -117,8 +117,8 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 |---|---|---|---|
 | M.1 | 8.11 | adjacency, no enemy-occupied hex entry, per-class TEC entry costs, MF budget | ENFORCED — `_move_verdict`/`_entry_cost`/`_ground_cost`; VM |
 | M.2 | 2.7 | fractional costs retained and cumulative (no truncation) | ENFORCED — float arithmetic throughout; VM |
-| M.3 | 8.91 | Gates: ground entry only via the two Entrance hexsides, own-control only; +2 MF inherent Interior Staircase to stop; closed to enemy | ENFORCED — `_entry_cost` + entrance data; VM. **Data corrections OPEN → A5** (G40, R49, LL30, MM32, W36→V36, OO33→OO34, P51) |
-| M.4 | 8.93 | Staircase/Breach level change = 2 MF flat | ENFORCED — `_entry_cost`; VM. **Data corrections OPEN → A6** (10 inert pairs to delete, Z33|Z34 to add; 19 doubtful → R4) |
+| M.3 | 8.91 | Gates: ground entry only via the two Entrance hexsides, own-control only; +2 MF inherent Interior Staircase to stop; closed to enemy | ENFORCED — `_entry_cost` + entrance data; VM. A5 data corrections DONE (G40/R49/LL30/MM32 retyped, W36→V36, OO33→OO34, P51 entrances added); VC `gate_ring_checks` + overlay sweep (self-tightens when A4 lands) |
+| M.4 | 8.93 | Staircase/Breach level change = 2 MF flat | ENFORCED — `_entry_cost`; VM. A6 data corrections DONE (10 inert non-adjacent pairs deleted, Z33|Z34 added); VC. **19 doubtful staircases still → R4** |
 | M.5 | 8.95 | Built-up entry: Jud 2 / Rom 3; stacking 2 | ENFORCED — `_ground_cost`/TEC; VM. **42-hex Built-up data correction OPEN → A3** |
 | M.6 | 8.94/8.95/12.4 | interior roads: ½ MF; Cavalry/Artillery enter/exit Built-up only via road hexsides; road rate lost at half-damage | OPEN → **B8** (no road data; cav/art currently barred from Built-up entirely) |
 | M.7 | 8.96 | Breach entry for Art/Testudo/Cav/SE only if adjacent connecting Breach of same wall | OPEN → **N19** (engine allows breach entry per GROUND costs without the connecting-breach test) |
@@ -126,7 +126,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.9 | 7.32/7.4 | soft ZOC (HQ/Cavalry): +3 MF to leave, paid once per hex left | ENFORCED — `_move_verdict`; VM |
 | M.10 | 7.321 | soft ZOC exit is FREE if the first hex entered is ZOC-free | OPEN → **N6** (engine always charges +3) |
 | M.11 | 7.2 | no ZOC at night / by Disrupted / Artillery / SE / Testudo / SE-or-Escalade-stacked Romans; no cross-level ZOC | ENFORCED — `_zoc_map` (night: Q&A 18.23 confirmed); VC |
-| M.12 | 7.12 | Gate ZOC via connected Elevated + the two Entrance-hexside ground hexes | ENFORCED — `_zoc_map` gate branch; VM. Correctness depends on **A5** entrance data |
+| M.12 | 7.12 | Gate ZOC via connected Elevated + the two Entrance-hexside ground hexes | ENFORCED — `_zoc_map` gate branch; VM. A5 entrance data corrected + regression-tested (`gate_ring_checks`) |
 | M.13 | 5.3 | out of CC: no enemy-ZOC entry; no moving adjacent to Elevated enemy; escalade/testudo placement barred | ZOC/adjacency ENFORCED — `_move_verdict`; escalade/testudo gating lands with **B12/B13** |
 | M.14 | 5.2/5.11 | CC = 10-hex radius, −2 night, −2 non-Fresh HQ, cumulative; path = HQ-movement-legality tracing | radius/reductions ENFORCED; exact tracing OPEN → **B18** |
 | M.15 | 5.4/5.5/5.6 | Leaders by faction; Commanders all; Zealot/Cauldron/Artillery any-HQ exceptions; Judaean auto-CC (Fortress, Elevated path); Garrisons | ENFORCED — `in_cc`/`_elevated_path_to_fortress`; Garrison clause UNREACHABLE (no garrison units in Gallus OOB — card) |
@@ -159,7 +159,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.1 | 11.1/4.14 | only Fresh Combat units attack; Disrupted defend only; Artillery/SE never attack (Cauldron connected-Elevated exception) | ENFORCED — `_melee_verdict`; VC. Cauldron-attack exception OPEN → **N22** (currently refused entirely) |
 | X.2 | 11.1 | eligibility = could-enter-if-vacated | ENFORCED — `_melee_approach` via `_entry_cost`; VC |
 | X.3 | 11.1 | Heavy Infantry stacked with Foederatti/Syrian Archers: whole stack may not Melee or fire | OPEN → **N9** (class-1: gate allows it) |
-| X.4 | 11.11/11.12/11.13 | Fortress/Bastion ground melee only via shared Staircase hexside; halving through stairs/breach | ENFORCED — `_melee_approach` + entry legality; VC. Staircase data → **A6/R4** |
+| X.4 | 11.11/11.12/11.13 | Fortress/Bastion ground melee only via shared Staircase hexside; halving through stairs/breach | ENFORCED — `_melee_approach` + entry legality; VC. A6 staircase corrections DONE; **19 doubtful hexsides still → R4** |
 | X.5 | 11.14 | Gate melee: entrance-hexside attacks at HALF strength; Sortie opening; defender's bonus counterattack at end of phase | OPEN → **N7** (no halving through entrance; no sortie/counterattack mechanics) |
 | X.6 | 11.15 | attack all units in one hex; one hex per attack | ENFORCED — `_melee_verdict`/`_resolve_melee` |
 | X.7 | 11.17 | Crest hexside: attacker halved upslope vs Ground-level non-Slope defender | OPEN → **B7** (crest hexsides derivable from slope data; not implemented) |
