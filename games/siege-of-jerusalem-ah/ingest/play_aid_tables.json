@@ -1,0 +1,285 @@
+{
+  "_source": "Combat_Tables.jpg (the printed GAME CARD, front) as shipped in Rob McRae's v3.0.0 VASSAL module, extracted/images/Combat_Tables.jpg, 1628x1186. Read off the image at 2.2x-4x Lanczos upscale during decode-prep 6 (2026-08-09). Companion card TEC.jpg was read in decode-prep 3.",
+  "_status": "TRANSCRIBED AND AUDITED. Every table below was compared cell-by-cell against what games/siege-of-jerusalem-ah/game.json and engine/soj.py already encode; the audit result per table is in `audit`. This file is INGEST EVIDENCE, not a live spec - the engine reads game.json, not this.",
+  "_tool": "ingest/prep6_render.py (python prep6_render.py tables) regenerates the crops.",
+
+  "melee_table": {
+    "cite": "[game card, MELEE TABLE]",
+    "odds_columns": ["1-4", "1-3", "1-2", "1-1", "2-1", "3-1", "4-1", "5-1", "6-1", "7+1"],
+    "note_columns": "The printed header of the last column is '7+1'; it is the 7-1-and-better column.",
+    "rows_note": "Adjusted Die Roll, clamped: '<= -1' at the top through '>= 8' at the bottom. '-' = No Effect.",
+    "rows": {
+      "<=-1": ["-", "-", "-", "-", "-", "-", "-", "-", "B", "D"],
+      "0":    ["-", "-", "-", "-", "-", "-", "-", "B", "D", "E"],
+      "1":    ["-", "-", "-", "-", "-", "-", "B", "D", "E", "BE"],
+      "2":    ["-", "-", "-", "-", "-", "B", "D", "E", "BE", "DE"],
+      "3":    ["-", "-", "-", "-", "B", "D", "E", "BE", "DE", "EE"],
+      "4":    ["-", "-", "-", "B", "D", "E", "BE", "DE", "EE", "BEE"],
+      "5":    ["-", "-", "B", "D", "E", "BE", "DE", "EE", "BEE", "DEE"],
+      "6*":   ["-", "B", "D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE"],
+      "7":    ["B", "D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE", "DEEE"],
+      ">=8":  ["D", "E", "BE", "DE", "EE", "BEE", "DEE", "EEE", "DEEE", "EEEE"]
+    },
+    "results_applicable_to": "Defender only (printed header over the odds grid).",
+    "result_letters": {
+      "-": "No Effect",
+      "B": "Retreat all units one or two hexes; defender may choose 'D' result instead. Units attacked by Heavy Infantry in their Ground level ZOC may retreat only one hex (14.21).",
+      "D": "Disrupt & retreat a unit; retreat optional from Siege Engine, Testudo, or Fortress hex.",
+      "E": "Eliminate one unit."
+    },
+    "footnotes": [
+      "Base unit in Escalade hex cannot be affected until it is the only unit in hex.",
+      "Base/Pushing units cannot be affected by Melee from Elevated Hex.",
+      "* Die Roll >= 6: Continuous Combat: Recalculate odds & attack if defending hex not vacated."
+    ],
+    "drm": [
+      {"v": -1, "when": "per additional attacking Legion/Faction in same attack", "cite": "(11.842)"},
+      {"v": -1, "when": "Defender is in Built-Up (not Edifice) hex"},
+      {"v": -1, "when": "Fresh Heavy Infantry in defender's hex"},
+      {"v": "-1/+1", "when": "defending/attacking with Commander"},
+      {"v": "-1/+1", "when": "defending/attacking with Cohort Integrity in one hex"},
+      {"v": "-1/+1", "when": "Judaeans defending/attacking in Temple Quarter", "cite": "(11.16)"},
+      {"v": 1, "when": "Judaeans attacking at night"},
+      {"v": 1, "when": "Routed defending unit(s) in defender's hex"},
+      {"v": 2, "when": "Panicked defending unit(s) in or adjacent to defender's hex"},
+      {"v": 2, "when": "per additional defending Legion/Faction in same hex"}
+    ],
+    "extreme_odds": "-1/+1 drm per odds multiple < 1-4 or > 7-1 (11.83)",
+    "flank_attacks": "Melee Flank Attacks: 2 x Attack Factor (11.85)",
+    "audit": "MATCHES game.json /combat/melee (odds_columns, rows, row_clamp, continuous_combat_at, drm). No discrepancy."
+  },
+
+  "missile_table": {
+    "cite": "[game card, MISSILE TABLE]",
+    "how_it_works": "Two stacked grids. TOP: TARGET HEX row x 'ARTILLERY OR MISSILE ATTACK FACTORS' - eight AF thresholds; the highest threshold your total AF reaches gives the Attack Multiple column (1..8). BOTTOM: Adjusted Die Roll row x that column -> RESULT.",
+    "target_rows": {
+      "Fortress (red)":                   {"thresholds": [4, 8, 16, 24, 32, 40, 48, 56], "attack_multiple_base": 8},
+      "Fort (orange)":                    {"thresholds": [4, 7, 14, 21, 28, 35, 42, 49], "attack_multiple_base": 7},
+      "Bastion*, Armored Tower":          {"thresholds": [3, 6, 12, 18, 24, 30, 36, 42], "attack_multiple_base": 6},
+      "Wall, Bridge, Ram":                {"thresholds": [3, 5, 10, 15, 20, 25, 30, 35], "attack_multiple_base": 5},
+      "Built-up, North Wall, Tower":      {"thresholds": [2, 4, 8, 12, 16, 20, 24, 28], "attack_multiple_base": 4},
+      "Testudo, Artillery on Ground":     {"thresholds": [2, 3, 6, 9, 12, 15, 18, 21], "attack_multiple_base": 3},
+      "Breach, Broken Testudo":           {"thresholds": [1, 2, 4, 6, 8, 10, 12, 14], "attack_multiple_base": 2},
+      "Clear, Slope, Ramp, Escalade":     {"thresholds": [null, 1, 2, 3, 4, 5, 6, 7], "attack_multiple_base": 1}
+    },
+    "target_row_footnote": "*: Temple Quarter Outer Wall hexes = Bastions.",
+    "no_gate_row": "THE TABLE HAS NO 'GATE' ROW, NO 'EDIFICE' ROW AND NO 'CREST' ROW. Combined with the printed terrain key's ring-colour code (decode-prep 2: red=Fortress, orange=Fort, blue=Bastion), a Gate is resolved on the row of its own printed strongpoint class. This closes decode-prep 2's open 'do not guess a gate's missile/breach defense' item by absence-of-a-row plus the ring colour, not by guessing.",
+    "result_rows": {
+      "<=-1": ["-", "-", "-", "-", "-", "-", "-", "D"],
+      "0":    ["-", "-", "-", "-", "-", "-", "D", "D"],
+      "1*":   ["-", "-", "-", "-", "-", "D", "D", "DD"],
+      "2":    ["-", "-", "-", "-", "D", "D", "DD", "DD"],
+      "3":    ["-", "-", "-", "D", "D", "DD", "DD", "DE"],
+      "4":    ["-", "-", "D", "D", "DD", "DD", "DE", "DE"],
+      "5":    ["-", "D", "D", "DD", "DD", "DE", "DE", "EE"],
+      "6":    ["D", "D", "DD", "DD", "DE", "DE", "EE", "EE"],
+      "7":    ["D", "DD", "DD", "DE", "DE", "EE", "EE", "EE"],
+      ">=8":  ["DD", "DD", "DE", "DE", "EE", "EE", "EE", "EE"]
+    },
+    "result_letters": {
+      "D": "Disrupt one unit for each 'D'.",
+      "E": "Eliminate one unit for each 'E'.",
+      "*": "Artillery Original roll of 1 Disrupts friendly unit adjacent to target (9.31)."
+    },
+    "drm": [
+      {"v": -1, "when": "firing through Tower", "cite": "(9.13)"},
+      {"v": -1, "when": "using Indirect Fire", "cite": "(9.9)", "mark": "*"},
+      {"v": -1, "when": "Fresh Heavy Infantry in hex", "mark": "**"},
+      {"v": -1, "when": "firing from Breach"},
+      {"v": -1, "when": "firing from Ground Level through Breach to Ground level target", "mark": "*"},
+      {"v": -1, "when": "Judaean Artillery firing outside Primary Range"},
+      {"v": 1, "when": "Militia in target hex"},
+      {"v": 1, "when": "per attacking Cauldron"}
+    ],
+    "drm_footnotes": {
+      "*": "Only these two cases are not cumulative with each other.",
+      "**": "NA if Testudo, Siege Engine, Foederatti, or Syrian Archers in target hex, or if Artillery is Primary Target."
+    },
+    "extreme_odds": "+1 Per Attack Multiple > Maximum (13.4)",
+    "footnotes": [
+      "Defender chooses unit affected and applies result one unit at a time.",
+      "Base unit in Escalade hex cannot be affected until it is the only unit in the hex.",
+      "Missile units doubled for Wall Attack bonus (9.8)."
+    ],
+    "audit": "MATCHES game.json /combat/missile target_rows, result_rows, row_clamp, errant_on_natural_1 and the drm list, cell for cell. No discrepancy."
+  },
+
+  "breach_table": {
+    "cite": "[game card, BREACH TABLE]",
+    "rows_note": "Breach Factors (1 / 2 / 3 / 4+) x Die Roll 1-6 -> damage points.",
+    "table": {
+      "1":  ["-", 1, 1, 2, 2, 3],
+      "2":  [1, 2, 3, 3, 4, 4],
+      "3":  [2, 3, 4, 5, 6, 7],
+      "4+": [3, 4, 5, 6, 7, 8]
+    },
+    "breach_defenses": {
+      "Fortress": 15,
+      "Fort": 12,
+      "Bastion": 10,
+      "Temple Outer Wall": 10,
+      "Wall": 8,
+      "Bridge": 5,
+      "North Wall": 6
+    },
+    "no_gate_row": "As with the Missile Table there is no Gate row - a gate breaches on its printed strongpoint class.",
+    "audit": "MATCHES game.json /combat/breach/table and /combat/breach/defenses exactly (the printed '-' is encoded 0). North Wall 6 - the value the Gallus North-Wall arc has been played against since tier 2 - is confirmed off the printed card for the first time."
+  },
+
+  "lof_determination_table": {
+    "cite": "[game card, LOF DETERMINATION TABLE]",
+    "rows_are": "Firing From",
+    "cols_are": "Target Hex",
+    "matrix": {
+      "Fortress, Tower": {"Fortress, Tower": "F",    "Bastion": "F",   "Wall, Bridge": "FB*", "other": "FBW*"},
+      "Bastion":         {"Fortress, Tower": "F",    "Bastion": "FB",  "Wall, Bridge": "FB",  "other": "FBW"},
+      "Wall, Bridge":    {"Fortress, Tower": "FB@",  "Bastion": "FB",  "Wall, Bridge": "FB",  "other": "FBW"},
+      "all other hexes": {"Fortress, Tower": "FBW@", "Bastion": "FBW", "Wall, Bridge": "FBW", "other": "FBWPC"}
+    },
+    "obstacles": {
+      "B": "Bastion",
+      "C": "Friendly or intervening Combat unit; must use Indirect Fire",
+      "F": "Fortress",
+      "W": "Wall/Ramp",
+      "P": "Built-up Area"
+    },
+    "tiebreaks": {
+      "B*, W*": "If the obstacle hex is closer (not equidistant) to the TARGET than it is to the firing hex, LOF is blocked.",
+      "B@, W@": "If the obstacle hex is closer (not equidistant) to the FIRING hex than it is to the target, LOF is blocked."
+    },
+    "general_rules": [
+      "If LOF crosses any part of hex (excluding hexsides) listed in Table, fire cannot pass beyond that hex.",
+      "LOF is not allowed through an Edifice hex except to/from central hex of Temple (10.3).",
+      "See also 9.52 for Ground level fire through Crest hexsides between non-adjacent units."
+    ],
+    "audit": "The 4x4 matrix and both tiebreaks MATCH engine/soj.py `_lof` MATRIX exactly, including FB*/FBW*/FB@/FBW@/FBWPC. THREE GAPS remain, all recorded in decode_prep6_findings below: siege-Tower occupancy is not read (F1), Ramp is not a W obstacle (unreachable in Gallus), Edifice/Crest clauses are unimplemented (Edifice unreachable in a card-bounded Gallus; Crest is reachable)."
+  },
+
+  "weapons_effect_chart": {
+    "cite": "[game card, WEAPONS EFFECT CHART]",
+    "columns": ["Primary Range (Hexes, AF)", "Secondary Range (Hexes, AF)", "Tertiary Range (Hexes, AF)"],
+    "rows": [
+      {"attack_type": "Artillery", "units": "Catapult", "primary": ["1-4", 2], "secondary": ["5-6", 1], "tertiary": [null, null]},
+      {"attack_type": "Artillery", "units": "Onager",   "primary": ["1-5", 4], "secondary": ["6-7", 3], "tertiary": ["8-9", 1]},
+      {"attack_type": "Artillery", "units": "Ballista", "primary": ["1-6", 7], "secondary": ["7-9", 5], "tertiary": ["10-12", 2]},
+      {"attack_type": "Missile",   "units": "Velitae, Foederatti", "primary": ["1-2", 2], "secondary": ["3-4", 1], "tertiary": [null, null]},
+      {"attack_type": "Missile",   "units": "Archer, Regular",     "primary": ["1-2", 3], "secondary": ["3-4", 1], "tertiary": [null, null]},
+      {"attack_type": "Siege Engine, Rock", "units": "Ram, Armored Tower", "primary": ["1", 1], "note": "*May only attack Elevated Hexes using Breach Table."},
+      {"attack_type": "Siege Engine, Rock", "units": "Zealot, Militia, Cauldron", "primary": ["1", 2], "note": "May attack lower, adjacent units from Elevated Hexes."}
+    ],
+    "audit": "MATCHES game.json unit_types missile bands for all seven classes, and the rock:2 / breach_af:1 encodings. RESOLVES a decode-prep 5 open item: the module's own Syrian-Archer ladder reads '3 @ 1-4 / 1 @ 3-4' (self-overlapping); the printed chart says 3 @ 1-2 / 1 @ 3-4, so the module ladder is a MODULE typo and game.json is right."
+  },
+
+  "mine_shaft_damage": {
+    "cite": "[game card, MINE SHAFT DAMAGE]",
+    "scope": "campaign / Interphase only - unreachable in Gallus (19.2 is banned by the scenario card).",
+    "rows": [
+      {"engineering_dr": "1", "hexes_affected": 3, "damage_drm": "+1"},
+      {"engineering_dr": "2", "hexes_affected": 3, "damage_drm": "+2"},
+      {"engineering_dr": "3", "hexes_affected": 3, "damage_drm": "+3"},
+      {"engineering_dr": "4-6", "hexes_affected": 5, "damage_drm": "-"}
+    ]
+  },
+
+  "activation_table": {
+    "cite": "[game card, ACTIVATION TABLE]",
+    "scope": "campaign / Judaean Reserve Activation - the Gallus card prints 'Reserves (18.61) and Garrison forces (18.4) are not used', so unreachable in Gallus.",
+    "dr": {"1-3": "Militia (2-6)", "4-5": "Regular (5-7)", "6": "Zealot (7-7)"},
+    "area_totals": {"New City": 24, "Tyropean": 28, "City of David": 35, "Lower City": 40, "Upper City": 40}
+  },
+
+  "judaean_reserve_activation_modifiers": {
+    "cite": "[game card]",
+    "scope": "campaign - unreachable in Gallus (see activation_table).",
+    "drm": [
+      {"v": 1, "cause": "Night Turn"},
+      {"v": 1, "cause": "Activating in Upper or Lower Cities or City of David"},
+      {"v": 1, "cause": "Judaeans control Temple Quarter with no Romans within its exterior walls"},
+      {"v": 1, "cause": "New City or Tyropean City has not been leveled"},
+      {"v": -2, "cause": "Romans control Temple Quarter"}
+    ]
+  },
+
+  "decode_prep6_findings": [
+    {
+      "id": "F1",
+      "class": "1 - silent incorrectness",
+      "reachable_in_gallus": true,
+      "rule": "LOF Determination Table, 'Fortress, Tower' group",
+      "finding": "The printed LOF table groups Tower with Fortress on BOTH axes, and 'Tower' there is the siege Tower unit - the printed map has no tower terrain (decode-prep 2 read the full terrain key: 14 entries, no Tower). engine/soj.py `_lof` derives frm_grp/to_grp from hex TERRAIN only, so a hex occupied by a siege Tower is treated as 'all other hexes'. Firing from or at a Tower therefore gets the wrong obstacle set.",
+      "evidence": "Game card LOF DETERMINATION TABLE; Missile Table's separate 'Built-up, North Wall, Tower' row (which soj.py's _target_row DOES honour via primary_class, proving Tower means the unit).",
+      "gallus_reachability": "The XII Legion deploys siege towers; tower riding/boarding is already on the build list."
+    },
+    {
+      "id": "F2",
+      "class": "1 - silent incorrectness",
+      "reachable_in_gallus": true,
+      "rule": "9.8 Wall Attack bonus",
+      "finding": "engine/soj.py `_wall_bonus` doubles the firer's AF whenever the firer is Elevated, the target is a Wall hex and every intervening hex is Elevated. It never checks intervening UNITS. The official Question Box rules that the bonus is NOT claimable when firing over intervening units.",
+      "evidence": "The General Vol 26 No 4, p.58, The Question Box: '9.8 Do units in forts and bastions firing at adjacent units on a wall get the \"Wall Attack\" bonus? If they fire over intervening units, can they claim it? A. Yes. No.' Same item in the 1/6/1992 AH Q&A typescript.",
+      "effect": "AF doubled when it should not be -> wrong Attack Multiple column -> wrong result. Silent."
+    },
+    {
+      "id": "F3",
+      "class": "2 - loud incompleteness",
+      "reachable_in_gallus": true,
+      "rule": "9.4 vs Question Box 11.1",
+      "finding": "engine/soj.py refuses fire from any hex containing a Siege Engine ('units stacked with a Siege Engine may not fire [9.4]'). The official Q&A permits Foederatti and Syrian Archers RIDING a tower to initiate missile attacks, because they are at a different elevation from the pushing units. The gate denies a legal action.",
+      "evidence": "The General Vol 26 No 4, p.58 / 1992 typescript: '11.1 Can Foederatti and Syrian Archers be on a tower without suffering the penalties for Heavy Infantry beneath? A. Yes; they may initiate missile attacks because they're on a different elevation than the pushing units.'",
+      "note": "Belongs with the already-listed tower riding/boarding build (6.42/8.61); this ruling supplies the precise contract - riders fire, pushers do not."
+    },
+    {
+      "id": "F4",
+      "class": "unreachable-with-evidence (record, do not build for Gallus)",
+      "reachable_in_gallus": false,
+      "rule": "9.3 artillery riding an Armored Tower may fire from a Breach hex",
+      "finding": "soj.py forbids artillery firing from a Built-up or Breach hex [9.3]. The Q&A carves out the catapult atop an armored tower. Armored Towers are Interphase creations, absent from the Gallus card OOB (decode-prep 5), so the exception is unreachable in this scenario.",
+      "evidence": "Question Box '9.3 Can a catapult atop an armored tower fire while the tower occupies a breach hex? A. Yes.'; decode-prep 5 counter census."
+    },
+    {
+      "id": "F5",
+      "class": "3 - wrong/missing data (campaign scope)",
+      "reachable_in_gallus": false,
+      "rule": "LOF obstacle class W = Wall/Ramp",
+      "finding": "soj.py's `blocker_class` maps wall/north_wall/gate* to W but not Ramp. Ramps are phase-gated behind the Interphase and unreachable in Gallus (decode-prep 5), so this is a campaign-scope gap.",
+      "evidence": "Game card LOF OBSTACLES key: 'W: Wall/Ramp'."
+    },
+    {
+      "id": "F7",
+      "class": "1 - silent incorrectness (the sharpest result of decode-prep 6)",
+      "reachable_in_gallus": true,
+      "rule": "Missile Table drm list",
+      "finding": "The Missile Table's NUMBERS are encoded exactly, but the RESOLUTION PATH applies only some of the card's drm list. engine/soj.py `_resolve_missile` (the single missile resolution path - result_rows is read at exactly one place) builds its drm from five sources: extreme odds, cauldrons, Fresh Heavy Infantry, Militia, and the indirect-fire -1 returned by _lof. FOUR printed drms are never applied: '-1 if firing through Tower (9.13)' (line 823 carries the comment '# towers fired through [9.13]' but _lof only ever returns the indirect -1), '-1 if firing from Breach', '-1 if firing from Ground Level through Breach to Ground level target', and '-1 If Judaean Artillery firing outside Primary Range'. A fifth is partial: the Fresh-Heavy-Infantry -1 is suppressed only for Foederatti/Syrian Archers in the target hex, but the card's ** footnote also suppresses it for a Testudo or Siege Engine in the target hex and when Artillery is the Primary Target. The card's '*Only these two cases are not cumulative with each other' footnote is likewise unimplemented.",
+      "evidence": "Game card MISSILE TABLE drm block, transcribed above; game.json /combat/missile/drm already lists all nine correctly - so the SPEC is right and the CODE does not read it.",
+      "gallus_reachability": "Every one of the four is reachable in Gallus: the XII Legion has three towers to fire through, the ram opens breaches to fire from and through, and the Judaean has ballistae, onagers and catapults that can fire beyond Primary Range.",
+      "impact": "Each missing -1 shifts the adjusted die roll one row up the Missile Table, so results are systematically too severe. Silent - nothing in the log says a drm was skipped.",
+      "note": "This does not contradict the tier-2 validation: validate_combat proved the printed examples 11.81/11.82/11.83/13.4 and an end-to-end breach sequence, none of which exercise these five drms. It is exactly the kind of row a phase-and-state coverage matrix is meant to catch and a worked-example suite is not."
+    },
+    {
+      "id": "F9",
+      "class": "1 - silent incorrectness",
+      "reachable_in_gallus": true,
+      "rule": "13.2 most severe result vs the primary target",
+      "finding": "The card lets the defender choose which unit each letter hits ('Defender chooses unit affected and applies result one unit at a time'), and the Q&A adds the constraint: '13.2 Must the most severe result be taken against a missile attack's primary target? A. Yes.' engine/soj.py `_resolve_loss_verdict` validates only that every picked unit is in the affected hex and on the defending side. The missile action already carries `primary_class` (used to pick the Missile Table row) but nothing ties it to loss allocation, so a defender may take an E on a 2-6 militia and hand the primary target the D.",
+      "evidence": "Question Box / 1992 typescript item 13.2; engine/soj.py _resolve_loss_verdict.",
+      "impact": "The defender gets a free downgrade on every multi-letter missile result against a mixed stack. Silent."
+    },
+    {
+      "id": "F8",
+      "class": "1 - silent incorrectness",
+      "reachable_in_gallus": true,
+      "rule": "9.31 errant artillery fire",
+      "finding": "game.json declares /combat/missile/errant_on_natural_1 = '[9.31] artillery vs higher elevation: natural 1 also disrupts one adjacent friendly unit, defender's choice', and the card prints it as a starred footnote on the Missile Table ('Artillery Original roll of 1 Disrupts friendly unit adjacent to target (9.31)'). There is NO implementation: the string 'errant' does not appear anywhere in engine/, web/ or ui/, and `_resolve_missile` never tests `die == 1`. A declared rule that no code reads.",
+      "evidence": "Game card Missile Table footnote '*'; game.json key present; grep -rn -i errant engine/ web/ ui/ returns nothing.",
+      "additional": "The official Q&A widens the rule beyond what game.json's own wording says: '9.31 Is \"errant attack\" applied only to friendly units on the ground? A. No, errant fire can affect friendly units on adjacent ground or elevated hexes.' So the fix must cover adjacent ELEVATED hexes too, not just ground."
+    },
+    {
+      "id": "F6",
+      "class": "1 - silent incorrectness (Crest half) / unreachable (Edifice half)",
+      "reachable_in_gallus": "crest: yes; edifice: no",
+      "rule": "LOF general rules",
+      "finding": "The card's LOF block carries two clauses soj.py does not implement: 'LOF is not allowed through an Edifice hex except to/from central hex of Temple (10.3)' and 'See also 9.52 for Ground level fire through Crest hexsides between non-adjacent units.' Under Bruce's 2026-08-09 hard-bounding of the battlefield to the card, every Edifice on the map is Old City (decode-prep 4) so the Edifice clause is unreachable. The Crest clause is NOT - decode-prep 1 established crest hexsides are derivable from the 574 slope hexes already in terrain.json.",
+      "evidence": "Game card LOF DETERMINATION TABLE footnotes; decode-prep 4 Edifice census; decode-prep 1 crest derivation."
+    }
+  ]
+}
