@@ -1,0 +1,917 @@
+{
+ "source": "module SOJ 3.0.0 (Rob McRae) \u2014 extracted/images/Gates Overlay.png, 4051x5656 RGBA, MapShader over Main Map (hotkey F1)",
+ "semantics": "red triangle = \"Gate Entrance\"; the overlay carries its own legend text \"Gate Entrance\" inside the printed TERRAIN KEY panel at C29/C30",
+ "rule": "8.91 \u2014 \"Movement into or out of Gates at Ground level is limited to those two Entrance hexsides containing brown rut marks or connecting roads (Example: RR35 and PP37 at Susa Gate)\"",
+ "method": "see ingest/extract_gates_overlay.py \u2014 arrow = isoceles triangle drawn inside the ENTRANCE hex, base ~37px sitting ~10px inside the shared hexside, apex ~48px further in pointing AWAY from the gate hex; 53 arrows, all with direction margin >=0.34 over the next-best of six",
+ "calibration_check": "QQ36 -> [PP37, RR35] reproduced independently = the printed 8.91 example",
+ "strongpoint_class_source": "hex ring colour on SoJ_map.jpg per the printed TERRAIN KEY: Fortress=red, Fort=orange, Bastion=blue",
+ "gate_count": 27,
+ "arrow_count": 53,
+ "excluded": [
+  "C29/C30 = the TERRAIN KEY sample symbol, not a map gate"
+ ],
+ "gates": [
+  {
+   "gate": "G40",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "F40",
+    "H40"
+   ],
+   "entrance_hexside_keys": [
+    "0743|0643",
+    "0743|0844"
+   ],
+   "terrain_json_class": "fort",
+   "entrance_recorded": {
+    "F40": false,
+    "H40": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "F40",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.485,
+     "px": 909
+    },
+    {
+     "entrance": "H40",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.485,
+     "px": 914
+    }
+   ]
+  },
+  {
+   "gate": "N55",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "M56",
+    "O54"
+   ],
+   "entrance_hexside_keys": [
+    "1462|1362",
+    "1462|1561"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "M56": false,
+    "O54": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "O54",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.987,
+     "margin": 0.353,
+     "px": 812
+    },
+    {
+     "entrance": "M56",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 913
+    }
+   ]
+  },
+  {
+   "gate": "O67",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "N67",
+    "P67"
+   ],
+   "entrance_hexside_keys": [
+    "1574|1474",
+    "1574|1675"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "N67": false,
+    "P67": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "N67",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.477,
+     "px": 911
+    },
+    {
+     "entrance": "P67",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.481,
+     "px": 911
+    }
+   ]
+  },
+  {
+   "gate": "P51",
+   "name": "Yafo Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "O52",
+    "Q50"
+   ],
+   "entrance_hexside_keys": [
+    "1659|1559",
+    "1659|1758"
+   ],
+   "terrain_json_class": "gate",
+   "entrance_recorded": {
+    "O52": false,
+    "Q50": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "Q50",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.993,
+     "margin": 0.395,
+     "px": 844
+    },
+    {
+     "entrance": "O52",
+     "dir_gate_to_entrance": "SW",
+     "align": 1.0,
+     "margin": 0.493,
+     "px": 907
+    }
+   ]
+  },
+  {
+   "gate": "P54",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "O54",
+    "Q54"
+   ],
+   "entrance_hexside_keys": [
+    "1662|1561",
+    "1662|1762"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "O54": false,
+    "Q54": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "O54",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.477,
+     "px": 929
+    },
+    {
+     "entrance": "Q54",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.489,
+     "px": 911
+    }
+   ]
+  },
+  {
+   "gate": "P58",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "O58",
+    "Q58"
+   ],
+   "entrance_hexside_keys": [
+    "1666|1565",
+    "1666|1766"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "O58": false,
+    "Q58": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "O58",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.489,
+     "px": 909
+    },
+    {
+     "entrance": "Q58",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.493,
+     "px": 912
+    }
+   ]
+  },
+  {
+   "gate": "Q49",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "Q48",
+    "Q50"
+   ],
+   "entrance_hexside_keys": [
+    "1757|1756",
+    "1757|1758"
+   ],
+   "terrain_json_class": "gate_wall",
+   "entrance_recorded": {
+    "Q48": true,
+    "Q50": true
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "Q48",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.481,
+     "px": 904
+    },
+    {
+     "entrance": "Q50",
+     "dir_gate_to_entrance": "S",
+     "align": 0.993,
+     "margin": 0.393,
+     "px": 885
+    }
+   ]
+  },
+  {
+   "gate": "Q52",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "Q51",
+    "Q53"
+   ],
+   "entrance_hexside_keys": [
+    "1760|1759",
+    "1760|1761"
+   ],
+   "terrain_json_class": "bastion",
+   "entrance_recorded": {
+    "Q51": false,
+    "Q53": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "Q51",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 914
+    },
+    {
+     "entrance": "Q53",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 919
+    }
+   ]
+  },
+  {
+   "gate": "R49",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "Q50",
+    "S48"
+   ],
+   "entrance_hexside_keys": [
+    "1858|1758",
+    "1858|1957"
+   ],
+   "terrain_json_class": "fort",
+   "entrance_recorded": {
+    "Q50": false,
+    "S48": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "S48",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 911
+    },
+    {
+     "entrance": "Q50",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.985,
+     "margin": 0.344,
+     "px": 967
+    }
+   ]
+  },
+  {
+   "gate": "U50",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "U49",
+    "U51"
+   ],
+   "entrance_hexside_keys": [
+    "2160|2159",
+    "2160|2161"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "U49": false,
+    "U51": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "U49",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 913
+    },
+    {
+     "entrance": "U51",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.499,
+     "px": 903
+    }
+   ]
+  },
+  {
+   "gate": "V42",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "U42",
+    "W41"
+   ],
+   "entrance_hexside_keys": [
+    "2253|2152",
+    "2253|2352"
+   ],
+   "terrain_json_class": "fort",
+   "entrance_recorded": {
+    "U42": false,
+    "W41": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "U42",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.489,
+     "px": 909
+    },
+    {
+     "entrance": "W41",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 913
+    }
+   ]
+  },
+  {
+   "gate": "W36",
+   "name": "Damascus Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "V36",
+    "X36"
+   ],
+   "entrance_hexside_keys": [
+    "2347|2247",
+    "2347|2448"
+   ],
+   "terrain_json_class": "gate_wall",
+   "entrance_recorded": {
+    "V36": false,
+    "X36": true
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "V36",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.477,
+     "px": 911
+    },
+    {
+     "entrance": "X36",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.497,
+     "px": 913
+    }
+   ]
+  },
+  {
+   "gate": "X48",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "X47",
+    "X49"
+   ],
+   "entrance_hexside_keys": [
+    "2460|2459",
+    "2460|2461"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "X47": false,
+    "X49": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "X47",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 919
+    },
+    {
+     "entrance": "X49",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 913
+    }
+   ]
+  },
+  {
+   "gate": "Z23",
+   "name": "Women's Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "Z22",
+    "Z24"
+   ],
+   "entrance_hexside_keys": [
+    "2636|2635",
+    "2636|2637"
+   ],
+   "terrain_json_class": "gate_north_wall",
+   "entrance_recorded": {
+    "Z22": true,
+    "Z24": true
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "Z22",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.481,
+     "px": 921
+    },
+    {
+     "entrance": "Z24",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.472,
+     "px": 910
+    }
+   ]
+  },
+  {
+   "gate": "FF47",
+   "name": "Bridge Gate",
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "EE48"
+   ],
+   "entrance_hexside_keys": [
+    "3263|3163"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "EE48": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "EE48",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 910
+    }
+   ]
+  },
+  {
+   "gate": "II34",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "HH35",
+    "JJ33"
+   ],
+   "entrance_hexside_keys": [
+    "3551|3452",
+    "3551|3651"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "HH35": false,
+    "JJ33": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "JJ33",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.999,
+     "margin": 0.465,
+     "px": 911
+    },
+    {
+     "entrance": "HH35",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 909
+    }
+   ]
+  },
+  {
+   "gate": "JJ43",
+   "name": "Coponius Gate (label sits in KK42, shared with KK41 \u2014 AMBIGUOUS)",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "KK42"
+   ],
+   "entrance_hexside_keys": [
+    "3661|3760"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "KK42": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "KK42",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.987,
+     "margin": 0.353,
+     "px": 797
+    }
+   ]
+  },
+  {
+   "gate": "KK41",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "KK42",
+    "LL40"
+   ],
+   "entrance_hexside_keys": [
+    "3759|3760",
+    "3759|3859"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "KK42": false,
+    "LL40": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "LL40",
+     "dir_gate_to_entrance": "NE",
+     "align": 1.0,
+     "margin": 0.492,
+     "px": 912
+    },
+    {
+     "entrance": "KK42",
+     "dir_gate_to_entrance": "S",
+     "align": 0.998,
+     "margin": 0.437,
+     "px": 901
+    }
+   ]
+  },
+  {
+   "gate": "KK50",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "JJ50",
+    "LL50"
+   ],
+   "entrance_hexside_keys": [
+    "3768|3668",
+    "3768|3869"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "JJ50": false,
+    "LL50": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "JJ50",
+     "dir_gate_to_entrance": "NW",
+     "align": 1.0,
+     "margin": 0.497,
+     "px": 909
+    },
+    {
+     "entrance": "LL50",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.497,
+     "px": 914
+    }
+   ]
+  },
+  {
+   "gate": "KK59",
+   "name": "Gate of the Essenes",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "KK58",
+    "KK60"
+   ],
+   "entrance_hexside_keys": [
+    "3777|3776",
+    "3777|3778"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "KK58": false,
+    "KK60": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "KK58",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.499,
+     "px": 919
+    },
+    {
+     "entrance": "KK60",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 902
+    }
+   ]
+  },
+  {
+   "gate": "LL30",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "KK30",
+    "MM30"
+   ],
+   "entrance_hexside_keys": [
+    "3849|3748",
+    "3849|3949"
+   ],
+   "terrain_json_class": "bastion",
+   "entrance_recorded": {
+    "KK30": false,
+    "MM30": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "KK30",
+     "dir_gate_to_entrance": "NW",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 913
+    },
+    {
+     "entrance": "MM30",
+     "dir_gate_to_entrance": "SE",
+     "align": 1.0,
+     "margin": 0.481,
+     "px": 912
+    }
+   ]
+  },
+  {
+   "gate": "MM32",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "LL33",
+    "NN31"
+   ],
+   "entrance_hexside_keys": [
+    "3951|3852",
+    "3951|4051"
+   ],
+   "terrain_json_class": "bastion",
+   "entrance_recorded": {
+    "LL33": false,
+    "NN31": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "NN31",
+     "dir_gate_to_entrance": "NE",
+     "align": 1.0,
+     "margin": 0.481,
+     "px": 916
+    },
+    {
+     "entrance": "LL33",
+     "dir_gate_to_entrance": "SW",
+     "align": 1.0,
+     "margin": 0.477,
+     "px": 908
+    }
+   ]
+  },
+  {
+   "gate": "NN42",
+   "name": "Hulda Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "NN41",
+    "NN43"
+   ],
+   "entrance_hexside_keys": [
+    "4062|4061",
+    "4062|4063"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "NN41": false,
+    "NN43": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "NN41",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.472,
+     "px": 920
+    },
+    {
+     "entrance": "NN43",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.471,
+     "px": 917
+    }
+   ]
+  },
+  {
+   "gate": "NN57",
+   "name": null,
+   "strongpoint_class": "Fort",
+   "entrances": [
+    "MM58",
+    "OO56"
+   ],
+   "entrance_hexside_keys": [
+    "4077|3977",
+    "4077|4176"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "MM58": false,
+    "OO56": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "OO56",
+     "dir_gate_to_entrance": "NE",
+     "align": 1.0,
+     "margin": 0.477,
+     "px": 911
+    },
+    {
+     "entrance": "MM58",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.997,
+     "margin": 0.436,
+     "px": 913
+    }
+   ]
+  },
+  {
+   "gate": "OO33",
+   "name": "Tadi Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "OO32",
+    "OO34"
+   ],
+   "entrance_hexside_keys": [
+    "4153|4152",
+    "4153|4154"
+   ],
+   "terrain_json_class": "gate_wall",
+   "entrance_recorded": {
+    "OO32": true,
+    "OO34": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "OO32",
+     "dir_gate_to_entrance": "N",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 920
+    },
+    {
+     "entrance": "OO34",
+     "dir_gate_to_entrance": "S",
+     "align": 1.0,
+     "margin": 0.49,
+     "px": 912
+    }
+   ]
+  },
+  {
+   "gate": "OO38",
+   "name": null,
+   "strongpoint_class": "Bastion",
+   "entrances": [
+    "NN39",
+    "PP37"
+   ],
+   "entrance_hexside_keys": [
+    "4158|4059",
+    "4158|4258"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "NN39": false,
+    "PP37": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "PP37",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 922
+    },
+    {
+     "entrance": "NN39",
+     "dir_gate_to_entrance": "SW",
+     "align": 1.0,
+     "margin": 0.496,
+     "px": 910
+    }
+   ]
+  },
+  {
+   "gate": "QQ36",
+   "name": "Susa Gate",
+   "strongpoint_class": "Fortress",
+   "entrances": [
+    "PP37",
+    "RR35"
+   ],
+   "entrance_hexside_keys": [
+    "4357|4258",
+    "4357|4457"
+   ],
+   "terrain_json_class": "clear",
+   "entrance_recorded": {
+    "PP37": false,
+    "RR35": false
+   },
+   "arrow_evidence": [
+    {
+     "entrance": "RR35",
+     "dir_gate_to_entrance": "NE",
+     "align": 0.999,
+     "margin": 0.473,
+     "px": 913
+    },
+    {
+     "entrance": "PP37",
+     "dir_gate_to_entrance": "SW",
+     "align": 0.987,
+     "margin": 0.355,
+     "px": 831
+    }
+   ]
+  }
+ ],
+ "terrain_json_entrances_not_supported_by_overlay": [
+  "W35|W36",
+  "OO33|PP32"
+ ]
+}
