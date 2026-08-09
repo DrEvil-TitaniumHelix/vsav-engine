@@ -1,0 +1,135 @@
+{
+  "_source": "Decode-prep 6 (2026-08-09). The two official Avalon Hill Q&A documents for SIEGE OF JERUSALEM (1989), read off their scans; plus the classification of the two NON-authoritative documents that sit next to them in literature/siege-of-jerusalem/.",
+  "_tool": "ingest/prep6_render.py (python prep6_render.py errata | general 26 4 58) regenerates the crops.",
+
+  "documents": {
+    "question_box": {
+      "id": "QB",
+      "citation": "The General, Vol. 26 No. 4, p.58, 'The Question Box', SIEGE OF JERUSALEM section (Avalon Hill's own magazine).",
+      "authority": "OFFICIAL - publisher-published Q&A.",
+      "scan": "literature/siege-of-jerusalem/soj_errata1.gif (406x712 photocopy). IDENTIFIED THIS PASS: the same page exists at full scan resolution as page 58 of literature/siege-of-jerusalem/The_General_Vol26i4.pdf - use the PDF, not the gif, for any future citation.",
+      "items": 20
+    },
+    "typescript_1992": {
+      "id": "TS",
+      "citation": "Avalon Hill Q&A typescript headed 'Monday, January 6, 1992 / SIEGE OF JERUSALEM'.",
+      "authority": "OFFICIAL - later than QB, so it supersedes on any conflict.",
+      "scan": "literature/siege-of-jerusalem/soj_errata2.gif (1100x850). Handwritten margin note reads 'Siege of Jerusalem (AH) (1/92:e) 1p. 2pp overlap'.",
+      "items": 24
+    },
+    "hp_errata_sheet": {
+      "id": "HP",
+      "file": "literature/siege-of-jerusalem/soj_errata.txt",
+      "authority": "NOT AUTHORITY FOR THIS GAME - DO NOT CITE. It is the errata sheet for the 1970s HISTORICAL PERSPECTIVES edition, 'The Siege of Jerusalem, 70 A.D.', not the 1989 Avalon Hill edition we encode.",
+      "proof": [
+        "It is signed by Fred Schachter and opens 'The Siege of Jerusalem, 70 A.D. is the first attempt made by Historical Perspectives, namely Steve Weiss and myself, to produce a \"Professional Game\"' - that is the 1976 self-published edition.",
+        "Fred Schachter's own 1989 design notes (The General Vol 26 No 4, p.10) say of the AH edition: 'The revised game, now retitled simply SIEGE OF JERUSALEM'. The errata sheet uses the old title throughout.",
+        "It speaks of 'Rebel' units and a 'Rebel Raising Table (RRT)'. The 1989 rulebook has neither: RULEBOOK_VERIFIED.md (pages 3-11 read off the 600 dpi scan) contains 0 occurrences of 'Rebel' and 73 of 'Judaean', and the 1989 reserve mechanic is the Activation Table (18.611).",
+        "It says the counter die 'provided for 400 playing pieces per sheet'; decode-prep 5 measured 519 unit counters in the 1989 edition."
+      ],
+      "status": "Corroborative background only - some of its content survives verbatim into the AH edition (e.g. 'ALL EXTERIOR PERIMETER CURTAIN WALL HEXES OF THE TEMPLE ARE CONSIDERED BASTIONS' matches the 1989 TEC read in decode-prep 3), but that is corroboration, never authority.",
+      "items_of_interest": [
+        "Item 2 says a bloody Assault Period may need more Disruption markers than provided and tells players to draft fifty more from other games. That would settle whether marker scarcity is normative - but it settles it for the HP edition only, so it CANNOT close Rob question R3.",
+        "Item 3.D says the Gallus legion gets an unrestricted Initial Placement move (full MA, may end anywhere, exempt from the nine-hex halt rule). Our scenario_gallus.json instead encodes the 1989 card's static rule ('anywhere outside Jerusalem no closer than five hexes from any Elevated Hex'). Different editions - no defect, but noted so nobody 'fixes' the card to match the HP sheet."
+      ]
+    },
+    "usenet_qa": {
+      "id": "UNOFF",
+      "file": "literature/siege-of-jerusalem/soj_qa.txt",
+      "authority": "UNOFFICIAL - 1994 Usenet exchange between players, self-labelled. Review sheet only, never a citation. Its cauldron question is already answered from the rulebook by 13.21.",
+      "note": "literature/siege-of-jerusalem/atf_sojclarification.htm is likewise self-labelled 'utterly unofficial and non-binding' and mixes house rules with clarifications - same shelf."
+    }
+  },
+
+  "no_contradiction_between_official_documents": {
+    "finding": "THE TWO OFFICIAL DOCUMENTS DO NOT CONTRADICT EACH OTHER ANYWHERE. Every item they share carries the same answer, verbatim. The TS is the QB's superset: it adds four items (18.23, 18.7, 19.2, 19.21) that the published Question Box dropped, and it cites 17.3 where the QB cites 17.23 in the first item.",
+    "consequence": "game.json source_defects entry 'qa-contradiction-rout-from-heavy-zoc' is FALSE and must be rewritten - see false_defect below."
+  },
+
+  "false_defect": {
+    "id": "qa-contradiction-rout-from-heavy-zoc",
+    "currently_says": "The General's Question Box: '...A. Yes.' The later AH Q&A typescript: identical question, 'A. No.'",
+    "actually": "BOTH documents answer 'A. No.' Read at 9x zoom off soj_errata1.gif and independently off The_General_Vol26i4.pdf p.58 at 300 dpi: 'SIEGE OF JERUSALEM / 7.311/17.23 Can/must Judaean units leave a ground-level Heavy Infantry ZOC when routing/panicking? / A. No.' The typescript is identical but for the rule citation: '7.311/17.3 ... A. No.'",
+    "third_confirmation": "Fred Schachter's design notes (The General Vol 26 No 4, p.11) explain the rule as intended: 'Some may question why Judaean light infantry ... are unable to exit Roman Heavy Infantry ZOC under certain circumstances. There are two reasons for this game mechanic...'",
+    "engine_impact": "NONE. The enforced behaviour ('No' - Judaean units in Roman Heavy-Infantry ground-level ZOC do not move when Routed/Panicked) was already correct and stays exactly as it is. Only the register entry is wrong.",
+    "what_is_actually_defective": "A citation discrepancy between two official documents for the same ruling - 17.23 (published) vs 17.3 (typescript). That is a real, if minor, source defect of kind 'inconsistent_cross_reference'.",
+    "action": "REWRITE the entry (game.json edit - primary project data, so Fable applies it, not the Opus session). Suggested: kind 'inconsistent_cross_reference'; defect quoting both citations; resolution 'the ruling itself is identical in both documents and is enforced; the engine cites 7.311/17.21/17.23'; authority 'Official Q&A, both documents in agreement'; enforced true."
+  },
+
+  "items": [
+    {"rule": "7.311/17.23", "ts_rule": "7.311/17.3", "in": ["QB", "TS"], "q": "Can/must Judaean units leave a ground-level Heavy Infantry ZOC when routing/panicking?", "a": "No.", "gallus": true, "engine": "enforced (7.311 freeze)"},
+    {"rule": "9.11", "in": ["QB", "TS"], "q": "Do both the top and bottom units in a tower hex use the 'Tower' row on the Missile Table as target type when fired on?", "a": "Yes.", "gallus": true, "engine": "soj.py _target_row returns builtup_northwall_tower on primary_class 'tower' - matches for the tower; confirm it applies to the riders too when tower riding is built."},
+    {"rule": "9.3", "in": ["QB", "TS"], "q": "Can a catapult atop an armored tower fire while the tower occupies a breach hex?", "a": "Yes.", "gallus": false, "why_not": "Armored Towers are Interphase creations, absent from the Gallus card OOB (decode-prep 5).", "engine": "soj.py currently forbids artillery fire from a Breach hex [9.3] with no carve-out - unreachable in Gallus, record only."},
+    {"rule": "9.31", "in": ["QB", "TS"], "q": "Is 'errant attack' applied only to friendly units on the ground?", "a": "No, errant fire can affect friendly units on adjacent ground or elevated hexes.", "gallus": true, "engine": "GAP - see finding F8. game.json declares errant_on_natural_1; engine/soj.py has no implementation at all, and the declared wording would need widening to adjacent Elevated hexes as well."},
+    {"rule": "9.6", "in": ["QB", "TS"], "q": "Can Judaeans firing at a tower specify units riding as their target, and then other Judaean units specify pushing units as theirs - thereby attacking the hex twice?", "a": "No.", "gallus": true, "engine": "build with tower riding - one missile attack per tower hex per phase."},
+    {"rule": "9.8", "in": ["QB", "TS"], "q": "Do units in forts and bastions firing at adjacent units on a wall get the 'Wall Attack' bonus? If they fire over intervening units, can they claim it?", "a": "Yes. No.", "gallus": true, "engine": "GAP - see play_aid_tables.json finding F2. soj.py _wall_bonus never checks intervening units."},
+    {"rule": "11.1", "in": ["QB", "TS"], "q": "Can Foederatti and Syrian Archers be on a tower without suffering the penalties for Heavy Infantry beneath?", "a": "Yes; they may initiate missile attacks because they're on a different elevation than the pushing units.", "gallus": true, "engine": "GAP - see finding F3. soj.py refuses all fire from a Siege Engine hex."},
+    {"rule": "11.81", "in": ["QB", "TS"], "q": "Can a unit which just retreated into a hex participate in its melee defense?", "a": "Yes.", "gallus": true},
+    {"rule": "12. & 19.51", "in": ["QB", "TS"], "q": "Can a bridge hex be selected for mining/breach damage?", "a": "Yes. A bridge hex is treated just like any other wall hex (except that units may pass beneath it).", "gallus": false, "why_not": "The only Bridge on the map is GG46-II44 (TEC, decode-prep 3), outside the card-bounded Gallus battlefield; mining is banned by the Gallus card."},
+    {"rule": "13.2", "in": ["QB", "TS"], "q": "Must the most severe result be taken against a missile attack's primary target?", "a": "Yes.", "gallus": true, "engine": "GAP - see finding F9. _resolve_loss_verdict checks only that picked units are in the affected hex; the action's primary_class is never used to constrain allocation."},
+    {"rule": "14.2", "in": ["QB", "TS"], "q": "If as a result of Melee, a unit chooses to become disrupted rather than suffer a 'B' result, must it retreat?", "a": "Yes, unless 14.31 applies.", "gallus": true},
+    {"rule": "14.2", "in": ["QB", "TS"], "q": "If as a result of Melee, all units in a fort, testudo or siege engine hex accept a 'B' result, must they all retreat one or two hexes?", "a": "Yes.", "gallus": true, "note": "NON-RESPONSIVE ANSWER: 'Yes' does not choose between 'one' and 'two'. Both official documents print it this way, so it is a defect of the published Q&A itself, not a transcription error. The Melee Table's own 'B' text ('Retreat all units one or two hexes') already makes the distance the retreating player's choice, so the question was really 'must they all move together' - answered Yes. Recorded as a source defect candidate of kind 'ambiguous_wording'."},
+    {"rule": "14.3", "in": ["QB", "TS"], "q": "If a 'DE' result is obtained against a hex with one disrupted and one fresh unit within it, can the defender eliminate the disrupted unit and disrupt the fresh unit?", "a": "Yes.", "gallus": true},
+    {"rule": "15.", "in": ["QB", "TS"], "q": "Can an eligible unit attack an enemy which retreats adjacent to it during the Melee Phase?", "a": "Yes.", "gallus": true, "engine": "interacts with 11.9 Multiple Attacks - the A/B/C ladder decode-prep 5 flagged as missing."},
+    {"rule": "17. & 18.611", "in": ["QB", "TS"], "q": "During the Judaean Rally Phase, is there a sequence for releasing Judaean reserves and rallying units on the map?", "a": "Yes. Execute all reserve releases first; then rally Judaean units.", "gallus": false, "why_not": "Gallus card: 'Reserves (18.61) and Garrison forces (18.4) are not used'."},
+    {"rule": "17.3", "in": ["QB", "TS"], "q": "Can both a unit's leader and the commander affect a rally die roll?", "a": "Yes, applicable HQ effects can be combined.", "gallus": true, "engine": "ENFORCED - game.json /combat/rally/drm carries leader (-2 stacked / -1 adjacent) and Commander (-3 stacked / -2 adjacent) as separate additive entries, so HQ effects combine."},
+    {"rule": "17.3 & 18.4", "in": ["QB", "TS"], "q": "Are garrisons affected by leaders?", "a": "No - only the commander can affect the rally die roll of garrison units.", "gallus": false, "why_not": "Garrison forces not used in Gallus."},
+    {"rule": "18.23", "in": ["TS"], "q": "(statement, not a question)", "a": "This statement while correct can be misleading because no unit has a ZOC at night. It should not be misconstrued to mean that any unit has a ZOC at night.", "gallus": true, "note": "TYPESCRIPT-ONLY - the published Question Box dropped it. Directly relevant: Gallus runs night turns (turns 8-10), so 'no ZOC at night' is a Gallus rule.", "engine": "ENFORCED - soj.py `_zoc_map` returns an empty set when is_night(), citing [7.2]. The one typescript-only item that touches Gallus is already correct in the gate."},
+    {"rule": "18.4", "in": ["QB", "TS"], "q": "Can Judaean garrison units melee enemy units outside their garrison area as long as they do not advance after combat?", "a": "Yes.", "gallus": false, "why_not": "Garrison forces not used in Gallus.", "note": "Bears on Rob question R1 (garrison-AREA extents): the ruling presumes an AREA with a boundary a unit can be 'outside' of, confirming that 18.4 areas are extents, not the card's two example hexes."},
+    {"rule": "18.51 & 19.5", "in": ["QB", "TS"], "q": "Can the Roman player gain one armored tower from a construction die roll, substitute three replacement normal towers and/or rams for it, and then swap one tower and one ram to regain the armored tower?", "a": "No. The substitution must be made before the construction die roll.", "gallus": false, "why_not": "Interphase only."},
+    {"rule": "18.611", "in": ["QB", "TS"], "q": "Is the elevated hex salient around PP57 part of David's City or the Lower City for purposes of reserve activation?", "a": "The Lower City.", "gallus": false, "why_not": "Old City; reserves not used."},
+    {"rule": "18.7", "in": ["TS"], "q": "Does each Assault Period itself count as one week of the Campaign Game's 25-week limit?", "a": "No, but the minimum time leading up to each assault (including the first) is one week.", "gallus": false, "note": "TYPESCRIPT-ONLY. Campaign scope."},
+    {"rule": "19.2", "in": ["TS"], "q": "May the Roman player conduct mining prior to launching his first Assault Period, and take up to nine weeks to maximize chances of receiving four shafts?", "a": "Yes.", "gallus": false, "note": "TYPESCRIPT-ONLY. Campaign scope; mining banned by the Gallus card."},
+    {"rule": "19.21", "in": ["TS"], "q": "Can the path to a shaft target hex be traced through a single breach (thereby enabling a shaft against the inner wall of the Temple)?", "a": "Yes.", "gallus": false, "note": "TYPESCRIPT-ONLY. Campaign scope."}
+  ],
+
+  "the_general_26_4": {
+    "citation": "The General, Vol. 26 No. 4 - the AH issue that supports the 1989 release.",
+    "authority": "Publisher-published. Design notes and articles are semi-official commentary (below the rulebook and the Q&A); the SCENARIOS printed in it are rules for those scenarios.",
+    "contents_relevant_to_us": [
+      {"pages": "6-8", "what": "'LAYING THE FOUNDATION' - historical background. No rules."},
+      {"page": "10-12", "what": "'BUILDING THE STRUCTURE - Design Notes' by Fred Schachter. Two findings below."},
+      {"page": "12", "what": "'InterPhase Sequence of Play' by David Williams - this is the sequence the Sinigaglio/Greenwood aid (atf_interphase.htm) exists to correct, i.e. the object of the already-registered source defect 'general-26-4-interphase-sequence'. Now transcribed; campaign scope."},
+      {"page": "13", "what": "SCENARIO 'THE REBELLION' - full setup + 10 special rules. This is the rules text for the module's 'The Rebellion 66 AD.vsav'."},
+      {"page": "14", "what": "SCENARIO 'PRE-EMPTIVE ROMAN RESPONSE' - full setup + 7 special rules. Rules text for the module's 'Pre-Emptive Roman Response 66 AD.vsav'."},
+      {"page": "15", "what": "SCENARIO 'ASSAULT ON THE TEMPLE' - full setup + pre-game procedure. Rules text for the module's 'Assault on the Temple 70 AD.vsav'."},
+      {"page": "16-17", "what": "'BEFORE AND BEHIND THE WALLS' by James Werbaneth - unit-by-unit strategy guide. Commentary, not rules."},
+      {"page": "58", "what": "The Question Box (see above)."}
+    ],
+    "finding_staircases_on_forts": {
+      "bears_on": "Rob question R4 - do Forts and Fortresses carry Staircases at all? (decode-prep 3)",
+      "quote": "'One final example concerns the staircases. In light of previous explanations, one might ask why we depicted the staircases if the Judaeans could have sealed or blocked them. Our interpretation of the flow of the historical Roman attacks was that they would try to seize weakly-held bastions and/or forts, and then use them as bases for exploitive attacks into the city proper. If we didn't have staircases as such, the only alternative to simulating this tactic (and vice versa for Judaean counterattacks) would have been an additional game mechanic - perhaps a sort of \"Escalade Down\" attack.' (Vol 26 No 4, p.10)",
+      "reading": "The designer names FORTS as well as bastions as the strongpoints staircases exist to exploit from. That is designer's-intent evidence that forts do carry staircases - it does NOT say which hexsides. So R4 splits: the 'do they exist at all' half now has evidence pointing YES; the 'which hexsides' half remains a Rob question, and decode-prep 3's 19 doubtful hexsides stay escalations rather than deletions."
+    },
+    "finding_counter_mix_is_normative_for_units": {
+      "bears_on": "The coverage-matrix UNREACHABLE evidence standard, and Rob questions R2/R3.",
+      "quote": "'The Counter-Mix represents the limit of Judaean field forces effectively capable of control by the rebel command structure. Even if more bodies were available, the Judaeans couldn't have armed or managed more troops (playing pieces) on the map than those provided.' (Vol 26 No 4, p.11)",
+      "reading": "The designer states in AH's own magazine that the counter mix IS a normative limit for Judaean UNITS. That is publisher-published support for exactly the boundary decode-prep 5 drew from the trays: 'component absent from the counter mix' is valid unreachable-evidence for units. It says nothing about MARKERS, so R2 (testudo counters per legion) and R3 (escalade/damage/breach counts) stay open."
+    },
+    "corroborations": [
+      "p.11: 'Only battering rams can damage/breach elevated hexes while an assault is in progress' - confirms the tier-2 gate's rule that artillery cannot breach during an Assault Period.",
+      "p.11: the Judaean-cannot-leave-Heavy-Infantry-ZOC rule is explained as deliberate design - third independent confirmation that the 'A. No.' ruling is correct.",
+      "p.10: 'our depiction of the Temple Quarter's exterior wall as a continuous line of interconnected bastions' - confirms the TEC's BASTION definition read in decode-prep 3.",
+      "p.13 special rule 2 (The Rebellion): 'All roads inside and outside Jerusalem exist. Movement rates along roads ... is .5 MP for both Roman and Judaean units' - independent confirmation of the 1/2 MF road cost decode-prep 1 flagged as a correctness dependency."
+    ],
+    "credits_cross_check": "Design: Stephen Weiss and Fred Schachter (Historical Perspectives, 1976; 2nd edition 1980). 1989 Avalon Hill edition developed by Don Greenwood; map art by Charley Kibler (Vol 24 No 5, p.37 and Vol 26 No 4, p.10). Use when the game.json credits block is written."
+  },
+
+  "the_general_24_5": {
+    "citation": "The General, Vol. 24 No. 5, pp.37-38: 'THE COMING SIEGE - A Preview of SIEGE OF JERUSALEM' by Don Greenwood.",
+    "verdict": "NO RULES CONTENT. It is a pre-publication preview: why AH revived the game, what changed from the Historical Perspectives edition, component upgrades, and the historical background of the Gallus assault. It does NOT contain a Question Box for this game (that is Vol 26 No 4, p.58).",
+    "useful_quotes": [
+      "'The revised game, now retitled simply SIEGE OF JERUSALEM' - the title-change proof used above to date soj_errata.txt to the HP edition.",
+      "'the map ... enlarged 20% to diffuse stacking problems' and '48\" x 33\"' - map provenance, matching the 4051x5656 scan the grid was fitted to.",
+      "'a continuous combat feature allowing the legions to cut their way through the defenders' - the Continuous Combat rule the tier-2 gate implements."
+    ]
+  },
+
+  "atf_soj_setup_zip": {
+    "file": "literature/siege-of-jerusalem/atf_soj_setup.zip",
+    "identified": "A 1999 InstallShield 5 installer (SETUP.EXE + _INST32I.EX_ + _SETUP.LIB + _SETUP.1 payload). SETUP.INI names the app 'SoJ'; SETUP.PKG lists the payload: _soj.exe, soj_counters.dll, soj_lemperor.dll, borlndmm.dll, cp3245mt.dll, and a data file UnitsInLine.soj. It is a third-party Borland-built Windows PBeM helper for Siege of Jerusalem, of a piece with the atf_*.htm pages by 'Burkhalter' that mention his other PBeM programs.",
+    "extracted": false,
+    "why_not": "The _SETUP.1 payload is InstallShield's own compressed format; 7-Zip 26.02 cannot open it and no unshield/i5comp tool is installed. Reproduce with: 7z x atf_soj_setup.zip, then an InstallShield extractor against _SETUP.1.",
+    "authority": "NONE - unofficial third-party software, same shelf as soj_qa.txt. Even fully extracted it could not be a citation; at most it would be a second implementation to compare against, and decode-prep 5 already measured the counter mix from the module's own trays. Recorded as closed."
+  }
+}
