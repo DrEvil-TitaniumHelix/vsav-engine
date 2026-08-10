@@ -42,7 +42,7 @@
   "note": "SoJ stats live in unit_types (fresh/disrupted sides, rally, missile ranges); the generic (att,def,ma) triple does not fit this system."
  },
  "unit_types": {
-  "_cite": "[2.41-2.46] unit diagrams pp.4-5, re-read at 260 dpi 2026-08-07; Gallus reverse from module counter art (Gallus_Reverse.gif). melee/ma = [fresh, disrupted]; missile = {range_band: AF} from the Weapons Effect Chart (game card); rock = AF at range 1 from Elevated only [2.523, 10.2].",
+  "_cite": "[2.41-2.46] unit diagrams pp.4-5, re-read at 260 dpi 2026-08-07; Gallus reverse from module counter art (Gallus_Reverse.gif). melee/ma = [fresh, disrupted]; Siege Engine ma = [crewed, white side: no Fresh HI/Velitae beneath at MPh start = 0] [2.45]; missile = {range_band: AF} from the Weapons Effect Chart (game card); rock = AF at range 1 from Elevated only [2.523, 10.2].",
   "roman_veteran":   {"cls": "heavy", "melee": [7, 5], "ma": [8, 5], "rally": 5},
   "roman_line":      {"cls": "heavy", "melee": [6, 4], "ma": [8, 5], "rally": 4},
   "roman_recruit":   {"cls": "heavy", "melee": [5, 3], "ma": [8, 5], "rally": 3},
@@ -56,9 +56,9 @@
   "roman_leader":    {"cls": "hq", "hq": "leader", "melee": [6, 5], "ma": [10, 8], "rally": 5},
   "judaean_leader":  {"cls": "hq", "hq": "leader", "melee": [3, 1], "ma": [10, 8], "rally": 5},
   "gallus":          {"cls": "hq", "hq": "commander", "melee": [4, 2], "ma": [10, 8], "rally": 5},
-  "tower":           {"cls": "siege_engine", "melee": [0, 0], "ma": [4, 4], "rally": null, "facing": true},
-  "ram":             {"cls": "siege_engine", "melee": [0, 0], "ma": [5, 5], "rally": null, "facing": true, "breach_af": 1},
-  "armored_tower":   {"cls": "siege_engine", "melee": [0, 0], "ma": [3, 3], "rally": null, "facing": true, "breach_af": 1},
+  "tower":           {"cls": "siege_engine", "melee": [0, 0], "ma": [4, 0], "rally": null, "facing": true},
+  "ram":             {"cls": "siege_engine", "melee": [0, 0], "ma": [5, 0], "rally": null, "facing": true, "breach_af": 1},
+  "armored_tower":   {"cls": "siege_engine", "melee": [0, 0], "ma": [3, 0], "rally": null, "facing": true, "breach_af": 1},
   "roman_ballista":  {"cls": "artillery", "melee": [1, 1], "ma": [0, 4], "rally": 4, "missile": {"1-6": 7, "7-9": 5, "10-12": 2}},
   "roman_onager":    {"cls": "artillery", "melee": [1, 1], "ma": [0, 5], "rally": 4, "missile": {"1-5": 4, "6-7": 3, "8-9": 1}},
   "roman_catapult":  {"cls": "artillery", "melee": [1, 1], "ma": [0, 6], "rally": 4, "missile": {"1-4": 2, "5-6": 1}},
