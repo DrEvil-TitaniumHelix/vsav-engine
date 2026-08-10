@@ -59,3 +59,4 @@ comms_*/
 # match archives: full series records (journals, receipts) — publication is a per-match decision
 matches/
 web/vendor/
+POST_DRAFTS.md
