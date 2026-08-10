@@ -70,7 +70,7 @@ class SoJGame(GateGame):
     HASH_KEYS = ("units", "turn", "phase", "seg", "seed", "rng_calls",
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
-                 "escaped", "markers", "melee_hexes")
+                 "escaped", "markers", "melee_hexes", "esc")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -88,6 +88,7 @@ class SoJGame(GateGame):
                                       "breach", "pending"))
         self.s.setdefault("markers", [])   # pre-B9/B10 in-flight saves
         self.s.setdefault("melee_hexes", [])
+        self.s.setdefault("esc", [])
 
     def rules_scope(self):
         """Matrix-regime composition (spec #13 as amended 2026-08-09),
@@ -322,7 +323,7 @@ class SoJGame(GateGame):
             "control": control, "deploy_done": {"Jud": False, "Rom": False},
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
-            "melee_hexes": [],
+            "melee_hexes": [], "esc": [],
             "winner": None, "over": False,
         }
         self._reset_log()
@@ -385,6 +386,27 @@ class SoJGame(GateGame):
         return "Jud" if side == "Rom" else "Rom"
 
     # ------------------------------------------- markers [11.4/13.21/14.5]
+    def _esc_at(self, h):
+        for e in self.s["esc"]:
+            if e["hex"] == h:
+                return e
+        return None
+
+    def _esc_sweep(self):
+        keep = []
+        for e in self.s["esc"]:
+            b = self.s["units"].get(e["base"])
+            if b and b["hex"] == e["hex"] and self._fresh(b):
+                keep.append(e)
+                continue
+            for o in self._occupants(e["hex"]):
+                o.pop("up", None)
+        self.s["esc"] = keep
+        hexes = {e["hex"] for e in self.s["esc"]}
+        for x in self.s["units"].values():
+            if x.get("up") and x["hex"] not in hexes:
+                x.pop("up")
+
     def _markers_at(self, h, cat=None):
         """Wreck/Elim markers in hex h; cat filters on the marker's unit
         class ('siege_engine' = Wreck, 'artillery' = Elim)."""
@@ -452,6 +474,11 @@ class SoJGame(GateGame):
         cls = self.utype(u)["cls"]
         if cls == "hq":
             return set()          # HQ exert none [2.4 exception / 7.321]
+        if u["side"] == "Rom" and (
+                self._esc_at(u["hex"]) is not None
+                or any(self.utype(o)["cls"] == "siege_engine"
+                       for o in self._occupants(u["hex"]))):
+            return set()
         h = u["hex"]
         t = self.hex_t(h)
         out = set()
@@ -481,12 +508,11 @@ class SoJGame(GateGame):
             return set()
         out = set()
         for u in self.s["units"].values():
-            if (u["side"] == side and u["hex"] is not None and self._fresh(u)
+            if (u["side"] == side and u["hex"] is not None
                     and self.utype(u)["cls"] == "heavy"
                     and self.hex_t(u["hex"]) in (GROUND | {"builtup"})):
-                for n in self._nb(u["hex"]):
-                    if self.hex_t(n) in GROUND:
-                        out.add(n)
+                out |= {n for n in self._unit_zoc(u)
+                        if self.hex_t(n) in GROUND}
         return out
 
     # ------------------------------------------------------------ CC [5]
@@ -594,6 +620,11 @@ class SoJGame(GateGame):
                 return None, "Cauldron may not join Artillery outside a Fortress [6.3/8.5]"
             return 0.5, None
 
+        if t_to in ELEVATED and u.get("up") and cls in ("heavy", "light") \
+                and self._fresh(u) and self._esc_at(frm) is not None \
+                and to in self._nb(frm):
+            return 2.0, None
+
         if t_to in ELEVATED:
             if cls == "cavalry":
                 return None, "Cavalry may never enter Elevated hexes [6.2]"
@@ -675,7 +706,7 @@ class SoJGame(GateGame):
             return SE_COST.get(t)
         return None
 
-    def _move_verdict(self, side, u, path, crew=None, face=None):
+    def _move_verdict(self, side, u, path, crew=None, face=None, up=False):
         entry_gate = self.enterable_from(u["pid"])
         if u["hex"] is None and entry_gate is None:
             return self._v(False, "unit is not on the map")
@@ -683,6 +714,28 @@ class SoJGame(GateGame):
             return self._v(False, "not your unit")
         if u.get("pushed"):
             return self._v(False, "already moved as part of a Siege Engine stack this MPh [8.3]")
+        if any(e["base"] == u["pid"] for e in self.s["esc"]):
+            return self._v(False, "a unit beneath an Escalade may not move - remove it first (4 MF) [8.7]")
+        e0 = self._esc_at(u["hex"]) if u.get("up") else None
+        if e0 and u["pid"] not in e0["used"] and len(e0["used"]) >= 2:
+            return self._v(False, "no more than two units may use an Escalade per phase - Fully Occupied [8.7]")
+        if up:
+            eN = self._esc_at(path[-1]) if path else None
+            if eN is None:
+                return self._v(False, "no Escalade in the destination hex [8.7]")
+            if u.get("up") and u["hex"] != path[-1]:
+                return self._v(False, "Escalading units may not move laterally from Escalade to Escalade [8.7]")
+            if not (self.utype(u)["cls"] in ("heavy", "hq")
+                    or u["type"] == "velitae"):
+                return self._v(False, "only Heavy Infantry, Velitae, or a HQ may occupy an Escalade hex [6.5]")
+            if not self._fresh(u):
+                return self._v(False, "a Disrupted unit cannot climb an Escalade [16.3]")
+            if u["pid"] not in eN["used"] and len(eN["used"]) >= 2:
+                return self._v(False, "no more than two units may use an Escalade per phase - Fully Occupied [8.7]")
+            if self.utype(u)["cls"] != "hq" and sum(
+                    1 for o in self._occupants(path[-1])
+                    if o.get("up") and self.utype(o)["cls"] != "hq") >= 2:
+                return self._v(False, "up to two units (plus a HQ) may be above an Escalade [6.5/8.7]")
         start = entry_gate if u["hex"] is None else u["hex"]
         if path[0] != start:
             where = self.hex_name.get(start, start)
@@ -729,7 +782,7 @@ class SoJGame(GateGame):
             if face is not None and self._dir_of(path[-1], face) is None:
                 return self._v(False, "facing must point at a hex adjacent to the Siege Engine [2.45/10.11]")
         out_cc = not self.in_cc(u)
-        budget = self._ma(u)
+        budget = self._ma(u) - u.get("mv", 0.0)
         soft = cls in ("hq", "cavalry")
         spent = 0.0
         prev = path[0]
@@ -758,7 +811,26 @@ class SoJGame(GateGame):
             if any(o["side"] == side and o["state"] == "panicked"
                    for o in self._occupants(h)) and i < len(path) - 1:
                 return self._v(False, "must stop on entering a hex with a Panicked unit [17.21]")
-            cost, why = self._entry_cost(u, prev, h, side)
+            eh = self._esc_at(h)
+            if eh is not None:
+                if side == "Jud":
+                    return self._v(False, "Judaeans may never enter an Escalade hex [6.5]")
+                if cls in ("artillery", "cauldron"):
+                    return self._v(False, "Artillery may not enter an Escalade hex [6.3]")
+                if sum(1 for o in self._occupants(h)
+                       if self.utype(o)["cls"] != "hq") >= 3:
+                    return self._v(False, "the Escalade hex is filled to capacity by units above and below [8.7]")
+                if i == len(path) - 1 and not up and cls != "hq":
+                    return self._v(False, "only one Fresh Heavy Infantry or Velitae (plus a HQ) may be beneath an Escalade - climb (up) or pass through [8.7]")
+            if up and i == len(path) - 1:
+                if self.hex_t(prev) in ELEVATED:
+                    cost, why = 2.0, None
+                else:
+                    cost, why = self._entry_cost(u, prev, h, side)
+                    if cost is not None:
+                        cost += 4.0
+            else:
+                cost, why = self._entry_cost(u, prev, h, side)
             if cost is None:
                 return self._v(False, why)
             if h in zoc:
@@ -805,7 +877,7 @@ class SoJGame(GateGame):
             return self._v(False, bad)
         fd = self._dir_of(dest, face) if face is not None else None
         return dict(self._v(True, f"cost {spent:g} of {budget:g} MF"),
-                    crew=picked, face_dir=fd)
+                    crew=picked, face_dir=fd, spent=spent, up=bool(up))
 
     # ------------------------------------------------------------ fire [9/13]
     def _lof(self, frm, to):
@@ -980,6 +1052,8 @@ class SoJGame(GateGame):
         defenders = [o for o in self._occupants(tgt) if o["side"] == enemy]
         if not defenders:
             return self._v(False, "no enemy units in the target hex [9.1]")
+        if self._esc_at(tgt) is not None:
+            return self._v(False, "fire vs an Escalade hex: the 9.12 loss-order rules are not yet enforced - open matrix row F.32 (B12 fire slice)")
         firers = [self.s["units"].get(str(p_)) for p_ in action.get("firers", [])]
         if not firers or any(f is None for f in firers):
             return self._v(False, "unknown firer")
@@ -995,6 +1069,8 @@ class SoJGame(GateGame):
             if any(self.utype(o)["cls"] == "siege_engine"
                    for o in self._occupants(f["hex"])):
                 return self._v(False, "units stacked with a Siege Engine may not fire [9.4]")
+            if self._esc_at(f["hex"]) is not None:
+                return self._v(False, "Missile units may not fire while occupying an Escalade hex [9.4]")
             d = self._dist(f["hex"], tgt)
             if self.is_night() and d > 1:
                 return self._v(False, "night: fire is limited to adjacent targets [18.21]")
@@ -1212,7 +1288,10 @@ class SoJGame(GateGame):
         attacker-side unit adjacent to the target is disrupted. Auto-applies
         when only one candidate exists."""
         cands = [p for p in spec["cands"]
-                 if self.s["units"][p]["hex"] is not None]
+                 if self.s["units"][p]["hex"] is not None
+                 and not (any(e["base"] == p for e in self.s["esc"])
+                          and any(o.get("up") for o in self._occupants(
+                              self.s["units"][p]["hex"])))]
         if not cands:
             return "no eligible unit"
         if len(cands) == 1:
@@ -1441,6 +1520,8 @@ class SoJGame(GateGame):
         defenders = [o for o in self._occupants(tgt) if o["side"] == enemy]
         if not defenders:
             return self._v(False, "no enemy units in the target hex")
+        if self._esc_at(tgt) is not None:
+            return self._v(False, "melee vs an Escalade hex: the 11.61/11.62 top-first order and halving are not yet enforced - open matrix row X.15 (B12 melee slice)")
         atk_units = []
         for pid in action.get("attackers", []):
             u = self.s["units"].get(str(pid))
@@ -1457,6 +1538,10 @@ class SoJGame(GateGame):
                 return self._v(False, "no attacks from a hex containing a Panicked unit [17.22]")
             if self._dist(u["hex"], tgt) != 1:
                 return self._v(False, "melee attacks adjacent hexes [11.1]")
+            if self._esc_at(u["hex"]) is not None:
+                if any(e["base"] == u["pid"] for e in self.s["esc"]):
+                    return self._v(False, "Base units may not attack [11.6]")
+                return self._v(False, "Escalade melee (halved, vs adjacent Elevated only) is not yet enforced - open matrix row X.15 (B12 melee slice)")
             atk_units.append(u)
         if not atk_units:
             return self._v(False, "no attackers")
@@ -1725,6 +1810,12 @@ class SoJGame(GateGame):
         if any(o["side"] == side and o["state"] == "panicked" for o in occ):
             return None, "may not retreat into a hex with a Panicked unit [15.1]"
         cls = self.utype(u)["cls"]
+        e = self._esc_at(to)
+        if e is not None:
+            if side == "Jud":
+                return None, "Judaeans may never enter an Escalade hex [6.5]"
+            if cls in ("artillery", "cauldron"):
+                return None, "Artillery may not enter an Escalade hex [6.3]"
         if cls in ("heavy", "light") and \
                 any(self.utype(o)["cls"] == "cavalry" for o in occ):
             return None, "Infantry may not retreat into a Cavalry hex [15.2]"
@@ -2067,7 +2158,10 @@ class SoJGame(GateGame):
                 if face not in self.hex_t0:
                     return self._v(False, "unknown facing hex")
             return self._move_verdict(side, u, path,
-                                      crew=action.get("crew"), face=face)
+                                      crew=action.get("crew"), face=face,
+                                      up=bool(action.get("up")))
+        if a == "escalade":
+            return self._escalade_verdict(side, action)
         if a == "change_facing":
             return self._change_facing_verdict(side, action)
         if a == "fire":
@@ -2090,6 +2184,49 @@ class SoJGame(GateGame):
             return self._v(True, f"end of {phase}"
                            + (f" ({self.s['seg']} segment)" if self.s.get("seg") else ""))
         return self._v(False, f"unknown action type {a!r}")
+
+    def _escalade_verdict(self, side, action):
+        if self.s["phase"] != f"{'rom' if side == 'Rom' else 'jud'}_move":
+            return self._v(False, "Escalades are placed and removed in the owning Movement Phase [6.5/8.7]")
+        if side != "Rom":
+            return self._v(False, "Judaeans may never enter an Escalade hex [6.5]")
+        u = self.s["units"].get(str(action.get("pid")))
+        if not u or u["side"] != side:
+            return self._v(False, "not your unit")
+        if u["hex"] is None:
+            return self._v(False, "unit is not on the map")
+        if not self._fresh(u):
+            return self._v(False, "a Disrupted unit cannot place, maintain, or climb an Escalade [16.3]")
+        if u.get("pushed"):
+            return self._v(False, "already moved as part of a Siege Engine stack this MPh [8.3]")
+        if self._ma(u) - u.get("mv", 0.0) < 4.0 - 1e-9:
+            return self._v(False, "placing or removing an Escalade costs four MF [6.5/8.7]")
+        h = u["hex"]
+        e = self._esc_at(h)
+        op = action.get("op")
+        if op == "place":
+            if e is not None:
+                return self._v(False, "only one Base unit may be designated per hex [8.7]")
+            if not (self.utype(u)["cls"] == "heavy" or u["type"] == "velitae"):
+                return self._v(False, "the Base unit must be Fresh Heavy Infantry or Velitae [6.5/8.7]")
+            if u.get("up"):
+                return self._v(False, "a scaling unit cannot become the Base unit [8.7]")
+            if not any(self.hex_t(n) in ELEVATED for n in self._nb(h)):
+                return self._v(False, "an Escalade is placed adjacent to an Elevated hex [8.7]")
+            if any(not (self.utype(o)["cls"] in ("heavy", "hq")
+                        or o["type"] == "velitae")
+                   for o in self._occupants(h)):
+                return self._v(False, "an Escalade may not be placed if a Testudo or units other than Heavy Infantry, Velitae, or HQ occupy the hex [6.5]")
+            if not self.in_cc(u):
+                return self._v(False, "out of Command Control: may not place Escalades [5.3]")
+            return self._v(True, "place Escalade - 4 MF [6.5/8.7]")
+        if op == "remove":
+            if e is None or e["base"] != u["pid"]:
+                return self._v(False, "only the Fresh Base unit removes its own Escalade [8.7]")
+            if any(o.get("up") for o in self._occupants(h)):
+                return self._v(False, "an Escalade may not be removed while units are on top of it [8.7]")
+            return self._v(True, "remove Escalade - 4 MF [8.7]")
+        return self._v(False, "escalade op must be 'place' or 'remove'")
 
     def _change_facing_verdict(self, side, action):
         """[10.11/8.6] Free pivot within the hex, own Movement Phase only,
@@ -2184,6 +2321,11 @@ class SoJGame(GateGame):
 
     # ------------------------------------------------------------ apply
     def _apply(self, side, action, verdict):
+        out = self._apply_act(side, action, verdict)
+        self._esc_sweep()
+        return out
+
+    def _apply_act(self, side, action, verdict):
         a = action["type"]
         if a == "deploy":
             u = self.s["units"][str(action["pid"])]
@@ -2216,7 +2358,18 @@ class SoJGame(GateGame):
             u = self.s["units"][str(action["pid"])]
             path = [self.name_hex.get(h, h) for h in action["path"]]
             entering = u["hex"] is None
+            e0 = self._esc_at(u["hex"]) if u.get("up") else None
+            if e0 and u["pid"] not in e0["used"]:
+                e0["used"].append(u["pid"])
             u["hex"] = path[-1]
+            u["mv"] = u.get("mv", 0.0) + verdict.get("spent", 0.0)
+            if verdict.get("up"):
+                u["up"] = True
+                eN = self._esc_at(path[-1])
+                if eN and u["pid"] not in eN["used"]:
+                    eN["used"].append(u["pid"])
+            else:
+                u.pop("up", None)
             for h in (path if entering else path[1:]):
                 self.s["control"][h] = side
             if entering:
@@ -2248,6 +2401,15 @@ class SoJGame(GateGame):
                 if wrecked:
                     out["wrecked"] = wrecked
             return out
+        if a == "escalade":
+            u = self.s["units"][str(action["pid"])]
+            u["mv"] = u.get("mv", 0.0) + 4.0
+            if action.get("op") == "place":
+                self.s["esc"].append({"hex": u["hex"], "base": u["pid"],
+                                      "used": []})
+                return {"escalade": self.hex_name[u["hex"]], "op": "place"}
+            self.s["esc"] = [e for e in self.s["esc"] if e["hex"] != u["hex"]]
+            return {"escalade": self.hex_name[u["hex"]], "op": "remove"}
         if a == "fire":
             return self._resolve_missile(side, action, verdict)
         if a == "breach_attack":
@@ -2333,6 +2495,11 @@ class SoJGame(GateGame):
                 if self._retreat_full(u, h, side, {}):
                     bumps += 1                # [15.3] +1 level per such hex
             u["hex"] = path[-1]
+            if self._esc_at(path[-1]) is not None \
+                    and self.hex_t(path[-2]) in ELEVATED:
+                u["up"] = True    # the card's escalade-as-retreat route [8.7]
+            elif u.get("up"):
+                u.pop("up")
             for _ in range(bumps):
                 i = DISR_LADDER.index(u["state"]) \
                     if u["state"] in DISR_LADDER else 3
@@ -2419,6 +2586,9 @@ class SoJGame(GateGame):
         for u in self.s["units"].values():
             u.pop("pushed", None)
             u.pop("crew0", None)
+            u.pop("mv", None)
+        for e in self.s.get("esc", []):
+            e["used"] = []
         if not self.s["phase"].endswith("_move"):
             return
         for se in self.s["units"].values():

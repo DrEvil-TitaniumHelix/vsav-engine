@@ -81,7 +81,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.12 | 9.13 | −1 drm per Tower/Armored Tower hex fired through | ENFORCED — `_lof` info.towers → `_resolve_missile` (per traversed hex, worst-firer convention); VC `fire_drm_checks` |
 | F.13 | 9.9 | indirect fire: over ONE combat-unit hex max, ground-ground or same-height elevated, not through higher; −1 drm not cumulative w/ Breach −1 | ENFORCED — `_lof`: same-height-group occupied crossings (infantry/cavalry screen; equipment/HQ do not), >1 blocks, ==1 = indirect; *-pair non-cumulation in `_resolve_missile`; VC `fire_drm_checks`. N4 closed |
 | F.14 | 9.3 | Artillery never fires from Built-up/Breach; −1 Judaean artillery beyond Primary Range | hex bar ENFORCED (`_fire_verdict`; VC); the −1 drm is UNREACHABLE in Gallus — the only Judaean artillery in the card OOB is Cauldrons (counter census, units-only evidence; corrects F7's reachability note, which contradicted the census). Build with the campaign scenarios |
-| F.15 | 9.31 + Q&A | errant fire on natural 1 vs higher-elevation target: adjacent friendly (ground or elevated) disrupted, defender's choice, never a Base unit w/ climbers | ENFORCED — `_resolve_missile` errant spec → `resolve_errant` pending (defender picks; auto when one candidate; chains after the loss pending); VC `fire_drm_checks`. Base-unit exclusion lands with B12 (no escalades yet). B3 closed |
+| F.15 | 9.31 + Q&A | errant fire on natural 1 vs higher-elevation target: adjacent friendly (ground or elevated) disrupted, defender's choice, never a Base unit w/ climbers | ENFORCED — `_resolve_missile` errant spec → `resolve_errant` pending (defender picks; auto when one candidate; chains after the loss pending); VC `fire_drm_checks`. Base-with-climbers exclusion ENFORCED — `_install_errant` candidate filter (B12); VC `escalade_checks`. B3 closed |
 | F.16 | 9.4 + Q&A 11.1 | units beneath a SE may not fire; **riders atop a Tower may**; Fresh Velitae in Testudo may | OPEN → **B14** (gate refuses all fire from SE hexes — denies legal fire) |
 | F.17 | 9.7 | adjacent enemies are mandatory targets (SE/Artillery never mandatory) | ENFORCED — `_fire_verdict`; VC |
 | F.18 | 9.7 | among multiple adjacent targets: may not ignore a ZOC-exerter for a non-exerter | ENFORCED — `_fire_verdict` per-firer exerter test via `_unit_zoc` (the per-unit refactor of `_zoc_map`); VC `fire_drm_checks`. N3 closed |
@@ -98,7 +98,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.29 | 10.2 | rocks from Bastion/Fortress vs **connected lower Elevated** hexes | OPEN → **N2** (gate refuses any Elevated target) |
 | F.30 | 10.2 | +1 drm per attacking Cauldron; may combine with missile/artillery fire | ENFORCED — `cauldrons` count |
 | F.31 | 9.11 + Q&A | fire vs Towers: declare pushers/riders/both; other level immune; DD-vs-lone eliminates; Cauldrons/rocks never vs riders | OPEN → **B14** |
-| F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | OPEN → **B12** (no escalades yet; transcribe 9.12) |
+| F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | OPEN → **B12 fire slice** — escalade state now EXISTS (movement slice); the gate refuses fire at an Escalade hex with a LOUD guard naming this row (no silent mis-allocation possible). 9.4's fire-FROM-an-Escalade-hex bar is ENFORCED (`_fire_verdict`); VC `escalade_checks` |
 | F.33 | 10.1/10.11 | Breach attacks: Roman segment only; Fresh manning unit; adjacency | ENFORCED — `_breach_verdict`; VC |
 | F.34 | **10.11** | Breach attack **only vs the Facing-arrow hex** | ENFORCED — `_breach_verdict` facing test vs `_facing_hex`; VC `se_facing_checks` + E2E negative |
 | F.35 | 6.41 | Ram's pushing unit must be same Legion | UNREACHABLE — single-Legion (XII) Roman OOB; no non-XII Roman unit exists (card OOB, `COUNTERS_VERIFIED.md`) |
@@ -125,9 +125,9 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.8 | 7.31/7.311 | hard ZOC: stop on entry; exit only into ZOC-free first hex; Judaean freeze in Roman HI ground ZOC (official Q&A, both docs agree) | ENFORCED — `_move_verdict`; VM; register corrected (A1 done, ac848ec) |
 | M.9 | 7.32/7.4 | soft ZOC (HQ/Cavalry): +3 MF to leave, paid once per hex left | ENFORCED — `_move_verdict`; VM |
 | M.10 | 7.321 | soft ZOC exit is FREE if the first hex entered is ZOC-free | OPEN → **N6** (engine always charges +3) |
-| M.11 | 7.2 | no ZOC at night / by Disrupted / Artillery / SE / Testudo / SE-or-Escalade-stacked Romans; no cross-level ZOC | ENFORCED — `_zoc_map` (night: Q&A 18.23 confirmed); VC |
+| M.11 | 7.2 | no ZOC at night / by Disrupted / Artillery / SE / Testudo / SE-or-Escalade-stacked Romans; no cross-level ZOC | ENFORCED — `_unit_zoc` (night: Q&A 18.23 confirmed). B12 closed a silent gap this row had over-claimed: the SE-or-Escalade-stacked exclusion was NOT implemented (pushers exerted ZOC); now in `_unit_zoc`, and `_heavy_ground_zoc` rerouted through it so the 7.311 freeze honors the same exclusions; VC `escalade_checks` |
 | M.12 | 7.12 | Gate ZOC via connected Elevated + the two Entrance-hexside ground hexes | ENFORCED — `_zoc_map` gate branch; VM. A5 entrance data corrected + regression-tested (`gate_ring_checks`) |
-| M.13 | 5.3 | out of CC: no enemy-ZOC entry; no moving adjacent to Elevated enemy; escalade/testudo placement barred | ZOC/adjacency ENFORCED — `_move_verdict`; escalade/testudo gating lands with **B12/B13** |
+| M.13 | 5.3 | out of CC: no enemy-ZOC entry; no moving adjacent to Elevated enemy; escalade/testudo placement barred | ZOC/adjacency ENFORCED — `_move_verdict`; escalade placement bar ENFORCED — `_escalade_verdict` `in_cc` check (B12 movement slice); VC `escalade_checks`. Testudo half → **B13** |
 | M.14 | 5.2/5.11 | CC = 10-hex radius, −2 night, −2 non-Fresh HQ, cumulative; path = HQ-movement-legality tracing | radius/reductions ENFORCED; exact tracing OPEN → **B18** |
 | M.15 | 5.4/5.5/5.6 | Leaders by faction; Commanders all; Zealot/Cauldron/Artillery any-HQ exceptions; Judaean auto-CC (Fortress, Elevated path); Garrisons | ENFORCED — `in_cc`/`_elevated_path_to_fortress`; Garrison clause UNREACHABLE (no garrison units in Gallus OOB — card) |
 | M.16 | 8.1/15.3/17.21 | Routed/Panicked must move toward Refuge | direction ENFORCED — `_refuge_dist` endpoint test; **full-MF obligation + per-hex whenever-possible routing + the 15.3 ROAD LOCK (p.12: on reaching an unobstructed road to Refuge the unit must stay on it in subsequent MPh; obstructed → may leave but must continue toward Refuge) OPEN → B16** |
@@ -140,7 +140,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.23 | 8.6/2.45 | SE moves/changes facing only with Fresh HI/Velitae pushing unit at start of MPh (same Legion for Legion SEs) | ENFORCED — `crew0` start-of-MPh snapshot (`_mph_bookkeeping`) read by `_move_verdict`/`_change_facing_verdict`/`_se_crewed`; facing state = `u["facing"]` (DIRS index), free pivot via `change_facing` or the move's `facing` param; VC. Same-Legion UNREACHABLE (single-Legion OOB). 8.61/10.11 pivot lock after a level-crossing lands with **B14** (no crossing action exists yet) |
 | M.24 | 2.45 | SE white side = no crew, MA 0 | ENFORCED — `game.json` SE `ma` now [n, 0]; `_ma` flips on the crew condition, not Fresh/Disrupted; VC `se_facing_checks` (N21 closed) |
 | M.25 | 8.61 | Tower as portable staircase; 2 MF off the ramp; riders/pushers lose 2 MF per SE MF (damage-marker transit cost); tower locks after level-crossing | OPEN → **B14** |
-| M.26 | 8.7 | Escalade placement (4 MF, adjacency, capacity, Base unit rules, per-phase usage cap) | OPEN → **B12** |
+| M.26 | 8.7 | Escalade placement (4 MF, adjacency, capacity, Base unit rules, per-phase usage cap) | ENFORCED — B12 movement slice: `s["esc"]` (hashed) + `u["up"]`/`u["mv"]` unit state; `escalade` action (place/remove, 4 MF each vs the unit's cumulative MPh spend — the fresh-budget-per-action hole is CLOSED: `u["mv"]` accumulates across every action); placement door = Fresh HI/Velitae base, adjacency to Elevated, 6.5 occupant whitelist, one base per hex, 16.3 Disrupted bar, 5.3 out-of-CC bar; base locked in place; climb = `move` with `up` flag (4 MF + entry; flat 2 MF from an Elevated hex), two-above capacity (+HQ exempt), two-distinct-units-per-phase use cap with phase-end face reset; scale to any adjacent Elevated at flat 2 MF (`_entry_cost` opens the wall to `up` units); descend free beyond entry; no lateral escalade-to-escalade; into/through transit while not filled to capacity, no stopping beneath (base slot); auto-collapse sweep (`_esc_sweep` after every apply) on a Disrupted/eliminated/moved base, climbers drop into the hex; retreat arrival from Elevated lands `up` (the card's escalade-as-retreat route). TEC stacking still binds on top of escalade capacity (documented conservative reading). VC `escalade_checks` |
 | M.27 | 8.8/6.6/6.61 | Testudo form/disband (6 MF), MA 4, join/leave costs, entry prohibitions | OPEN → **B13** (formation now; one-per-Legion limit blocked on **R2**) |
 | M.28 | 6.1/6.2/6.3/6.4 | stacking interactions: Inf/Cav never mix; Artillery exclusions (Fortress 2-artillery-one-Cauldron); SE hex capacity | ENFORCED — `_stack_check`; VM/VD |
 | M.29 | 6.2/6.4/8.4 TEC "P" | Cavalry/Ram/Testudo/Artillery may PASS THROUGH controlled Gate hexes (no stop) | OPEN → **N16** (flat refusal denies the legal pass-through) |
@@ -150,7 +150,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | OPEN → **N12** (engine forbids leaving the map at board edges) |
 | M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. Dice-count ambiguity registered → **R8** |
 | M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery. A4 DONE: `southern_bound` diagonals anchored on the card's arc ends (cols A–O ≤ printed 50 at O50; QQ–XX ≤ 32 at the QQ31/QQ32 junction) + Elevated fabric playable only where it borders battlefield ground; playable 1925→1341, all 219 Old City art hexes + typed south-junction strongpoints (P51/O53/Q50… cluster, 12 hexes) off-battlefield; VD `bound_and_builtup_checks` |
-| M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | split — SE-hex half ENFORCED with B10 (`_move_verdict`: entry legal only for Judaeans, only from non-Elevated, only into unescorted-SE hexes, which it wrecks [11.4]; VC `marker_checks`); Escalade half OPEN → **B12** (no Escalade state yet) |
+| M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | ENFORCED — SE-hex half with B10 (`_move_verdict`: entry legal only for Judaeans, only from non-Elevated, only into unescorted-SE hexes, which it wrecks [11.4]; VC `marker_checks`); Escalade half with B12: structurally covered by 8.11/15.1 (a Fresh Roman Base always occupies the hex) + explicit 6.5 armor in `_move_verdict`/`_retreat_step` for unreachable states; VC `escalade_checks` |
 
 ### P4/P8 — MELEE PHASE (4.14/4.24)
 
@@ -170,7 +170,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.12 | 11.3 | Rams: co-located Romans may not melee (counterattack exception); Judaeans may melee adjacent Ram hexes | OPEN → **B14 cluster** (no above/below state) |
 | X.13 | 11.4 | wrecking: unescorted SE entered/attacked → eliminated, hex gets WRECK (stacking + LOF persist) | entry-wreck + all marker effects ENFORCED — `_move_verdict` carve-out + `_apply` wrecking + `_markers_at` in `_stack_check`/`_move_verdict`/`_retreat_full`/`_lof`; VC `marker_checks`. The melee-through-Ramp-hexside trigger needs melee-vs-SE machinery → rides with **B14** (X.11) |
 | X.14 | 11.5 | Testudo: may not attack; defends normally; Judaeans may melee adjacent Testudos | OPEN → **B13** |
-| X.15 | 11.6/11.61/11.62 | Escalade melee: half strength, Base may not attack, top-first losses, end-of-phase move onto vacant Elevated | OPEN → **B12** |
+| X.15 | 11.6/11.61/11.62 | Escalade melee: half strength, Base may not attack, top-first losses, end-of-phase move onto vacant Elevated | OPEN → **B12 melee slice** — state exists; "Base units may not attack" ENFORCED [11.6]; climber attacks and attacks INTO Escalade hexes refused by LOUD guards naming this row (no silent full-strength/mis-ordered resolution possible); VC `escalade_checks` |
 | X.16 | 11.8/11.81 | totals, odds ratio rounded in defender's favor, one attack per hex per phase (exceptions listed) | ENFORCED — `_resolve_melee` + `melee_hexes` hex-once lock (B11 closed a silent gap: the lock had never been implemented; exceptions = CC same-units / marked-attacker per 11.81's own list); VC (worked examples + `multiple_attack_checks`). Tower/Escalade attacked-from-both-levels exception needs the separate-battles structure → rides with **B12/B14** |
 | X.17 | 11.82 | defender chooses losses; excess losses forfeit; excess-E advance bonus | choice ENFORCED — pending machinery; VC. Excess-E bonus → **B15** |
 | X.18 | 11.83 | extreme odds clamp + drm | ENFORCED — `_resolve_melee`; VC |
@@ -214,7 +214,7 @@ runs on.
 | fired / fired-hexes (per Fire Phase) | fire, breach resolution | fire verdicts [9.1/9.6/13.1] | ENFORCED; reset in `_advance_phase` |
 | meleed + attacked-hexes + continuous-combat set (per Melee Phase) | melee resolution | melee verdicts [11.1/11.81/11.87] | ENFORCED — `meleed` + `melee_hexes` (both hashed) + `cc_hex` `{hex, pids}`; reset per phase |
 | A/B/C Multiple Attack markers | advance after melee [11.9] via the `advance` pending | melee eligibility bypasses, ZOC-must-attack, marker-removal rules [11.9] | ENFORCED — `u["mk"]` (hashes via `units`), cleared at Melee Phase end; VC `multiple_attack_checks` (B11) |
-| **Escalade markers + Fully-Occupied face + per-phase usage count** | MPh placement [8.7], Disrupt/elim of Base [8.7] | movement [8.7], fire [9.12], melee [11.6], ZOC [7.13/7.2], flank escape [11.85] | **OPEN → B12** |
+| Escalade markers + Fully-Occupied face + per-phase usage count + above/below split | MPh placement/removal [8.7], auto-collapse sweep [8.7], climbs (`up` moves) | movement [8.7] ✓, ZOC [7.13/7.2] ✓, errant [9.31] ✓, fire-from bar [9.4] ✓; fire-at [9.12] and melee [11.6x] read the state through LOUD guards | movement/state ENFORCED — `s["esc"]` (hashed: hex/base/used-pids) + `u["up"]` + `u["mv"]`; VC `escalade_checks`. Fire/melee reads **OPEN → B12 fire/melee slices** (F.32/X.15); flank-escape read → with X.21 |
 | **Testudo formations (members, marker, Broken state)** | form/disband [6.6/8.8], melee results [16.4] | movement [6.61/8.8], fire [9.4], melee [11.5], ZOC [7.2], missile row [13.4] | **OPEN → B13** |
 | **riders/pushers split in SE hexes (above/below)** | boarding moves [8.61] | fire [9.4/9.11], melee [11.2x], SE movement [8.6], stacking [6.4] | **OPEN → B14** |
 | WRECK markers | SE elimination — any path through `_eliminate` [11.4/14.5] | stacking (`_stack_check`), LOF lift + 9.13 obstruction (`_lof`), similar-unit into/through block (`_move_verdict`), retreat full-to-them (`_retreat_full`) | ENFORCED — `s["markers"]`, hashed (HASH_KEYS); persists to scenario end (14.5 'Assault Phase' = registered dangling reference); VC `marker_checks` |
@@ -291,11 +291,16 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B12–B16, B18, B19 (engine; B1–B11/B17 closed — B11 this
-commit: X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row flipped on
-`multiple_attack_checks` — `u["mk"]` ladder, modal `advance` pending, `melee_hexes` hex-once
-lock, CC same-units audit, plus the 14.3 auto-lone-D retreat fix on X.28; B9/B10 the commit
-before on `marker_checks`), N2,
+**NOT PLAYABLE.** Open rows: **B12 (fire/melee slices only — the movement slice landed this
+commit: M.26/M.36/M.13-escalade + F.15 base-exclusion + 9.4 fire-from bar flipped on
+`escalade_checks`; `s["esc"]` + `u["up"]`/`u["mv"]` state, place/remove/climb/scale/collapse,
+F.32/X.15 held by LOUD guards; TWO silent gaps closed in the same pass: the M.11 7.2
+SE-or-Escalade-stacked ZOC exclusion had been over-claimed and was missing entirely, and every
+move action was drawing a fresh full-MA budget — `u["mv"]` now accumulates MF across a unit's
+actions in one MPh), B13–B16, B18, B19 (engine; B1–B11/B17 closed — B11 the commit before:
+X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row on `multiple_attack_checks`, `u["mk"]`
+ladder, modal `advance` pending, `melee_hexes` hex-once lock, CC same-units audit, 14.3
+auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`), N2,
 N5–N9, N11–N20, N22, N24 (N1 false gap; N3/N4/N10/N21/N23 closed), R1/R2/R4/R8 (blocked on
 Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
 outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
