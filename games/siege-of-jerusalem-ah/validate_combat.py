@@ -96,6 +96,269 @@ def engine_math(tg):
     print("engine math: PASS (11.81/11.83/13.4 worked examples)")
 
 
+def retreat_engine_checks(g):
+    """B17/N10/N23: the 14.2/14.21/15.1/15.2/15.3 retreat engine on
+    engineered boards (direct state surgery on a throwaway game whose log
+    is never replayed; every check still goes through submit()). The
+    fully-stacked arithmetic reproduces the printed 15.3 EXAMPLE's two
+    bracketed sub-cases (rulebook p.12): a Militia fills a Wall hex
+    (limit 1), a lone Cauldron does not."""
+    live = tempfile.mkdtemp(prefix="soj_ret_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=99)
+        U = tg.s["units"]
+        tg.s["phase"], tg.s["deploy_done"] = "rom_melee", True
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def place(u, h, state="fresh"):
+            u["hex"], u["state"] = h, state
+
+        def d(h):
+            return tg._refuge_dist("Jud", h)
+
+        def pend_b(pids, hex_, by="Jud", attackers=()):
+            tg.s["pending"] = {"kind": "retreat", "hex": hex_,
+                               "pids": [p_ for p_ in pids], "by": by,
+                               "rkind": "b", "attackers": list(attackers)}
+
+        # ---- an open two-ring clear field patch per case
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6)
+        field = [h for h in sorted(tg.hex_t0)
+                 if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                 and all(clear1(m) for n in tg._nb(h) for m in tg._nb(n))]
+        spots = []
+        for h in field:
+            if all(tg._dist(h, s) > 5 for s in spots):
+                spots.append(h)
+        assert len(spots) >= 6, f"only {len(spots)} isolated field spots"
+
+        # ---- 15.3 EXAMPLE arithmetic: Wall limit 1; Cauldron doesn't count
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t(h) == "wall" and h in tg.playable)
+        reg, reg2 = take("judaean_regular", 2)
+        mil = take("judaean_militia", 12)
+        cau = take("cauldron", 1)[0]
+        place(mil[0], wall)
+        assert tg._retreat_full(reg, wall, "Jud", {}), \
+            "a Militia must fill a Wall hex (limit 1) [15.3 EXAMPLE]"
+        mil[0]["hex"] = None
+        place(cau, wall)
+        assert not tg._retreat_full(reg, wall, "Jud", {}), \
+            "a lone Cauldron must NOT fill the hex [15.3 EXAMPLE/6.x]"
+        cau["hex"] = None
+
+        # ---- case 1: 14.2 B retreat - free 1-2 window, forced continuation
+        # while fully stacked, mandatory clean route, towards-Refuge, ladder
+        h0 = spots[0]
+        place(reg, h0)
+        n1 = min(tg._nb(h0), key=d)
+        place(mil[0], n1)
+        place(mil[1], n1)              # n1 full (clear Jud limit 2)
+        n2 = min((x for x in tg._nb(n1) if x != h0), key=d)
+        n_away = max(tg._nb(n1), key=d)
+        pend_b([reg["pid"]], h0)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {reg["pid"]: [h0, n1]}},
+                  "end fully stacked")           # cannot stop overstacked
+        pend_b([reg["pid"]], h0)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {reg["pid"]: [h0, n1, n_away]}},
+                  "towards Refuge")              # forced step must close
+        pend_b([reg["pid"]], h0)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "eliminate": [reg["pid"]]},
+                  "survivable")                  # B17: no false eliminations
+        pend_b([reg["pid"]], h0)
+        r = submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                                  "paths": {reg["pid"]: [h0, n1, n2]}})
+        ev = r["result"]["retreated"][0]
+        assert reg["hex"] == n2 and reg["state"] == "disrupted", ev
+        print("retreat: 14.2 window + forced continuation + ladder bump OK")
+
+        # beyond two hexes while NOT fully stacked: refused
+        h0b = spots[1]
+        place(reg2, h0b)
+        c1 = min(tg._nb(h0b), key=d)
+        c2 = min((x for x in tg._nb(c1) if x != h0b), key=d)
+        c3 = min((x for x in tg._nb(c2) if x != c1), key=d)
+        pend_b([reg2["pid"]], h0b)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {reg2["pid"]: [h0b, c1, c2, c3]}},
+                  "only while fully stacked")
+
+        # ---- case 2: 15.1 melee-Disrupt retreat - MF budget, per-hex
+        # towards-Refuge, mandatory avoidance of the fully-stacked hex
+        z = take("zealot", 1)[0]       # disrupted MA 5
+        rest = iter(spots[2:])
+
+        def build_chain():
+            """A 6-step all-clear unoccupied min-towards-Refuge walk."""
+            for start in spots[2:]:
+                ch, cur, prev = [start], start, None
+                for _ in range(6):
+                    cand = [x for x in tg._nb(cur)
+                            if x != prev and clear1(x)
+                            and not tg._occupants(x)]
+                    if not cand:
+                        break
+                    nxt = min(cand, key=d)
+                    ch.append(nxt)
+                    prev, cur = cur, nxt
+                if len(ch) == 7:
+                    return ch
+            raise AssertionError("no clear 6-step chain found")
+        chain = build_chain()
+        h0c = chain[0]
+        rest = iter([s for s in spots[2:] if s != h0c])
+        place(z, h0c, "disrupted")
+        def pend_d(pids, hex_):
+            tg.s["pending"] = {"kind": "retreat", "hex": hex_,
+                               "pids": pids, "by": "Jud",
+                               "rkind": "disrupt", "attackers": []}
+        pend_d([z["pid"]], h0c)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z["pid"]: chain}},
+                  "movement allowance")          # 6 MF > MA 5
+        away = max(tg._nb(h0c), key=d)
+        pend_d([z["pid"]], h0c)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z["pid"]: [h0c, away]}},
+                  "towards Refuge")              # every 15.1 hex closes
+        t1 = min(tg._nb(h0c), key=d)
+        place(mil[2], t1)
+        place(mil[3], t1)              # the towards hex is now full
+        t_alt = min((x for x in tg._nb(h0c) if x != t1 and d(x) < d(h0c)),
+                    key=d, default=None)
+        pend_d([z["pid"]], h0c)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z["pid"]: [h0c, t1, chain[2]]}},
+                  "safe route exists")           # mandatory avoidance
+        if t_alt is not None:
+            pend_d([z["pid"]], h0c)
+            submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                                  "paths": {z["pid"]: [h0c, t_alt]}})
+            assert z["hex"] == t_alt and z["state"] == "disrupted"
+        print("retreat: 15.1 MF budget + direction + safe-route OK")
+
+        # ---- case 3: B17 - ringed unit is eliminated, never deadlocked
+        h0d = next(rest)
+        vets = take("roman_veteran", 3)
+        z2 = take("zealot", 1)[0]
+        place(z2, h0d)
+        ring = sorted(tg._nb(h0d))
+        opp = next(x for x in ring if x != ring[0]
+                   and x not in tg._nb(ring[0])
+                   and not (set(tg._nb(x)) & set(tg._nb(ring[0]))
+                            & set(ring)))    # the true geometric opposite
+        place(vets[0], ring[0])
+        pend_b([z2["pid"]], h0d)
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "eliminate": [z2["pid"]]},
+                  "survivable")                  # half-ringed: must retreat
+        place(vets[1], opp)            # two opposed HI: all 6 blocked
+        probe = next(x for x in ring if x not in (ring[0], opp))
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z2["pid"]: [h0d, probe]}},
+                  "ZOC")
+        r = submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                                  "eliminate": [z2["pid"]]})
+        assert z2["state"] == "eliminated" and z2["hex"] is None
+        print("retreat: B17 ringed unit eliminated through the gate OK")
+
+        # ---- case 4: 14.21 - one hex only; forced overstack eliminates
+        h0e = next(rest)
+        z3, z4 = take("judaean_regular", 2)
+        place(z3, h0e)
+        atk = vets[2]
+        a_hex = sorted(tg._nb(h0e))[0]
+        place(atk, a_hex)              # fresh HI adjacent on ground
+        legal = [n for n in tg._nb(h0e)
+                 if n not in tg._nb(a_hex) and n != a_hex]
+        pend_b([z3["pid"]], h0e, attackers=[atk["pid"]])
+        two = [h0e, legal[0],
+               next(x for x in tg._nb(legal[0]) if x not in (h0e, a_hex))]
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z3["pid"]: two}},
+                  "exactly one hex")             # 14.21 cap
+        fillers = mil[4:4 + 2 * len(legal)]
+        for i, n in enumerate(legal):
+            place(fillers[2 * i], n)
+            place(fillers[2 * i + 1], n)         # every legal dest full
+        submit_no(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z3["pid"]: [h0e, legal[0]]}},
+                  "eliminate")                   # forced overstack
+        r = submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                                  "eliminate": [z3["pid"]]})
+        assert z3["state"] == "eliminated"
+        # reopen one destination: the capped 1-hex retreat works again
+        fillers[0]["hex"] = fillers[1]["hex"] = None
+        place(z4, h0e)
+        pend_b([z4["pid"]], h0e, attackers=[atk["pid"]])
+        submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {z4["pid"]: [h0e, legal[0]]}})
+        assert z4["hex"] == legal[0] and z4["state"] == "fresh"
+        print("retreat: 14.21 cap + forced-overstack elimination OK")
+
+        # ---- case 5: N23 - substitute a D for the B [14.2]
+        h0f = next(rest)
+        j1, j2 = take("judaean_regular", 2)
+        place(j1, h0f)
+        place(j2, h0f)
+        tg.s["pending"] = {"kind": "loss", "hex": h0f, "letters": ["D"],
+                           "by": "Jud", "source": "melee",
+                           "attacker": "Rom", "attacker_pids": []}
+        submit_no(tg, "Jud", {"type": "resolve_loss",
+                              "picks": [{"pid": j1["pid"]}],
+                              "substitute_d": j2["pid"]},
+                  "no B result")                 # substitution needs a B
+        tg.s["pending"] = {"kind": "loss", "hex": h0f, "letters": ["B"],
+                           "by": "Jud", "source": "melee",
+                           "attacker": "Rom", "attacker_pids": []}
+        submit_ok(tg, "Jud", {"type": "resolve_loss", "picks": [],
+                              "substitute_d": j2["pid"]})
+        assert j2["state"] == "disrupted" and j1["state"] == "fresh", \
+            "substituted D falls on the single chosen unit [14.2]"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p["rkind"] == "disrupt" \
+            and p["pids"] == [j2["pid"]], \
+            "the substituted Disrupt retreats immediately [14.3]"
+        dst = min(tg._nb(h0f), key=d)
+        submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {j2["pid"]: [h0f, dst]}})
+        assert j1["hex"] == h0f and j1["state"] == "fresh", \
+            "the other defender neither retreats nor suffers [14.2]"
+        print("retreat: N23 substitute-D honoured, B retreat waived OK")
+
+        # ---- 15.2: Infantry may not retreat into a Cavalry hex
+        reg["hex"] = mil[0]["hex"] = mil[1]["hex"] = None   # clear spot 0
+        cav = take("roman_cavalry", 1)[0]
+        vet = take("roman_veteran", 1)[0]
+        place(vet, h0)                 # reuse spot 0's field
+        cav_hex = max(tg._nb(h0), key=d)
+        place(cav, cav_hex)
+        pend_b([vet["pid"]], h0, by="Rom")
+        submit_no(tg, "Rom", {"type": "resolve_retreat",
+                              "paths": {vet["pid"]: [h0, cav_hex]}},
+                  "[15.2]")
+        open_n = next(n for n in tg._nb(h0)
+                      if n != cav_hex and not tg._occupants(n))
+        submit_ok(tg, "Rom", {"type": "resolve_retreat",
+                              "paths": {vet["pid"]: [h0, open_n]}})
+        print("retreat: 15.2 Infantry/Cavalry interlock OK")
+        print("retreat engine checks: PASS (B17/N10/N23; 15.3 EXAMPLE "
+              "arithmetic reproduced)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -228,6 +491,7 @@ def main():
             f"combat validated => tier 2 earned (got {tg.tier_earned})"
         engine_math(tg)
         gate_ring_checks(tg)
+        retreat_engine_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
@@ -379,20 +643,39 @@ def drain_pendings(tg):
                      for i in range(len(need))]
             submit_ok(tg, p["by"], {"type": "resolve_loss", "picks": picks})
         elif p["kind"] == "retreat":
-            paths = {}
+            paths, elim = {}, []
             enemy = tg._enemy(p["by"])
             zoc = tg._zoc_map(enemy)
+            virt = {}                     # combat units this action added
             for pid in p["pids"]:
                 u = tg.s["units"][pid]
-                dest = next((n for n in tg._nb(u["hex"])
-                             if n not in zoc
-                             and not any(o["side"] == enemy
-                                         for o in tg._occupants(n))
-                             and tg._entry_cost(u, u["hex"], n, p["by"])[0]
-                             is not None), None)
-                assert dest, "no legal retreat found by the test driver"
-                paths[pid] = [tg.hex_name[u["hex"]], tg.hex_name[dest]]
-            submit_ok(tg, p["by"], {"type": "resolve_retreat", "paths": paths})
+                cands = []
+                for n in tg._nb(u["hex"]):
+                    if n in zoc:
+                        continue
+                    occ = [o for o in tg._occupants(n) if o["pid"] != pid]
+                    if any(o["side"] == enemy for o in occ):
+                        continue
+                    if any(o["state"] == "panicked" for o in occ):
+                        continue
+                    if tg._entry_cost(u, u["hex"], n, p["by"])[0] is None:
+                        continue
+                    if tg._combat_count(occ) + virt.get(n, 0) >= \
+                            tg._stack_limit(n, p["by"]):
+                        continue          # full - the driver stops clean
+                    cands.append(n)
+                if cands:
+                    dest = min(cands,
+                               key=lambda h: tg._refuge_dist(p["by"], h))
+                    paths[pid] = [tg.hex_name[u["hex"]], tg.hex_name[dest]]
+                    if tg.utype(u)["cls"] not in tg._FREE_CLS:
+                        virt[dest] = virt.get(dest, 0) + 1
+                else:
+                    elim.append(pid)      # no clean 1-hex stop: eliminate
+            act = {"type": "resolve_retreat", "paths": paths}
+            if elim:
+                act["eliminate"] = elim
+            submit_ok(tg, p["by"], act)
 
 
 def rock_test(tg):
