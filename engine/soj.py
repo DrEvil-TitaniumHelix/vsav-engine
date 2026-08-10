@@ -70,7 +70,7 @@ class SoJGame(GateGame):
     HASH_KEYS = ("units", "turn", "phase", "seg", "seed", "rng_calls",
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
-                 "escaped")
+                 "escaped", "markers")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -86,6 +86,7 @@ class SoJGame(GateGame):
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "phase", "control", "pool",
                                       "breach", "pending"))
+        self.s.setdefault("markers", [])   # pre-B9/B10 in-flight saves
 
     def rules_scope(self):
         """Matrix-regime composition (spec #13 as amended 2026-08-09),
@@ -319,7 +320,7 @@ class SoJGame(GateGame):
             "units": units, "pool": pool, "entry_queue": [],
             "control": control, "deploy_done": {"Jud": False, "Rom": False},
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
-            "pending": None, "cc_hex": None, "escaped": [],
+            "pending": None, "cc_hex": None, "escaped": [], "markers": [],
             "winner": None, "over": False,
         }
         self._reset_log()
@@ -381,6 +382,33 @@ class SoJGame(GateGame):
     def _enemy(self, side):
         return "Jud" if side == "Rom" else "Rom"
 
+    # ------------------------------------------- markers [11.4/13.21/14.5]
+    def _markers_at(self, h, cat=None):
+        """Wreck/Elim markers in hex h; cat filters on the marker's unit
+        class ('siege_engine' = Wreck, 'artillery' = Elim)."""
+        return [m for m in self.s["markers"]
+                if m["hex"] == h and (cat is None or m["cls"] == cat)]
+
+    def _eliminate(self, u):
+        """The single elimination door - every path that kills a unit goes
+        through here so the marker rules cannot be skipped. An eliminated
+        Siege Engine leaves a WRECK in its hex [11.4/14.5]; eliminated
+        non-Cauldron Artillery leaves the Elim marker [13.21]. The
+        13.21-vs-14.5 marker-identity conflict for Artillery is registered
+        in source_defects and proven outcome-equivalent inside Gallus (R7
+        holds the campaign-scope question). Cauldrons are 'eliminated
+        normally without leaving Elim markers behind' [13.21]; no other
+        class leaves anything. Markers persist to the end of the Assault
+        Period = the whole Gallus scenario (14.5's 'Assault Phase' removal
+        wording is a registered dangling reference)."""
+        cls = self.utype(u)["cls"]
+        if u["hex"] is not None and cls in ("siege_engine", "artillery"):
+            self.s["markers"].append(
+                {"hex": u["hex"], "cls": cls, "type": u["type"],
+                 "kind": "wreck" if cls == "siege_engine" else "elim",
+                 "side": u["side"], "pid": u["pid"]})
+        u["hex"], u["state"] = None, "eliminated"
+
     # ------------------------------------------------------------ stacking
     def _stack_limit(self, h, side):
         t = self.hex_t(h)
@@ -400,6 +428,9 @@ class SoJGame(GateGame):
         for cls in ("artillery", "hq", "siege_engine"):
             n = sum(1 for u in occ if self.utype(u)["cls"] in
                     ({cls, "cauldron"} if cls == "artillery" else {cls}))
+            # Wreck/Elim markers hold the dead unit's slot 'as if they were
+            # not eliminated' [11.4/14.5/13.21]
+            n += len(self._markers_at(h, cls))
             cap = 2 if (cls == "artillery" and self.hex_t(h) == "fortress") else 1
             if n > cap:
                 return f"max one {cls.replace('_', ' ')} per hex [6.3/6.4/@]"
@@ -704,8 +735,24 @@ class SoJGame(GateGame):
         for i, h in enumerate(path[1:], 1):
             if h not in self._nb(prev):
                 return self._v(False, f"{self.hex_name.get(h, h)} is not adjacent to {self.hex_name.get(prev, prev)}")
-            if any(o["side"] == enemy for o in self._occupants(h)):
-                return self._v(False, "may not enter an enemy-occupied hex [8.11]")
+            enemy_occ = [o for o in self._occupants(h) if o["side"] == enemy]
+            if enemy_occ:
+                # 11.4 carve-out of 8.11: a Siege Engine 'not stacked with
+                # friendly Combat units ... cannot prevent Judaean units
+                # from entering its hex during the MPh'. Any other enemy
+                # occupant (combat unit or HQ - conservative reading of
+                # 'Combat units') keeps the hex closed. The entered engine
+                # is wrecked in _apply [11.4].
+                if not (side == "Jud" and all(
+                        self.utype(o)["cls"] == "siege_engine"
+                        for o in enemy_occ)):
+                    return self._v(False, "may not enter an enemy-occupied hex [8.11]")
+                if self.hex_t(prev) in ELEVATED:
+                    return self._v(False, "Judaeans may enter a Siege Engine hex only from the Ground level [6.4/11.4]")
+            if cls in ("siege_engine", "artillery", "cauldron"):
+                cat = "siege_engine" if cls == "siege_engine" else "artillery"
+                if self._markers_at(h, cat):
+                    return self._v(False, "a Wreck/Elim marker blocks similar units from moving into/through that hex [11.4/13.21/14.5]")
             if any(o["side"] == side and o["state"] == "panicked"
                    for o in self._occupants(h)) and i < len(path) - 1:
                 return self._v(False, "must stop on entering a hex with a Panicked unit [17.21]")
@@ -811,8 +858,12 @@ class SoJGame(GateGame):
             # Armored Towers are NOT lifted: the card names them separately
             # wherever it means both (9.11/9.13), and its own Missile Table
             # rows Tower with North Wall but Armored Tower with Bastion, so
-            # an armored-tower hex classifies by its terrain.
-            return any(o["type"] == "tower" for o in self._occupants(h))
+            # an armored-tower hex classifies by its terrain. A Tower WRECK
+            # keeps the lift: 'affect LOF as if the Siege Engine were still
+            # there' [11.4].
+            return (any(o["type"] == "tower" for o in self._occupants(h))
+                    or any(m["type"] == "tower"
+                           for m in self._markers_at(h)))
 
         def grp_of(t):
             return ("FT" if t in ("fortress", "fort") else
@@ -860,8 +911,11 @@ class SoJGame(GateGame):
                             f"LOF blocked by Built-up {self.hex_name[hk]} "
                             f"adjacent to the {low_end} [9.51]",
                             None)
-            # [9.13] -1 per Tower/Armored Tower hex traversed (through-hex)
-            if any(o["type"] in ("tower", "armored_tower") for o in occ):
+            # [9.13] -1 per Tower/Armored Tower hex traversed (through-hex);
+            # a wrecked one still obstructs 'as if still there' [11.4]
+            if any(o["type"] in ("tower", "armored_tower") for o in occ) or \
+                    any(m["type"] in ("tower", "armored_tower")
+                        for m in self._markers_at(hk)):
                 towers += 1
             if t == "breach":
                 breach_cross += 1
@@ -1199,7 +1253,7 @@ class SoJGame(GateGame):
         """Apply one D/E to a unit [13.21/14.3/14.4]. Returns event str."""
         cls = self.utype(u)["cls"]
         if letter == "E":
-            u["hex"], u["state"] = None, "eliminated"
+            self._eliminate(u)     # 'An E result always eliminates Artillery' [13.21/14.4]
             return "eliminated"
         # D
         if cls in ("artillery",) and source == "fire":
@@ -1209,13 +1263,13 @@ class SoJGame(GateGame):
             u["state"] = DISR_LADDER[min(3, DISR_LADDER.index(u["state"]) + 1)] \
                 if u["state"] in DISR_LADDER else u["state"]
             if u["state"] == "panicked":
-                u["hex"], u["state"] = None, "eliminated"
+                self._eliminate(u)
                 return "eliminated [13.21]"
             return u["state"]
         if self._fresh(u):
             u["state"] = "disrupted"
             return "disrupted"
-        u["hex"], u["state"] = None, "eliminated"
+        self._eliminate(u)
         return "eliminated (Disrupted absorbed a D) [14.3]"
 
     def _auto_resolve_pending(self):
@@ -1333,7 +1387,7 @@ class SoJGame(GateGame):
         if total >= defense:
             killed = [o["pid"] for o in self._occupants(tgt)]
             for o in self._occupants(tgt):
-                o["hex"], o["state"] = None, "eliminated"
+                self._eliminate(o)
             detail["breached"] = True
             detail["occupants_eliminated"] = killed   # [12.2]
         return detail
@@ -1551,8 +1605,15 @@ class SoJGame(GateGame):
                    else {cls})
             cap = (2 if cls in ("artillery", "cauldron")
                    and self.hex_t(h) == "fortress" else 1)
-            return sum(1 for o in occ
-                       if self.utype(o)["cls"] in grp) >= cap
+            n = sum(1 for o in occ if self.utype(o)["cls"] in grp)
+            # markers hold their slot during retreats too, as 'full to
+            # them' [14.5 'as if they were not eliminated'] - the 15.3
+            # overstack ladder governs retreats, not the MPh into/through
+            # prohibition, so a marker hex costs a level and may not be
+            # the retreat's end, exactly like a live one-each occupant
+            n += sum(1 for m in self.s["markers"]
+                     if m["hex"] == h and m["cls"] in grp)
+            return n >= cap
         return self._combat_count(occ) >= self._stack_limit(h, side)
 
     def _retreat_step(self, u, frm, to, side, zoc, overlay):
@@ -1838,7 +1899,7 @@ class SoJGame(GateGame):
                 u["state"] = {"disrupted": "fresh", "routed": "disrupted",
                               "panicked": "routed"}[u["state"]]
             elif adj >= 9:
-                u["hex"], u["state"] = None, "eliminated"
+                self._eliminate(u)
             elif adj == 8 and u["state"] in ("disrupted", "routed"):
                 u["state"] = "panicked"
             elif adj == 7 and u["state"] == "disrupted":
@@ -2078,6 +2139,19 @@ class SoJGame(GateGame):
             if verdict.get("face_dir") is not None:
                 u["facing"] = verdict["face_dir"]
                 out["facing"] = self.hex_name.get(self._facing_hex(u))
+            if side == "Jud":
+                # any unescorted Siege Engine whose hex was entered 'is
+                # eliminated and removed' and leaves a Wreck [11.4] - the
+                # verdict only admits SE-only enemy hexes onto the path
+                wrecked = [o["pid"]
+                           for h2 in (path if entering else path[1:])
+                           for o in self._occupants(h2)
+                           if o["side"] == "Rom"
+                           and self.utype(o)["cls"] == "siege_engine"]
+                for pid_ in wrecked:
+                    self._eliminate(self.s["units"][pid_])
+                if wrecked:
+                    out["wrecked"] = wrecked
             return out
         if a == "fire":
             return self._resolve_missile(side, action, verdict)
@@ -2161,14 +2235,14 @@ class SoJGame(GateGame):
                 i = DISR_LADDER.index(u["state"]) \
                     if u["state"] in DISR_LADDER else 3
                 if i >= 3:
-                    u["hex"], u["state"] = None, "eliminated"
+                    self._eliminate(u)
                     break
                 u["state"] = DISR_LADDER[i + 1]
             out.append({"pid": pid, "to": self.hex_name.get(u["hex"], None),
                         "state": u["state"]})
         for pid in [str(x) for x in action.get("eliminate", [])]:
             u = self.s["units"][pid]
-            u["hex"], u["state"] = None, "eliminated"
+            self._eliminate(u)
             out.append({"pid": pid, "to": None, "state": "eliminated",
                         "why": "no survivable retreat [15.1/14.21/7.5]"})
         self.s["pending"] = None

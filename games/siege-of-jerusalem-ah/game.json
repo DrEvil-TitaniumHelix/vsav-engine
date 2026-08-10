@@ -304,6 +304,24 @@
     "resolution": "Campaign-game scope - not reachable from the Gallus scenario. To be registered in full when the campaign game is encoded; the corrected Greenwood-reviewed sequence is preserved in the validation library (atf_interphase.htm).",
     "authority": "Developer-reviewed correction (semi-official), pending full campaign encoding.",
     "enforced": false
+   },
+   {
+    "id": "elim-vs-wreck-eliminated-artillery",
+    "kind": "rules_contradiction",
+    "rules": ["13.21", "14.5", "2.6"],
+    "defect": "The rulebook names two different markers for the same event. 13.21: an Artillery unit eliminated when Disrupted while already Panicked leaves 'an \"Elim\" Artillery marker ... on the map to affect stacking until the end of the Assault Period'. 14.5: 'Eliminated Artillery (other than Cauldrons) and Siege Engines are replaced with an appropriate Wreck marker on the map.' The printed counter mix contains BOTH faces (2.6: 'Elim.' is the back of Broken Testudo, row 8; Wreck is the back of Ramp, row 4), so it is cleanly a rules question, not a components shortcut.",
+    "resolution": "The engine drops a single 'elim' marker through its one elimination door on every non-Cauldron Artillery elimination path. Its enforced effects are the two texts' common - and provably entire - Gallus-visible behavior: the marker holds the Artillery stacking slot for the rest of the scenario. Enumeration of every candidate divergence: (1) LOF - Artillery never affects LOF as a unit, and 11.4's 'affect LOF as if the Siege Engine were still there' clause is written for Siege Engine wrecks only; (2) 14.5's 'thereby block the movement of similar units into/through' derives from the stacking effect both texts share; (3) removal timing ('Assault Period' vs the dangling 'Assault Phase', see wreck-removal-assault-phase-reference) is unreachable in a one-Assault-Period scenario. The marker face a physical player sets out is cosmetic to the gate.",
+    "authority": "Proven outcome-equivalence within the Gallus scenario. Marker identity and removal timing escalated to the module author (ROB_QUESTIONS R7) for campaign scope.",
+    "enforced": true
+   },
+   {
+    "id": "wreck-removal-assault-phase-reference",
+    "kind": "broken_cross_reference",
+    "rules": ["14.5", "4.x", "13.21"],
+    "defect": "14.5 closes: 'Remove the \"Wreck\" markers at the end of the Assault Phase.' No phase named 'Assault Phase' exists anywhere in the 4.x sequence of play (Rally/Fire/Movement/Melee per side); every other duration in the marker rules (13.21) runs 'until the end of the Assault Period'.",
+    "resolution": "Wrecks persist to the end of the Assault Period, the only defined referent, corroborated by 13.21's parallel wording. In Gallus - a single Assault Period - markers are therefore never removed during play.",
+    "authority": "Dangling reference resolved to the only defined term; 13.21 corroborates. Escalated with R7 for campaign scope.",
+    "enforced": true
    }
   ]
  }
