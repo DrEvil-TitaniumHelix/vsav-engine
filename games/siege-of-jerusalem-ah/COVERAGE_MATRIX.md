@@ -92,7 +92,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.23 | 13.3/9.5 | −1 firing from Breach; −1 ground-through-Breach-at-ground | ENFORCED — `_resolve_missile` per-firer breach terms off `_lof` info, *-pair non-cumulation honoured; VC `fire_drm_checks` |
 | F.24 | 13.4 | extreme odds: +1 per Attack Multiple beyond the 7-column | ENFORCED — `_resolve_missile` extreme; VC |
 | F.25 | 13.5 | fire results identical to Melee except no retreat on Disrupt | ENFORCED — `_apply_letter` fire path; VC. Note: the printed Missile Table contains no B result (encoded table letters = D/E only), so fire-source B retreats are structurally impossible — recorded to prevent a future false gap |
-| F.26 | 13.21 | Artillery rout/panic ladder under fire; Elim marker on final elimination | partial — ladder ENFORCED (`_apply_letter`); **Elim marker stacking OPEN → B9**; Elim-vs-Wreck conflict → **R7** |
+| F.26 | 13.21 | Artillery rout/panic ladder under fire; Elim marker on final elimination | ENFORCED — ladder (`_apply_letter`) + Elim marker via the single `_eliminate` door; marker holds the Artillery slot to scenario end (`_stack_check`/`_move_verdict`/`_retreat_full`); Elim-vs-Wreck conflict registered + proven outcome-equivalent in Gallus (`elim-vs-wreck-eliminated-artillery`; R7 stays a campaign question); VC `marker_checks` |
 | F.27 | 13.21 | Cauldrons are not Artillery for Disrupt results (no ladder, no Elim marker) | ENFORCED — `_apply_letter` checks cls `artillery` only (cauldron cls separate) |
 | F.28 | 2.523/10.2 | rocks: Fresh Zealots/Militia/Cauldrons on Elevated vs adjacent lower units | ENFORCED — `_fire_verdict` rock path; VC |
 | F.29 | 10.2 | rocks from Bastion/Fortress vs **connected lower Elevated** hexes | OPEN → **N2** (gate refuses any Elevated target) |
@@ -115,7 +115,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 
 | row | rule | requirement | status |
 |---|---|---|---|
-| M.1 | 8.11 | adjacency, no enemy-occupied hex entry, per-class TEC entry costs, MF budget | ENFORCED — `_move_verdict`/`_entry_cost`/`_ground_cost`; VM |
+| M.1 | 8.11 | adjacency, no enemy-occupied hex entry, per-class TEC entry costs, MF budget | ENFORCED — `_move_verdict`/`_entry_cost`/`_ground_cost`; VM. 11.4 carve-out: an unescorted enemy Siege Engine hex IS enterable by Judaeans from Ground level (wrecking it) — VC `marker_checks` |
 | M.2 | 2.7 | fractional costs retained and cumulative (no truncation) | ENFORCED — float arithmetic throughout; VM |
 | M.3 | 8.91 | Gates: ground entry only via the two Entrance hexsides, own-control only; +2 MF inherent Interior Staircase to stop; closed to enemy | ENFORCED — `_entry_cost` + entrance data; VM. A5 data corrections DONE (G40/R49/LL30/MM32 retyped, W36→V36, OO33→OO34, P51 entrances added); A4 DONE: overlay sweep CLEAN — 12 Old City gates off-battlefield (asserted), **V42 encoded as the 10th playable gate** (Second-Wall corner gate, ring fort, entrances U42/W41 per overlay); VC `gate_ring_checks` |
 | M.4 | 8.93 | Staircase/Breach level change = 2 MF flat | ENFORCED — `_entry_cost`; VM. A6 data corrections DONE (10 inert non-adjacent pairs deleted, Z33|Z34 added); VC. **19 doubtful staircases still → R4** |
@@ -150,7 +150,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | OPEN → **N12** (engine forbids leaving the map at board edges) |
 | M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. Dice-count ambiguity registered → **R8** |
 | M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery. A4 DONE: `southern_bound` diagonals anchored on the card's arc ends (cols A–O ≤ printed 50 at O50; QQ–XX ≤ 32 at the QQ31/QQ32 junction) + Elevated fabric playable only where it borders battlefield ground; playable 1925→1341, all 219 Old City art hexes + typed south-junction strongpoints (P51/O53/Q50… cluster, 12 hexes) off-battlefield; VD `bound_and_builtup_checks` |
-| M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | OPEN → **B12/B14** (with those states) |
+| M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | split — SE-hex half ENFORCED with B10 (`_move_verdict`: entry legal only for Judaeans, only from non-Elevated, only into unescorted-SE hexes, which it wrecks [11.4]; VC `marker_checks`); Escalade half OPEN → **B12** (no Escalade state yet) |
 
 ### P4/P8 — MELEE PHASE (4.14/4.24)
 
@@ -166,9 +166,9 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.8 | 11.18 | −1 Elevated-defense drm forfeit when attacked from connected Elevated/Ramp | OPEN → **N8** (the −1 itself is missing too) |
 | X.9 | 11.19 | Built-up defender −1 drm; Edifice doubled defense | −1 ENFORCED — `_resolve_melee` (now over all 92 Built-up hexes, A3); Edifice doubled defense UNREACHABLE — every Edifice is Old City (decode-prep 4 measurement) and the A4 bound is enforced + validated (VD asserts no Edifice hex playable) |
 | X.10 | 11.7 | Elevated defense ×2 / Fortress ×3; −1 drm unless attack from connected Elevated/Breach/Ramp/Staircase | multipliers ENFORCED — `_resolve_melee`; VC. **The −1 drm is not applied at all → N8** |
-| X.11 | 11.2/11.21/11.22 | Tower melee: riders ×2 through ramp hexside; ramp-hexside-only attacks vs Towers; pusher/rider defense rules; empty-Tower auto-wreck | OPEN → **B14** (+ B10 for the wreck) |
+| X.11 | 11.2/11.21/11.22 | Tower melee: riders ×2 through ramp hexside; ramp-hexside-only attacks vs Towers; pusher/rider defense rules; empty-Tower auto-wreck | OPEN → **B14** (wreck *placement* machinery now ships with B10 — the single `_eliminate` door drops the marker automatically once B14's melee-vs-SE triggers exist) |
 | X.12 | 11.3 | Rams: co-located Romans may not melee (counterattack exception); Judaeans may melee adjacent Ram hexes | OPEN → **B14 cluster** (no above/below state) |
-| X.13 | 11.4 | wrecking: unescorted SE entered/attacked → eliminated, hex gets WRECK (stacking + LOF persist) | OPEN → **B10** |
+| X.13 | 11.4 | wrecking: unescorted SE entered/attacked → eliminated, hex gets WRECK (stacking + LOF persist) | entry-wreck + all marker effects ENFORCED — `_move_verdict` carve-out + `_apply` wrecking + `_markers_at` in `_stack_check`/`_move_verdict`/`_retreat_full`/`_lof`; VC `marker_checks`. The melee-through-Ramp-hexside trigger needs melee-vs-SE machinery → rides with **B14** (X.11) |
 | X.14 | 11.5 | Testudo: may not attack; defends normally; Judaeans may melee adjacent Testudos | OPEN → **B13** |
 | X.15 | 11.6/11.61/11.62 | Escalade melee: half strength, Base may not attack, top-first losses, end-of-phase move onto vacant Elevated | OPEN → **B12** |
 | X.16 | 11.8/11.81 | totals, odds ratio rounded in defender's favor, one attack per hex per phase (exceptions listed) | ENFORCED — `_resolve_melee`; VC (worked examples 11.81/11.82/11.83) |
@@ -187,7 +187,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.29 | 14.32 | Armored-Tower Catapults and Disrupted Judaean Artillery never retreat | UNREACHABLE — no Armored Towers, no Judaean Ballista/Onager/Catapult in Gallus OOB (counter census) |
 | X.30 | 14.33 | DD: two units, lone defender eliminated, no voluntary single-unit absorption, ineligible-target rules | core ENFORCED — `_auto_resolve_pending`/loss pending; VC. Ineligible-target rules (9.11/9.12 towers/escalades) → **B14/B12** |
 | X.31 | 14.4 | E eliminates defender's choice, Fresh or Disrupted | ENFORCED — `_apply_letter`; VC |
-| X.32 | 14.5 | eliminated Artillery/SE leave Wrecks: stacking + similar-unit movement block (+LOF per 11.4) | OPEN → **B10** (+ **R7** for the 13.21 Elim conflict) |
+| X.32 | 14.5 | eliminated Artillery/SE leave Wrecks: stacking + similar-unit movement block (+LOF per 11.4) | ENFORCED — the single `_eliminate` door drops the marker on EVERY elimination path (fire E, 13.21 ladder, melee D-absorb, breach kill [12.2], rally 9+, retreat overstack/no-route, entry-wreck); slot held + into/through block + retreat full-to-them; Elim-vs-Wreck conflict registered, outcome-equivalent in Gallus (R7 campaign); VC `marker_checks` |
 | X.33 | 15.1 | retreat = constrained search: MF budget ≤ Disrupted MA, avoid-Rout/Panic/elim preference, per-hex toward Refuge whenever possible, three absolute prohibitions, elimination on failure | ENFORCED — `_retreat_can_finish` memoized feasibility search backs every per-step check (MF budget, mandatory safe-route, per-hex Refuge direction, prohibitions); VC `retreat_engine_checks` (incl. the printed 15.3 EXAMPLE's fully-stacked arithmetic). N10 closed |
 | X.34 | 7.5/15.1 | cannot-retreat ⇒ eliminated (never deadlock) | ENFORCED — `eliminate` claims verified by exhaustive search (`_retreat_survivable`); refused while any survivable route exists; VC `retreat_engine_checks` (ringed-unit case). B17 closed |
 | X.35 | 15.2 | retreat stacking exemptions; no retreat through Cavalry/full SE; Testudo join-only | Infantry↔Cavalry interlock + no-stacking-limits-during-retreat ENFORCED — `_retreat_step`/`_retreat_full`; VC. SE-with-two-pushers + Testudo-join gates land with **B13/B14** |
@@ -217,8 +217,8 @@ runs on.
 | **Escalade markers + Fully-Occupied face + per-phase usage count** | MPh placement [8.7], Disrupt/elim of Base [8.7] | movement [8.7], fire [9.12], melee [11.6], ZOC [7.13/7.2], flank escape [11.85] | **OPEN → B12** |
 | **Testudo formations (members, marker, Broken state)** | form/disband [6.6/8.8], melee results [16.4] | movement [6.61/8.8], fire [9.4], melee [11.5], ZOC [7.2], missile row [13.4] | **OPEN → B13** |
 | **riders/pushers split in SE hexes (above/below)** | boarding moves [8.61] | fire [9.4/9.11], melee [11.2x], SE movement [8.6], stacking [6.4] | **OPEN → B14** |
-| **WRECK markers** | SE elimination [11.4/14.5] | stacking, LOF, similar-unit movement block | **OPEN → B10** |
-| **Elim (Artillery) markers** | artillery final elimination [13.21] | stacking to end of AP | **OPEN → B9** (+ R7) |
+| WRECK markers | SE elimination — any path through `_eliminate` [11.4/14.5] | stacking (`_stack_check`), LOF lift + 9.13 obstruction (`_lof`), similar-unit into/through block (`_move_verdict`), retreat full-to-them (`_retreat_full`) | ENFORCED — `s["markers"]`, hashed (HASH_KEYS); persists to scenario end (14.5 'Assault Phase' = registered dangling reference); VC `marker_checks` |
+| Elim (Artillery) markers | non-Cauldron Artillery elimination — any path through `_eliminate` [13.21/14.5] | Artillery stacking slot to end of AP (= scenario end), similar-unit into/through block | ENFORCED — same machinery; Elim-vs-Wreck identity outcome-equivalent in Gallus, R7 open for campaign; VC `marker_checks` |
 | **Tower transit-cost damage markers (per MPh)** | SE movement [8.61] | boarding cost that MPh | **OPEN → B14** |
 | **current-mover lock (8.2)** | first move segment of a new unit | move verdicts | **OPEN → N11** |
 | pending (loss/retreat choice) | combat resolution | propose() router | ENFORCED |
@@ -291,10 +291,12 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B8–B16, B18, B19 (engine; B1–B7/B17 closed — B6/B7 this commit:
-F.9/F.10/F.11/X.7 flipped on `lof_crest_checks` + the 182-side art-derived crest set), N2, N5–N9,
-N11–N20, N22, N24 (N1 false gap; N3/N4/N10/N21/N23 closed), R1/R2/R4/R7/R8 (blocked on Rob —
-cells stay open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+**NOT PLAYABLE.** Open rows: **B11–B16, B18, B19 (engine; B1–B10/B17 closed — B9/B10 this
+commit: F.26/X.13/X.32 + both marker ledger rows flipped on `marker_checks`; the single
+`_eliminate` door + `s["markers"]` state; B8 closed the commit before on `road_checks`), N2,
+N5–N9, N11–N20, N22, N24 (N1 false gap; N3/N4/N10/N21/N23 closed), R1/R2/R4/R8 (blocked on
+Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
+outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`

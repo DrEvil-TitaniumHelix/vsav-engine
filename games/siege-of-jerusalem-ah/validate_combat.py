@@ -951,6 +951,190 @@ def se_facing_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def marker_checks(g):
+    """B9/B10 (matrix F.26, M.1/M.36, X.13, X.32 + both marker ledger
+    rows): Wreck/Elim markers through the single `_eliminate` door.
+    Engineered board (state surgery on a throwaway game, log never
+    replayed; every legality claim still goes through submit() or the
+    verdict door). Proves: the 11.4 carve-out of 8.11 (Judaean
+    ground-level entry into an unescorted Siege Engine hex, refusals for
+    escorted/from-Elevated), entry-wrecking, the wreck's full LOF
+    equivalence with a live Tower [11.4 'as if the Siege Engine were
+    still there'] by sweeping every _lof pair around the hex under
+    live/wreck/none conditions, the 14.5 into/through block for similar
+    units with non-similar units unaffected, the 13.21 Elim marker off
+    the artillery panic ladder with its stacking slot held, retreat
+    full-to-them [15.3 regime], the Cauldron/HQ no-marker rule [13.21],
+    and that markers are part of the replay fingerprint (HASH_KEYS)."""
+    live = tempfile.mkdtemp(prefix="soj_mk_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=91)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def clear_pocket():
+            return (h for h in sorted(tg.hex_t0)
+                    if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                    and all(clear1(m) for n in tg._nb(h)
+                            for m in tg._nb(n)))
+
+        pock = clear_pocket()
+        h0 = next(pock)
+        g0 = next(h for h in pock if tg._dist(h, h0) > 6)
+        # ---- 11.4 entry-wreck: unescorted SE hex is enterable by Judaeans
+        tower = take("tower", 1)[0]
+        vet = take("roman_veteran", 1)[0]
+        tower["hex"] = vet["hex"] = h0
+        tower["facing"] = 0
+        vet["state"] = "disrupted"     # occupant, but exerts no ZOC
+        mil = take("judaean_militia", 1)[0]
+        n1 = tg._nb(h0)[0]
+        mil["hex"] = n1
+        tg.s["phase"] = "jud_move"
+        tg._mph_bookkeeping()
+        # escorted: any non-SE enemy occupant keeps the hex closed [8.11]
+        submit_no(tg, "Jud", {"type": "move", "pid": mil["pid"],
+                              "path": [N[n1], N[h0]]}, "enemy-occupied")
+        vet["hex"], vet["state"] = None, "fresh"
+        # from Elevated: entry only from the Ground level [6.4/11.4]
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and any(clear1(n) for n in tg._nb(h)))
+        ap = next(n for n in tg._nb(wall) if clear1(n))
+        ram = take("ram", 1)[0]
+        zeal = take("zealot", 1)[0]
+        ram["hex"], zeal["hex"] = ap, wall
+        submit_no(tg, "Jud", {"type": "move", "pid": zeal["pid"],
+                              "path": [N[wall], N[ap]]},
+                  "only from the Ground level")
+        # the legal entry wrecks the engine [11.4]
+        r = submit_ok(tg, "Jud", {"type": "move", "pid": mil["pid"],
+                                  "path": [N[n1], N[h0]]})
+        assert r["result"]["wrecked"] == [tower["pid"]]
+        assert tower["hex"] is None and tower["state"] == "eliminated"
+        mk = tg._markers_at(h0)
+        assert len(mk) == 1 and mk[0]["kind"] == "wreck" \
+            and mk[0]["type"] == "tower" and mk[0]["cls"] == "siege_engine"
+        print("markers: escorted/Elevated refusals + entry-wreck OK [11.4]")
+        # ---- LOF: wreck == live Tower, both != empty hex [11.4]
+        far = next(h for h in clear_pocket()
+                   if tg._dist(h, h0) > 6 and tg._dist(h, g0) > 6)
+        mil["hex"] = far                       # sweep neighborhood static
+        ring = [h for h in tg.hex_t0
+                if 1 <= tg._dist(h, h0) <= 2] + [h0]
+        pairs = [(f, t) for f in ring for t in ring if f != t]
+        tower2 = take("tower", 1)[0]
+
+        def sweep():
+            return [tg._lof(f, t) for f, t in pairs]
+        got_wreck = sweep()
+        saved = tg.s["markers"]
+        tg.s["markers"] = []
+        tower2["hex"] = h0
+        got_live = sweep()
+        tower2["hex"] = None
+        got_none = sweep()
+        tg.s["markers"] = saved
+        assert got_wreck == got_live, \
+            "wreck must affect LOF exactly as the standing Tower [11.4]"
+        assert got_wreck != got_none, \
+            "the Tower wreck must be load-bearing for LOF [11.4]"
+        print(f"markers: LOF wreck==live over {len(pairs)} pairs, "
+              "!= empty hex OK [11.4/9.13]")
+        # ---- 14.5: similar units blocked into/through, others unaffected
+        crew = take("roman_veteran", 2)
+        tower2["hex"] = crew[0]["hex"] = crew[1]["hex"] = n1
+        tower2["facing"] = 0
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        crew_pids = [crew[0]["pid"], crew[1]["pid"]]
+        submit_no(tg, "Rom", {"type": "move", "pid": tower2["pid"],
+                              "path": [N[n1], N[h0]], "crew": crew_pids},
+                  "Wreck/Elim marker blocks")
+        n2 = next(n for n in tg._nb(h0) if n != n1)
+        submit_no(tg, "Rom", {"type": "move", "pid": tower2["pid"],
+                              "path": [N[n1], N[h0], N[n2]],
+                              "crew": crew_pids}, "Wreck/Elim marker blocks")
+        vet3 = take("roman_veteran", 1)[0]
+        vet3["hex"] = n1
+        submit_ok(tg, "Rom", {"type": "move", "pid": vet3["pid"],
+                              "path": [N[n1], N[h0]]})
+        print("markers: wreck blocks SE into/through, infantry passes OK "
+              "[14.5]")
+        # ---- 13.21: the artillery panic ladder ends in an Elim marker
+        ball = take("roman_ballista", 1)[0]
+        ball["hex"], ball["state"] = g0, "panicked"
+        tg.s["pending"] = {"kind": "loss", "hex": g0, "letters": ["D"],
+                           "by": "Rom", "source": "fire", "primary": None}
+        r = submit_ok(tg, "Rom", {"type": "resolve_loss",
+                                  "picks": [{"pid": ball["pid"]}]})
+        assert r["result"]["events"][0]["event"] == "eliminated [13.21]"
+        mk = tg._markers_at(g0)
+        assert len(mk) == 1 and mk[0]["kind"] == "elim" \
+            and mk[0]["cls"] == "artillery"
+        # the marker holds the Artillery slot [13.21/14.5]
+        ona = take("roman_onager", 1)[0]
+        gn = tg._nb(g0)[0]
+        ona["hex"], ona["state"] = gn, "disrupted"   # reverse side moves
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        submit_no(tg, "Rom", {"type": "move", "pid": ona["pid"],
+                              "path": [N[gn], N[g0]]},
+                  "Wreck/Elim marker blocks")
+        gn2 = next(n for n in tg._nb(gn) if n != g0 and clear1(n))
+        submit_ok(tg, "Rom", {"type": "move", "pid": ona["pid"],
+                              "path": [N[gn], N[gn2]]})   # mobile otherwise
+        vet4 = take("roman_veteran", 1)[0]
+        vet4["hex"] = gn
+        submit_ok(tg, "Rom", {"type": "move", "pid": vet4["pid"],
+                              "path": [N[gn], N[g0]]})    # non-similar OK
+        # stacking + retreat views of the held slot
+        assert tg._stack_check(g0, "Rom", [ona]) is not None, \
+            "Elim marker must hold the artillery stacking slot [13.21]"
+        assert tg._stack_check(g0, "Rom", [vet3]) is None
+        assert tg._retreat_full(ona, g0, "Rom", {}) is True, \
+            "marker hex is full-to-them for retreating artillery [14.5/15.3]"
+        assert tg._retreat_full(vet3, g0, "Rom", {}) is False
+        print("markers: Elim off the 13.21 ladder, slot held for stacking/"
+              "movement/retreat, others unaffected OK")
+        # ---- no marker for Cauldrons [13.21], HQs, or combat units
+        n_mk = len(tg.s["markers"])
+        cau = take("cauldron", 1)[0]
+        cau["hex"] = wall
+        tg._eliminate(cau)
+        hq = take("judaean_leader", 1)[0]
+        hq["hex"] = far
+        tg._eliminate(hq)
+        assert len(tg.s["markers"]) == n_mk, \
+            "Cauldrons/HQs leave no marker [13.21]"
+        # ---- markers are replay-fingerprinted state
+        assert "markers" in tg.HASH_KEYS
+        h1 = tg.state_hash()
+        tg.s["markers"].append({"hex": g0, "cls": "artillery",
+                                "type": "roman_onager", "kind": "elim",
+                                "side": "Rom", "pid": "probe"})
+        assert tg.state_hash() != h1, "markers must move the state hash"
+        tg.s["markers"].pop()
+        assert tg.state_hash() == h1
+        print("marker checks: PASS (B9/B10 + F.26/M.1/M.36/X.13/X.32 + "
+              "ledger rows)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -1087,6 +1271,7 @@ def main():
         fire_drm_checks(g)
         se_facing_checks(g)
         lof_crest_checks(g)
+        marker_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
