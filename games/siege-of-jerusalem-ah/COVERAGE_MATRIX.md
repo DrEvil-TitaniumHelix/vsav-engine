@@ -117,9 +117,9 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 |---|---|---|---|
 | M.1 | 8.11 | adjacency, no enemy-occupied hex entry, per-class TEC entry costs, MF budget | ENFORCED — `_move_verdict`/`_entry_cost`/`_ground_cost`; VM |
 | M.2 | 2.7 | fractional costs retained and cumulative (no truncation) | ENFORCED — float arithmetic throughout; VM |
-| M.3 | 8.91 | Gates: ground entry only via the two Entrance hexsides, own-control only; +2 MF inherent Interior Staircase to stop; closed to enemy | ENFORCED — `_entry_cost` + entrance data; VM. A5 data corrections DONE (G40/R49/LL30/MM32 retyped, W36→V36, OO33→OO34, P51 entrances added); VC `gate_ring_checks` + overlay sweep (self-tightens when A4 lands) |
+| M.3 | 8.91 | Gates: ground entry only via the two Entrance hexsides, own-control only; +2 MF inherent Interior Staircase to stop; closed to enemy | ENFORCED — `_entry_cost` + entrance data; VM. A5 data corrections DONE (G40/R49/LL30/MM32 retyped, W36→V36, OO33→OO34, P51 entrances added); A4 DONE: overlay sweep CLEAN — 12 Old City gates off-battlefield (asserted), **V42 encoded as the 10th playable gate** (Second-Wall corner gate, ring fort, entrances U42/W41 per overlay); VC `gate_ring_checks` |
 | M.4 | 8.93 | Staircase/Breach level change = 2 MF flat | ENFORCED — `_entry_cost`; VM. A6 data corrections DONE (10 inert non-adjacent pairs deleted, Z33|Z34 added); VC. **19 doubtful staircases still → R4** |
-| M.5 | 8.95 | Built-up entry: Jud 2 / Rom 3; stacking 2 | ENFORCED — `_ground_cost`/TEC; VM. **42-hex Built-up data correction OPEN → A3** |
+| M.5 | 8.95 | Built-up entry: Jud 2 / Rom 3; stacking 2 | ENFORCED — `_ground_cost`/TEC; VM. A3 DONE: 42-hex correction applied, **Gallus Built-up = 92** per frozen PREP-4 evidence (`ingest/builtup_evidence.json`); `builtup_uncertain` retired (all 8 resolved by the printed art); VD `bound_and_builtup_checks` asserts the exact set |
 | M.6 | 8.94/8.95/12.4 | interior roads: ½ MF; Cavalry/Artillery enter/exit Built-up only via road hexsides; road rate lost at half-damage | OPEN → **B8** (no road data; cav/art currently barred from Built-up entirely) |
 | M.7 | 8.96 | Breach entry for Art/Testudo/Cav/SE only if adjacent connecting Breach of same wall | OPEN → **N19** (engine allows breach entry per GROUND costs without the connecting-breach test) |
 | M.8 | 7.31/7.311 | hard ZOC: stop on entry; exit only into ZOC-free first hex; Judaean freeze in Roman HI ground ZOC (official Q&A, both docs agree) | ENFORCED — `_move_verdict`; VM; register corrected (A1 done, ac848ec) |
@@ -149,7 +149,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.32 | 8.5 | Cauldrons: move Fresh or Disrupted, Elevated-to-Elevated only, artillery-exclusion carve-outs | ENFORCED — `_entry_cost` cauldron branch; VM |
 | M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | OPEN → **N12** (engine forbids leaving the map at board edges) |
 | M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. Dice-count ambiguity registered → **R8** |
-| M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery; **battlefield hard bound data OPEN → A4** |
+| M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery. A4 DONE: `southern_bound` diagonals anchored on the card's arc ends (cols A–O ≤ printed 50 at O50; QQ–XX ≤ 32 at the QQ31/QQ32 junction) + Elevated fabric playable only where it borders battlefield ground; playable 1925→1341, all 219 Old City art hexes + typed south-junction strongpoints (P51/O53/Q50… cluster, 12 hexes) off-battlefield; VD `bound_and_builtup_checks` |
 | M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | OPEN → **B12/B14** (with those states) |
 
 ### P4/P8 — MELEE PHASE (4.14/4.24)
@@ -164,7 +164,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.6 | 11.15 | attack all units in one hex; one hex per attack | ENFORCED — `_melee_verdict`/`_resolve_melee` |
 | X.7 | 11.17 | Crest hexside: attacker halved upslope vs Ground-level non-Slope defender | OPEN → **B7** (crest hexsides derivable from slope data; not implemented) |
 | X.8 | 11.18 | −1 Elevated-defense drm forfeit when attacked from connected Elevated/Ramp | OPEN → **N8** (the −1 itself is missing too) |
-| X.9 | 11.19 | Built-up defender −1 drm; Edifice doubled defense | −1 ENFORCED — `_resolve_melee`; Edifice UNREACHABLE after **A4** (every Edifice is Old City — decode-prep 4 measurement) |
+| X.9 | 11.19 | Built-up defender −1 drm; Edifice doubled defense | −1 ENFORCED — `_resolve_melee` (now over all 92 Built-up hexes, A3); Edifice doubled defense UNREACHABLE — every Edifice is Old City (decode-prep 4 measurement) and the A4 bound is enforced + validated (VD asserts no Edifice hex playable) |
 | X.10 | 11.7 | Elevated defense ×2 / Fortress ×3; −1 drm unless attack from connected Elevated/Breach/Ramp/Staircase | multipliers ENFORCED — `_resolve_melee`; VC. **The −1 drm is not applied at all → N8** |
 | X.11 | 11.2/11.21/11.22 | Tower melee: riders ×2 through ramp hexside; ramp-hexside-only attacks vs Towers; pusher/rider defense rules; empty-Tower auto-wreck | OPEN → **B14** (+ B10 for the wreck) |
 | X.12 | 11.3 | Rams: co-located Romans may not melee (counterattack exception); Judaeans may melee adjacent Ram hexes | OPEN → **B14 cluster** (no above/below state) |
@@ -194,7 +194,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.36 | 15.3 | +1 disruption level per overstacked hex entered in retreat | ENFORCED — `_apply_retreat`; VC |
 | X.37 | Q&A 11.81 | a unit that just retreated into a hex MAY join its melee defense | OPEN → **N24** (verify — likely already true via occupant-based defense; prove with a validator case) |
 | X.38 | Q&A 14.3 | on DE the defender may eliminate the Disrupted unit and disrupt the Fresh one | OPEN → **N24** (verify allocation permits it) |
-| X.39 | 18.3 + card SR3 | control = last occupant; Roman win at ≥10 Built-up at end of any Judaean Melee Phase; Judaean win by prevention through turn 10 | ENFORCED — control map + `_advance_phase` victory check; VC. **Objective count re-check vs 92 Built-up → A3** |
+| X.39 | 18.3 + card SR3 | control = last occupant; Roman win at ≥10 Built-up at end of any Judaean Melee Phase; Judaean win by prevention through turn 10 | ENFORCED — control map + `_advance_phase` victory check; VC. A3 DONE: the objective pool is now the full printed 92 (was 50 — the Roman was being denied 42 objectives); VD asserts pool == 92, all playable |
 | X.40 | 18.25 | Judaeans +1 melee drm attacking at night | ENFORCED — `_resolve_melee` |
 
 ---
@@ -249,7 +249,7 @@ markers**.
 | 18.81 Ramps (and Ramp LOF obstacle class) | phase-gated behind the Interphase, which never runs (built "prior to only one Assault Period") |
 | Armored Towers (all rules: 6.43, 9.3 carve-out, 11.21 doubled defense, 14.32 catapult) | units absent from card OOB (counter census, decode-prep 5 — units-only evidence) |
 | Judaean Ballista/Onager/Catapult rules (movement, placement, 14.32) | units absent from card OOB; doubly: MA 0 both sides + no Interphase [2.46/8.4] |
-| 11.19 Edifice doubled defense, 10.3 Temple fire, 11.16 Temple Quarter drm, 8.92 Courts | map area outside the scenario's stated bounds (**after A4**); every Edifice on the map is Old City (decode-prep 4 measurement) |
+| 11.19 Edifice doubled defense, 10.3 Temple fire, 11.16 Temple Quarter drm, 8.92 Courts | map area outside the scenario's stated bounds — the A4 bound is ENFORCED + validated (VD `bound_and_builtup_checks`); every Edifice on the map is Old City (decode-prep 4 measurement) |
 | Bridge hexes (Q&A 12/19.51; bridge rows in tables) | only Bridge is GG46–II44 (TEC) — outside the bounded battlefield |
 | 6.41/6.42/8.6 same-Legion crew constraints; 11.842 Roman multi-Legion attack penalty | single-Legion (XII) Roman OOB — no non-XII Roman unit exists |
 | 12.5 combining multiple Rams/Armored Towers | exactly one Breach-capable unit in the OOB (1 Ram, 0 Armored Towers) |
@@ -291,7 +291,8 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **A3–A7, A9 (data; A1/A2/A8 done ac848ec), B1–B19 (engine),
+**NOT PLAYABLE.** Open rows: **A7 partial (edifice/bridge classes = campaign scope; road/crest
+land with B7/B8), A9 (data; A1/A2/A8 done ac848ec, A3/A4/A5/A6 done this commit), B1–B19 (engine),
 N1–N24 (this file), R1/R2/R4/R7/R8 (blocked on Rob — cells stay open until his answers land).**
 The scenario ships when this section reads "PLAYABLE: every row ENFORCED or UNREACHABLE" and
 `run_all` + all four validators prove it.

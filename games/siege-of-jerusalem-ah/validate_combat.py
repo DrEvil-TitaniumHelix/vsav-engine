@@ -109,7 +109,8 @@ def gate_ring_checks(tg):
            "MM32": (10, "bastion_armored_tower"),
            "P51": (15, "fortress"), "W36": (15, "fortress"),
            "Z23": (15, "fortress"), "Q49": (10, "bastion_armored_tower"),
-           "OO33": (15, "fortress")}
+           "OO33": (15, "fortress"),
+           "V42": (12, "fort")}    # A4 side-find: Second-Wall corner gate
     for name, (deff, row) in exp.items():
         h = tg.name_hex[name]
         assert tg.hex_t0[h].startswith("gate"), (name, tg.hex_t0[h])
@@ -126,13 +127,17 @@ def gate_ring_checks(tg):
               "1559|1659", "1659|1758"):
         assert tuple(k.split("|")) in E, f"missing entrance side {k}"
     # sweep: every overlay gate inside the playable area must be
-    # gate-typed with a ring and at least one entrance side. The A4
-    # playable-area leak (Old City reachable; strongpoints there zeroed
-    # to clear by design, plus V42/Q52 outside the Gallus scope) exposes
-    # exactly these gates today; A4 must shrink the set to EMPTY, and the
-    # equality assert self-tightens the moment it does. Never add to it.
-    A4_LEAK_GATES = {"N55", "P54", "Q52", "U50", "V42", "X48", "FF47",
-                     "II34", "JJ43", "KK41", "NN42", "OO38", "QQ36"}
+    # gate-typed with a ring and at least one entrance side. Pre-A4 the
+    # Old City leak exposed 13 printed gates that failed this; the A4
+    # hard bound dropped 12 of them off the battlefield (asserted below)
+    # and the 13th, V42, turned out to be Second-Wall fabric bordering
+    # the crescent (entrance U42) - it is now encoded and must PASS.
+    OLD_CITY_GATES = {"N55", "P54", "Q52", "U50", "X48", "FF47",
+                      "II34", "JJ43", "KK41", "NN42", "OO38", "QQ36"}
+    for n in OLD_CITY_GATES:
+        assert tg.name_hex[n] not in tg.playable, \
+            f"Old City gate {n} is inside the A4-bounded battlefield"
+    assert tg.name_hex["V42"] in tg.playable, "V42 must stay playable"
     ov = json.load(open(os.path.join(HERE, "ingest", "gates_overlay.json"),
                         encoding="utf-8"))
     failing = set()
@@ -143,18 +148,16 @@ def gate_ring_checks(tg):
         if (not tg.hex_t0[h].startswith("gate") or h not in tg.hex_ring
                 or not any(h in pair for pair in E)):
             failing.add(gt["gate"])
-    expected = {n for n in A4_LEAK_GATES
-                if tg.name_hex.get(n) in tg.playable}
-    assert failing == expected, \
-        f"overlay-gate sweep: unexpected {sorted(failing - expected)}, " \
-        f"stale expectation {sorted(expected - failing)}"
+    assert not failing, \
+        f"overlay-gate sweep: unencoded playable gates {sorted(failing)}"
     # staircases: the ten non-adjacent phantoms are gone; Z33|Z34 is in
     for k in ("0742|0844 1854|1955 1858|1959 2253|2354 2646|2747 3244|3345 "
               "3544|3646 3635|3736 3846|3947 3936|4038").split():
         assert tuple(k.split("|")) not in tg.stairs, f"phantom stair {k} back"
     assert ("2646", "2647") in tg.stairs, "Z33|Z34 staircase missing"
     print("gate ring/entrance/staircase checks: PASS "
-          "(9 gates, overlay sweep, 10 phantoms out, Z33|Z34 in)")
+          "(10 gates incl. V42, overlay sweep clean, 12 Old City gates "
+          "off-battlefield, 10 phantoms out, Z33|Z34 in)")
 
 
 def walk_phase(tg, pid, dest, max_turns=8):

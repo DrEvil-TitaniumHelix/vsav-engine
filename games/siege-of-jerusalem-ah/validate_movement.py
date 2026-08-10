@@ -80,9 +80,20 @@ def main():
         assert tg.s["phase"] == "rom_fire"
 
         # -------- phase discipline
-        heavy = next(u for u in tg.s["units"].values()
-                     if u["type"] == "roman_veteran")
-        chain9 = clear_chain(tg, heavy["hex"], 9)
+        # any veteran with an open 9-hex chain: the A4-bounded west flank
+        # packs the deployment densely enough that corner units (A25) are
+        # walled in by their own camp
+        heavy = chain9 = None
+        for u in tg.s["units"].values():
+            if u["type"] != "roman_veteran":
+                continue
+            try:
+                chain9 = clear_chain(tg, u["hex"], 9)
+                heavy = u
+                break
+            except AssertionError:
+                continue
+        assert chain9, "no roman_veteran with an open 9-hex clear chain"
         no_move(tg, "Rom", heavy["pid"], chain9[:3], "not the Rom Movement Phase")
         # fire phase: NON-phasing side's segment comes first [4.12]
         assert tg.side_to_move() == "Jud"
@@ -227,12 +238,16 @@ def probes(tg):
                    and u["hex"] is not None)
         cav = next(u for u in U.values() if u["type"] == "roman_cavalry")
         hq = next(u for u in U.values() if u["type"] == "gallus")
-        # find a clear outside pocket: three hexes in a row
+        # find a clear outside pocket: three empty hexes in a row (the pocket
+        # must be empty of the camp, whatever shape deploy_rom gave it)
         a = next(h for h in sorted(tg.outside)
                  if tg.hex_t0[h] == "clear" and not tg._occupants(h)
-                 and sum(1 for n in tg._nb(h) if tg.hex_t0[n] == "clear") >= 4)
-        nbs = [n for n in tg._nb(a) if tg.hex_t0[n] == "clear"]
-        b, c = nbs[0], nbs[1]
+                 and sum(1 for n in tg._nb(h) if n in tg.outside
+                         and tg.hex_t0[n] == "clear"
+                         and not tg._occupants(n)) >= 4)
+        nbs = [n for n in tg._nb(a) if n in tg.outside
+               and tg.hex_t0[n] == "clear" and not tg._occupants(n)]
+        b, c = next((x, y) for x in nbs for y in nbs if y in tg._nb(x))
         rom["hex"], jud["hex"] = a, b        # adjacent ground units
         hq["hex"] = a                        # commander keeps the probe in CC
         # ground ZOC: Judaean moving out of Roman heavy ground ZOC = frozen

@@ -63,10 +63,13 @@
   ],
   "roman_prohibited_cite": "card: Roman entry of Garrison Areas is not allowed (e.g., Romans may never enter P50 or QQ32)",
   "playable_area": {
-   "method": "flood_outside_plus_crescent",
+   "method": "flood_outside_bounded_plus_crescent",
    "outside_seed": "A25",
-   "row_max": 63,
-   "note": "playable = New City crescent + both wall rings + the outside region (flood fill from A1, barred by wall/strongpoint/garrison hexes, engine rows > 63 excluded). The old city south of the Second Wall is off the Gallus battlefield (card: 'The scenario is played only on the North Wall from O50 to Women's Gate to QQ31'). Routed/Panicked units whose Refuge path leaves the battlefield exit at the south gates and are removed from play (Bruce-approved scope call 2026-08-07; flagged for module-author expert review)."
+   "southern_bound": [
+    {"cols": "A-O", "max_number": 50},
+    {"cols": "QQ-XX", "max_number": 32}
+   ],
+   "note": "playable = New City crescent + the outside region (flood fill from A25, barred by Elevated hexes and the crescent, and by the two southern_bound diagonals) + every Elevated hex bordering that ground. The bound's anchors are the card's own arc ends: 'The scenario is played only on the North Wall from O50 to Women's Gate to QQ31' - west flank capped at O50's printed number (50), east flank at the QQ31/QQ32 junction (32). The Old City south of the Second Wall is OFF the battlefield and its terrain is deliberately unencoded (A4 hard bound, Bruce's ruling 2026-08-09; leak evidence = ingest/builtup_evidence.json, 219 reachable Old City art hexes typed clear pre-bound). Routed/Panicked units whose Refuge path leaves the battlefield exit at the south gates and are removed from play (Bruce-approved scope call 2026-08-07; flagged for module-author expert review)."
   }
  },
  "reinforcement": {
