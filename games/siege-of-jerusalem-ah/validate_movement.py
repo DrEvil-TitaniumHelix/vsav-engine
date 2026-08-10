@@ -186,6 +186,9 @@ def main():
         # ---------------- B. verdict probes (no state mutation)
         probes(tg)
 
+        # ---------------- C. interior roads [8.94/8.95/12.4] - B8
+        road_checks(tg)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -320,6 +323,103 @@ def probes(tg):
         v = tg._move_verdict("Jud", cd, k(["Y24", "Y25"]))
         assert not v["legal"] and "8.5" in " ".join(v["reasons"]), v
         print("verdict probes: PASS")
+    finally:
+        tg.s["units"] = snap
+
+
+def road_checks(tg):
+    """[8.94/8.95/12.4 + The General 26-4 p.13] interior roads - B8.
+    Data structure, the 1/2-MF rate, and the Cavalry/Artillery Built-up
+    road-hexside gate, on crafted positions (snapshot/restore)."""
+    import copy
+    snap = copy.deepcopy(tg.s["units"])
+    U = tg.s["units"]
+    f = lambda name: tg.name_hex[name]
+    k = lambda names: [tg.name_hex[n] for n in names]
+    try:
+        # ---- data structure [8.94]: 105 art-derived city-interior sides,
+        # every one joining two ground hexes inside the walls
+        assert len(tg.roads) == 105, len(tg.roads)
+        for a, b in tg.roads:
+            assert tg.hex_t0[a] in ("clear", "builtup"), (a, tg.hex_t0[a])
+            assert tg.hex_t0[b] in ("clear", "builtup"), (b, tg.hex_t0[b])
+            assert a in tg.new_city and b in tg.new_city, (a, b)
+        side = lambda x, y: tuple(sorted((f(x), f(y))))
+        # calibration anchors (ingest/road_hexsides.json)
+        for x, y in (("Z24", "Z25"), ("W28", "X27"), ("Q45", "R44"),
+                     ("Y26", "Z25"), ("Q36", "R36")):
+            assert side(x, y) in tg.roads, (x, y)
+        # adjudication rejects: wash false-positives and non-crossings stay out
+        for x, y in (("Q42", "R42"), ("AA23", "AA24"), ("W27", "X27"),
+                     ("KK25", "KK26")):
+            assert side(x, y) not in tg.roads, (x, y)
+
+        # ---- stage a cleared corridor along the Womens-Gate road + NE artery
+        route = ["U30", "V29", "W28", "X27", "Y26", "Z25", "Z26", "Z27",
+                 "Z28", "Z29", "Z30", "Y31", "Y32", "X33"]
+        bubble = set()
+        for n in route + ["W27"]:
+            bubble.add(f(n))
+            bubble |= set(tg._nb(f(n)))
+        parking = iter(sorted(h for h in tg.outside
+                              if tg.hex_t0[h] == "clear"
+                              and not tg._occupants(h) and h not in bubble))
+        for u in U.values():
+            if u["hex"] in bubble:
+                u["hex"] = next(parking)
+
+        # ---- 1/2 MF along the road [8.94/12.4]: militia MA 6 marches 12 road
+        # hexsides for exactly 6.0 MF; 13 exceeds the allowance
+        mil = next(u for u in U.values() if u["type"] == "judaean_militia")
+        jl = next(u for u in U.values() if u["type"] == "judaean_leader")
+        mil["hex"] = f("V29")
+        jl["hex"] = f("V29")             # leader keeps the probe in CC
+        assert tg._ma(mil) == 6
+        v = tg._move_verdict("Jud", mil, k(route[1:]))       # 12 crossings
+        assert v["legal"], v["reasons"]
+        assert "6" in v["reasons"][0], v["reasons"]
+        mil["hex"] = f("U30")
+        jl["hex"] = f("U30")
+        v = tg._move_verdict("Jud", mil, k(route))           # 13 crossings
+        assert not v["legal"] and "exceeded" in " ".join(v["reasons"]), v
+        # off-road the same 12-hex march would cost >= 12 MF - the road halves it
+        cost, why = tg._entry_cost(mil, f("W27"), f("X26"), "Jud")
+        assert cost == 1.0, (cost, why)  # clear, no road side
+
+        # ---- Built-up entry costs: road rate replaces the TEC figure
+        rom = next(u for u in U.values() if u["type"] == "roman_veteran")
+        assert tg._entry_cost(rom, f("W28"), f("X27"), "Rom")[0] == 0.5
+        assert tg._entry_cost(rom, f("W27"), f("X27"), "Rom")[0] == 3.0
+        assert tg._entry_cost(mil, f("W27"), f("X27"), "Jud")[0] == 2.0
+
+        # ---- 8.95: Cavalry and Artillery enter/exit Built-up only through
+        # road hexsides
+        cav = next(u for u in U.values() if u["type"] == "roman_cavalry")
+        art = next(u for u in U.values() if u["type"] == "roman_ballista")
+        for u in (cav, art):
+            c, why = tg._entry_cost(u, f("W27"), f("X27"), "Rom")
+            assert c is None and "8.95" in why, (u["type"], why)
+            c, why = tg._entry_cost(u, f("W28"), f("X27"), "Rom")
+            assert c == 0.5, (u["type"], c, why)
+            c, why = tg._entry_cost(u, f("X27"), f("W27"), "Rom")   # exit
+            assert c is None and "8.95" in why, (u["type"], why)
+            c, why = tg._entry_cost(u, f("X27"), f("W28"), "Rom")
+            assert c == 0.5, (u["type"], c, why)
+        # gate-driven: cavalry commits the road-side Built-up entry
+        hq = next(u for u in U.values() if u["type"] == "gallus")
+        cav["hex"] = f("W28")
+        hq["hex"] = f("W28")
+        v = tg._move_verdict("Rom", cav, k(["W28", "X27"]))
+        assert v["legal"], v["reasons"]
+        assert "0.5" in v["reasons"][0], v["reasons"]
+
+        # ---- a road hexside never unlocks terrain a class may not enter:
+        # Siege Engines stay barred from Built-up [TEC]
+        se = next(u for u in U.values() if u["type"] == "tower")
+        c, why = tg._entry_cost(se, f("W28"), f("X27"), "Rom")
+        assert c is None and "TEC" in why, (c, why)
+
+        print("road checks [8.94/8.95/12.4]: PASS")
     finally:
         tg.s["units"] = snap
 

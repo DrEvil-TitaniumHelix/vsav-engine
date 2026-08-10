@@ -383,7 +383,8 @@
    "[9.x, 13.x] Missile Table completion: the full printed drm block (Tower/Breach/indirect with non-cumulation, Fresh-HI exception list), 9.31 errant fire, 13.2 primary-target loss allocation, wall-bonus denial over intervening units",
    "[14.2x, 15.1-15.3] retreat engine: MF-budget constrained search with per-hex Refuge routing and safe-route preference, cannot-retreat elimination verified by exhaustive search, 14.21 one-hex cap with forced-overstack elimination",
    "[2.45, 8.3, 8.6, 10.11] Siege Engines: locked pushing-crew stack moved as one action, crew0 start-of-MPh condition, tracked Directional-Arrow facing with free crewed pivots, breach attacks only vs the Facing-arrow hex, white side = MA 0",
-   "[9.51, 9.52, 11.17, card LOF] LOF completion: siege-Tower hex = Fortress,Tower group on both axes, closer-to tiebreaks bound to B/W obstacles only, exact 9.51 Built-up-adjacent-to-ground-end blocks, 9.52 slope/elevation LOF (printed example reproduced), 11.17 crest melee halving on the 182 art-derived crest hexsides"
+   "[9.51, 9.52, 11.17, card LOF] LOF completion: siege-Tower hex = Fortress,Tower group on both axes, closer-to tiebreaks bound to B/W obstacles only, exact 9.51 Built-up-adjacent-to-ground-end blocks, 9.52 slope/elevation LOF (printed example reproduced), 11.17 crest melee halving on the 182 art-derived crest hexsides",
+   "[8.94, 8.95, 12.4; The General 26-4 p.13] Interior roads: 105 art-derived city road hexsides (ingest/road_hexsides.json - detector sweep + full contact-sheet adjudication, centerline rule), road rate 1/2 MF replacing the terrain entry cost, Cavalry/Artillery Built-up entry AND exit locked to road hexsides; roads outside Jerusalem destroyed per 8.94 (none encoded); gate hexes carry no road sides - 8.91 entrance costs govern"
   ],
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
@@ -391,7 +392,7 @@
    "Formations: Escalade, Testudo, tower riding/boarding with above/below state (incl. riders-fire contract and all dependent fire/melee/stacking rules)",
    "Markers: Artillery Elim stacking to end of AP, SE Wreck stacking/LOF persistence",
    "Melee completion: 11.9 A/B/C multiple-attack ladder, advance after combat, gate entrance-hexside halving + Sortie counterattack, Elevated-defense -1 drm and its forfeit, mixed HI+Foederatti/Syrian stack combat-inertness, Cauldron connected-Elevated attack",
-   "Movement obligations and options: full-MF rout moves, panicked-move-last, 8.2 one-mover-at-a-time finality, soft-ZOC free exit, controlled-gate pass-through, offboard exit, interior roads (half MF + Cavalry/Artillery road-hexside Built-up constraint), 8.96 connecting-breach test, 8.13 HQ/Cauldron carve-out",
+   "Movement obligations and options: full-MF rout moves, panicked-move-last, 8.2 one-mover-at-a-time finality, soft-ZOC free exit, controlled-gate pass-through, offboard exit, 8.96 connecting-breach test, 8.13 HQ/Cauldron carve-out",
    "Command Control exact 5.2 tracing (currently BFS approximation); artillery Fresh/Disrupted flip bookkeeping; deployment options (artillery Fresh-or-Disrupted, infantry in Testudo, off-board Legion setup)",
    "Blocked on module-author answers: Garrison Area extents, testudo one-per-legion limit, fort staircase hexsides, Elim-vs-Wreck for eliminated artillery, Giora dice count"
   ],

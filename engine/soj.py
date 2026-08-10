@@ -124,6 +124,7 @@ class SoJGame(GateGame):
         self.stairs = set()
         self.entrances = set()
         self.crests = set()
+        self.roads = set()
         for k, v in self.terr.get("sides", {}).items():
             if v.get("staircase"):
                 self.stairs.add(tuple(sorted(k.split("|"))))
@@ -133,6 +134,10 @@ class SoJGame(GateGame):
                 # [11.17] slope|clear boundary whose slope side is shaded
                 # dark brown on the printed map (ingest/crest_hexsides.json)
                 self.crests.add(tuple(sorted(k.split("|"))))
+            if v.get("road"):
+                # [8.94] interior roads (city hexsides only - outside roads
+                # are destroyed; ingest/road_hexsides.json)
+                self.roads.add(tuple(sorted(k.split("|"))))
         self._build_elevation_regions()
         self.new_city = set(self.terr["areas"]["new_city"])
         dep = self.scenario["deployment"]
@@ -588,9 +593,22 @@ class SoJGame(GateGame):
                 return 3.0, None       # down through the rubble [8.93/8.96]
             return None, "Elevated hex left only via Staircase hexside or Gate entrance [8.91-8.93]"
 
+        # ---- ground-to-ground [8.94/8.95 interior roads]
+        road = key in self.roads
+        if cls in ("cavalry", "artillery"):
+            if t_frm == "builtup" and not road:
+                return None, ("Cavalry and Artillery may exit Built-up hexes "
+                              "only through road hexsides [8.95]")
+            if t_to == "builtup":
+                if not road:
+                    return None, ("Cavalry and Artillery may enter Built-up "
+                                  "hexes only through road hexsides [8.95]")
+                return 0.5, None    # along the road [8.94/12.4]
         base = self._ground_cost(u, to, side)
         if base is None:
             return None, "class may not enter that terrain [TEC]"
+        if road:
+            return 0.5, None        # road movement rate [8.94/12.4, Gen 26-4]
         return base, None
 
     def _refuge_dist(self, side, h):

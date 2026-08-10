@@ -1,0 +1,766 @@
+{
+ "source": "SoJ_map.jpg (printed map scan, module SOJ)",
+ "rule": "8.94 roads within the city usable / outside destroyed; 8.95 Cavalry+Artillery enter/exit Built-up only through road hexsides; road rate 1/2 MF [12.4; The General 26-4 p.13]",
+ "scope": "both hexes in terrain.json areas.new_city (Gallus in-wall city interior, 383 hexes, 1041 candidate sides); off-wall and Tyropean/Old-City roads excluded by 8.94 / the A4 battlefield bound",
+ "method": "detector (extract_road_hexsides.py at C:\\VassalSoJ: paired bright+warm band sampling inside both hexes, run>=4 of 21) + full visual adjudication of all 282 signal sides on contact sheets, 9 region zooms and 13 close-ups; centerline rule - band-edge corner slivers, width straddles and parallel riding rejected",
+ "audit": "verdict tables with reasons in ingest/build_road_verdicts.py; sheet/zoom/close-up PNGs local at C:\\VassalSoJ\\road_sheets and the session scratchpad; ROADS_VERIFIED.md (local literature/) narrates the full network",
+ "counts": {
+  "candidates": 1041,
+  "road": 105,
+  "auto": 80,
+  "review_confirmed": 21,
+  "hand_added": 4,
+  "auto_rejected": 6
+ },
+ "auto_rejected": {
+  "CC26|CC27": "pale wash around the printed NEW CITY map text; isolated, no continuation either end (zoom F)",
+  "II26|JJ26": "wall-glacis wash N of the II27 gate; close-up shows bare tan, no cream band (II26 close-up)",
+  "KK25|KK26": "wash false positive; KK25 close-up shows the whole neighbourhood bare tan",
+  "NN31|OO30": "the NN-column road band straddles this boundary; centerline runs inside OO30 (OO30 close-up)",
+  "Q42|R42": "pale rubble wash W of the Q-road at R42/R43, no coherent band (zoom E)",
+  "Y32|Z31": "band hugs the Y31/Z31/Y32 corner; Z31 close-up shows Z31 clean - the crossing is Y31|Y32"
+ },
+ "open_observations": [
+  "X33 leg (Y31->Y32->X33) dead-ends as drawn - the band fades SW of X33; possible bleached continuation toward Damascus W35 entrance. Encoded exactly as visible. Module-author worksheet item.",
+  "Damascus Gate in-city approach: the U36|V36 road ends at V36; W35 entrance carries rut marks only (8.91 allows \"rut marks OR connecting roads\"). No road side encoded into the gate - entrance hexsides govern gate movement.",
+  "W29|X29 south spur ends at X29 (building complex; no coherent band beyond).",
+  "Gates reached by roads (via their entrance hexsides, which are separate data): H40-area west gate, Q49, V42, Womens Gate Z23, Z33, CC30, PP17-area NE corner gate, Tadi (via OO32), II27/GG17 have bare approaches."
+ ],
+ "roads": [
+  {
+   "names": "AA24|BB23",
+   "key": "2737|2837",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "AA24|Z25",
+   "key": "2638|2737",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "AA31|BB30",
+   "key": "2744|2844",
+   "run": 9,
+   "basis": "auto",
+   "how": "detector run 9, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "AA31|Z32",
+   "key": "2645|2744",
+   "run": 0,
+   "basis": "review",
+   "how": "inside-wall belt from CC30 gate; band along the wall N side (zoom D + Z31 close-up bottom edge)"
+  },
+  {
+   "names": "BB23|CC22",
+   "key": "2837|2936",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "CC22|DD22",
+   "key": "2936|3037",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "DD22|EE22",
+   "key": "3037|3137",
+   "run": 3,
+   "basis": "review",
+   "how": "east road, band crosses through wall-shadowed area (zoom F)"
+  },
+  {
+   "names": "EE22|EE23",
+   "key": "3137|3138",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "EE23|FF23",
+   "key": "3138|3239",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "FF23|GG23",
+   "key": "3239|3339",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "GG23|HH23",
+   "key": "3339|3440",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "H40|H41",
+   "key": "0844|0845",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "H40|I40",
+   "key": "0844|0944",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "H41|H42",
+   "key": "0845|0846",
+   "run": 3,
+   "basis": "review",
+   "how": "west-wall interior road, band crosses (sheet 00)"
+  },
+  {
+   "names": "H42|H43",
+   "key": "0846|0847",
+   "run": 0,
+   "basis": "review",
+   "how": "west-wall interior road (sheet 00)"
+  },
+  {
+   "names": "H43|H44",
+   "key": "0847|0848",
+   "run": 0,
+   "basis": "review",
+   "how": "west-wall interior road (sheet 00)"
+  },
+  {
+   "names": "H44|H45",
+   "key": "0848|0849",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "H45|H46",
+   "key": "0849|0850",
+   "run": 2,
+   "basis": "review",
+   "how": "west-wall interior road (sheet 00)"
+  },
+  {
+   "names": "H46|I46",
+   "key": "0850|0950",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "HH23|II23",
+   "key": "3440|3540",
+   "run": 3,
+   "basis": "review",
+   "how": "east road, faint print (zoom G)"
+  },
+  {
+   "names": "I40|J40",
+   "key": "0944|1045",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "I46|J46",
+   "key": "0950|1051",
+   "run": 3,
+   "basis": "review",
+   "how": "southern road, band crosses (sheet 00)"
+  },
+  {
+   "names": "II23|JJ23",
+   "key": "3540|3641",
+   "run": 3,
+   "basis": "review",
+   "how": "east road, faint print (zoom G)"
+  },
+  {
+   "names": "J40|K40",
+   "key": "1045|1145",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "J46|J47",
+   "key": "1051|1052",
+   "run": 3,
+   "basis": "review",
+   "how": "southern road (sheet 00)"
+  },
+  {
+   "names": "J47|K47",
+   "key": "1052|1152",
+   "run": 3,
+   "basis": "review",
+   "how": "southern road (sheet 00)"
+  },
+  {
+   "names": "JJ23|KK23",
+   "key": "3641|3741",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "K40|L39",
+   "key": "1145|1245",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "K47|L47",
+   "key": "1152|1253",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "KK22|KK23",
+   "key": "3740|3741",
+   "run": 1,
+   "basis": "review",
+   "how": "east-road / NE-spur link; band partially masked by print fade, confirmed by art + chain continuity (zoom G)"
+  },
+  {
+   "names": "KK22|LL21",
+   "key": "3740|3840",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "KK23|LL23",
+   "key": "3741|3842",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "L39|M38",
+   "key": "1245|1344",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "L47|M47",
+   "key": "1253|1353",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "LL21|MM20",
+   "key": "3840|3939",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "LL23|MM23",
+   "key": "3842|3942",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "M38|N37",
+   "key": "1344|1444",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "M47|N46",
+   "key": "1353|1453",
+   "run": 3,
+   "basis": "review",
+   "how": "southern road (sheet 00)"
+  },
+  {
+   "names": "MM20|NN19",
+   "key": "3939|4039",
+   "run": 3,
+   "basis": "review",
+   "how": "NE-corner spur, band crosses mid-side (sheet 14, zoom G)"
+  },
+  {
+   "names": "MM23|NN23",
+   "key": "3942|4043",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "N37|O36",
+   "key": "1444|1543",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "N46|O46",
+   "key": "1453|1553",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN19|OO18",
+   "key": "4039|4138",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN23|NN24",
+   "key": "4043|4044",
+   "run": 3,
+   "basis": "review",
+   "how": "NN-column road, band crosses (sheet 15, zoom G2)"
+  },
+  {
+   "names": "NN24|NN25",
+   "key": "4044|4045",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN25|NN26",
+   "key": "4045|4046",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN26|NN27",
+   "key": "4046|4047",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN27|NN28",
+   "key": "4047|4048",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN28|NN29",
+   "key": "4048|4049",
+   "run": 2,
+   "basis": "review",
+   "how": "NN-column road, band crosses left portion (sheet 15, zoom G2)"
+  },
+  {
+   "names": "NN29|NN30",
+   "key": "4049|4050",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "NN30|OO30",
+   "key": "4050|4150",
+   "run": 0,
+   "basis": "hand",
+   "how": "SE bend of the NN-column road; crossing sits hard against the NN30/OO29/OO30 corner (OO30 close-up)"
+  },
+  {
+   "names": "O36|P35",
+   "key": "1543|1643",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "O36|P36",
+   "key": "1543|1644",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "O46|P45",
+   "key": "1553|1653",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "OO30|OO31",
+   "key": "4150|4151",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "OO31|OO32",
+   "key": "4151|4152",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "P35|Q34",
+   "key": "1643|1742",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "P36|Q36",
+   "key": "1644|1744",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "P45|Q45",
+   "key": "1653|1753",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q34|R33",
+   "key": "1742|1842",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q36|R36",
+   "key": "1744|1845",
+   "run": 0,
+   "basis": "hand",
+   "how": "builtup artery P36->Q36->R36; crossing hidden under building art (R36 close-up shows the band passing)"
+  },
+  {
+   "names": "Q39|Q40",
+   "key": "1747|1748",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q39|R38",
+   "key": "1747|1847",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q40|Q41",
+   "key": "1748|1749",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q41|Q42",
+   "key": "1749|1750",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q42|Q43",
+   "key": "1750|1751",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q43|Q44",
+   "key": "1751|1752",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q44|Q45",
+   "key": "1752|1753",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q45|Q46",
+   "key": "1753|1754",
+   "run": 8,
+   "basis": "auto",
+   "how": "detector run 8, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q45|R44",
+   "key": "1753|1853",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q46|Q47",
+   "key": "1754|1755",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Q47|Q48",
+   "key": "1755|1756",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "R33|S32",
+   "key": "1842|1941",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "R36|S36",
+   "key": "1845|1945",
+   "run": 2,
+   "basis": "review",
+   "how": "builtup artery, band crosses lower side (sheet 03, R36 close-up)"
+  },
+  {
+   "names": "R38|S37",
+   "key": "1847|1946",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "R44|S43",
+   "key": "1853|1952",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "S32|T31",
+   "key": "1941|2041",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "S36|T36",
+   "key": "1945|2046",
+   "run": 0,
+   "basis": "hand",
+   "how": "builtup artery into the T36 junction; crossing suppressed by builtup shadow at the boundary (T36 close-up, 4-way junction)"
+  },
+  {
+   "names": "S37|T36",
+   "key": "1946|2046",
+   "run": 2,
+   "basis": "review",
+   "how": "Q-road link into the T36 junction (zoom A, T36 close-up)"
+  },
+  {
+   "names": "S43|T43",
+   "key": "1952|2053",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "T31|U30",
+   "key": "2041|2140",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "T36|U35",
+   "key": "2046|2145",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "T36|U36",
+   "key": "2046|2146",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "T43|U42",
+   "key": "2053|2152",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "U30|V29",
+   "key": "2140|2240",
+   "run": 8,
+   "basis": "auto",
+   "how": "detector run 8, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "U35|V34",
+   "key": "2145|2245",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "U36|V36",
+   "key": "2146|2247",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "V29|W28",
+   "key": "2240|2339",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "V34|W33",
+   "key": "2245|2344",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "W28|W29",
+   "key": "2339|2340",
+   "run": 0,
+   "basis": "hand",
+   "how": "south spur fork off the NE artery; band passes behind building art (W29 close-up); connects the W29|X29 crossing (v1=9)"
+  },
+  {
+   "names": "W28|X27",
+   "key": "2339|2439",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "W29|X29",
+   "key": "2340|2441",
+   "run": 9,
+   "basis": "auto",
+   "how": "detector run 9, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "W33|X32",
+   "key": "2344|2444",
+   "run": 6,
+   "basis": "auto",
+   "how": "detector run 6, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "X27|Y26",
+   "key": "2439|2538",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "X32|Y31",
+   "key": "2444|2543",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "X33|Y32",
+   "key": "2445|2544",
+   "run": 0,
+   "basis": "review",
+   "how": "fork leg Y32->X33 (3/20 + Y32 close-up); road art fades at X33 - dead end as drawn, see open_observations"
+  },
+  {
+   "names": "Y26|Z25",
+   "key": "2538|2638",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Y31|Y32",
+   "key": "2543|2544",
+   "run": 3,
+   "basis": "review",
+   "how": "bend fork S leg; Y32+Z31 close-ups show the band passing Y31->Y32"
+  },
+  {
+   "names": "Y31|Z30",
+   "key": "2543|2643",
+   "run": 5,
+   "basis": "auto",
+   "how": "detector run 5, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Z24|Z25",
+   "key": "2637|2638",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Z25|Z26",
+   "key": "2638|2639",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Z26|Z27",
+   "key": "2639|2640",
+   "run": 7,
+   "basis": "auto",
+   "how": "detector run 7, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Z27|Z28",
+   "key": "2640|2641",
+   "run": 9,
+   "basis": "auto",
+   "how": "detector run 9, verified on autopass sheets/zooms"
+  },
+  {
+   "names": "Z28|Z29",
+   "key": "2641|2642",
+   "run": 2,
+   "basis": "review",
+   "how": "Women's-Gate road, band continues straight S (zoom B art)"
+  },
+  {
+   "names": "Z29|Z30",
+   "key": "2642|2643",
+   "run": 4,
+   "basis": "auto",
+   "how": "detector run 4, verified on autopass sheets/zooms"
+  }
+ ]
+}
