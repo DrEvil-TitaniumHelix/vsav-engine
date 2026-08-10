@@ -152,7 +152,7 @@
       "LOF is not allowed through an Edifice hex except to/from central hex of Temple (10.3).",
       "See also 9.52 for Ground level fire through Crest hexsides between non-adjacent units."
     ],
-    "audit": "The 4x4 matrix and both tiebreaks MATCH engine/soj.py `_lof` MATRIX exactly, including FB*/FBW*/FB@/FBW@/FBWPC. THREE GAPS remain, all recorded in decode_prep6_findings below: siege-Tower occupancy is not read (F1), Ramp is not a W obstacle (unreachable in Gallus), Edifice/Crest clauses are unimplemented (Edifice unreachable in a card-bounded Gallus; Crest is reachable)."
+    "audit": "The 4x4 matrix and both tiebreaks MATCH engine/soj.py `_lof` MATRIX exactly, including FB*/FBW*/FB@/FBW@/FBWPC. RESOLVED 2026-08-10 (B6/B7): siege-Tower occupancy now lifts a hex to the Fortress,Tower group on both axes (F1 closed - Tower unit only, per the card's own naming conventions; armored towers absent from the Gallus OOB); the */@ tiebreaks were re-scoped to B and W obstacles only per this key ('B*, W*' / 'B@, W@' - the old code wrongly applied them to F); 9.51 is exact and 9.52 is implemented with elevation regions + the printed example reproduced (F6 crest half closed via 182 art-derived crest hexsides, ingest/crest_hexsides.json). Still open here: Ramp as W obstacle (unreachable in Gallus - no ramps in OOB), Edifice clause (unreachable, card-bounded)."
   },
 
   "weapons_effect_chart": {

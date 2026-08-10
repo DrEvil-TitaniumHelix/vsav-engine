@@ -123,11 +123,17 @@ class SoJGame(GateGame):
         self.hex_ring = {k: v["ring"] for k, v in th.items() if "ring" in v}
         self.stairs = set()
         self.entrances = set()
+        self.crests = set()
         for k, v in self.terr.get("sides", {}).items():
             if v.get("staircase"):
                 self.stairs.add(tuple(sorted(k.split("|"))))
             if v.get("entrance"):
                 self.entrances.add(tuple(sorted(k.split("|"))))
+            if v.get("crest"):
+                # [11.17] slope|clear boundary whose slope side is shaded
+                # dark brown on the printed map (ingest/crest_hexsides.json)
+                self.crests.add(tuple(sorted(k.split("|"))))
+        self._build_elevation_regions()
         self.new_city = set(self.terr["areas"]["new_city"])
         dep = self.scenario["deployment"]
         self.min_force = [self.name_hex[n] for n in dep["min_force_hexes"]]
@@ -199,6 +205,29 @@ class SoJGame(GateGame):
         na, nb_ = ra - ca // 2, rb - cb // 2
         dq, dr = cb - ca, nb_ - na
         return max(abs(dq), abs(dr), abs(dq + dr))
+
+    def _build_elevation_regions(self):
+        """[9.52] 'There are different elevations of Ground Level as
+        distinguished by the Slopes.' Elevation regions = maximal connected
+        areas of non-slope ground-level terrain (clear/builtup) on the STATIC
+        map; slope bands and Elevated hexes separate them. Two hexes in the
+        same region are at the same elevation; a slope hex (or a breached
+        wall) belongs to no region and counts as an elevation transition."""
+        self._elev = {}
+        comp = 0
+        for h, t in self.hex_t0.items():
+            if t not in ("clear", "builtup") or h in self._elev:
+                continue
+            comp += 1
+            stack = [h]
+            self._elev[h] = comp
+            while stack:
+                cur = stack.pop()
+                for n in self._nb(cur):
+                    if n not in self._elev and \
+                            self.hex_t0[n] in ("clear", "builtup"):
+                        self._elev[n] = comp
+                        stack.append(n)
 
     def _compute_playable(self, cfg):
         """A4 hard bound. The card plays Gallus 'only on the North Wall from
@@ -713,10 +742,14 @@ class SoJGame(GateGame):
 
     # ------------------------------------------------------------ fire [9/13]
     def _lof(self, frm, to):
-        """LOF check [9.5/9.9/game card]. Returns (ok, drm, why, info).
-        Samples the center-to-center pixel line; obstacle classes per the
-        LOF Determination Table with closer-to tiebreaks. Indirect fire
-        [9.9]: ground-to-ground, or Elevated-to-same-height-Elevated, may
+        """LOF check [9.5/9.51/9.52/9.9/game card]. Returns (ok, drm, why,
+        info). Samples the center-to-center pixel line; obstacle classes per
+        the LOF Determination Table (a hex bearing a siege Tower unit is
+        "Fortress, Tower" group on both axes; closer-to tiebreaks bind B/W
+        only). Exact 9.51: Elevated<->Ground fire blocked by Built-up
+        adjacent to the ground end. 9.52: ground-level fire across an
+        intervening Slope limited to one clear hex between elevations.
+        Indirect fire [9.9]: ground-to-ground, or same-height-Elevated, may
         cross ONE combat-unit hex of the same height class for -1; more
         block the LOF. info carries the drm raw material for
         _resolve_missile: towers crossed [9.13], breach hexes crossed,
@@ -753,14 +786,23 @@ class SoJGame(GateGame):
             if t == "builtup":
                 return "P"
             return None
-        frm_grp = ("FT" if t_frm in ("fortress", "fort") else
-                   "B" if t_frm == "bastion" else
-                   "WB" if t_frm in ("wall", "north_wall", "gate",
-                                     "gate_wall", "gate_north_wall") else "O")
-        to_grp = ("FT" if t_to in ("fortress", "fort") else
-                  "B" if t_to == "bastion" else
-                  "WB" if t_to in ("wall", "north_wall", "gate",
-                                   "gate_wall", "gate_north_wall") else "O")
+
+        def has_tower(h):
+            # the printed LOF table groups the siege Tower UNIT with Fortress
+            # on both axes (its "Tower" - the map key has no tower terrain).
+            # Armored Towers are NOT lifted: the card names them separately
+            # wherever it means both (9.11/9.13), and its own Missile Table
+            # rows Tower with North Wall but Armored Tower with Bastion, so
+            # an armored-tower hex classifies by its terrain.
+            return any(o["type"] == "tower" for o in self._occupants(h))
+
+        def grp_of(t):
+            return ("FT" if t in ("fortress", "fort") else
+                    "B" if t == "bastion" else
+                    "WB" if t in ("wall", "north_wall", "gate", "gate_wall",
+                                  "gate_north_wall") else "O")
+        frm_grp = "FT" if has_tower(frm) else grp_of(t_frm)
+        to_grp = "FT" if has_tower(to) else grp_of(t_to)
         MATRIX = {  # firing-from group -> target group -> blocking classes
             "FT": {"FT": "F", "B": "F", "WB": "FB*", "O": "FBW*"},
             "B":  {"FT": "F", "B": "FB", "WB": "FB", "O": "FBW"},
@@ -768,34 +810,47 @@ class SoJGame(GateGame):
             "O":  {"FT": "FBW@", "B": "FBW", "WB": "FBW", "O": "FBWPC"},
         }
         spec = MATRIX[frm_grp][to_grp]
+        # */@ are the card's closer-to tiebreaks and its key defines them for
+        # B and W ONLY ("B*, W*" / "B@, W@") - F and P block unconditionally
         closer_tgt = spec.endswith("*")
         closer_frm = spec.endswith("@")
         classes = spec.rstrip("*@")
-
-        def grp_of(t):
-            return ("FT" if t in ("fortress", "fort") else
-                    "B" if t == "bastion" else
-                    "WB" if t in ("wall", "north_wall", "gate", "gate_wall",
-                                  "gate_north_wall") else "O")
         same_grp = frm_grp == to_grp
-        occ_cross = towers = breach_cross = 0
+        frm_elev = t_frm in ELEVATED
+        to_elev = t_to in ELEVATED
+        occ_cross = towers = breach_cross = slope_cross = clear_cross = 0
         for hk, dfrm, dto in crossed:
             t = self.hex_t(hk)
             bc = blocker_class(t)
             occ = self._occupants(hk)
             if bc and bc in classes:
-                if closer_tgt and not (dto < dfrm):
+                if closer_tgt and bc in "BW" and not (dto < dfrm):
                     continue
-                if closer_frm and not (dfrm < dto):
+                if closer_frm and bc in "BW" and not (dfrm < dto):
                     continue
                 return (False, 0,
                         f"LOF blocked by {self.hex_name[hk]} [game card LOF table]",
                         None)
+            # [9.51] exact: Elevated->Ground fire is ALWAYS blocked by a
+            # Built-up hex adjacent to the target it is traced through;
+            # Ground->Elevated by one adjacent to the firer (Temple exception
+            # 10.3 is outside the Gallus battlefield)
+            if t == "builtup" and frm_elev != to_elev:
+                low_end = "target" if frm_elev else "firer"
+                if (dto if frm_elev else dfrm) == 1:
+                    return (False, 0,
+                            f"LOF blocked by Built-up {self.hex_name[hk]} "
+                            f"adjacent to the {low_end} [9.51]",
+                            None)
             # [9.13] -1 per Tower/Armored Tower hex traversed (through-hex)
             if any(o["type"] in ("tower", "armored_tower") for o in occ):
                 towers += 1
             if t == "breach":
                 breach_cross += 1
+            if t == "slope":
+                slope_cross += 1
+            if t == "clear":
+                clear_cross += 1
             # [9.9] Combat units (infantry/cavalry - equipment, artillery
             # and HQ do not screen; Towers have 9.13's own -1) obstruct only
             # ground-to-ground and Elevated-to-same-height fire, and only at
@@ -804,13 +859,26 @@ class SoJGame(GateGame):
                     any(self.utype(o)["cls"] in ("heavy", "light", "cavalry")
                         for o in occ):
                 occ_cross += 1
+        # [9.52] Ground-level fire across elevations: blocked if the LOF
+        # passes through an intervening Slope hex and through/into more than
+        # one clear hex (exclusive of the firing hex; the target counts).
+        # Elevation regions per _build_elevation_regions; endpoints in the
+        # same region are at the same elevation and exempt, a slope (or
+        # breach) endpoint is an elevation transition and is not.
+        if not frm_elev and not to_elev and slope_cross:
+            n_clear = clear_cross + (1 if t_to == "clear" else 0)
+            same_elev = (self._elev.get(frm) is not None and
+                         self._elev.get(frm) == self._elev.get(to))
+            if n_clear > 1 and not same_elev:
+                return (False, 0,
+                        "Ground-level LOF across an intervening Slope may pass "
+                        "through/into at most one clear hex [9.52]",
+                        None)
         if same_grp and occ_cross > 1:
             return (False, 0,
                     "indirect fire may cross only ONE combat-unit hex [9.9]",
                     None)
         indirect = same_grp and occ_cross == 1
-        # [9.51] elevation-adjacency Built-up blocks are approximated by the
-        # crossed-hex P rule above (open - matrix F.10 -> B6; must be exact)
         info = {"indirect": indirect, "towers": towers,
                 "breach_cross": breach_cross}
         return True, (-1 if indirect else 0), None, info
@@ -1266,6 +1334,12 @@ class SoJGame(GateGame):
             mult = 0.5                        # [11.11/11.12]
         if self.hex_t(frm) == "breach" and self.hex_t(tgt) not in GROUND:
             mult = 0.5                        # [11.13]
+        if key in self.crests and self.hex_t(tgt) != "slope":
+            # [11.17] attacker halved across a Crest hexside vs a defender
+            # at Ground level on a non-Slope hex (crest sides are slope|clear,
+            # so the attacker is on the slope side and the defender's clear
+            # hex is the higher ground)
+            mult *= 0.5
         cls = self.utype(u)["cls"]
         if cls == "cavalry":
             if self.hex_t(frm) == "clear" and self.hex_t(tgt) == "clear":

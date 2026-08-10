@@ -649,6 +649,200 @@ def fire_drm_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def lof_crest_checks(g):
+    """B6/B7 + matrix F.9/F.10/F.11/X.7: the LOF Determination Table's
+    tower-as-Fortress group and B/W-only tiebreaks, exact 9.51 Built-up
+    adjacency blocks, 9.52 slope/elevation LOF (held to the rulebook's own
+    printed example TT46/RR48/QQ48/QQ49 + BB69/EE67), and the 11.17 crest
+    melee halving on the art-derived crest set (printed example RR8-SS8).
+    Geometry cases call tg._lof directly (pure function of the board);
+    the melee case goes through _melee_verdict."""
+    live = tempfile.mkdtemp(prefix="soj_lof_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=47)
+        U = tg.s["units"]
+
+        def key(n):
+            return tg.name_hex[n]
+
+        # ---- crest data regression [11.17 / ingest/crest_hexsides.json]
+        assert len(tg.crests) == 182, len(tg.crests)
+        assert tuple(sorted((key("RR8"), key("SS8")))) in tg.crests, \
+            "printed example 11.17: RR8-SS8 must be a Crest hexside"
+        assert tuple(sorted((key("SS47"), key("RR48")))) in tg.crests, \
+            "9.52 example: RR48 sits at the crest above the SS47 slope"
+        assert tuple(sorted((key("SS7"), key("SS6")))) not in tg.crests, \
+            "band-tip fade SS7|SS6 is not a crest"
+        print(f"lof/crest: crest set {len(tg.crests)} sides, "
+              "printed example RR8-SS8 present OK")
+
+        # ---- elevation regions [9.52 model]: slope hexes are transitions,
+        # non-slope ground carries a region id
+        assert tg._elev.get(key("TT46")) is None      # slope
+        assert tg._elev.get(key("QQ48")) is not None
+        assert tg._elev.get(key("T29", )) is None     # north wall: no region
+
+        # ---- 9.52 printed example (rulebook p.8). TT46 and QQ48 are both
+        # ground level with the SS slope band between: blocked beyond the
+        # crest. RR48 at the crest itself: visible. QQ49: the printed map
+        # shows a blue-ringed strongpoint (Bastion) - the A4 out-of-scope
+        # zeroing typed it clear, so the Elevated leg runs on a documented
+        # overlay of the printed type.
+        ok, _, why, _ = tg._lof(key("TT46"), key("QQ48"))
+        assert not ok and "9.52" in why, (ok, why)
+        assert tg._lof(key("TT46"), key("RR48"))[0]
+        # 9.52 is DIRECTIONAL by its printed formula: "exclusive of the
+        # firing hex" - downhill from QQ48 the clear firing hex is excluded
+        # and the slope target does not count, so only RR48 counts (1 clear)
+        # and the shot at the slope face is permitted, while the climber in
+        # TT46 cannot see past the crest. The exclusion clause only ever
+        # binds in this direction, so the asymmetry is the printed intent.
+        assert tg._lof(key("QQ48"), key("TT46"))[0]
+        tg.hex_t0[key("QQ49")] = "bastion"
+        try:
+            assert tg._lof(key("TT46"), key("QQ49"))[0], \
+                "Elevated target is exempt from 9.52"
+        finally:
+            tg.hex_t0[key("QQ49")] = "clear"
+        assert tg._lof(key("BB69"), key("EE67"))[0], \
+            "same elevation - 9.52 does not apply [printed example]"
+        print("lof/crest: 9.52 printed example reproduced "
+              "(TT46: QQ48 blocked / RR48+QQ49 visible / BB69-EE67 clear) OK")
+
+        # ---- B6: a hex bearing a siege Tower is "Fortress, Tower" group.
+        # Real-map axis g0-w1-g2-g3 (wall between grounds): firing g3->g0
+        # crosses w1 (closer to the target). O->O reads FBW (unconditional
+        # W): blocked. With a Tower in g0 the column flips to FBW@ (W blocks
+        # only nearer the firer): clear.
+        found = None
+        for w in sorted(tg.hex_t0):
+            if tg.hex_t(w) not in ("wall", "north_wall"):
+                continue
+            for dq, dr in ((1, 0), (0, 1), (1, -1)):
+                for sign in (1, -1):
+                    a, b = dq * sign, dr * sign
+
+                    def ax(h, k_):
+                        c, r = int(h[:2]), int(h[2:])
+                        n = r - c // 2
+                        c2, n2 = c + a * k_, n + b * k_
+                        return f"{c2:02d}{n2 + c2 // 2:02d}"
+                    g0, g2, g3 = ax(w, -1), ax(w, 1), ax(w, 2)
+                    if all(x in tg.hex_t0 and tg.hex_t(x) == "clear"
+                           and not tg._occupants(x) for x in (g0, g2, g3)):
+                        found = (g0, w, g2, g3)
+                        break
+                if found:
+                    break
+            if found:
+                break
+        assert found, "no ground-wall-ground axis"
+        g0, w1, g2, g3 = found
+        assert not tg._lof(g3, g0)[0], "O->O: wall blocks unconditionally"
+        tower = next(u for u in U.values() if u["type"] == "tower")
+        tower["hex"] = g0
+        assert tg._lof(g3, g0)[0], \
+            "target hex bearing a Tower reads the Fortress,Tower column " \
+            "(FBW@; wall closer to the target no longer blocks)"
+        # only the Tower unit is lifted; other Siege Engines classify by
+        # terrain (armored towers are absent from the whole Gallus OOB, so
+        # the armored-tower reading is unreachable here - the ram proves
+        # the non-lift)
+        assert not any(u["type"] == "armored_tower" for u in U.values())
+        tower["hex"] = None
+        ram = next(u for u in U.values() if u["type"] == "ram")
+        ram["hex"] = g0
+        assert not tg._lof(g3, g0)[0]
+        ram["hex"] = None
+        print(f"lof/crest: B6 tower column flip at {tg.hex_name[g0]} "
+              f"(wall {tg.hex_name[w1]}) OK")
+
+        # ---- tiebreaks bind B/W only: F blocks unconditionally even in
+        # */@ cells. Fire from beside the wall (g2, ground) THROUGH w1 at a
+        # Tower-bearing g0: O->FT = FBW@ and w1 is equidistant-from-neither
+        # ... adjacent to both ends (dfrm=1, dto=1): @ requires strictly
+        # closer to the firer, so W does not block; then overlay w1 as
+        # fortress: F has no tiebreak and blocks.
+        tower["hex"] = g0
+        assert tg._lof(g2, g0)[0], "adjacent-to-both wall: @ is strict"
+        t0save = tg.hex_t0[w1]
+        tg.hex_t0[w1] = "fortress"
+        try:
+            assert not tg._lof(g2, g0)[0], \
+                "F obstacle carries no closer-to tiebreak [card key: B*,W* " \
+                "and B@,W@ only]"
+        finally:
+            tg.hex_t0[w1] = t0save
+        tower["hex"] = None
+        print("lof/crest: closer-to tiebreaks bind B/W only (F blocked "
+              "the equidistant case) OK")
+
+        # ---- exact 9.51: Elevated<->Ground blocked by Built-up adjacent
+        # to the ground end, traced through. Real-map axis: elevated E,
+        # builtup p1 (adjacent), ground t at 2.
+        found = None
+        for e in sorted(tg.hex_t0):
+            if tg.hex_t0[e] not in soj.ELEVATED:
+                continue
+            for dq, dr in ((1, 0), (0, 1), (1, -1)):
+                for sign in (1, -1):
+                    a, b = dq * sign, dr * sign
+
+                    def ax(h, k_):
+                        c, r = int(h[:2]), int(h[2:])
+                        n = r - c // 2
+                        c2, n2 = c + a * k_, n + b * k_
+                        return f"{c2:02d}{n2 + c2 // 2:02d}"
+                    p1, t = ax(e, 1), ax(e, 2)
+                    if (p1 in tg.hex_t0 and tg.hex_t0[p1] == "builtup"
+                            and t in tg.hex_t0 and tg.hex_t(t) == "clear"):
+                        found = (e, p1, t)
+                        break
+                if found:
+                    break
+            if found:
+                break
+        assert found, "no elevated-builtup-clear axis"
+        e, p1, t = found
+        ok, _, why, _ = tg._lof(e, t)
+        assert not ok and "9.51" in why, (tg.hex_name[e], why)
+        ok, _, why, _ = tg._lof(t, e)
+        assert not ok and "9.51" in why, why
+        print(f"lof/crest: 9.51 exact - Built-up {tg.hex_name[p1]} adjacent "
+              f"to the ground end blocks {tg.hex_name[e]}<->{tg.hex_name[t]} OK")
+
+        # ---- X.7 melee: attacker halved across a crest, both directions
+        # tried on the in-scope crest SS14|RR14 (defender on the clear side
+        # halves; defender on the slope side does not [11.17])
+        ss14, rr14 = key("SS14"), key("RR14")
+        assert tuple(sorted((ss14, rr14))) in tg.crests
+        vet = next(u for u in U.values() if u["type"] == "roman_veteran"
+                   and u["hex"] is None)
+        jm = next(u for u in U.values() if u["type"] == "judaean_militia"
+                  and u["hex"] is None)
+        tg.s["phase"], tg.s["deploy_done"] = "rom_melee", True
+        tg.s["meleed"] = []
+        vet["hex"], vet["state"] = ss14, "fresh"
+        jm["hex"], jm["state"] = rr14, "fresh"
+        v = tg._melee_verdict("Rom", {"type": "melee", "target": "RR14",
+                                      "attackers": [vet["pid"]]})
+        assert v["legal"], v
+        assert abs(v["att"] - tg._melee_val(vet) * 0.5) < 1e-9, v
+        # defender on the slope side: full strength
+        vet["hex"], jm["hex"] = rr14, ss14
+        tg.s["phase"] = "rom_melee"
+        v = tg._melee_verdict("Rom", {"type": "melee", "target": "SS14",
+                                      "attackers": [vet["pid"]]})
+        assert v["legal"], v
+        assert abs(v["att"] - tg._melee_val(vet)) < 1e-9, v
+        vet["hex"] = jm["hex"] = None
+        print("lof/crest: 11.17 crest melee halving (uphill halved, "
+              "downhill vs slope defender full) OK")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def se_facing_checks(g):
     """B1/N21 (matrix M.22-M.24, F.34): the Siege Engine locked
     pushing-crew stack [8.3], the crew0 start-of-MPh snapshot [8.6/2.45],
@@ -892,6 +1086,7 @@ def main():
         retreat_engine_checks(g)
         fire_drm_checks(g)
         se_facing_checks(g)
+        lof_crest_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)

@@ -382,11 +382,12 @@
    "[5.x] Command Control radius with night/non-Fresh reductions, faction/Commander eligibility, Judaean auto-CC",
    "[9.x, 13.x] Missile Table completion: the full printed drm block (Tower/Breach/indirect with non-cumulation, Fresh-HI exception list), 9.31 errant fire, 13.2 primary-target loss allocation, wall-bonus denial over intervening units",
    "[14.2x, 15.1-15.3] retreat engine: MF-budget constrained search with per-hex Refuge routing and safe-route preference, cannot-retreat elimination verified by exhaustive search, 14.21 one-hex cap with forced-overstack elimination",
-   "[2.45, 8.3, 8.6, 10.11] Siege Engines: locked pushing-crew stack moved as one action, crew0 start-of-MPh condition, tracked Directional-Arrow facing with free crewed pivots, breach attacks only vs the Facing-arrow hex, white side = MA 0"
+   "[2.45, 8.3, 8.6, 10.11] Siege Engines: locked pushing-crew stack moved as one action, crew0 start-of-MPh condition, tracked Directional-Arrow facing with free crewed pivots, breach attacks only vs the Facing-arrow hex, white side = MA 0",
+   "[9.51, 9.52, 11.17, card LOF] LOF completion: siege-Tower hex = Fortress,Tower group on both axes, closer-to tiebreaks bound to B/W obstacles only, exact 9.51 Built-up-adjacent-to-ground-end blocks, 9.52 slope/elevation LOF (printed example reproduced), 11.17 crest melee halving on the 182 art-derived crest hexsides"
   ],
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
-   "Fire Phase LOF remainder: Tower-unit-as-Fortress row, 9.51 exact elevation adjacency, 9.52 Crest hexsides, rocks vs connected lower Elevated",
+   "Rocks vs connected lower Elevated hexes (10.2 Bastion/Fortress case - gate currently refuses any Elevated rock target)",
    "Formations: Escalade, Testudo, tower riding/boarding with above/below state (incl. riders-fire contract and all dependent fire/melee/stacking rules)",
    "Markers: Artillery Elim stacking to end of AP, SE Wreck stacking/LOF persistence",
    "Melee completion: 11.9 A/B/C multiple-attack ladder, advance after combat, gate entrance-hexside halving + Sortie counterattack, Elevated-defense -1 drm and its forfeit, mixed HI+Foederatti/Syrian stack combat-inertness, Cauldron connected-Elevated attack",
