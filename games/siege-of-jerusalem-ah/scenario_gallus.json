@@ -66,8 +66,14 @@
    "method": "flood_outside_bounded_plus_crescent",
    "outside_seed": "A25",
    "southern_bound": [
-    {"cols": "A-O", "max_number": 50},
-    {"cols": "QQ-XX", "max_number": 32}
+    {
+     "cols": "A-O",
+     "max_number": 50
+    },
+    {
+     "cols": "QQ-XX",
+     "max_number": 32
+    }
    ],
    "note": "playable = New City crescent + the outside region (flood fill from A25, barred by Elevated hexes and the crescent, and by the two southern_bound diagonals) + every Elevated hex bordering that ground. The bound's anchors are the card's own arc ends: 'The scenario is played only on the North Wall from O50 to Women's Gate to QQ31' - west flank capped at O50's printed number (50), east flank at the QQ31/QQ32 junction (32). The Old City south of the Second Wall is OFF the battlefield and its terrain is deliberately unencoded (A4 hard bound, Bruce's ruling 2026-08-09; leak evidence = ingest/builtup_evidence.json, 219 reachable Old City art hexes typed clear pre-bound). Routed/Panicked units whose Refuge path leaves the battlefield exit at the south gates and are removed from play (Bruce-approved scope call 2026-08-07; flagged for module-author expert review)."
   }
@@ -373,16 +379,17 @@
    "[9.x, 13.x] Missile Table: fire concentration, attack multiples, core LOF (4x4 obstacle matrix + closer-to tiebreaks, cell-exact per decode-prep 6), adjacent mandatory targets, extreme odds, rocks, night/out-of-CC fire limits",
    "[10.1, 12.x] Ram breach attacks: cumulative damage, breach as dynamic terrain, gate ring-class defense with entrance-side doubling, occupant elimination at breach instant",
    "[15.x, 16.x, 17.x] disruption ladder Fresh-Disrupted-Routed-Panicked, rally table with all 12 drm, Refuge-direction rout/panic movement",
-   "[5.x] Command Control radius with night/non-Fresh reductions, faction/Commander eligibility, Judaean auto-CC"
+   "[5.x] Command Control radius with night/non-Fresh reductions, faction/Commander eligibility, Judaean auto-CC",
+   "[9.x, 13.x] Missile Table completion: the full printed drm block (Tower/Breach/indirect with non-cumulation, Fresh-HI exception list), 9.31 errant fire, 13.2 primary-target loss allocation, wall-bonus denial over intervening units",
+   "[14.2x, 15.1-15.3] retreat engine: MF-budget constrained search with per-hex Refuge routing and safe-route preference, cannot-retreat elimination verified by exhaustive search, 14.21 one-hex cap with forced-overstack elimination",
+   "[2.45, 8.3, 8.6, 10.11] Siege Engines: locked pushing-crew stack moved as one action, crew0 start-of-MPh condition, tracked Directional-Arrow facing with free crewed pivots, breach attacks only vs the Facing-arrow hex, white side = MA 0"
   ],
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
-   "Fire Phase completion: breach-before-missile order, full missile drm set (Tower -1, Breach -1s, Judaean-artillery range -1, Fresh-HI exception list, non-cumulation), errant fire, primary-target loss allocation, wall-bonus denial over intervening units, Tower-unit-as-Fortress LOF, 9.51 exact Built-up adjacency, 9.52 Crest LOF, rocks vs connected Elevated, ZOC-exerter target preference",
-   "Siege engines: facing state + Facing-arrow-only breach attacks, locked crew stack, no-crew MA 0 flip",
+   "Fire Phase LOF remainder: Tower-unit-as-Fortress row, 9.51 exact elevation adjacency, 9.52 Crest hexsides, rocks vs connected lower Elevated",
    "Formations: Escalade, Testudo, tower riding/boarding with above/below state (incl. riders-fire contract and all dependent fire/melee/stacking rules)",
    "Markers: Artillery Elim stacking to end of AP, SE Wreck stacking/LOF persistence",
    "Melee completion: 11.9 A/B/C multiple-attack ladder, advance after combat, gate entrance-hexside halving + Sortie counterattack, Elevated-defense -1 drm and its forfeit, mixed HI+Foederatti/Syrian stack combat-inertness, Cauldron connected-Elevated attack",
-   "Retreat engine rewrite: 15.1 constrained MF-budget search with per-hex Refuge routing, cannot-retreat elimination (engine currently deadlocks), 14.21 forced-overstack elimination",
    "Movement obligations and options: full-MF rout moves, panicked-move-last, 8.2 one-mover-at-a-time finality, soft-ZOC free exit, controlled-gate pass-through, offboard exit, interior roads (half MF + Cavalry/Artillery road-hexside Built-up constraint), 8.96 connecting-breach test, 8.13 HQ/Cauldron carve-out",
    "Command Control exact 5.2 tracing (currently BFS approximation); artillery Fresh/Disrupted flip bookkeeping; deployment options (artillery Fresh-or-Disrupted, infantry in Testudo, off-board Legion setup)",
    "Blocked on module-author answers: Garrison Area extents, testudo one-per-legion limit, fort staircase hexsides, Elim-vs-Wreck for eliminated artillery, Giora dice count"

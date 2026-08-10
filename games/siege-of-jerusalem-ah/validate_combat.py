@@ -16,7 +16,9 @@ examples and the official Q&A:
   - missile attack multiples: 24 AF vs Testudo row = col 8 + 1 drm;
     45 AF vs Wall/Ram row = col 8 + 2 drm [13.4 printed examples]
   - gate-driven end-to-end: Roman artillery fire (LOF, concentration,
-    once-per-hex), ram breach attacks accumulating damage until the North
+    once-per-hex), the ram marching as a locked pushing-crew stack [8.3]
+    and breach-attacking only its Facing-arrow hex [10.11], damage
+    accumulating until the North
     Wall breaches (occupants eliminated [12.2], hex becomes a Breach),
     assault through the breach, melee with defender-choice pendings and
     retreat routing, the rally ladder, and a byte-exact replay of the log.
@@ -647,6 +649,114 @@ def fire_drm_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def se_facing_checks(g):
+    """B1/N21 (matrix M.22-M.24, F.34): the Siege Engine locked
+    pushing-crew stack [8.3], the crew0 start-of-MPh snapshot [8.6/2.45],
+    tracked Directional-Arrow facing with the free crewed pivot [10.11],
+    Facing-arrow-only breach attacks, and the white-side MA-0 flip [2.45] -
+    engineered board (state surgery on a throwaway game; every check still
+    goes through submit() or the verdict door)."""
+    live = tempfile.mkdtemp(prefix="soj_se_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=77)
+        U = tg.s["units"]
+        # N21: the printed SE counter backs are MA 0 [2.45]
+        for t in ("tower", "ram", "armored_tower"):
+            assert g.spec["unit_types"][t]["ma"][1] == 0, t
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+        h0 = next(h for h in sorted(tg.hex_t0)
+                  if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                  and all(clear1(m) for n in tg._nb(h) for m in tg._nb(n)))
+        tower = take("tower", 1)[0]
+        vets = take("roman_veteran", 3)
+        tower["hex"] = vets[0]["hex"] = vets[1]["hex"] = h0
+        stray = tg._nb(h0)[0]
+        vets[2]["hex"] = stray               # NOT beneath the engine
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()                # the real start-of-MPh snapshot
+        assert tower["crew0"] == sorted([vets[0]["pid"], vets[1]["pid"]])
+        n1 = next(n for n in tg._nb(h0) if n != stray)
+        n2 = next(n for n in tg._nb(n1) if n not in (h0, stray))
+        crew_pids = [vets[0]["pid"], vets[1]["pid"]]
+        N = tg.hex_name
+        # unnamed crew: the locked stack must be moved as one action [8.3]
+        submit_no(tg, "Rom", {"type": "move", "pid": tower["pid"],
+                              "path": [N[h0], N[n1]]}, "locked stack")
+        # a pusher that did not start the MPh beneath the engine [8.6]
+        submit_no(tg, "Rom", {"type": "move", "pid": tower["pid"],
+                              "path": [N[h0], N[n1]],
+                              "crew": [vets[2]["pid"]]},
+                  "started the MPh beneath")
+        # the good move: crew arrives with the engine; arrow set on landing
+        r = submit_ok(tg, "Rom", {"type": "move", "pid": tower["pid"],
+                                  "path": [N[h0], N[n1]],
+                                  "crew": crew_pids, "facing": N[n2]})
+        assert r["result"]["crew"] == crew_pids
+        assert vets[0]["hex"] == n1 and vets[1]["hex"] == n1, "locked stack"
+        assert tg._facing_hex(tower) == n2, "arrow follows the move param"
+        # spent pushers and the engine may not move again this MPh [8.3]
+        submit_no(tg, "Rom", {"type": "move", "pid": vets[0]["pid"],
+                              "path": [N[n1], N[n2]]}, "Siege Engine stack")
+        submit_no(tg, "Rom", {"type": "move", "pid": tower["pid"],
+                              "path": [N[n1], N[n2]], "crew": crew_pids},
+                  "already moved")
+        # the free pivot: still crewed by units that started beneath it
+        n3 = next(x for x in tg._nb(n1) if x not in (n2, h0))
+        r = submit_ok(tg, "Rom", {"type": "change_facing",
+                                  "pid": tower["pid"], "face": N[n3]})
+        assert r["result"]["facing"] == N[n3]
+        assert tg._facing_hex(tower) == n3
+        print("se: locked crew stack + crew0 snapshot + free pivot OK")
+        # white side: no crew beneath at the start of a fresh MPh [2.45]
+        vets[0]["hex"] = vets[1]["hex"] = stray
+        tg._mph_bookkeeping()
+        assert tower.get("crew0") == [] and tg._ma(tower) == 0.0, \
+            "white side = MA 0 [2.45/N21]"
+        submit_no(tg, "Rom", {"type": "move", "pid": tower["pid"],
+                              "path": [N[n1], N[n2]], "crew": crew_pids},
+                  "white side")
+        submit_no(tg, "Rom", {"type": "change_facing",
+                              "pid": tower["pid"], "face": N[n2]},
+                  "white side")
+        print("se: white-side MA 0 - no move, no pivot OK")
+        # the Facing arrow, not adjacency, selects the breach target [10.11]
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and any(clear1(n) for n in tg._nb(h)))
+        ap = next(n for n in tg._nb(wall) if clear1(n))
+        ram = take("ram", 1)[0]
+        vt = take("roman_veteran", 1)[0]
+        ram["hex"] = vt["hex"] = ap
+        away = next(n for n in tg._nb(ap) if n != wall)
+        ram["facing"] = tg._dir_of(ap, away)
+        tg.s["phase"], tg.s["seg"] = "rom_fire", "Rom"
+        tg.s["fired"] = []
+        submit_no(tg, "Rom", {"type": "breach_attack",
+                              "attackers": [ram["pid"]],
+                              "target": N[wall]}, "Facing arrow")
+        ram["facing"] = tg._dir_of(ap, wall)
+        r = submit_ok(tg, "Rom", {"type": "breach_attack",
+                                  "attackers": [ram["pid"]],
+                                  "target": N[wall]})
+        assert r["result"]["defense"] == 8   # Wall breach defense [12.1]
+        print("se: facing-arrow-only breach targeting OK")
+        print("se facing checks: PASS (B1/N21 + M.22-M.24/F.34)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -726,7 +836,7 @@ def walk_phase(tg, pid, dest, max_turns=8):
     raise AssertionError(f"{pid} never reached {tg.hex_name[dest]}")
 
 
-def greedy_path(tg, u, dest):
+def greedy_path(tg, u, dest, crew=None):
     """Longest legal prefix of a shortest clear-ground path toward dest."""
     import heapq
     frontier = [(0, [u["hex"]])]
@@ -750,7 +860,7 @@ def greedy_path(tg, u, dest):
         return None
     # longest prefix the gate accepts
     for cut in range(len(best), 1, -1):
-        v = tg._move_verdict(u["side"], u, best[:cut])
+        v = tg._move_verdict(u["side"], u, best[:cut], crew=crew)
         if v["legal"]:
             return best[:cut]
     return None
@@ -781,6 +891,7 @@ def main():
         gate_ring_checks(tg)
         retreat_engine_checks(g)
         fire_drm_checks(g)
+        se_facing_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
@@ -810,8 +921,13 @@ def main():
         gallus = next(u for u in tg.s["units"].values()
                       if u["type"] == "gallus")
         for u_ in (ram, crew[0], crew[1], gallus):
-            submit_ok(tg, "Rom", {"type": "deploy", "pid": u_["pid"],
-                                  "hex": tg.hex_name[camp]})
+            act = {"type": "deploy", "pid": u_["pid"],
+                   "hex": tg.hex_name[camp]}
+            if u_ is ram:                    # the counter deploys with its
+                act["facing"] = tg.hex_name[tg._nb(camp)[0]]   # arrow [2.45]
+            r_ = submit_ok(tg, "Rom", act)
+            if u_ is ram:
+                assert r_["result"]["facing"] == tg.hex_name[tg._nb(camp)[0]]
         submit_ok(tg, "Rom", {"type": "deploy", "pid": ball["pid"],
                               "hex": tg.hex_name[ball_camp]})
         # bulk the rest of the army far back
@@ -845,24 +961,31 @@ def main():
               f"die {det['die']} -> {det['result']}")
         drain_pendings(tg)
 
-        # ---- march ram + crew together to the approach hex (crew must be
-        # in the engine's hex at the start of each of its moves [8.6])
+        # ---- march ram + crew as ONE locked stack [8.3]: the crew is named
+        # in each engine move and arrives with it; the Facing arrow is set
+        # toward T29 on the landing move (free, crewed, MPh [10.11])
+        crew_pids = [c_["pid"] for c_ in crew]
         for _ in range(10):
             if ram["hex"] == approach:
                 break
             cycle_to_phase(tg, "rom_move")
-            path = greedy_path(tg, ram, approach)
+            path = greedy_path(tg, ram, approach, crew=crew_pids)
             if path and len(path) > 1:
-                submit_ok(tg, "Rom", {"type": "move", "pid": ram["pid"],
-                                      "path": [tg.hex_name[h] for h in path]})
-            for c_ in crew:
-                if c_["hex"] != ram["hex"]:
-                    p2 = greedy_path(tg, c_, ram["hex"])
-                    if p2 and len(p2) > 1:
-                        submit_ok(tg, "Rom",
-                                  {"type": "move", "pid": c_["pid"],
-                                   "path": [tg.hex_name[h] for h in p2]})
+                act = {"type": "move", "pid": ram["pid"],
+                       "path": [tg.hex_name[h] for h in path],
+                       "crew": crew_pids}
+                if path[-1] == approach:
+                    act["facing"] = "T29"
+                submit_ok(tg, "Rom", act)
+                # the pushers moved with the engine and are spent [8.3]
+                assert all(c_["hex"] == ram["hex"] for c_ in crew)
+                submit_no(tg, "Rom",
+                          {"type": "move", "pid": crew[0]["pid"],
+                           "path": [tg.hex_name[ram["hex"]],
+                                    tg.hex_name[tg._nb(ram["hex"])[0]]]},
+                          "Siege Engine stack")
         assert ram["hex"] == approach, "ram never reached the wall"
+        assert tg._facing_hex(ram) == tgt, "landing move set the arrow"
 
         # ---- breach attacks until T29 falls (defense 6)
         breached = False
@@ -873,6 +996,20 @@ def main():
                     submit_ok(tg, tg.side_to_move(), {"type": "end_phase"})
             cycle_to_phase(tg, "rom_fire")
             submit_ok(tg, "Jud", {"type": "end_phase"})
+            if _turn == 0:
+                # B1: the Facing arrow, not adjacency, selects the target;
+                # pivots are Movement Phase actions [10.11]
+                other = next((h for h in tg._nb(approach)
+                              if h != tgt and tg.hex_t0[h] in soj.ELEVATED),
+                             None)
+                if other is not None:
+                    submit_no(tg, "Rom", {"type": "breach_attack",
+                                          "attackers": [ram["pid"]],
+                                          "target": tg.hex_name[other]},
+                              "Facing arrow")
+                submit_no(tg, "Rom", {"type": "change_facing",
+                                      "pid": ram["pid"], "face": "T29"},
+                          "Movement Phase")
             r = submit_ok(tg, "Rom", {"type": "breach_attack",
                                       "attackers": [ram["pid"]],
                                       "target": "T29"})

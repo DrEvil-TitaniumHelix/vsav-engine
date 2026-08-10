@@ -3,9 +3,11 @@ soj.py - The Siege of Jerusalem (AH 1989) legality gate.
 
 The Assault of Gallus introductory scenario: free deployment, per-class TEC
 movement, SoJ zones of control, stacking, hex control [18.3], the Giora
-reinforcement, and the validated combat systems: Missile Table fire (LOF,
-concentration, mandatory targets, wall-attack bonus, rocks), Ram/Armored
-Tower Breach attacks with cumulative damage and breached-wall state, Melee
+reinforcement, the Siege Engine locked pushing-crew stack with tracked
+Directional-Arrow facing and the 2.45 white-side MA-0 flip, and the
+validated combat systems: Missile Table fire (LOF, concentration,
+mandatory targets, wall-attack bonus, rocks), Ram/Armored Tower Breach
+attacks vs the Facing-arrow hex with cumulative damage and breached-wall state, Melee
 Table combat with drm/strength modifiers, defender-choice loss pendings,
 retreats toward Refuge, the disruption ladder (Fresh-Disrupted-Routed-
 Panicked), the Rally Phase, Command Control, and night-turn effects.
@@ -56,6 +58,12 @@ BREACH_DEF = {"fortress": 15, "fort": 12, "bastion": 10, "wall": 8,
               "north_wall": 6}
 
 DISR_LADDER = ["fresh", "disrupted", "routed", "panicked"]
+
+# The hex-grid direction ring in (d_col, d_N) axial deltas (N = row - col//2,
+# the printed-map diagonal number). A Siege Engine's printed Directional
+# Arrow [2.45/8.6/10.11] is stored as an index into DIRS (u["facing"]) so it
+# survives movement and hashes with the unit.
+DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1))
 
 
 class SoJGame(GateGame):
@@ -160,12 +168,30 @@ class SoJGame(GateGame):
         c, r = int(h[:2]), int(h[2:])
         N = r - c // 2
         out = []
-        for dc, dn in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)):
+        for dc, dn in DIRS:
             c2, n2 = c + dc, N + dn
             k = f"{c2:02d}{n2 + c2 // 2:02d}"
             if k in self.hex_t0:
                 out.append(k)
         return out
+
+    def _dir_of(self, frm, to):
+        """DIRS index from frm to an adjacent hex, else None."""
+        c, r = int(frm[:2]), int(frm[2:])
+        c2, r2 = int(to[:2]), int(to[2:])
+        d = (c2 - c, (r2 - c2 // 2) - (r - c // 2))
+        return DIRS.index(d) if d in DIRS else None
+
+    def _facing_hex(self, u):
+        """The hex a Siege Engine's Directional Arrow indicates [10.11];
+        None off-map or while the facing is unset."""
+        h, d = u.get("hex"), u.get("facing")
+        if h is None or d is None:
+            return None
+        c = int(h[:2]) + DIRS[d][0]
+        n = int(h[2:]) - int(h[:2]) // 2 + DIRS[d][1]
+        k = f"{c:02d}{n + c // 2:02d}"
+        return k if k in self.hex_t0 else None
 
     def _dist(self, a, b):
         ca, ra = int(a[:2]), int(a[2:])
@@ -294,8 +320,21 @@ class SoJGame(GateGame):
     def _fresh(self, u):
         return u["state"] == "fresh"
 
+    def _se_crewed(self, u):
+        """2.45 crew condition: a Fresh pushing Heavy Infantry or Velitae
+        unit that started this MPh beneath the engine (the crew0 snapshot)
+        and is still beneath it. False = the counter's white side."""
+        for p in u.get("crew0", []):
+            x = self.s["units"].get(p)
+            if x and self._fresh(x) and x["hex"] == u["hex"]:
+                return True
+        return False
+
     def _ma(self, u):
         t = self.utype(u)
+        if t["cls"] == "siege_engine":
+            # white side up = no crew at the start of its MPh, MA 0 [2.45]
+            return float(t["ma"][0 if self._se_crewed(u) else 1])
         return float(t["ma"][0 if self._fresh(u) else 1])
 
     def _melee_val(self, u):
@@ -320,7 +359,8 @@ class SoJGame(GateGame):
         return sum(1 for u in occ if self.utype(u)["cls"] not in free_cls)
 
     def _stack_check(self, h, side, adding):
-        occ = self._occupants(h) + [adding]
+        add = adding if isinstance(adding, list) else [adding]
+        occ = self._occupants(h) + add
         if self._combat_count(occ) > self._stack_limit(h, side):
             return f"stacking limit exceeded in {self.hex_name[h]} [TEC/6.0]"
         for cls in ("artillery", "hq", "siege_engine"):
@@ -555,12 +595,14 @@ class SoJGame(GateGame):
             return SE_COST.get(t)
         return None
 
-    def _move_verdict(self, side, u, path):
+    def _move_verdict(self, side, u, path, crew=None, face=None):
         entry_gate = self.enterable_from(u["pid"])
         if u["hex"] is None and entry_gate is None:
             return self._v(False, "unit is not on the map")
         if u["side"] != side:
             return self._v(False, "not your unit")
+        if u.get("pushed"):
+            return self._v(False, "already moved as part of a Siege Engine stack this MPh [8.3]")
         start = entry_gate if u["hex"] is None else u["hex"]
         if path[0] != start:
             where = self.hex_name.get(start, start)
@@ -585,13 +627,27 @@ class SoJGame(GateGame):
             if self._refuge_dist(side, path[-1]) >= \
                     self._refuge_dist(side, path[0]):
                 return self._v(False, "Routed/Panicked units must move towards Refuge [15.3/17.21]")
+        picked = [str(p) for p in (crew or [])]
+        if picked and cls != "siege_engine":
+            return self._v(False, "only Siege Engines move with a pushing crew [8.3]")
+        if face is not None and cls != "siege_engine":
+            return self._v(False, "facing is a Siege Engine attribute [2.45]")
         if cls == "siege_engine":
-            crew = [o for o in self._occupants(u["hex"])
-                    if self._fresh(o) and o["pid"] != u["pid"]
-                    and (self.utype(o)["cls"] == "heavy"
-                         or o["type"] == "velitae")]
-            if not crew:
-                return self._v(False, "Siege Engine needs a Fresh Heavy Infantry or Velitae pushing unit in its hex at the start of the MPh [8.6/2.45]")
+            if not self._se_crewed(u):
+                return self._v(False, "Siege Engine had no Fresh Heavy Infantry or Velitae pushing unit at the start of its MPh - white side up, MA 0 [8.6/2.45]")
+            if not picked:
+                return self._v(False, "Siege Engine and its pushing units move as one locked stack: name the crew in the move [8.3/8.6]")
+            for p in picked:
+                x = self.s["units"].get(p)
+                if not x or x["side"] != side:
+                    return self._v(False, "unknown/enemy pushing unit")
+                if x.get("pushed"):
+                    return self._v(False, f"{p} already pushed a Siege Engine this MPh [8.3]")
+                if p not in (u.get("crew0") or []) or not self._fresh(x) \
+                        or x["hex"] != u["hex"]:
+                    return self._v(False, f"{p} is not a Fresh pushing unit that started the MPh beneath the Siege Engine [8.6/10.11]")
+            if face is not None and self._dir_of(path[-1], face) is None:
+                return self._v(False, "facing must point at a hex adjacent to the Siege Engine [2.45/10.11]")
         out_cc = not self.in_cc(u)
         budget = self._ma(u)
         soft = cls in ("hq", "cavalry")
@@ -647,10 +703,13 @@ class SoJGame(GateGame):
             spent += 2.0
             if spent > budget + 1e-9:
                 return self._v(False, "may not stop in a Gate at ground level - +2 MF Interior Staircase exceeds allowance [8.91]")
-        bad = self._stack_check(dest, side, u)
+        movers = [u] + [self.s["units"][p] for p in picked]
+        bad = self._stack_check(dest, side, movers)
         if bad:
             return self._v(False, bad)
-        return self._v(True, f"cost {spent:g} of {budget:g} MF")
+        fd = self._dir_of(dest, face) if face is not None else None
+        return dict(self._v(True, f"cost {spent:g} of {budget:g} MF"),
+                    crew=picked, face_dir=fd)
 
     # ------------------------------------------------------------ fire [9/13]
     def _lof(self, frm, to):
@@ -1151,6 +1210,8 @@ class SoJGame(GateGame):
                 return self._v(False, f"{u['pid']} already attacked this phase")
             if self._dist(u["hex"], tgt) != 1:
                 return self._v(False, "Rams/Armored Towers attack adjacent hexes [10.11]")
+            if self._facing_hex(u) != tgt:
+                return self._v(False, "Rams/Armored Towers may attack only the Elevated hex indicated by their Facing arrow [10.11]")
             crew = [o for o in self._occupants(u["hex"])
                     if self._fresh(o) and (self.utype(o)["cls"] == "heavy"
                                            or o["type"] == "velitae")]
@@ -1752,7 +1813,15 @@ class SoJGame(GateGame):
             path = [self.name_hex.get(h, h) for h in action.get("path", [])]
             if any(p not in self.hex_t0 for p in path):
                 return self._v(False, "path contains unknown hexes")
-            return self._move_verdict(side, u, path)
+            face = action.get("facing")
+            if face is not None:
+                face = self.name_hex.get(face, face)
+                if face not in self.hex_t0:
+                    return self._v(False, "unknown facing hex")
+            return self._move_verdict(side, u, path,
+                                      crew=action.get("crew"), face=face)
+        if a == "change_facing":
+            return self._change_facing_verdict(side, action)
         if a == "fire":
             if self.tier < 2:
                 return self._v(False, "combat is not gated in sandbox mode")
@@ -1773,6 +1842,32 @@ class SoJGame(GateGame):
             return self._v(True, f"end of {phase}"
                            + (f" ({self.s['seg']} segment)" if self.s.get("seg") else ""))
         return self._v(False, f"unknown action type {a!r}")
+
+    def _change_facing_verdict(self, side, action):
+        """[10.11/8.6] Free pivot within the hex, own Movement Phase only,
+        by a Fresh pushing unit that started that MPh beneath the engine.
+        (The 8.61/10.11 pivot lock after a unit crosses to/from an Elevated
+        hex lands with tower boarding, B14 - no crossing action exists yet.)"""
+        if self.s["phase"] != f"{'rom' if side == 'Rom' else 'jud'}_move":
+            return self._v(False, "facing changes only during the owning Movement Phase [10.11]")
+        u = self.s["units"].get(str(action.get("pid")))
+        if not u or u["side"] != side:
+            return self._v(False, "not your unit")
+        if self.utype(u)["cls"] != "siege_engine":
+            return self._v(False, "facing is a Siege Engine attribute [2.45]")
+        if u["hex"] is None:
+            return self._v(False, "unit is not on the map")
+        fh = self.name_hex.get(action.get("face"), action.get("face"))
+        if fh not in self.hex_t0:
+            return self._v(False, "unknown facing hex")
+        d = self._dir_of(u["hex"], fh)
+        if d is None:
+            return self._v(False, "facing must point at an adjacent hex [2.45/10.11]")
+        if not self._se_crewed(u):
+            return self._v(False, "facing change needs a Fresh pushing unit that started this MPh beneath the Siege Engine - white side up [10.11/8.6/2.45]")
+        return dict(self._v(True,
+                            f"face {self.hex_name[fh]} (free) [8.6/10.11]"),
+                    face_dir=d)
 
     def _deploy_verdict(self, side, action):
         phase = self.s["phase"]
@@ -1802,7 +1897,16 @@ class SoJGame(GateGame):
         bad = self._stack_check(h, side, u)
         if bad:
             return self._v(False, bad)
-        return self._v(True, "deploy")
+        fd = None
+        face = action.get("facing")
+        if face is not None:
+            if cls != "siege_engine":
+                return self._v(False, "facing is a Siege Engine attribute [2.45]")
+            fh = self.name_hex.get(face, face)
+            fd = self._dir_of(h, fh) if fh in self.hex_t0 else None
+            if fd is None:
+                return self._v(False, "facing must point at a hex adjacent to the deployment hex [2.45]")
+        return dict(self._v(True, "deploy"), face_dir=fd)
 
     def _deploy_done_verdict(self, side):
         phase = self.s["phase"]
@@ -1838,7 +1942,14 @@ class SoJGame(GateGame):
             h = self.name_hex.get(action["hex"], action["hex"])
             u["hex"] = h
             self.s["control"][h] = side
-            return {"placed": self.hex_name[h]}
+            out = {"placed": self.hex_name[h]}
+            if self.utype(u)["cls"] == "siege_engine":
+                # the counter always has an arrow [2.45]; default direction
+                # 0 until pivoted (free, crewed, MPh [10.11])
+                fd = verdict.get("face_dir")
+                u["facing"] = fd if fd is not None else 0
+                out["facing"] = self.hex_name.get(self._facing_hex(u))
+            return out
         if a == "deploy_done":
             if self.s["phase"] == "deploy_jud":
                 self.s["deploy_done"]["Jud"] = True
@@ -1850,6 +1961,7 @@ class SoJGame(GateGame):
             if self.s["phase"].endswith("_fire"):
                 self.s["seg"] = self._enemy(
                     "Rom" if self.s["phase"].startswith("rom_") else "Jud")
+            self._mph_bookkeeping()
             return {"next": self.s["phase"], "turn": 1,
                     "seg": self.s.get("seg")}
         if a == "move":
@@ -1862,7 +1974,19 @@ class SoJGame(GateGame):
             if entering:
                 self.s["entry_queue"] = [q for q in self.s["entry_queue"]
                                          if q["pid"] != u["pid"]]
-            return {"to": self.hex_name[path[-1]]}
+            out = {"to": self.hex_name[path[-1]]}
+            crew = verdict.get("crew") or []
+            for p in crew:
+                x = self.s["units"][p]
+                x["hex"] = path[-1]           # locked stack [8.3]
+                x["pushed"] = True
+            if crew:
+                u["pushed"] = True
+                out["crew"] = crew
+            if verdict.get("face_dir") is not None:
+                u["facing"] = verdict["face_dir"]
+                out["facing"] = self.hex_name.get(self._facing_hex(u))
+            return out
         if a == "fire":
             return self._resolve_missile(side, action, verdict)
         if a == "breach_attack":
@@ -1873,6 +1997,10 @@ class SoJGame(GateGame):
             return self._apply_loss(side, action)
         if a == "resolve_retreat":
             return self._apply_retreat(side, action)
+        if a == "change_facing":
+            u = self.s["units"][str(action["pid"])]
+            u["facing"] = verdict["face_dir"]
+            return {"facing": self.hex_name.get(self._facing_hex(u))}
         if a == "resolve_errant":
             out = self._apply_errant(str(action["pid"]))
             self.s["pending"] = None
@@ -2001,8 +2129,28 @@ class SoJGame(GateGame):
         if self.s["phase"] == "jud_move" and self.s["turn"] >= \
                 self.scenario["reinforcement"]["from_turn"] and self.s["pool"]:
             result["reinforcement"] = self._roll_reinforcements()
+        self._mph_bookkeeping()
         result["next"] = self.s["phase"]
         return result
+
+    def _mph_bookkeeping(self):
+        """Phase-boundary bookkeeping for the locked Siege Engine stack:
+        clear the spent-pusher flags, and on entering a Movement Phase
+        snapshot each engine's eligible pushing units (crew0) - the 8.6/
+        2.45/10.11 'at the start of its MPh' condition that movement,
+        facing changes and the white-side MA 0 all read."""
+        for u in self.s["units"].values():
+            u.pop("pushed", None)
+            u.pop("crew0", None)
+        if not self.s["phase"].endswith("_move"):
+            return
+        for se in self.s["units"].values():
+            if self.utype(se)["cls"] == "siege_engine" and se["hex"]:
+                se["crew0"] = sorted(
+                    o["pid"] for o in self._occupants(se["hex"])
+                    if self._fresh(o) and o["pid"] != se["pid"]
+                    and (self.utype(o)["cls"] == "heavy"
+                         or o["type"] == "velitae"))
 
     def _roman_builtup_count(self):
         return sum(1 for h, s in self.s["control"].items()

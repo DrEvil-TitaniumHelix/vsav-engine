@@ -100,7 +100,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.31 | 9.11 + Q&A | fire vs Towers: declare pushers/riders/both; other level immune; DD-vs-lone eliminates; Cauldrons/rocks never vs riders | OPEN → **B14** |
 | F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | OPEN → **B12** (no escalades yet; transcribe 9.12) |
 | F.33 | 10.1/10.11 | Breach attacks: Roman segment only; Fresh manning unit; adjacency | ENFORCED — `_breach_verdict`; VC |
-| F.34 | **10.11** | Breach attack **only vs the Facing-arrow hex** | OPEN → **B1** (class-1: gate permits attacks the rules forbid) |
+| F.34 | **10.11** | Breach attack **only vs the Facing-arrow hex** | ENFORCED — `_breach_verdict` facing test vs `_facing_hex`; VC `se_facing_checks` + E2E negative |
 | F.35 | 6.41 | Ram's pushing unit must be same Legion | UNREACHABLE — single-Legion (XII) Roman OOB; no non-XII Roman unit exists (card OOB, `COUNTERS_VERIFIED.md`) |
 | F.36 | 10.1/12.5 | vs Gate through Entrance hexside: AF doubled (only entrance-side attackers double) | ENFORCED for the single-attacker case — `_resolve_breach`; VC. Multi-engine selective doubling UNREACHABLE (below) — code note in §5/N5 |
 | F.37 | 12.5 | combining Rams/Armored Towers from different hexes | UNREACHABLE — Gallus has exactly one Breach-capable unit (1 Ram, 0 Armored Towers; card OOB + counter census) |
@@ -136,9 +136,9 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.19 | 16.51 | Disrupted units may not enter enemy ZOC | ENFORCED — `_move_verdict` |
 | M.20 | 8.13 | through fully-stacked hex at double cost; no overstack at MPh end; HQ/Cauldron carve-out | double-cost ENFORCED; **HQ/Cauldron "not fully stacked to them" carve-out OPEN → N20** |
 | M.21 | 8.2 | a unit's movement is complete once another unit begins to move | OPEN → **N11** |
-| M.22 | 8.3 | Siege Engine + crew move as one locked stack at SE rate | OPEN → **B1 cluster** (crews currently move separately — contradicts 8.3) |
-| M.23 | 8.6/2.45 | SE moves/changes facing only with Fresh HI/Velitae pushing unit at start of MPh (same Legion for Legion SEs) | crew-presence ENFORCED — `_move_verdict`; **facing state + change-facing action OPEN → B1**; same-Legion UNREACHABLE (single-Legion OOB) |
-| M.24 | 2.45 | SE white side = no crew, MA 0 | OPEN → **N21** — `game.json` SE `ma` = [n,n]; correct is [n,0] with crew-state flip |
+| M.22 | 8.3 | Siege Engine + crew move as one locked stack at SE rate | ENFORCED — SE moves name their crew, crew arrives with the engine, pushers + engine spent for the MPh (`pushed` flags); VC `se_facing_checks`. (General one-mover-at-a-time finality stays M.21/N11) |
+| M.23 | 8.6/2.45 | SE moves/changes facing only with Fresh HI/Velitae pushing unit at start of MPh (same Legion for Legion SEs) | ENFORCED — `crew0` start-of-MPh snapshot (`_mph_bookkeeping`) read by `_move_verdict`/`_change_facing_verdict`/`_se_crewed`; facing state = `u["facing"]` (DIRS index), free pivot via `change_facing` or the move's `facing` param; VC. Same-Legion UNREACHABLE (single-Legion OOB). 8.61/10.11 pivot lock after a level-crossing lands with **B14** (no crossing action exists yet) |
+| M.24 | 2.45 | SE white side = no crew, MA 0 | ENFORCED — `game.json` SE `ma` now [n, 0]; `_ma` flips on the crew condition, not Fresh/Disrupted; VC `se_facing_checks` (N21 closed) |
 | M.25 | 8.61 | Tower as portable staircase; 2 MF off the ramp; riders/pushers lose 2 MF per SE MF (damage-marker transit cost); tower locks after level-crossing | OPEN → **B14** |
 | M.26 | 8.7 | Escalade placement (4 MF, adjacency, capacity, Base unit rules, per-phase usage cap) | OPEN → **B12** |
 | M.27 | 8.8/6.6/6.61 | Testudo form/disband (6 MF), MA 4, join/leave costs, entry prohibitions | OPEN → **B13** (formation now; one-per-Legion limit blocked on **R2**) |
@@ -207,7 +207,7 @@ runs on.
 
 | state | written by | read by | status |
 |---|---|---|---|
-| unit hex + facing-of-record | deploy, move, retreat, advance (B15), losses, breach kill, escape | everything | hex ENFORCED; **SE facing OPEN → B1** |
+| unit hex + facing-of-record | deploy, move, retreat, advance (B15), losses, breach kill, escape | everything | hex ENFORCED; SE facing ENFORCED — `u["facing"]` set at deploy, carried by moves, pivoted via `change_facing` (B1 closed) |
 | unit condition ladder (Fresh/Disrupted/Routed/Panicked) | losses [14.x/13.21], rally [17.x], retreat overstack [15.3] | fire eligibility [2.52], melee eligibility [11.1], MA [2.54], ZOC [7.2], rally, SE crew checks | ENFORCED — `state` field; VC |
 | breach damage per hex | breach attacks [12.1] | dynamic terrain `hex_t` [12.2], movement costs [12.4 road, half-damage], LOF, missile rows, ZOC connectivity | ENFORCED — `breach` dict; VC. **12.4 road interaction waits on B8** |
 | hex control (last occupant) | deploy, move (every hex entered), advance (B15) | gate entry [8.91], reinforcement gates, victory [18.3], auto-CC [5.6] | ENFORCED — `control`; VC |
@@ -282,7 +282,7 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | N18 | 12.3 | multi-wall junction hexes (R51-class) breach-once semantics unverified | ? |
 | N19 | 8.96 | Breach entry for Art/Cav/SE/Testudo without the connecting-breach adjacency test | 1 |
 | N20 | 8.13 | fully-stacked carve-out (hex not "full" to an entering HQ/Cauldron) not implemented | 1 |
-| N21 | 2.45 | SE `ma` encoded [n,n]; printed back side is MA 0 (no-crew state) | 1 |
+| N21 | 2.45 | ~~SE `ma` encoded [n,n]; printed back side is MA 0 (no-crew state)~~ **CLOSED** — `ma` [n, 0], `_ma` flips on the crew condition (see M.24) | ✓ |
 | N22 | 11.1 | Cauldron melee attack vs connected Elevated hexes refused (the one legal artillery-class attack) | 2 |
 | N23 | 14.2 | ~~substitute-D-for-B~~ **CLOSED** — `substitute_d` in resolve_loss verdict+apply; VC `retreat_engine_checks` | ✓ |
 | N24 | Q&A 11.81/14.3 | two Q&A permissions to verify with validator cases (retreat-into-hex defends; DE split choice) | ? |
@@ -291,9 +291,9 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B1, B6–B16, B18, B19 (engine; B2/B3/B4/B5/B17 closed), N2, N5–N9,
-N11–N22, N24 (N1 false gap; N3/N4/N10/N23 closed), R1/R2/R4/R7/R8 (blocked on Rob — cells stay
-open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+**NOT PLAYABLE.** Open rows: **B6–B16, B18, B19 (engine; B1/B2/B3/B4/B5/B17 closed), N2, N5–N9,
+N11–N20, N22, N24 (N1 false gap; N3/N4/N10/N21/N23 closed), R1/R2/R4/R7/R8 (blocked on Rob —
+cells stay open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`
