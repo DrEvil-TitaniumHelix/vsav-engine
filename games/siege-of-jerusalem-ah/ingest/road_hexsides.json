@@ -22,7 +22,7 @@
  },
  "open_observations": [
   "X33 leg (Y31->Y32->X33) dead-ends as drawn - the band fades SW of X33; possible bleached continuation toward Damascus W35 entrance. Encoded exactly as visible. Module-author worksheet item.",
-  "Damascus Gate in-city approach: the U36|V36 road ends at V36; W35 entrance carries rut marks only (8.91 allows \"rut marks OR connecting roads\"). No road side encoded into the gate - entrance hexsides govern gate movement.",
+  "Damascus Gate in-city approach: the U36|V36 road ends at V36 - which IS the gate's in-city entrance hex per gates_overlay.json (PREP-2 corrected W35->V36), i.e. the road is that entrance's 8.91 \"connecting road\". No road side is ever encoded into a gate hex - entrance hexsides govern gate movement.",
   "W29|X29 south spur ends at X29 (building complex; no coherent band beyond).",
   "Gates reached by roads (via their entrance hexsides, which are separate data): H40-area west gate, Q49, V42, Womens Gate Z23, Z33, CC30, PP17-area NE corner gate, Tadi (via OO32), II27/GG17 have bare approaches."
  ],
