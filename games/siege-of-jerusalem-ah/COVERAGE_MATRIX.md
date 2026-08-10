@@ -171,19 +171,19 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.13 | 11.4 | wrecking: unescorted SE entered/attacked → eliminated, hex gets WRECK (stacking + LOF persist) | entry-wreck + all marker effects ENFORCED — `_move_verdict` carve-out + `_apply` wrecking + `_markers_at` in `_stack_check`/`_move_verdict`/`_retreat_full`/`_lof`; VC `marker_checks`. The melee-through-Ramp-hexside trigger needs melee-vs-SE machinery → rides with **B14** (X.11) |
 | X.14 | 11.5 | Testudo: may not attack; defends normally; Judaeans may melee adjacent Testudos | OPEN → **B13** |
 | X.15 | 11.6/11.61/11.62 | Escalade melee: half strength, Base may not attack, top-first losses, end-of-phase move onto vacant Elevated | OPEN → **B12** |
-| X.16 | 11.8/11.81 | totals, odds ratio rounded in defender's favor, one attack per hex per phase (exceptions listed) | ENFORCED — `_resolve_melee`; VC (worked examples 11.81/11.82/11.83) |
+| X.16 | 11.8/11.81 | totals, odds ratio rounded in defender's favor, one attack per hex per phase (exceptions listed) | ENFORCED — `_resolve_melee` + `melee_hexes` hex-once lock (B11 closed a silent gap: the lock had never been implemented; exceptions = CC same-units / marked-attacker per 11.81's own list); VC (worked examples + `multiple_attack_checks`). Tower/Escalade attacked-from-both-levels exception needs the separate-battles structure → rides with **B12/B14** |
 | X.17 | 11.82 | defender chooses losses; excess losses forfeit; excess-E advance bonus | choice ENFORCED — pending machinery; VC. Excess-E bonus → **B15** |
 | X.18 | 11.83 | extreme odds clamp + drm | ENFORCED — `_resolve_melee`; VC |
 | X.19 | 11.841 | cohort integrity ±1 (complete Fresh cohort, one hex, max one per attack) | ENFORCED — `_cohort_drm`; VC |
 | X.20 | 11.842 | −1 per extra attacking Faction/Legion; +2 per extra defending; Zealot/Garrison/Cauldron exempt | ENFORCED — `_resolve_melee` (Roman multi-Legion side UNREACHABLE — single Legion) |
 | X.21 | 11.85 | flank attack ×2: six hexes enemy/impassable/enemy-ZOC; fully-stacked friendly ≠ impassable; Tower/Escalade escape denial for Judaeans | core ENFORCED — `_resolve_melee`; VC. Judaean escape-denial nuance lands with **B12/B14** |
-| X.22 | 11.86 | advance after combat into vacated hex + one extra hex per excess E; no MF cost; entry restrictions apply | OPEN → **B15** (no advance action exists in the gate at all) |
-| X.23 | 11.87 | continuous combat on die ≥6 (before or after drm), same units, recalculated odds, lost on interim attack | ENFORCED — `cc_hex`; VC. Same-units constraint audit → **B11** |
+| X.22 | 11.86 | advance after combat into vacated hex + one extra hex per excess E; no MF cost; entry restrictions apply | vacated-hex advance ENFORCED — 11.9's own advance door (`_open_adv` pending + `resolve_advance`, ZOC/CC ignored per 11.9, terrain re-checked, stacking-capped; B11); VC `multiple_attack_checks`. Excess-E multi-hex bonus still OPEN → **B15** |
+| X.23 | 11.87 | continuous combat on die ≥6 (before or after drm), same units, recalculated odds, lost on interim attack | ENFORCED — `cc_hex` now `{hex, pids}`: re-attack demands the exact same unit set (subset/superset refused), any interim attack clears it (B11 closed the same-units audit); VC `multiple_attack_checks` |
 | X.24 | 11.88 | cavalry ×2 into and from Clear | ENFORCED — `_melee_approach`; VC |
-| X.25 | 11.9 | Multiple Attacks A/B/C ladder; ZOC-must-attack after advance; marker removal rules; Q&A retreat-adjacent item | OPEN → **B11** |
+| X.25 | 11.9 | Multiple Attacks A/B/C ladder; ZOC-must-attack after advance; marker removal rules; Q&A retreat-adjacent item | ENFORCED — B11: `u["mk"]` ladder (advance grants A, A-attack advance → B, B-attack advance → C, then anew A [11.9 "chain begins anew"]); marked participants' markers consumed on their attack (11.9 states this for A; B/C read symmetrically — B's is implied by "grow a C"), a B-attack removes every A globally, a markerless attack removes ALL markers; a marked unit must target its ZOC enemies when any exist (skipped at night [7.2]); marker presence bypasses both once-per-phase locks and admits already-meleed partners ("even if they have already attacked"); markers cleared at Melee Phase end (phase-scoped state — 11.9's attacks exist only inside the phase); Q&A item 15 proven end-to-end (retreat-adjacent enemy attackable by an eligible unit); VC `multiple_attack_checks` |
 | X.26 | 14.2 | B result: retreat 1-or-2 (unit's option), one at a time; substitute-D option; overstack→Disrupt+continue | ENFORCED — retreat engine (`_retreat_path_verdict`: free 1-2 window, forced continuation while fully stacked per 15.3, sequential one-at-a-time overlay; `substitute_d` in resolve_loss); VC `retreat_engine_checks`. N23 closed |
 | X.27 | 14.21 | Judaeans in Roman HI ground ZOC: max 1-hex retreat; forced overstack = ELIMINATED | ENFORCED — `_retreat_capped` (attacker-aware: cap applies only when attacked BY that HI, via pending `attackers`), forced-overstack elimination through `eliminate`; VC `retreat_engine_checks` |
-| X.28 | 14.3/14.31/13.5 | melee Disrupt retreats immediately (Fortress/Testudo/SE hexes exempt); fire Disrupt stays | ENFORCED — `_apply_loss`; VC (Testudo/SE exemptions land with B13/B14) |
+| X.28 | 14.3/14.31/13.5 | melee Disrupt retreats immediately (Fortress/Testudo/SE hexes exempt); fire Disrupt stays | ENFORCED — `_apply_loss` AND `_auto_resolve_pending` (B11 closed a silent gap: a lone defender auto-resolved to Disrupted never got its retreat — only the manual path queued one); VC `multiple_attack_checks` (Testudo/SE exemptions land with B13/B14) |
 | X.29 | 14.32 | Armored-Tower Catapults and Disrupted Judaean Artillery never retreat | UNREACHABLE — no Armored Towers, no Judaean Ballista/Onager/Catapult in Gallus OOB (counter census) |
 | X.30 | 14.33 | DD: two units, lone defender eliminated, no voluntary single-unit absorption, ineligible-target rules | core ENFORCED — `_auto_resolve_pending`/loss pending; VC. Ineligible-target rules (9.11/9.12 towers/escalades) → **B14/B12** |
 | X.31 | 14.4 | E eliminates defender's choice, Fresh or Disrupted | ENFORCED — `_apply_letter`; VC |
@@ -212,8 +212,8 @@ runs on.
 | breach damage per hex | breach attacks [12.1] | dynamic terrain `hex_t` [12.2], movement costs [12.4 road, half-damage], LOF, missile rows, ZOC connectivity | ENFORCED — `breach` dict; VC. 12.4 movement transition: Elevated ½→1 at half-damage in `_entry_cost` (`_half_damaged`); ground road rate has no reachable damage path in Gallus (B8 closed; Clearance 18.37 campaign scope) |
 | hex control (last occupant) | deploy, move (every hex entered), advance (B15) | gate entry [8.91], reinforcement gates, victory [18.3], auto-CC [5.6] | ENFORCED — `control`; VC |
 | fired / fired-hexes (per Fire Phase) | fire, breach resolution | fire verdicts [9.1/9.6/13.1] | ENFORCED; reset in `_advance_phase` |
-| meleed + continuous-combat hex (per Melee Phase) | melee resolution | melee verdicts [11.1/11.87] | ENFORCED; reset per phase |
-| **A/B/C Multiple Attack markers** | advance after melee [11.9] | melee eligibility, marker-removal rules | **OPEN → B11** (state absent) |
+| meleed + attacked-hexes + continuous-combat set (per Melee Phase) | melee resolution | melee verdicts [11.1/11.81/11.87] | ENFORCED — `meleed` + `melee_hexes` (both hashed) + `cc_hex` `{hex, pids}`; reset per phase |
+| A/B/C Multiple Attack markers | advance after melee [11.9] via the `advance` pending | melee eligibility bypasses, ZOC-must-attack, marker-removal rules [11.9] | ENFORCED — `u["mk"]` (hashes via `units`), cleared at Melee Phase end; VC `multiple_attack_checks` (B11) |
 | **Escalade markers + Fully-Occupied face + per-phase usage count** | MPh placement [8.7], Disrupt/elim of Base [8.7] | movement [8.7], fire [9.12], melee [11.6], ZOC [7.13/7.2], flank escape [11.85] | **OPEN → B12** |
 | **Testudo formations (members, marker, Broken state)** | form/disband [6.6/8.8], melee results [16.4] | movement [6.61/8.8], fire [9.4], melee [11.5], ZOC [7.2], missile row [13.4] | **OPEN → B13** |
 | **riders/pushers split in SE hexes (above/below)** | boarding moves [8.61] | fire [9.4/9.11], melee [11.2x], SE movement [8.6], stacking [6.4] | **OPEN → B14** |
@@ -232,7 +232,7 @@ runs on.
 | class | rows | status |
 |---|---|---|
 | **automatic** (engine does it, no player input) | rally attempts + ladders (R.1–R.7), reinforcement rolls (M.34), victory check (X.39), segment transitions (F.1), night effects, breach state (F.38) | ENFORCED |
-| **obligatory-decisional** (player MUST act; gate must refuse everything else) | loss allocation (X.17/F.21→B4), retreat routing (X.33→N10), mandatory targets (F.17/F.18→N3), Routed/Panicked-toward-Refuge (M.16→B16), B-result 1-or-2 + substitute-D (X.26→N23), Roman artillery rally opt-in (R.3) | mixed — see rows |
+| **obligatory-decisional** (player MUST act; gate must refuse everything else) | loss allocation (X.17/F.21→B4), retreat routing (X.33→N10), mandatory targets (F.17/F.18→N3), Routed/Panicked-toward-Refuge (M.16→B16), B-result 1-or-2 + substitute-D (X.26→N23), Roman artillery rally opt-in (R.3), advance-or-decline after a vacating melee (X.22/X.25→B11 — modal `advance` pending, never auto-resolved: declining is a real choice) | mixed — see rows |
 | **ordered/quantified** | non-phasing-fires-first (F.1 ✓), breach-before-missile (F.2→N1), panicked-move-last (M.17→B16), full-MF rout moves (M.16→B16), HQ-first alpha rally order (R.2 ✓), one-mover-at-a-time (M.21→N11) | mixed — see rows |
 
 ---
@@ -291,9 +291,11 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B11–B16, B18, B19 (engine; B1–B10/B17 closed — B9/B10 this
-commit: F.26/X.13/X.32 + both marker ledger rows flipped on `marker_checks`; the single
-`_eliminate` door + `s["markers"]` state; B8 closed the commit before on `road_checks`), N2,
+**NOT PLAYABLE.** Open rows: **B12–B16, B18, B19 (engine; B1–B11/B17 closed — B11 this
+commit: X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row flipped on
+`multiple_attack_checks` — `u["mk"]` ladder, modal `advance` pending, `melee_hexes` hex-once
+lock, CC same-units audit, plus the 14.3 auto-lone-D retreat fix on X.28; B9/B10 the commit
+before on `marker_checks`), N2,
 N5–N9, N11–N20, N22, N24 (N1 false gap; N3/N4/N10/N21/N23 closed), R1/R2/R4/R8 (blocked on
 Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
 outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
