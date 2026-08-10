@@ -72,7 +72,10 @@ def deploy_jud(tg):
 
 def deploy_rom(tg):
     roms = [u for u in tg.s["units"].values() if u["side"] == "Rom"]
-    zone = sorted(tg.rom_zone)
+    # every other zone hex: the A4-bounded flank is tight enough that a
+    # solid-packed camp walls its own corner units in (A24/B24 don't exist),
+    # and the movement probes need units with open ground beside them
+    zone = sorted(tg.rom_zone)[::2]
     heavy_first = sorted(
         roms, key=lambda u: 0 if tg.utype(u)["cls"] in ("heavy", "light") else 1)
     zi = 0
@@ -93,12 +96,57 @@ def deploy_rom(tg):
     submit_ok(tg, "Rom", {"type": "deploy_done"})
 
 
+def bound_and_builtup_checks(tg):
+    """A3+A4 regression (2026-08-09). A3: Gallus Built-up = 92 per the frozen
+    PREP-4 evidence (ingest/builtup_evidence.json) — the 42-hex western-quarter
+    correction plus the 50 shipped, and Built-up IS the Roman victory pool.
+    A4: the southern hard bound (card: played only on the North Wall O50 ->
+    Women's Gate -> QQ31) keeps every pre-bound Old City art hex off the
+    battlefield; SS18/SS20/VV15 are the three adjudicated false positives
+    inside the bound (Kidron valley shading / printed map label — crops in
+    C:\\VassalSoJ\\desktop_packs\\SoJ_A4)."""
+    ev = json.load(open(os.path.join(HERE, "ingest", "builtup_evidence.json"),
+                        encoding="utf-8"))
+    rows = ev["rows"]
+    want = {r["key"] for r in rows
+            if r["zone"] == "new_city" and r["verdict"] == "builtup"}
+    have = {h for h, t in tg.hex_t0.items() if t == "builtup"}
+    assert want == have, (sorted(want - have), sorted(have - want))
+    assert len(have) == 92, len(have)
+    assert all(h in tg.playable for h in have), "objective off-battlefield"
+    assert tg.scenario["vp"]["roman_win"]["builtup_controlled"] == 10
+    # A4: nothing the printed art marks as Old City interior is playable
+    TRIO = {"SS18", "SS20", "VV15"}
+    leaked = [r["hex"] for r in rows
+              if r["zone"] == "outside" and r["hex"] not in TRIO
+              and r["verdict"] in ("builtup", "edifice", "adjudicate")
+              and tg.name_hex[r["hex"]] in tg.playable]
+    assert not leaked, leaked
+    for n in TRIO:
+        assert tg.name_hex[n] in tg.playable, n
+    # the typed Old City strongpoint fabric at the south junction is out;
+    # the card's named anchors, junctions and gates stay in
+    for n in ("P51", "O51", "O52", "O53", "P52", "P53",
+              "Q50", "Q51", "Q52", "Q53", "R49", "R51"):
+        assert tg.name_hex[n] not in tg.playable, n
+    for n in ("O50", "Z23", "QQ31", "P50", "QQ32", "Q49", "OO33",
+              "W36", "V42", "G39"):
+        assert tg.name_hex[n] in tg.playable, n
+    # exact area accounting: any change here is a bound change and needs
+    # the same evidence discipline as this bite
+    assert len(tg.playable) == 1341, len(tg.playable)
+    assert len(tg.outside) == 845, len(tg.outside)
+    print("A3/A4 bound+builtup checks: PASS (92 objectives, "
+          f"{len(tg.playable)} playable, Old City off-battlefield)")
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_dep_")
     try:
         g = gamespec.Game(HERE)
         tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
                          live, seed=7)
+        bound_and_builtup_checks(tg)
         assert tg.tier == 2 and tg.tier_earned == 2, \
             f"validated combat => tier 2 earned (got {tg.tier_earned})"
         assert tg.s["phase"] == "deploy_jud"

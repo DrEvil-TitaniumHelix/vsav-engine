@@ -1,5 +1,16 @@
 # Siege of Jerusalem (AH 1989) — ingest working notes
 **Status: INGEST IN PROGRESS (2026-08-07). No game.json yet — do not expect this dir to load.**
+
+**AMENDED 2026-08-09 (A3+A4 code phase):** Gallus Built-up = **92** (42 flips applied per
+`builtup_evidence.json` — the file is FROZEN as the pre-fix audit, do not regenerate; see
+`build_builtup_verdicts.py` docstring). Battlefield hard-bounded: `southern_bound` diagonals in
+scenario_gallus.json (cols A–O ≤ printed 50 anchored at O50; QQ–XX ≤ 32 at the QQ31/QQ32
+junction) + Elevated hexes playable only where they border battlefield ground — playable
+1925→1341, Old City fully off-battlefield. Side-finds: **V42 is a Second-Wall corner gate**
+(overlay: Fort class, entrances U42+W41), encoded; **SS18/SS20/VV15** are the only flagged art
+hexes inside the bound — adjudicated CLEAR (Kidron valley slope shading / printed "Valley of
+Kidron" label; crops in `C:\VassalSoJ\desktop_packs\SoJ_A4\`). Regression:
+`validate_deploy.py::bound_and_builtup_checks` + `validate_combat.py::gate_ring_checks`.
 Target: introductory scenario "The Assault of Gallus 66 AD" first (Tier ladder from there).
 Module: SOJ 3_0_0.vmod (Rob McRae / clanmacrae9, GitHub issue #2 funnel ticket), extracted at
 `C:\VassalSoJ\extracted\`. Rules transcription (full, Gallus scope):

@@ -5,18 +5,7 @@
 "known_limits": [
 "interior roads NOT encoded (v1.1 with module author verification)",
 "crest hexsides NOT encoded (no slopes in primary battlefield; verify west/east approaches)",
-"builtup_uncertain hexes excluded from builtup (Rob worksheet)",
 "second-wall staircases inferred from pattern, not art-confirmed"
-],
-"builtup_uncertain": [
-"X26",
-"X32",
-"Z25",
-"T36",
-"R38",
-"BB24",
-"W34",
-"MM19"
 ],
 "stairs_art_confirmed": [
 "P33",
@@ -24,7 +13,8 @@
 "S30",
 "Y24"
 ],
-"amended": "2026-08-09 A5+A6: 4 gate hexes retyped per gates_overlay.json (G40/R49/LL30/MM32); ring class added to all 9 gate hexes (decode-prep 6: gate breach/missile defense = printed ring colour); entrance sides added for G40/R49/LL30/MM32/P51 and corrected for W36 (W35->V36) + OO33 (PP32->OO34); 10 non-adjacent staircase hexsides deleted + Z33|Z34 added per staircases_evidence.json. 19 doubtful staircases untouched (R4)."
+"amended": "2026-08-09 A5+A6: 4 gate hexes retyped per gates_overlay.json (G40/R49/LL30/MM32); ring class added to all 9 gate hexes (decode-prep 6: gate breach/missile defense = printed ring colour); entrance sides added for G40/R49/LL30/MM32/P51 and corrected for W36 (W35->V36) + OO33 (PP32->OO34); 10 non-adjacent staircase hexsides deleted + Z33|Z34 added per staircases_evidence.json. 19 doubtful staircases untouched (R4).",
+"amended2": "2026-08-09 A3+A4: 42 hexes flipped clear->builtup per ingest/builtup_evidence.json (PREP-4; Gallus Built-up = 92, incl. the New City western quarter I39-Q44); builtup_uncertain DELETED (all 8 resolved by the printed art: BUILT-UP BB24/X32/R38/T36, CLEAR Z25/X26/W34/MM19); V42 retyped fort->gate_wall + ring fort + entrance sides V42|U42, V42|W41 per ingest/gates_overlay.json (Second-Wall corner gate, inside the A4 bound via its U42 crescent border). Old City hexes stay unencoded: the A4 southern bound (scenario playable_area) puts them off the battlefield."
 },
 "hexes": {
 "0125": {
@@ -2101,31 +2091,31 @@
 "name": "I38"
 },
 "0943": {
-"t": "clear",
+"t": "builtup",
 "name": "I39"
 },
 "0944": {
-"t": "clear",
+"t": "builtup",
 "name": "I40"
 },
 "0945": {
-"t": "clear",
+"t": "builtup",
 "name": "I41"
 },
 "0946": {
-"t": "clear",
+"t": "builtup",
 "name": "I42"
 },
 "0947": {
-"t": "clear",
+"t": "builtup",
 "name": "I43"
 },
 "0948": {
-"t": "clear",
+"t": "builtup",
 "name": "I44"
 },
 "0949": {
-"t": "clear",
+"t": "builtup",
 "name": "I45"
 },
 "0950": {
@@ -2353,31 +2343,31 @@
 "name": "J38"
 },
 "1044": {
-"t": "clear",
+"t": "builtup",
 "name": "J39"
 },
 "1045": {
-"t": "clear",
+"t": "builtup",
 "name": "J40"
 },
 "1046": {
-"t": "clear",
+"t": "builtup",
 "name": "J41"
 },
 "1047": {
-"t": "clear",
+"t": "builtup",
 "name": "J42"
 },
 "1048": {
-"t": "clear",
+"t": "builtup",
 "name": "J43"
 },
 "1049": {
-"t": "clear",
+"t": "builtup",
 "name": "J44"
 },
 "1050": {
-"t": "clear",
+"t": "builtup",
 "name": "J45"
 },
 "1051": {
@@ -2605,15 +2595,15 @@
 "name": "K38"
 },
 "1144": {
-"t": "clear",
+"t": "builtup",
 "name": "K39"
 },
 "1145": {
-"t": "clear",
+"t": "builtup",
 "name": "K40"
 },
 "1146": {
-"t": "clear",
+"t": "builtup",
 "name": "K41"
 },
 "1147": {
@@ -2633,7 +2623,7 @@
 "name": "K45"
 },
 "1151": {
-"t": "clear",
+"t": "builtup",
 "name": "K46"
 },
 "1152": {
@@ -2641,11 +2631,11 @@
 "name": "K47"
 },
 "1153": {
-"t": "clear",
+"t": "builtup",
 "name": "K48"
 },
 "1154": {
-"t": "clear",
+"t": "builtup",
 "name": "K49"
 },
 "1155": {
@@ -2881,11 +2871,11 @@
 "name": "L44"
 },
 "1251": {
-"t": "clear",
+"t": "builtup",
 "name": "L45"
 },
 "1252": {
-"t": "clear",
+"t": "builtup",
 "name": "L46"
 },
 "1253": {
@@ -2893,11 +2883,11 @@
 "name": "L47"
 },
 "1254": {
-"t": "clear",
+"t": "builtup",
 "name": "L48"
 },
 "1255": {
-"t": "clear",
+"t": "builtup",
 "name": "L49"
 },
 "1256": {
@@ -3137,7 +3127,7 @@
 "name": "M45"
 },
 "1352": {
-"t": "clear",
+"t": "builtup",
 "name": "M46"
 },
 "1353": {
@@ -3385,19 +3375,19 @@
 "name": "N44"
 },
 "1452": {
-"t": "clear",
+"t": "builtup",
 "name": "N45"
 },
 "1453": {
-"t": "clear",
+"t": "builtup",
 "name": "N46"
 },
 "1454": {
-"t": "clear",
+"t": "builtup",
 "name": "N47"
 },
 "1455": {
-"t": "clear",
+"t": "builtup",
 "name": "N48"
 },
 "1456": {
@@ -3637,7 +3627,7 @@
 "name": "O44"
 },
 "1552": {
-"t": "clear",
+"t": "builtup",
 "name": "O45"
 },
 "1553": {
@@ -3645,7 +3635,7 @@
 "name": "O46"
 },
 "1554": {
-"t": "clear",
+"t": "builtup",
 "name": "O47"
 },
 "1555": {
@@ -3881,11 +3871,11 @@
 "name": "P42"
 },
 "1651": {
-"t": "clear",
+"t": "builtup",
 "name": "P43"
 },
 "1652": {
-"t": "clear",
+"t": "builtup",
 "name": "P44"
 },
 "1653": {
@@ -4138,7 +4128,7 @@
 "name": "Q43"
 },
 "1752": {
-"t": "clear",
+"t": "builtup",
 "name": "Q44"
 },
 "1753": {
@@ -4367,7 +4357,7 @@
 "name": "R37"
 },
 "1847": {
-"t": "clear",
+"t": "builtup",
 "name": "R38"
 },
 "1848": {
@@ -4864,7 +4854,7 @@
 "name": "T35"
 },
 "2046": {
-"t": "clear",
+"t": "builtup",
 "name": "T36"
 },
 "2047": {
@@ -5392,8 +5382,9 @@
 "name": "V41"
 },
 "2253": {
-"t": "fort",
-"name": "V42"
+"t": "gate_wall",
+"name": "V42",
+"ring": "fort"
 },
 "2254": {
 "t": "clear",
@@ -5588,7 +5579,7 @@
 "name": "W27"
 },
 "2339": {
-"t": "clear",
+"t": "builtup",
 "name": "W28"
 },
 "2340": {
@@ -5857,7 +5848,7 @@
 "name": "X31"
 },
 "2444": {
-"t": "clear",
+"t": "builtup",
 "name": "X32"
 },
 "2445": {
@@ -6834,7 +6825,7 @@
 "name": "BB23"
 },
 "2838": {
-"t": "clear",
+"t": "builtup",
 "name": "BB24"
 },
 "2839": {
@@ -8078,7 +8069,7 @@
 "name": "GG19"
 },
 "3336": {
-"t": "clear",
+"t": "builtup",
 "name": "GG20"
 },
 "3337": {
@@ -9880,7 +9871,7 @@
 "name": "NN28"
 },
 "4049": {
-"t": "clear",
+"t": "builtup",
 "name": "NN29"
 },
 "4050": {
@@ -10128,7 +10119,7 @@
 "name": "OO27"
 },
 "4148": {
-"t": "clear",
+"t": "builtup",
 "name": "OO28"
 },
 "4149": {
@@ -12785,6 +12776,12 @@
 "4254|4255": {
 "staircase": true,
 "inferred": true
+},
+"2152|2253": {
+"entrance": true
+},
+"2253|2352": {
+"entrance": true
 }
 },
 "areas": {

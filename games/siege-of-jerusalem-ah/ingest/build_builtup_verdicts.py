@@ -54,6 +54,12 @@ HAND = {
     "Z25":  ("clear", "only Y26/Z26 art overlapping the S hexsides; interior is road+tan"),
     "NN28": ("clear", "only OO28's block overlapping the SE hexside"),
     "Q43":  ("clear", "sliver of P43's block over the W hexside"),
+    # A3/A4 code phase (2026-08-09): the only three flagged hexes inside the
+    # BOUNDED battlefield (crops in C:\VassalSoJ\desktop_packs\SoJ_A4\) —
+    # the colourimetric misread valley art and map typography as structure.
+    "SS18": ("clear", "Kidron valley slope shading, no structures drawn"),
+    "SS20": ("clear", "Kidron valley slope shading, no structures drawn"),
+    "VV15": ("clear", "printed 'Valley of Kidron' map label, ink not terrain"),
 }
 
 
@@ -75,12 +81,19 @@ def neighbours(h):
 
 
 def playable(terrain, scen):
+    """The PRE-A4 playable area, pinned. builtup_evidence.json is FROZEN as the
+    audit of the map before the A3 flips and the A4 southern bound landed — it is
+    the evidence FOR both defects (42 mistyped hexes, 219-hex Old City leak). Do
+    not regenerate it; a rerun on the fixed map reports the fixed state (the
+    `current` fields flip) and the audit is lost. row_max=63 was the old scenario
+    config value; the live config now carries `southern_bound` instead and the
+    engine's bounded flood lives in soj.py::_compute_playable."""
     cfg = scen["deployment"]["playable_area"]
     hexes = terrain["hexes"]
     name_hex = {v["name"]: k for k, v in hexes.items()}
     new_city = set(terrain["areas"]["new_city"])
     barrier = {h for h, v in hexes.items() if v["t"] in ELEVATED}
-    row_max = int(cfg["row_max"])
+    row_max = 63                     # pinned pre-A4 value, see docstring
     seen, stack = set(), [name_hex[cfg["outside_seed"]]]
     while stack:
         h = stack.pop()

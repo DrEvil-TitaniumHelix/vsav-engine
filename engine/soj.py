@@ -152,21 +152,44 @@ class SoJGame(GateGame):
         return max(abs(dq), abs(dr), abs(dq + dr))
 
     def _compute_playable(self, cfg):
-        barrier = {h for h, t in self.hex_t0.items() if t in ELEVATED}
-        row_max = int(cfg["row_max"])
+        """A4 hard bound. The card plays Gallus 'only on the North Wall from
+        O50 to Women's Gate to QQ31'; the Old City is off the battlefield and
+        its terrain is deliberately unencoded. Two southern_bound diagonals
+        (printed-number caps anchored on the arc ends O50 and QQ31/QQ32) stop
+        the outside flood from wrapping around the wall ends, and the Elevated
+        fabric counts as playable only where it borders battlefield ground —
+        which drops the typed Old City strongpoints (P51/O53/Q50... cluster)
+        from play and from the Judaean deployment zone."""
+        caps = []
+        for b in cfg["southern_bound"]:
+            lo, hi = (self._col_num(c) for c in b["cols"].split("-"))
+            caps.append((lo, hi, int(b["max_number"])))
+
+        def bounded_out(h):
+            col = int(h[:2])
+            n = int(h[2:]) - col // 2
+            return any(lo <= col <= hi and n > mx for lo, hi, mx in caps)
+
+        elevated = {h for h, t in self.hex_t0.items() if t in ELEVATED}
         seed = self.name_hex[cfg["outside_seed"]]
         seen = set()
         stack = [seed]
         while stack:
             h = stack.pop()
-            if h in seen or h in barrier or h in self.new_city:
-                continue
-            if int(h[2:]) > row_max:
+            if (h in seen or h in elevated or h in self.new_city
+                    or bounded_out(h)):
                 continue
             seen.add(h)
             stack.extend(self._nb(h))
         self.outside = seen
-        self.playable = seen | self.new_city | barrier
+        ground = seen | self.new_city
+        barrier = {h for h in elevated
+                   if any(n in ground for n in self._nb(h))}
+        self.playable = ground | barrier
+
+    @staticmethod
+    def _col_num(letters):
+        return ord(letters[0]) - 64 + (26 if len(letters) > 1 else 0)
 
     def _roman_zone(self):
         elev = [(int(h[:2]), int(h[2:]) - int(h[:2]) // 2)
