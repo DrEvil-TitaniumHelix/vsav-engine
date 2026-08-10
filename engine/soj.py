@@ -1052,8 +1052,6 @@ class SoJGame(GateGame):
         defenders = [o for o in self._occupants(tgt) if o["side"] == enemy]
         if not defenders:
             return self._v(False, "no enemy units in the target hex [9.1]")
-        if self._esc_at(tgt) is not None:
-            return self._v(False, "fire vs an Escalade hex: the 9.12 loss-order rules are not yet enforced - open matrix row F.32 (B12 fire slice)")
         firers = [self.s["units"].get(str(p_)) for p_ in action.get("firers", [])]
         if not firers or any(f is None for f in firers):
             return self._v(False, "unknown firer")
@@ -1353,30 +1351,33 @@ class SoJGame(GateGame):
         self._eliminate(u)
         return "eliminated (Disrupted absorbed a D) [14.3]"
 
+    def _loss_elig(self, h, by):
+        d = [o for o in self._occupants(h) if o["side"] == by]
+        e = self._esc_at(h)
+        if e and len(d) > 1:
+            d = [o for o in d if o["pid"] != e["base"]]
+        return d
+
     def _auto_resolve_pending(self):
-        """Resolve the loss pending automatically only when no real choice
-        exists: a single defender and no B (B always offers the defender the
-        substitute-D choice [14.2])."""
         p = self.s["pending"]
         if not p or p["kind"] != "loss" or "B" in p["letters"]:
             return
-        defenders = [o for o in self._occupants(p["hex"])
-                     if o["side"] == p["by"]]
-        if len(defenders) != 1:
+        if len(self._loss_elig(p["hex"], p["by"])) != 1:
             return
-        u = defenders[0]
-        events = []
         letters = [c for c in p["letters"] if c != "B"]
         if letters.count("D") >= 2:
-            # DD striking a lone defender twice eliminates it [14.33]
             letters = ["E"] + [c for c in letters if c == "E"]
+            p["auto_note"] = "DD vs a lone eligible target eliminates it [14.33/9.12]"
+        events, u = [], None
         for c in letters:
-            if u["state"] == "eliminated":
+            el = self._loss_elig(p["hex"], p["by"])
+            if not el:
                 break
+            u = el[0]
             events.append(self._apply_letter(u, c, p["source"]))
         self.s["pending"] = None
         p["auto"] = events
-        if p["source"] == "melee" and "disrupted" in events \
+        if p["source"] == "melee" and "disrupted" in events and u \
                 and u["state"] == "disrupted" \
                 and self.hex_t(p["hex"]) not in ("fortress",):
             self.s["pending"] = {"kind": "retreat", "hex": p["hex"],
@@ -1395,10 +1396,51 @@ class SoJGame(GateGame):
         need = [c for c in p["letters"] if c != "B"]
         if len(picks) != len(need):
             return self._v(False, f"{len(need)} results to allocate: {need}")
+        e = self._esc_at(p["hex"])
+        sim = {o["pid"]: o["state"] for o in self._occupants(p["hex"])
+               if o["side"] == side}
+
+        def elig():
+            liv = [q for q in sim if sim[q] != "eliminated"]
+            if e and e["base"] in liv and len(liv) > 1:
+                liv = [q for q in liv if q != e["base"]]
+            return liv
+
+        if any(str(pk.get("pid")) not in sim for pk in picks):
+            return self._v(False, "pick units in the affected hex")
+        prev_d = None
         for pk, letter in zip(picks, need):
-            u = self.s["units"].get(str(pk.get("pid")))
-            if not u or u["hex"] != p["hex"] or u["side"] != side:
-                return self._v(False, "pick units in the affected hex")
+            pid = str(pk.get("pid"))
+            el = elig()
+            if not el:
+                break
+            if pid not in el:
+                if e and pid == e["base"]:
+                    return self._v(False, "the Base unit is not affected "
+                                          "unless it is the only unit left "
+                                          "in the hex [9.12]")
+                return self._v(False, f"{pid} cannot absorb a further "
+                                      "result while another eligible "
+                                      "target remains [14.33/14.4]")
+            if letter == "D":
+                if prev_d == pid and len(el) > 1:
+                    return self._v(False, "one unit cannot voluntarily "
+                                          "suffer the entire DD while "
+                                          "another eligible target "
+                                          "remains [14.33]")
+                prev_d = pid
+            cls = self.utype(self.s["units"][pid])["cls"]
+            if letter == "E":
+                sim[pid] = "eliminated"
+            elif cls == "artillery" and p["source"] == "fire":
+                if sim[pid] != "fresh":
+                    j = DISR_LADDER.index(sim[pid]) \
+                        if sim[pid] in DISR_LADDER else 3
+                    sim[pid] = "eliminated" if j >= 2 else DISR_LADDER[j + 1]
+            elif sim[pid] == "fresh":
+                sim[pid] = "disrupted"
+            else:
+                sim[pid] = "eliminated"
         # the most severe result must fall on the Primary Target [13.2 Q&A]
         prim = [pid for pid in (p.get("primary") or [])
                 if self.s["units"].get(pid, {}).get("hex") == p["hex"]]

@@ -98,7 +98,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.29 | 10.2 | rocks from Bastion/Fortress vs **connected lower Elevated** hexes | OPEN → **N2** (gate refuses any Elevated target) |
 | F.30 | 10.2 | +1 drm per attacking Cauldron; may combine with missile/artillery fire | ENFORCED — `cauldrons` count |
 | F.31 | 9.11 + Q&A | fire vs Towers: declare pushers/riders/both; other level immune; DD-vs-lone eliminates; Cauldrons/rocks never vs riders | OPEN → **B14** |
-| F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | OPEN → **B12 fire slice** — escalade state now EXISTS (movement slice); the gate refuses fire at an Escalade hex with a LOUD guard naming this row (no silent mis-allocation possible). 9.4's fire-FROM-an-Escalade-hex bar is ENFORCED (`_fire_verdict`); VC `escalade_checks` |
+| F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | ENFORCED — **B12 fire slice**: `_loss_elig` makes the Base ineligible while any other defending unit is left in the hex (any unit counts, incl. an HQ — literal "only unit left" reading); target row = the table's own `clear_slope_ramp_escalade` row (no row change); DD vs the lone eligible top unit eliminates it outright, the Base untouched (`_auto_resolve_pending` collapse, 9.11-consistent); E-chains spill onto the Base only once it is the last unit left; sequential-eligibility simulation in `_resolve_loss_verdict` refuses Base picks [9.12]. 9.4's fire-FROM bar unchanged; VC `escalade_checks` (fire scenes: door-open D pending, DD/DE/EE autos, lone-Base DD, manual distinctness) |
 | F.33 | 10.1/10.11 | Breach attacks: Roman segment only; Fresh manning unit; adjacency | ENFORCED — `_breach_verdict`; VC |
 | F.34 | **10.11** | Breach attack **only vs the Facing-arrow hex** | ENFORCED — `_breach_verdict` facing test vs `_facing_hex`; VC `se_facing_checks` + E2E negative |
 | F.35 | 6.41 | Ram's pushing unit must be same Legion | UNREACHABLE — single-Legion (XII) Roman OOB; no non-XII Roman unit exists (card OOB, `COUNTERS_VERIFIED.md`) |
@@ -185,7 +185,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.27 | 14.21 | Judaeans in Roman HI ground ZOC: max 1-hex retreat; forced overstack = ELIMINATED | ENFORCED — `_retreat_capped` (attacker-aware: cap applies only when attacked BY that HI, via pending `attackers`), forced-overstack elimination through `eliminate`; VC `retreat_engine_checks` |
 | X.28 | 14.3/14.31/13.5 | melee Disrupt retreats immediately (Fortress/Testudo/SE hexes exempt); fire Disrupt stays | ENFORCED — `_apply_loss` AND `_auto_resolve_pending` (B11 closed a silent gap: a lone defender auto-resolved to Disrupted never got its retreat — only the manual path queued one); VC `multiple_attack_checks` (Testudo/SE exemptions land with B13/B14) |
 | X.29 | 14.32 | Armored-Tower Catapults and Disrupted Judaean Artillery never retreat | UNREACHABLE — no Armored Towers, no Judaean Ballista/Onager/Catapult in Gallus OOB (counter census) |
-| X.30 | 14.33 | DD: two units, lone defender eliminated, no voluntary single-unit absorption, ineligible-target rules | core ENFORCED — `_auto_resolve_pending`/loss pending; VC. Ineligible-target rules (9.11/9.12 towers/escalades) → **B14/B12** |
+| X.30 | 14.33 | DD: two units, lone defender eliminated, no voluntary single-unit absorption, ineligible-target rules | ENFORCED — `_auto_resolve_pending` (lone-eligible collapse) + `_resolve_loss_verdict` sequential simulation. B12 fire slice closed TWO silent gaps this row had over-claimed: (1) the no-voluntary-single-unit-absorption bar was never implemented — the defender could put both Ds of a DD on one unit in ANY hex (now refused [14.33]); (2) picks were validated positionally, not sequentially — an eliminated unit could be picked again. 9.12 escalade ineligibility ENFORCED (`_loss_elig`); 9.11 tower half → **B14**. DD exists only on the missile table (letter census of both tables), so the rewrite is fire-scoped by construction; VC `escalade_checks` |
 | X.31 | 14.4 | E eliminates defender's choice, Fresh or Disrupted | ENFORCED — `_apply_letter`; VC |
 | X.32 | 14.5 | eliminated Artillery/SE leave Wrecks: stacking + similar-unit movement block (+LOF per 11.4) | ENFORCED — the single `_eliminate` door drops the marker on EVERY elimination path (fire E, 13.21 ladder, melee D-absorb, breach kill [12.2], rally 9+, retreat overstack/no-route, entry-wreck); slot held + into/through block + retreat full-to-them; Elim-vs-Wreck conflict registered, outcome-equivalent in Gallus (R7 campaign); VC `marker_checks` |
 | X.33 | 15.1 | retreat = constrained search: MF budget ≤ Disrupted MA, avoid-Rout/Panic/elim preference, per-hex toward Refuge whenever possible, three absolute prohibitions, elimination on failure | ENFORCED — `_retreat_can_finish` memoized feasibility search backs every per-step check (MF budget, mandatory safe-route, per-hex Refuge direction, prohibitions); VC `retreat_engine_checks` (incl. the printed 15.3 EXAMPLE's fully-stacked arithmetic). N10 closed |
@@ -291,13 +291,16 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B12 (fire/melee slices only — the movement slice landed this
-commit: M.26/M.36/M.13-escalade + F.15 base-exclusion + 9.4 fire-from bar flipped on
-`escalade_checks`; `s["esc"]` + `u["up"]`/`u["mv"]` state, place/remove/climb/scale/collapse,
-F.32/X.15 held by LOUD guards; TWO silent gaps closed in the same pass: the M.11 7.2
-SE-or-Escalade-stacked ZOC exclusion had been over-claimed and was missing entirely, and every
-move action was drawing a fresh full-MA budget — `u["mv"]` now accumulates MF across a unit's
-actions in one MPh), B13–B16, B18, B19 (engine; B1–B11/B17 closed — B11 the commit before:
+**NOT PLAYABLE.** Open rows: **B12 (melee slice only — the FIRE slice landed this commit:
+F.32 ENFORCED (`_loss_elig` Base ineligibility, `clear_slope_ramp_escalade` row, DD-vs-lone-top
+outright elimination, E-chain spill-to-Base-last, sequential-eligibility loss verdict) and X.30
+completed, closing TWO more silent gaps X.30 had over-claimed: the 14.33 voluntary-single-unit-DD
+bar was never implemented in ANY hex, and loss picks were validated positionally so an
+eliminated unit could keep absorbing; fire scenes on `escalade_checks`. The movement slice the
+commit before: M.26/M.36/M.13-escalade + F.15 base-exclusion + 9.4 fire-from bar; `s["esc"]` +
+`u["up"]`/`u["mv"]` state, place/remove/climb/scale/collapse; X.15 still held by its LOUD
+guards; the M.11 7.2 ZOC exclusion + fresh-MA-budget silent gaps closed there), B13–B16, B18,
+B19 (engine; B1–B11/B17 closed — B11 the commit before:
 X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row on `multiple_attack_checks`, `u["mk"]`
 ladder, modal `advance` pending, `melee_hexes` hex-once lock, CC same-units audit, 14.3
 auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`), N2,
