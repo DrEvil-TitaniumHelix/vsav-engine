@@ -966,6 +966,14 @@ class SoJGame(GateGame):
             u = self.s["units"].get(str(pk.get("pid")))
             if not u or u["hex"] != p["hex"] or u["side"] != side:
                 return self._v(False, "pick units in the affected hex")
+        sub = action.get("substitute_d")
+        if sub is not None:
+            if "B" not in p["letters"] or p["source"] != "melee":
+                return self._v(False, "no B result to substitute [14.2]")
+            u = self.s["units"].get(str(sub))
+            if not u or u["hex"] != p["hex"] or u["side"] != side:
+                return self._v(False, "the substituted D must fall on a "
+                                      "single unit in the affected hex [14.2]")
         return self._v(True, "losses allocated")
 
     # ------------------------------------------------------------ breach [10/12]
@@ -1162,7 +1170,8 @@ class SoJGame(GateGame):
         if result == "-":
             return detail
         letters = list(result)
-        self._queue_melee_result(tgt, letters, enemy, side)
+        self._queue_melee_result(tgt, letters, enemy, side,
+                                 [a["pid"] for a in atk_units])
         detail["pending"] = self.s["pending"] is not None
         return detail
 
@@ -1176,23 +1185,253 @@ class SoJGame(GateGame):
                 return sign                   # [11.841] max one per attack
         return 0
 
-    def _queue_melee_result(self, tgt, letters, defender, attacker):
+    def _queue_melee_result(self, tgt, letters, defender, attacker,
+                            attacker_pids=None):
         self.s["pending"] = {"kind": "loss", "hex": tgt, "letters": letters,
                              "by": defender, "source": "melee",
-                             "attacker": attacker}
+                             "attacker": attacker,
+                             "attacker_pids": attacker_pids or []}
         self._auto_resolve_pending()
         if self.s["pending"] is None:
             # auto-resolved: any survivor with B retreats via its own pending
             if "B" in letters:
-                self._queue_retreat(tgt, defender)
+                self._queue_retreat(tgt, defender, attacker_pids)
 
-    def _queue_retreat(self, tgt, defender):
+    def _queue_retreat(self, tgt, defender, attacker_pids=None):
         movers = [o["pid"] for o in self._occupants(tgt)
                   if o["side"] == defender]
         if movers:
             self.s["pending"] = {"kind": "retreat", "hex": tgt,
                                  "pids": movers, "by": defender,
-                                 "dist": [1, 2]}
+                                 "rkind": "b",
+                                 "attackers": attacker_pids or []}
+
+    # ------------------------------------------------ retreats [14.2/15.x]
+    # The 15.1/15.3 retreat is a constrained search, not a step count: an MF
+    # budget (melee-Disrupt retreats only), a mandatory preference for routes
+    # that avoid Rout/Panic/elimination, per-hex movement towards Refuge
+    # whenever possible, three absolute prohibitions, forced continuation
+    # while fully stacked, and elimination as the failure case (never a
+    # deadlock). The printed 15.3 EXAMPLE (rulebook p.12) is reproduced by
+    # validate_combat's retreat_engine_checks.
+    _FREE_CLS = {"artillery", "cauldron", "hq", "siege_engine"}
+
+    def _retreat_occ(self, h, overlay, skip=None):
+        """Occupants of h with this action's earlier retreats applied
+        (overlay: pid -> virtual hex, None = eliminated), excluding the
+        moving unit itself."""
+        out = []
+        for u in self.s["units"].values():
+            if u["pid"] == skip:
+                continue
+            if u["pid"] in overlay:
+                if overlay[u["pid"]] == h:
+                    out.append(u)
+            elif u["hex"] == h:
+                out.append(u)
+        return out
+
+    def _retreat_full(self, u, h, side, overlay):
+        """Is h fully stacked to retreating unit u [8.13/15.3]? Entering
+        such a hex costs one disorganization level; a retreat may not END
+        in one. Free-stack classes use the one-each caps [6.3/6.4] as their
+        'full to them' test (8.13's carve-out, mirrored)."""
+        occ = self._retreat_occ(h, overlay, skip=u["pid"])
+        cls = self.utype(u)["cls"]
+        if cls in self._FREE_CLS:
+            grp = ({"artillery", "cauldron"} if cls in ("artillery",
+                                                        "cauldron")
+                   else {cls})
+            cap = (2 if cls in ("artillery", "cauldron")
+                   and self.hex_t(h) == "fortress" else 1)
+            return sum(1 for o in occ
+                       if self.utype(o)["cls"] in grp) >= cap
+        return self._combat_count(occ) >= self._stack_limit(h, side)
+
+    def _retreat_step(self, u, frm, to, side, zoc, overlay):
+        """One retreat step: the three 15.1 prohibitions + 7.5 + 8.11 +
+        15.2's Infantry/Cavalry interlock. Returns (cost, why).
+        (15.2's SE-with-two-pushers and Testudo-join gates land with
+        B13/B14 - no such states exist yet.)"""
+        if to not in self._nb(frm):
+            return None, "retreat path not adjacent"
+        if to in zoc:
+            return None, "may not retreat into an enemy ZOC [7.5/15.1]"
+        occ = self._retreat_occ(to, overlay, skip=u["pid"])
+        enemy = self._enemy(side)
+        if any(o["side"] == enemy for o in occ):
+            return None, "may not retreat into an enemy-occupied hex [8.11/15.1]"
+        if any(o["side"] == side and o["state"] == "panicked" for o in occ):
+            return None, "may not retreat into a hex with a Panicked unit [15.1]"
+        cls = self.utype(u)["cls"]
+        if cls in ("heavy", "light") and \
+                any(self.utype(o)["cls"] == "cavalry" for o in occ):
+            return None, "Infantry may not retreat into a Cavalry hex [15.2]"
+        if cls == "cavalry" and \
+                any(self.utype(o)["cls"] in ("heavy", "light") for o in occ):
+            return None, "Cavalry may not retreat into an Infantry hex [15.2]"
+        c, why = self._entry_cost(u, frm, to, side)
+        if c is None:
+            return None, f"illegal retreat terrain: {why} [15.1]"
+        return c, None
+
+    def _retreat_capped(self, u, p):
+        """14.21: a Judaean unit in the Ground-level ZOC of an attacking
+        Roman Heavy Infantry retreats exactly one hex; a forced overstack
+        eliminates it."""
+        if u["side"] != "Jud" or self.is_night() or \
+                self.hex_t(u["hex"]) not in GROUND:
+            return False
+        for apid in p.get("attackers", []):
+            a = self.s["units"].get(str(apid))
+            if (a and a["hex"] is not None and a["side"] == "Rom"
+                    and self._fresh(a)
+                    and self.utype(a)["cls"] == "heavy"
+                    and self.hex_t(a["hex"]) in (GROUND | {"builtup"})
+                    and u["hex"] in self._nb(a["hex"])):
+                return True
+        return False
+
+    def _retreat_can_finish(self, u, side, ctx, pos, mf_left, levels, steps,
+                            clean, overlay, memo):
+        """Feasibility: can this retreat still end alive in a non-full hex?
+        rkind 'b' [14.2]: 1-2 hexes at the defender's option regardless of
+        MF, then forced continuation only while fully stacked. rkind
+        'disrupt' [15.1]: any length within the Disrupted-MA MF budget.
+        `clean` = no further fully-stacked entries allowed (the mandatory
+        avoid-Rout/Panic/elimination preference); `levels` = disorganization
+        levels the unit can still absorb before dying."""
+        full_here = steps >= 1 and self._retreat_full(u, pos, side, overlay)
+        if steps >= 1 and not full_here:
+            return True
+        if ctx["rkind"] == "b" and steps >= 2 and not full_here:
+            return False                       # window spent, not forced
+        key = (pos, None if mf_left is None else round(mf_left * 2),
+               levels, min(steps, 2), clean)
+        if key in memo:
+            return memo[key]
+        memo[key] = False                      # revisits cannot help
+        for n in self._nb(pos):
+            c, _ = self._retreat_step(u, pos, n, side, ctx["zoc"], overlay)
+            if c is None:
+                continue
+            if mf_left is not None and c > mf_left + 1e-9:
+                continue
+            lv = levels
+            if self._retreat_full(u, n, side, overlay):
+                if clean or lv <= 0:
+                    continue
+                lv -= 1
+            if self._retreat_can_finish(
+                    u, side, ctx, n,
+                    None if mf_left is None else mf_left - c,
+                    lv, steps + 1, clean, overlay, memo):
+                memo[key] = True
+                return True
+        return False
+
+    def _retreat_levels(self, u):
+        i = DISR_LADDER.index(u["state"]) if u["state"] in DISR_LADDER else 3
+        return 3 - i
+
+    def _retreat_survivable(self, u, side, ctx, p, overlay):
+        """Does ANY legal retreat end alive? False => the unit is eliminated
+        [15.1/14.21/7.5] - the gate never deadlocks (B17)."""
+        if self._retreat_capped(u, p):
+            for n in self._nb(u["hex"]):
+                c, _ = self._retreat_step(u, u["hex"], n, side, ctx["zoc"],
+                                          overlay)
+                if c is not None and \
+                        not self._retreat_full(u, n, side, overlay):
+                    return True
+            return False
+        mf = self._ma(u) if ctx["rkind"] == "disrupt" else None
+        return self._retreat_can_finish(u, side, ctx, u["hex"], mf,
+                                        self._retreat_levels(u), 0, False,
+                                        overlay, {})
+
+    def _retreat_path_verdict(self, u, side, ctx, p, names, overlay):
+        """Validate one unit's submitted retreat path. Returns a refusal
+        string or None."""
+        path = [self.name_hex.get(n, n) for n in names]
+        if not path or path[0] != u["hex"]:
+            return "retreat path must start at the unit's hex"
+        if len(path) < 2:
+            return "must retreat at least one hex [14.2/15.1]"
+        if self._retreat_capped(u, p):
+            if len(path) != 2:
+                return ("in the attacking Roman Heavy Infantry's ground "
+                        "ZOC: retreat exactly one hex [14.21]")
+            c, why = self._retreat_step(u, path[0], path[1], side,
+                                        ctx["zoc"], overlay)
+            if c is None:
+                return why
+            if self._retreat_full(u, path[1], side, overlay):
+                return ("a forced overstack under 14.21 eliminates the "
+                        "unit - declare it in `eliminate` instead")
+            return None
+        rk = ctx["rkind"]
+        mf = self._ma(u) if rk == "disrupt" else None
+        levels = self._retreat_levels(u)
+        pos = path[0]
+        for i, n in enumerate(path[1:]):
+            steps = i                          # steps already taken
+            full_pos = steps >= 1 and self._retreat_full(u, pos, side,
+                                                         overlay)
+            forced = full_pos
+            if rk == "b" and steps >= 2 and not forced:
+                return ("14.2 retreats extend beyond two hexes only while "
+                        "fully stacked [14.2/15.3]")
+            c, why = self._retreat_step(u, pos, n, side, ctx["zoc"], overlay)
+            if c is None:
+                return why
+            if mf is not None:
+                if c > mf + 1e-9:
+                    return ("may not expend more MF than the Disrupted "
+                            "movement allowance [15.1]")
+                mf -= c
+            constrained = rk == "disrupt" or forced
+            clean_possible = constrained and self._retreat_can_finish(
+                u, side, ctx, pos, None if mf is None else mf + c, levels,
+                steps, True, overlay, {})
+            n_full = self._retreat_full(u, n, side, overlay)
+            if n_full:
+                if clean_possible:
+                    return ("must avoid the Rout/Panic/elimination hex - a "
+                            "safe route exists [15.1/15.3]")
+                if levels <= 0:
+                    return ("this route eliminates the unit; declare it in "
+                            "`eliminate` if no survivable retreat exists")
+                levels -= 1
+            if constrained:
+                # each hex towards Refuge whenever possible [15.1/15.3]
+                d0 = self._refuge_dist(side, pos)
+                if self._refuge_dist(side, n) >= d0:
+                    for m in self._nb(pos):
+                        if self._refuge_dist(side, m) >= d0:
+                            continue
+                        cm, _ = self._retreat_step(u, pos, m, side,
+                                                   ctx["zoc"], overlay)
+                        if cm is None or (mf is not None
+                                          and cm > mf + c + 1e-9):
+                            continue
+                        lvm = levels + (1 if n_full else 0)
+                        if self._retreat_full(u, m, side, overlay):
+                            if clean_possible or lvm <= 0:
+                                continue
+                            lvm -= 1
+                        if self._retreat_can_finish(
+                                u, side, ctx, m,
+                                None if mf is None else mf + c - cm,
+                                lvm, steps + 1, clean_possible, overlay,
+                                {}):
+                            return ("each hex of a retreat must be towards "
+                                    "Refuge whenever possible [15.1/15.3]")
+            pos = n
+        if self._retreat_full(u, pos, side, overlay):
+            return ("a retreat may not end fully stacked - continue it or "
+                    "declare the unit in `eliminate` [15.1/15.3]")
+        return None
 
     def _resolve_retreat_verdict(self, side, action):
         p = self.s.get("pending")
@@ -1200,38 +1439,26 @@ class SoJGame(GateGame):
             return self._v(False, "no retreat to resolve")
         if side != p["by"]:
             return self._v(False, "the owning player routes retreats [15.1]")
-        paths = action.get("paths", {})
-        if set(paths.keys()) != set(p["pids"]):
-            return self._v(False, f"retreat paths required for: {p['pids']}")
-        enemy = self._enemy(side)
-        zoc = self._zoc_map(enemy)
-        heavy_zoc = self._heavy_ground_zoc(enemy)
+        paths = action.get("paths", {}) or {}
+        elim = [str(x) for x in action.get("eliminate", [])]
+        if set(paths) | set(elim) != set(p["pids"]) or set(paths) & set(elim):
+            return self._v(False, "route or eliminate each of: "
+                                  f"{p['pids']} exactly once")
+        ctx = {"rkind": p.get("rkind", "b"),
+               "zoc": self._zoc_map(self._enemy(side))}
+        overlay = {}
         for pid, names in paths.items():
             u = self.s["units"][pid]
-            path = [self.name_hex.get(n, n) for n in names]
-            if not path or path[0] != u["hex"]:
-                return self._v(False, "retreat path must start at the unit's hex")
-            lo, hi = p["dist"]
-            steps = len(path) - 1
-            maxd = hi
-            if u["hex"] in heavy_zoc:
-                maxd = 1                      # [14.21]
-            if not (lo <= steps <= maxd):
-                return self._v(False, f"retreat {lo}-{maxd} hexes [14.2/14.21]")
-            prev = path[0]
-            for h in path[1:]:
-                if h not in self._nb(prev):
-                    return self._v(False, "retreat path not adjacent")
-                if h in zoc:
-                    return self._v(False, "may not retreat into an enemy ZOC [7.5/15.1]")
-                if any(o["side"] == enemy for o in self._occupants(h)):
-                    return self._v(False, "may not retreat into an enemy-occupied hex")
-                if any(o["state"] == "panicked" for o in self._occupants(h)):
-                    return self._v(False, "may not retreat into a hex with a Panicked unit [15.1]")
-                c, why = self._entry_cost(u, prev, h, side)
-                if c is None:
-                    return self._v(False, f"illegal retreat terrain: {why} [15.1]")
-                prev = h
+            why = self._retreat_path_verdict(u, side, ctx, p, names, overlay)
+            if why:
+                return self._v(False, why)
+            overlay[pid] = self.name_hex.get(names[-1], names[-1])
+        for pid in elim:
+            if self._retreat_survivable(self.s["units"][pid], side, ctx, p,
+                                        overlay):
+                return self._v(False, f"{pid} has a survivable retreat and "
+                                      "must take it [15.1]")
+            overlay[pid] = None
         return self._v(True, "retreat routed")
 
     # ------------------------------------------------------------ rally [17]
@@ -1505,38 +1732,63 @@ class SoJGame(GateGame):
             events.append({"pid": u["pid"],
                            "event": self._apply_letter(u, letter, p["source"])})
         self.s["pending"] = None
+        sub = action.get("substitute_d")
         if "B" in p["letters"] and p["source"] == "melee":
-            self._queue_retreat(p["hex"], side)
+            if sub is not None:
+                # the defender substitutes a D (to a single unit) [14.2]
+                u = self.s["units"][str(sub)]
+                if u["state"] != "eliminated":
+                    events.append({"pid": u["pid"], "event":
+                                   self._apply_letter(u, "D", p["source"])
+                                   + " (substituted for B) [14.2]"})
+                movers = [e for e in events
+                          if e["event"].startswith("disrupted")]
+                if movers and self.hex_t(p["hex"]) not in ("fortress",):
+                    self.s["pending"] = {
+                        "kind": "retreat", "hex": p["hex"],
+                        "pids": [e["pid"] for e in movers], "by": side,
+                        "rkind": "disrupt",
+                        "attackers": p.get("attacker_pids") or []}
+            else:
+                self._queue_retreat(p["hex"], side,
+                                    p.get("attacker_pids"))
         elif p["source"] == "melee":
             movers = [e for e in events if e["event"] == "disrupted"]
             if movers and self.hex_t(p["hex"]) not in ("fortress",):
                 # melee-disrupted units retreat immediately [14.3/14.31]
                 self.s["pending"] = {"kind": "retreat", "hex": p["hex"],
                                      "pids": [e["pid"] for e in movers],
-                                     "by": side, "dist": [1, 2]}
+                                     "by": side, "rkind": "disrupt",
+                                     "attackers": p.get("attacker_pids")
+                                     or []}
         return {"events": events,
                 "retreat_pending": self.s["pending"] is not None}
 
     def _apply_retreat(self, side, action):
         p = self.s["pending"]
         out = []
-        for pid in p["pids"]:
-            path = [self.name_hex.get(n, n) for n in action["paths"][pid]]
+        for pid, names in (action.get("paths", {}) or {}).items():
+            path = [self.name_hex.get(n, n) for n in names]
             u = self.s["units"][pid]
-            crowded = 0
+            bumps = 0
             for h in path[1:]:
-                if self._combat_count(self._occupants(h)) >= \
-                        self._stack_limit(h, side):
-                    crowded += 1              # [15.3] +1 level per such hex
+                if self._retreat_full(u, h, side, {}):
+                    bumps += 1                # [15.3] +1 level per such hex
             u["hex"] = path[-1]
-            for _ in range(crowded):
-                i = DISR_LADDER.index(u["state"]) if u["state"] in DISR_LADDER else 3
+            for _ in range(bumps):
+                i = DISR_LADDER.index(u["state"]) \
+                    if u["state"] in DISR_LADDER else 3
                 if i >= 3:
                     u["hex"], u["state"] = None, "eliminated"
                     break
                 u["state"] = DISR_LADDER[i + 1]
             out.append({"pid": pid, "to": self.hex_name.get(u["hex"], None),
                         "state": u["state"]})
+        for pid in [str(x) for x in action.get("eliminate", [])]:
+            u = self.s["units"][pid]
+            u["hex"], u["state"] = None, "eliminated"
+            out.append({"pid": pid, "to": None, "state": "eliminated",
+                        "why": "no survivable retreat [15.1/14.21/7.5]"})
         self.s["pending"] = None
         return {"retreated": out}
 

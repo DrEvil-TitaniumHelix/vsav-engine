@@ -29,7 +29,7 @@ validator proving it against a worked example or printed table (spec #12).
 
 Gallus turn = **8 phases** (4.1–4.3) + one-off deployment. Game opens with the **Roman Fire Phase**
 (card). Turns 8–10 are night. Each Fire Phase has two ordered segments: **non-phasing side fires
-first**, then the phasing side (Breach attacks before missile fire within the phasing segment).
+first**, then the phasing side (no printed intra-segment ordering — see F.2).
 Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 
 ### P0 — DEPLOYMENT (one-off; Judaeans first, then Romans; card + 3.3/3.4)
@@ -68,7 +68,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | row | rule | requirement | status |
 |---|---|---|---|
 | F.1 | 4.12/4.22 | non-phasing side fires first; phasing side only after | ENFORCED — `seg` machinery in `_advance_phase`/`_fire_verdict`; VC |
-| F.2 | 4.12 | within the phasing segment: Breach attacks resolve before missile fire | OPEN → **N1** |
+| F.2 | 4.12/4.22 | intra-segment ordering of Breach attacks vs missile fire | ENFORCED (vacuously) — **no printed ordering exists**: 4.12 lists rams-then-missiles, 4.22 lists "fire and conduct Breach attacks" — opposite orders, so the listing is not normative; only non-phasing-first is mandated (F.1). N1 closed as a false gap; correction noted in RULEBOOK_VERIFIED |
 | F.3 | 2.52 | fire only by **Fresh** units (Disrupted have no missile/rock capability at all) | ENFORCED — `_fresh` checks in fire/breach verdicts; VC |
 | F.4 | 9.1 | one target hex per firer per phase; each firer fires once | ENFORCED — `fired` list |
 | F.5 | 9.1/9.6 | all fire at one target hex combines into a single attack; a hex is missile-attacked once per phase | ENFORCED — `fired_hexes` |
@@ -91,7 +91,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.22 | 13.3 | drm: −1 Fresh HI (with the full exception list), +1 Militia, +1 per Cauldron | partial — basic cases ENFORCED; exception list wrong (Testudo/SE-hex, artillery-primary) OPEN → **B2** |
 | F.23 | 13.3/9.5 | −1 firing from Breach; −1 ground-through-Breach-at-ground | OPEN → **B2** (never applied) |
 | F.24 | 13.4 | extreme odds: +1 per Attack Multiple beyond the 7-column | ENFORCED — `_resolve_missile` extreme; VC |
-| F.25 | 13.5 | fire results identical to Melee except no retreat on Disrupt | ENFORCED — `_apply_letter` fire path; VC |
+| F.25 | 13.5 | fire results identical to Melee except no retreat on Disrupt | ENFORCED — `_apply_letter` fire path; VC. Note: the printed Missile Table contains no B result (encoded table letters = D/E only), so fire-source B retreats are structurally impossible — recorded to prevent a future false gap |
 | F.26 | 13.21 | Artillery rout/panic ladder under fire; Elim marker on final elimination | partial — ladder ENFORCED (`_apply_letter`); **Elim marker stacking OPEN → B9**; Elim-vs-Wreck conflict → **R7** |
 | F.27 | 13.21 | Cauldrons are not Artillery for Disrupt results (no ladder, no Elim marker) | ENFORCED — `_apply_letter` checks cls `artillery` only (cauldron cls separate) |
 | F.28 | 2.523/10.2 | rocks: Fresh Zealots/Militia/Cauldrons on Elevated vs adjacent lower units | ENFORCED — `_fire_verdict` rock path; VC |
@@ -130,7 +130,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.13 | 5.3 | out of CC: no enemy-ZOC entry; no moving adjacent to Elevated enemy; escalade/testudo placement barred | ZOC/adjacency ENFORCED — `_move_verdict`; escalade/testudo gating lands with **B12/B13** |
 | M.14 | 5.2/5.11 | CC = 10-hex radius, −2 night, −2 non-Fresh HQ, cumulative; path = HQ-movement-legality tracing | radius/reductions ENFORCED; exact tracing OPEN → **B18** |
 | M.15 | 5.4/5.5/5.6 | Leaders by faction; Commanders all; Zealot/Cauldron/Artillery any-HQ exceptions; Judaean auto-CC (Fortress, Elevated path); Garrisons | ENFORCED — `in_cc`/`_elevated_path_to_fortress`; Garrison clause UNREACHABLE (no garrison units in Gallus OOB — card) |
-| M.16 | 8.1/15.3/17.21 | Routed/Panicked must move toward Refuge | direction ENFORCED — `_refuge_dist` endpoint test; **full-MF obligation + per-hex whenever-possible routing OPEN → B16** |
+| M.16 | 8.1/15.3/17.21 | Routed/Panicked must move toward Refuge | direction ENFORCED — `_refuge_dist` endpoint test; **full-MF obligation + per-hex whenever-possible routing + the 15.3 ROAD LOCK (p.12: on reaching an unobstructed road to Refuge the unit must stay on it in subsequent MPh; obstructed → may leave but must continue toward Refuge) OPEN → B16** |
 | M.17 | 8.1/4.13 | Panicked units move only after ALL other units have finished | OPEN → **B16** |
 | M.18 | 17.21 | must stop entering a hex with a Panicked unit; leaving a hex with a Panicked friend doubles cost | ENFORCED — `_move_verdict`; VM |
 | M.19 | 16.51 | Disrupted units may not enter enemy ZOC | ENFORCED — `_move_verdict` |
@@ -181,16 +181,16 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | X.23 | 11.87 | continuous combat on die ≥6 (before or after drm), same units, recalculated odds, lost on interim attack | ENFORCED — `cc_hex`; VC. Same-units constraint audit → **B11** |
 | X.24 | 11.88 | cavalry ×2 into and from Clear | ENFORCED — `_melee_approach`; VC |
 | X.25 | 11.9 | Multiple Attacks A/B/C ladder; ZOC-must-attack after advance; marker removal rules; Q&A retreat-adjacent item | OPEN → **B11** |
-| X.26 | 14.2 | B result: retreat 1-or-2 (unit's option), one at a time; substitute-D option; overstack→Disrupt+continue | core ENFORCED — retreat pending + `_apply_retreat`; VC. Substitute-D choice audit → **N23** |
-| X.27 | 14.21 | Judaeans in Roman HI ground ZOC: max 1-hex retreat; forced overstack = ELIMINATED | 1-hex cap ENFORCED — `_resolve_retreat_verdict`; **elimination-not-ladder OPEN → N10** |
+| X.26 | 14.2 | B result: retreat 1-or-2 (unit's option), one at a time; substitute-D option; overstack→Disrupt+continue | ENFORCED — retreat engine (`_retreat_path_verdict`: free 1-2 window, forced continuation while fully stacked per 15.3, sequential one-at-a-time overlay; `substitute_d` in resolve_loss); VC `retreat_engine_checks`. N23 closed |
+| X.27 | 14.21 | Judaeans in Roman HI ground ZOC: max 1-hex retreat; forced overstack = ELIMINATED | ENFORCED — `_retreat_capped` (attacker-aware: cap applies only when attacked BY that HI, via pending `attackers`), forced-overstack elimination through `eliminate`; VC `retreat_engine_checks` |
 | X.28 | 14.3/14.31/13.5 | melee Disrupt retreats immediately (Fortress/Testudo/SE hexes exempt); fire Disrupt stays | ENFORCED — `_apply_loss`; VC (Testudo/SE exemptions land with B13/B14) |
 | X.29 | 14.32 | Armored-Tower Catapults and Disrupted Judaean Artillery never retreat | UNREACHABLE — no Armored Towers, no Judaean Ballista/Onager/Catapult in Gallus OOB (counter census) |
 | X.30 | 14.33 | DD: two units, lone defender eliminated, no voluntary single-unit absorption, ineligible-target rules | core ENFORCED — `_auto_resolve_pending`/loss pending; VC. Ineligible-target rules (9.11/9.12 towers/escalades) → **B14/B12** |
 | X.31 | 14.4 | E eliminates defender's choice, Fresh or Disrupted | ENFORCED — `_apply_letter`; VC |
 | X.32 | 14.5 | eliminated Artillery/SE leave Wrecks: stacking + similar-unit movement block (+LOF per 11.4) | OPEN → **B10** (+ **R7** for the 13.21 Elim conflict) |
-| X.33 | 15.1 | retreat = constrained search: MF budget ≤ Disrupted MA, avoid-Rout/Panic/elim preference, per-hex toward Refuge whenever possible, three absolute prohibitions, elimination on failure | OPEN → **N10** (engine: fixed 1–2 hex distance, endpoint-only direction test) |
-| X.34 | 7.5/15.1 | cannot-retreat ⇒ eliminated (never deadlock) | OPEN → **B17** (engine deadlocks) |
-| X.35 | 15.2 | retreat stacking exemptions; no retreat through Cavalry/full SE; Testudo join-only | partial (basic checks); full set lands with **B13/B14/N10** |
+| X.33 | 15.1 | retreat = constrained search: MF budget ≤ Disrupted MA, avoid-Rout/Panic/elim preference, per-hex toward Refuge whenever possible, three absolute prohibitions, elimination on failure | ENFORCED — `_retreat_can_finish` memoized feasibility search backs every per-step check (MF budget, mandatory safe-route, per-hex Refuge direction, prohibitions); VC `retreat_engine_checks` (incl. the printed 15.3 EXAMPLE's fully-stacked arithmetic). N10 closed |
+| X.34 | 7.5/15.1 | cannot-retreat ⇒ eliminated (never deadlock) | ENFORCED — `eliminate` claims verified by exhaustive search (`_retreat_survivable`); refused while any survivable route exists; VC `retreat_engine_checks` (ringed-unit case). B17 closed |
+| X.35 | 15.2 | retreat stacking exemptions; no retreat through Cavalry/full SE; Testudo join-only | Infantry↔Cavalry interlock + no-stacking-limits-during-retreat ENFORCED — `_retreat_step`/`_retreat_full`; VC. SE-with-two-pushers + Testudo-join gates land with **B13/B14** |
 | X.36 | 15.3 | +1 disruption level per overstacked hex entered in retreat | ENFORCED — `_apply_retreat`; VC |
 | X.37 | Q&A 11.81 | a unit that just retreated into a hex MAY join its melee defense | OPEN → **N24** (verify — likely already true via occupant-based defense; prove with a validator case) |
 | X.38 | Q&A 14.3 | on DE the defender may eliminate the Disrupted unit and disrupt the Fresh one | OPEN → **N24** (verify allocation permits it) |
@@ -262,7 +262,7 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 | # | rule | what's wrong | class |
 |---|---|---|---|
-| N1 | 4.12/4.22 | breach-before-missile order inside the phasing fire segment not enforced (verify printed nuance first) | 1 |
+| N1 | 4.12/4.22 | ~~breach-before-missile order~~ **CLOSED as a false gap** — verified against the printed 4.12/4.22: no such ordering exists (see F.2) | ✓ |
 | N2 | 10.2 | rocks from Bastion/Fortress vs connected lower Elevated hexes refused | 2 |
 | N3 | 9.7 | ZOC-exerter preference among multiple adjacent mandatory targets not enforced | 1 |
 | N4 | 9.9 | indirect fire: no one-hex limit, no elevated-same-height case, breach-drm cumulation not suppressed | 1 |
@@ -271,7 +271,7 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | N7 | 11.14 | gate entrance-hexside melee not halved; Sortie opening + defender's end-of-phase bonus counterattack missing | 1+2 |
 | N8 | 11.7/11.18 | the −1 Elevated-defense drm (and its 11.18 forfeit) never applied in `_resolve_melee` | 1 |
 | N9 | 11.1 | mixed Heavy-Infantry + Foederatti/Syrian-Archer stacks are combat-inert — gate allows them to melee and fire | 1 |
-| N10 | 15.1/14.21 | retreat engine: fixed 1–2 distance instead of MF-budget search; endpoint-only Refuge test; no avoid-Rout/Panic/elim preference; 14.21 overstack = elimination not ladder-bump | 1 |
+| N10 | 15.1/14.21 | ~~retreat engine~~ **CLOSED** — full constrained-search rewrite (see X.27/X.33/X.34); VC `retreat_engine_checks` | ✓ |
 | N11 | 8.2 | unit movement finality (done once another unit moves) untracked | 1 |
 | N12 | 8.14 | offboard exit denied (Romans as-if-Clear; Judaeans never return) | 2 |
 | N13 | 3.4 | setup options denied: Roman Artillery Fresh-or-Disrupted choice; Infantry setup in Testudo | 2 |
@@ -284,15 +284,16 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | N20 | 8.13 | fully-stacked carve-out (hex not "full" to an entering HQ/Cauldron) not implemented | 1 |
 | N21 | 2.45 | SE `ma` encoded [n,n]; printed back side is MA 0 (no-crew state) | 1 |
 | N22 | 11.1 | Cauldron melee attack vs connected Elevated hexes refused (the one legal artillery-class attack) | 2 |
-| N23 | 14.2 | substitute-D-for-B defender option: audit the pending flow offers it explicitly | ? |
+| N23 | 14.2 | ~~substitute-D-for-B~~ **CLOSED** — `substitute_d` in resolve_loss verdict+apply; VC `retreat_engine_checks` | ✓ |
 | N24 | Q&A 11.81/14.3 | two Q&A permissions to verify with validator cases (retreat-into-hex defends; DE split choice) | ? |
 
 ---
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B1–B19 (engine), N1–N24 (this file), R1/R2/R4/R7/R8 (blocked on
-Rob — cells stay open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+**NOT PLAYABLE.** Open rows: **B1–B16, B18, B19 (engine; B17 closed this commit), N2–N9, N11–N22,
+N24 (N1 closed as a false gap; N10/N23 closed this commit), R1/R2/R4/R7/R8 (blocked on Rob — cells stay open until his
+answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`
