@@ -369,27 +369,28 @@
    "[18.3] hex control tracking + the ten-Built-up-hex Roman victory check at the end of each Judaean Melee Phase"
   ],
   "enforced_tier2": [
-   "[11.x, 14.x] Melee Table with drm/strength modifiers, loss choice, retreats, continuous combat, advance after combat",
-   "[9.x, 13.x] Missile Table: fire concentration, attack multiples, LOF, mandatory targets, wall attack bonus",
-   "[10.1, 12.x] Ram/Armored Tower breach attacks, breach damage accumulation, breach state",
-   "[15.x, 16.x, 17.x] disruption ladder Fresh-Disrupted-Routed-Panicked, rally table with drm, rout/panic movement",
-   "[5.x] Command Control range and penalties"
+   "[11.x, 14.x] Melee Table: drm/strength modifiers, odds and extreme-odds clamps, defender loss choice, core retreats, continuous combat, cohort/faction drm, flank attacks",
+   "[9.x, 13.x] Missile Table: fire concentration, attack multiples, core LOF (4x4 obstacle matrix + closer-to tiebreaks, cell-exact per decode-prep 6), adjacent mandatory targets, extreme odds, rocks, night/out-of-CC fire limits",
+   "[10.1, 12.x] Ram breach attacks: cumulative damage, breach as dynamic terrain, gate ring-class defense with entrance-side doubling, occupant elimination at breach instant",
+   "[15.x, 16.x, 17.x] disruption ladder Fresh-Disrupted-Routed-Panicked, rally table with all 12 drm, Refuge-direction rout/panic movement",
+   "[5.x] Command Control radius with night/non-Fresh reductions, faction/Commander eligibility, Judaean auto-CC"
   ],
-  "umpired": [
-   "[6.5, 8.7, 11.6] Escalades - not available in v1 (players adjudicate; v1.1 with module-author review)",
-   "[6.6, 8.8, 16.4] Testudo formation - not available in v1",
-   "[2.45, 8.6] Siege-engine FACING is not enforced (breach attacks allowed vs any adjacent Elevated hex); pushing crews are checked at the moving/attacking moment, and crews move as separate units rather than a locked stack",
-   "[8.61] riding atop Towers / tower boarding - not available in v1",
-   "[11.86] advance after combat is limited to the vacated hex (excess-E extra advance not offered)",
-   "[15.3, 17.21] Routed/Panicked movement: direction toward Refuge is enforced; the full-MF obligation and panicked-move-last ordering are advisory in v1",
-   "[5.2] Command Control tracing uses hex-passability BFS (documented approximation)",
-   "[9.51, 9.52] LOF elevation adjacency and Crest cases approximated by the crossed-hex obstacle rule (no Crest hexsides in the primary battlefield)",
-   "[8.4] artillery movement uses the reverse-side MA directly (the Fresh/Disrupted flip bookkeeping is implicit)",
-   "interior roads (not encoded in v1 - module-author verification pending; TEC road rate not applied)"
+  "build_open": [
+   "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
+   "Fire Phase completion: breach-before-missile order, full missile drm set (Tower -1, Breach -1s, Judaean-artillery range -1, Fresh-HI exception list, non-cumulation), errant fire, primary-target loss allocation, wall-bonus denial over intervening units, Tower-unit-as-Fortress LOF, 9.51 exact Built-up adjacency, 9.52 Crest LOF, rocks vs connected Elevated, ZOC-exerter target preference",
+   "Siege engines: facing state + Facing-arrow-only breach attacks, locked crew stack, no-crew MA 0 flip",
+   "Formations: Escalade, Testudo, tower riding/boarding with above/below state (incl. riders-fire contract and all dependent fire/melee/stacking rules)",
+   "Markers: Artillery Elim stacking to end of AP, SE Wreck stacking/LOF persistence",
+   "Melee completion: 11.9 A/B/C multiple-attack ladder, advance after combat, gate entrance-hexside halving + Sortie counterattack, Elevated-defense -1 drm and its forfeit, mixed HI+Foederatti/Syrian stack combat-inertness, Cauldron connected-Elevated attack",
+   "Retreat engine rewrite: 15.1 constrained MF-budget search with per-hex Refuge routing, cannot-retreat elimination (engine currently deadlocks), 14.21 forced-overstack elimination",
+   "Movement obligations and options: full-MF rout moves, panicked-move-last, 8.2 one-mover-at-a-time finality, soft-ZOC free exit, controlled-gate pass-through, offboard exit, interior roads (half MF + Cavalry/Artillery road-hexside Built-up constraint), 8.96 connecting-breach test, 8.13 HQ/Cauldron carve-out",
+   "Command Control exact 5.2 tracing (currently BFS approximation); artillery Fresh/Disrupted flip bookkeeping; deployment options (artillery Fresh-or-Disrupted, infantry in Testudo, off-board Legion setup)",
+   "Blocked on module-author answers: Garrison Area extents, testudo one-per-legion limit, fort staircase hexsides, Elim-vs-Wreck for eliminated artillery, Giora dice count"
   ],
   "rulings": [
    "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents AGREE everywhere (decode-prep 6, item by item) - their one discrepancy is a rule-citation mismatch (17.23 vs 17.3) registered in source_defects",
-   "Bounded battlefield: the old city beyond the Second Wall is out of play; Routed/Panicked units exiting via the south gates toward Refuge are removed from play (scenario scope statement; Bruce-approved; module-author review pending)"
+   "Bounded battlefield: the old city beyond the Second Wall is out of play; Routed/Panicked units exiting via the south gates toward Refuge are removed from play (scenario scope statement; Bruce-approved; module-author review pending)",
+   "Coverage-matrix regime (spec #13 as amended 2026-08-09): COVERAGE_MATRIX.md is the playability instrument. The scenario is playable only when every matrix row is ENFORCED or UNREACHABLE-with-evidence; nothing is left to a human umpire. Current verdict: NOT PLAYABLE - the build_open list above blocks release."
   ]
  }
 }

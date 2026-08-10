@@ -291,9 +291,15 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **A7 partial (edifice/bridge classes = campaign scope; road/crest
-land with B7/B8), A9 (data; A1/A2/A8 done ac848ec, A3/A4/A5/A6 done this commit), B1–B19 (engine),
-N1–N24 (this file), R1/R2/R4/R7/R8 (blocked on Rob — cells stay open until his answers land).**
+**NOT PLAYABLE.** Open rows: **B1–B19 (engine), N1–N24 (this file), R1/R2/R4/R7/R8 (blocked on
+Rob — cells stay open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
+scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
+`rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`
+register mirroring this matrix), `enforced_tier2` cut to true claims only (advance-after-combat,
+full-LOF, wall-bonus and mandatory-target overclaims removed), `SoJGame.rules_scope()` composes
+the matrix-regime shape with a NOT-PLAYABLE banner (gate.py's tiered base untouched for the
+legacy games until their conversion).
 The scenario ships when this section reads "PLAYABLE: every row ENFORCED or UNREACHABLE" and
 `run_all` + all four validators prove it.
 
