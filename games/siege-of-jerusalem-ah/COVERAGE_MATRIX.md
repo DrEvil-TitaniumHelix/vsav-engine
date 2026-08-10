@@ -78,18 +78,18 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.9 | card LOF | Tower/Armored Tower **unit** occupancy = Fortress-class obstacle on both axes | OPEN → **B6** |
 | F.10 | 9.51 | Elevated↔Ground fire blocked by Built-up adjacent to the lower end | OPEN → **B6-adjacent** (currently approximated by crossed-hex rule; declared; must be exact) |
 | F.11 | 9.52 | Ground-to-Ground across elevations: Slope-hex intervening limit | OPEN → **B7** |
-| F.12 | 9.13 | −1 drm per Tower/Armored Tower hex fired through | OPEN → **B2** (declared in data, never applied in `_resolve_missile`) |
-| F.13 | 9.9 | indirect fire: over ONE combat-unit hex max, ground-ground or same-height elevated, not through higher; −1 drm not cumulative w/ Breach −1 | OPEN → **N4** (engine: unlimited count, ground-ground only, cumulative) |
-| F.14 | 9.3 | Artillery never fires from Built-up/Breach; −1 Judaean artillery beyond Primary Range | half ENFORCED (`_fire_verdict` hex check; VC) / −1 drm OPEN → **B2** |
-| F.15 | 9.31 + Q&A | errant fire on natural 1 vs higher-elevation target: adjacent friendly (ground or elevated) disrupted, defender's choice, never a Base unit w/ climbers | OPEN → **B3** (zero implementation) |
+| F.12 | 9.13 | −1 drm per Tower/Armored Tower hex fired through | ENFORCED — `_lof` info.towers → `_resolve_missile` (per traversed hex, worst-firer convention); VC `fire_drm_checks` |
+| F.13 | 9.9 | indirect fire: over ONE combat-unit hex max, ground-ground or same-height elevated, not through higher; −1 drm not cumulative w/ Breach −1 | ENFORCED — `_lof`: same-height-group occupied crossings (infantry/cavalry screen; equipment/HQ do not), >1 blocks, ==1 = indirect; *-pair non-cumulation in `_resolve_missile`; VC `fire_drm_checks`. N4 closed |
+| F.14 | 9.3 | Artillery never fires from Built-up/Breach; −1 Judaean artillery beyond Primary Range | hex bar ENFORCED (`_fire_verdict`; VC); the −1 drm is UNREACHABLE in Gallus — the only Judaean artillery in the card OOB is Cauldrons (counter census, units-only evidence; corrects F7's reachability note, which contradicted the census). Build with the campaign scenarios |
+| F.15 | 9.31 + Q&A | errant fire on natural 1 vs higher-elevation target: adjacent friendly (ground or elevated) disrupted, defender's choice, never a Base unit w/ climbers | ENFORCED — `_resolve_missile` errant spec → `resolve_errant` pending (defender picks; auto when one candidate; chains after the loss pending); VC `fire_drm_checks`. Base-unit exclusion lands with B12 (no escalades yet). B3 closed |
 | F.16 | 9.4 + Q&A 11.1 | units beneath a SE may not fire; **riders atop a Tower may**; Fresh Velitae in Testudo may | OPEN → **B14** (gate refuses all fire from SE hexes — denies legal fire) |
 | F.17 | 9.7 | adjacent enemies are mandatory targets (SE/Artillery never mandatory) | ENFORCED — `_fire_verdict`; VC |
-| F.18 | 9.7 | among multiple adjacent targets: may not ignore a ZOC-exerter for a non-exerter | OPEN → **N3** |
-| F.19 | 9.8 + Q&A | Wall attack bonus ×2 straight down connected Wall/Bridge path; **not over intervening units** | partial — path check ENFORCED (`_wall_bonus`; VC); intervening-units denial OPEN → **B5**. B5 must also settle the gate-type inconsistency: `_wall_bonus` accepts `gate_wall`/`gate_north_wall` targets but not bare `gate` (P51) — decide whether a First-Wall gate is a 9.8 Wall hex and make the three gate types consistent |
+| F.18 | 9.7 | among multiple adjacent targets: may not ignore a ZOC-exerter for a non-exerter | ENFORCED — `_fire_verdict` per-firer exerter test via `_unit_zoc` (the per-unit refactor of `_zoc_map`); VC `fire_drm_checks`. N3 closed |
+| F.19 | 9.8 + Q&A | Wall attack bonus ×2 straight down connected Wall/Bridge path; **not over intervening units** | ENFORCED — `_wall_bonus`: path check + intervening-unit denial (Q&A 'A. Yes. No.'); gate inconsistency SETTLED: gates are not Wall hexes for 9.8 — a gate resolves on its ring class on every table (decode-prep 6), so all three gate types are excluded; VC `fire_drm_checks`. B5 closed |
 | F.20 | 13.2 | column = Primary Target type row; minimum AF per column; attack-multiple ladder | ENFORCED — `_target_row`/`_resolve_missile`; VC (tables cell-exact) |
-| F.21 | 13.2 + Q&A | most severe result **must** go to the Primary Target | OPEN → **B4** |
-| F.22 | 13.3 | drm: −1 Fresh HI (with the full exception list), +1 Militia, +1 per Cauldron | partial — basic cases ENFORCED; exception list wrong (Testudo/SE-hex, artillery-primary) OPEN → **B2** |
-| F.23 | 13.3/9.5 | −1 firing from Breach; −1 ground-through-Breach-at-ground | OPEN → **B2** (never applied) |
+| F.21 | 13.2 + Q&A | most severe result **must** go to the Primary Target | ENFORCED — loss pending carries `primary` pids (`_primary_pids`); `_resolve_loss_verdict` forces the severest letter onto a surviving primary unit; VC `fire_drm_checks`. B4 closed |
+| F.22 | 13.3 | drm: −1 Fresh HI (with the full exception list), +1 Militia, +1 per Cauldron | ENFORCED — `_resolve_missile`: full ** footnote list (SE-in-hex + artillery-primary suppression added; Testudo term lands with B13); VC `fire_drm_checks` |
+| F.23 | 13.3/9.5 | −1 firing from Breach; −1 ground-through-Breach-at-ground | ENFORCED — `_resolve_missile` per-firer breach terms off `_lof` info, *-pair non-cumulation honoured; VC `fire_drm_checks` |
 | F.24 | 13.4 | extreme odds: +1 per Attack Multiple beyond the 7-column | ENFORCED — `_resolve_missile` extreme; VC |
 | F.25 | 13.5 | fire results identical to Melee except no retreat on Disrupt | ENFORCED — `_apply_letter` fire path; VC. Note: the printed Missile Table contains no B result (encoded table letters = D/E only), so fire-source B retreats are structurally impossible — recorded to prevent a future false gap |
 | F.26 | 13.21 | Artillery rout/panic ladder under fire; Elim marker on final elimination | partial — ladder ENFORCED (`_apply_letter`); **Elim marker stacking OPEN → B9**; Elim-vs-Wreck conflict → **R7** |
@@ -264,8 +264,8 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 |---|---|---|---|
 | N1 | 4.12/4.22 | ~~breach-before-missile order~~ **CLOSED as a false gap** — verified against the printed 4.12/4.22: no such ordering exists (see F.2) | ✓ |
 | N2 | 10.2 | rocks from Bastion/Fortress vs connected lower Elevated hexes refused | 2 |
-| N3 | 9.7 | ZOC-exerter preference among multiple adjacent mandatory targets not enforced | 1 |
-| N4 | 9.9 | indirect fire: no one-hex limit, no elevated-same-height case, breach-drm cumulation not suppressed | 1 |
+| N3 | 9.7 | ~~ZOC-exerter preference~~ **CLOSED** — see F.18 | ✓ |
+| N4 | 9.9 | ~~indirect fire~~ **CLOSED** — see F.13 | ✓ |
 | N5 | 12.5 | `_resolve_breach` doubles the WHOLE combined BF if any attacker is entrance-side; rule doubles only entrance-side attackers. Unreachable in Gallus (one Breach unit) — **fix before any scenario with 2+ Breach engines**; noted so it cannot ship silently | (1, campaign) |
 | N6 | 7.321 | soft-ZOC exit: +3 MF charged even when first hex entered is ZOC-free | 1 |
 | N7 | 11.14 | gate entrance-hexside melee not halved; Sortie opening + defender's end-of-phase bonus counterattack missing | 1+2 |
@@ -291,9 +291,9 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B1–B16, B18, B19 (engine; B17 closed this commit), N2–N9, N11–N22,
-N24 (N1 closed as a false gap; N10/N23 closed this commit), R1/R2/R4/R7/R8 (blocked on Rob — cells stay open until his
-answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+**NOT PLAYABLE.** Open rows: **B1, B6–B16, B18, B19 (engine; B2/B3/B4/B5/B17 closed), N2, N5–N9,
+N11–N22, N24 (N1 false gap; N3/N4/N10/N23 closed), R1/R2/R4/R7/R8 (blocked on Rob — cells stay
+open until his answers land).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`

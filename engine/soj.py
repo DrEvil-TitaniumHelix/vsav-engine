@@ -336,35 +336,37 @@ class SoJGame(GateGame):
         return None
 
     # ------------------------------------------------------------ ZOC [7]
+    def _unit_zoc(self, u):
+        """The hexes over which u exerts ZOC [7.1x], ignoring night (the
+        callers gate on is_night). Single source for both the map union and
+        the per-unit 9.7 exerter test."""
+        if u["hex"] is None or not self._fresh(u):
+            return set()
+        cls = self.utype(u)["cls"]
+        if cls == "hq":
+            return set()          # HQ exert none [2.4 exception / 7.321]
+        h = u["hex"]
+        t = self.hex_t(h)
+        out = set()
+        if cls in ("heavy", "light") and (t in GROUND or t == "builtup"):
+            out = {n for n in self._nb(h) if self.hex_t(n) in GROUND}
+        elif cls in ("heavy", "light") and t in GATES:
+            out = {n for n in self._nb(h)
+                   if self.hex_t(n) in ELEVATED
+                   or tuple(sorted((h, n))) in self.entrances}
+        elif cls in ("heavy", "light") and t in ELEVATED:
+            out = {n for n in self._nb(h) if self.hex_t(n) in ELEVATED}
+        elif cls == "cavalry" and (t in GROUND or t == "builtup"):
+            out = {n for n in self._nb(h) if self.hex_t(n) in GROUND}
+        return out
+
     def _zoc_map(self, side):
         if self.is_night():
             return set()          # no ZOC at night [7.2]
         zoc = set()
         for u in self.s["units"].values():
-            if u["side"] != side or u["hex"] is None or not self._fresh(u):
-                continue
-            cls = self.utype(u)["cls"]
-            if cls == "hq":
-                continue          # HQ exert none [2.4 exception / 7.321]
-            h = u["hex"]
-            t = self.hex_t(h)
-            if cls in ("heavy", "light") and (t in GROUND or t == "builtup"):
-                for n in self._nb(h):
-                    if self.hex_t(n) in GROUND:
-                        zoc.add(n)
-            elif cls in ("heavy", "light") and t in GATES:
-                for n in self._nb(h):
-                    key = tuple(sorted((h, n)))
-                    if self.hex_t(n) in ELEVATED or key in self.entrances:
-                        zoc.add(n)
-            elif cls in ("heavy", "light") and t in ELEVATED:
-                for n in self._nb(h):
-                    if self.hex_t(n) in ELEVATED:
-                        zoc.add(n)
-            elif cls == "cavalry" and (t in GROUND or t == "builtup"):
-                for n in self._nb(h):
-                    if self.hex_t(n) in GROUND:
-                        zoc.add(n)
+            if u["side"] == side:
+                zoc |= self._unit_zoc(u)
         return zoc
 
     def _heavy_ground_zoc(self, side):
@@ -652,10 +654,14 @@ class SoJGame(GateGame):
 
     # ------------------------------------------------------------ fire [9/13]
     def _lof(self, frm, to):
-        """LOF check [9.5/game card]. Returns (ok, drm, why). Samples the
-        center-to-center pixel line; obstacle classes per the LOF
-        Determination Table with closer-to tiebreaks; friendly/intervening
-        combat units force Indirect Fire (-1, artillery only)."""
+        """LOF check [9.5/9.9/game card]. Returns (ok, drm, why, info).
+        Samples the center-to-center pixel line; obstacle classes per the
+        LOF Determination Table with closer-to tiebreaks. Indirect fire
+        [9.9]: ground-to-ground, or Elevated-to-same-height-Elevated, may
+        cross ONE combat-unit hex of the same height class for -1; more
+        block the LOF. info carries the drm raw material for
+        _resolve_missile: towers crossed [9.13], breach hexes crossed,
+        indirect flag."""
         (x1, y1), (x2, y2) = self.px[frm], self.px[to]
         import math
         L = math.hypot(x2 - x1, y2 - y1)
@@ -706,23 +712,49 @@ class SoJGame(GateGame):
         closer_tgt = spec.endswith("*")
         closer_frm = spec.endswith("@")
         classes = spec.rstrip("*@")
-        indirect = False
+
+        def grp_of(t):
+            return ("FT" if t in ("fortress", "fort") else
+                    "B" if t == "bastion" else
+                    "WB" if t in ("wall", "north_wall", "gate", "gate_wall",
+                                  "gate_north_wall") else "O")
+        same_grp = frm_grp == to_grp
+        occ_cross = towers = breach_cross = 0
         for hk, dfrm, dto in crossed:
             t = self.hex_t(hk)
             bc = blocker_class(t)
-            occ_combat = any(self.utype(o)["cls"] not in ("hq",)
-                             for o in self._occupants(hk))
+            occ = self._occupants(hk)
             if bc and bc in classes:
                 if closer_tgt and not (dto < dfrm):
                     continue
                 if closer_frm and not (dfrm < dto):
                     continue
-                return False, 0, f"LOF blocked by {self.hex_name[hk]} [game card LOF table]"
-            if "C" in classes and occ_combat:
-                indirect = True
+                return (False, 0,
+                        f"LOF blocked by {self.hex_name[hk]} [game card LOF table]",
+                        None)
+            # [9.13] -1 per Tower/Armored Tower hex traversed (through-hex)
+            if any(o["type"] in ("tower", "armored_tower") for o in occ):
+                towers += 1
+            if t == "breach":
+                breach_cross += 1
+            # [9.9] Combat units (infantry/cavalry - equipment, artillery
+            # and HQ do not screen; Towers have 9.13's own -1) obstruct only
+            # ground-to-ground and Elevated-to-same-height fire, and only at
+            # that same height
+            if same_grp and grp_of(t) == frm_grp and \
+                    any(self.utype(o)["cls"] in ("heavy", "light", "cavalry")
+                        for o in occ):
+                occ_cross += 1
+        if same_grp and occ_cross > 1:
+            return (False, 0,
+                    "indirect fire may cross only ONE combat-unit hex [9.9]",
+                    None)
+        indirect = same_grp and occ_cross == 1
         # [9.51] elevation-adjacency Built-up blocks are approximated by the
         # crossed-hex P rule above (open - matrix F.10 -> B6; must be exact)
-        return True, (-1 if indirect else 0), None
+        info = {"indirect": indirect, "towers": towers,
+                "breach_cross": breach_cross}
+        return True, (-1 if indirect else 0), None, info
 
     def _range_af(self, u, dist):
         t = self.utype(u)
@@ -778,6 +810,16 @@ class SoJGame(GateGame):
                                 for o in self._occupants(n))]
             if adj_enemy and d > 1:
                 return self._v(False, "adjacent enemy units are mandatory targets [9.7]")
+            if adj_enemy and d == 1 and not self.is_night():
+                # may not ignore a ZOC-exerter for a non-exerter [9.7]
+                exerters = [n for n in adj_enemy
+                            if any(f["hex"] in self._unit_zoc(o)
+                                   for o in self._occupants(n)
+                                   if o["side"] == enemy)]
+                if exerters and tgt not in exerters:
+                    return self._v(False, "may not ignore an adjacent enemy "
+                                          "exerting a ZOC over the firer to "
+                                          "attack a non-exerter [9.7]")
             if ut.get("rock") is not None and ut.get("missile") is None:
                 # rocks: from Elevated at lower adjacent units [10.2/2.523]
                 if self.hex_t(f["hex"]) not in ELEVATED:
@@ -789,7 +831,7 @@ class SoJGame(GateGame):
                 af = self._range_af(f, d)
                 if af is None:
                     return self._v(False, f"{f['pid']} out of range [Weapons Effect Chart]")
-                lof_ok, _drm, why = self._lof(f["hex"], tgt)
+                lof_ok, _drm, why, _info = self._lof(f["hex"], tgt)
                 if not lof_ok:
                     return self._v(False, why)
             if f["type"] == "cauldron":
@@ -807,12 +849,15 @@ class SoJGame(GateGame):
                     af=af_total, row=row, cauldrons=cauldrons)
 
     def _wall_bonus(self, frm, tgt):
-        """[9.8] Elevated firer, target in Wall/Bridge hex, LOF straight
-        down a path of connected Wall hexes."""
+        """[9.8 + Q&A] Elevated firer, target in a Wall/Bridge hex, LOF
+        straight down a path of connected Wall hexes, and NOT over
+        intervening units (official Question Box: 'A. Yes. No.'). Gates are
+        not Wall hexes for 9.8 - a gate resolves on its printed strongpoint
+        ring class on every table (decode-prep 6), so all three gate types
+        are excluded (settles the F.19 inconsistency)."""
         if self.hex_t(frm) not in ELEVATED:
             return False
-        if self.hex_t(tgt) not in ("wall", "north_wall", "gate_wall",
-                                   "gate_north_wall"):
+        if self.hex_t(tgt) not in ("wall", "north_wall"):
             return False
         c1, r1 = int(frm[:2]), int(frm[2:])
         c2, r2 = int(tgt[:2]), int(tgt[2:])
@@ -831,6 +876,8 @@ class SoJGame(GateGame):
             hk = f"{c:02d}{n + c // 2:02d}"
             if self.hex_t(hk) not in ELEVATED:
                 return False
+            if self._occupants(hk):
+                return False       # not over intervening units [9.8 Q&A]
         return True
 
     def _target_row(self, tgt, primary_class=None):
@@ -866,20 +913,47 @@ class SoJGame(GateGame):
         drm = extreme + cauldrons
         enemy = self._enemy(side)
         defenders = [o for o in self._occupants(tgt) if o["side"] == enemy]
+        # -1 Fresh Heavy Infantry in target hex; NA if Testudo (B13), Siege
+        # Engine, Foederatti or Syrian Archers in the hex, or Artillery is
+        # the Primary Target [13.3 + the card's ** footnote]
+        art_primary = row == "testudo_artillery_ground" or \
+            action.get("primary_class") in ("catapult", "ballista", "onager")
         if any(self._fresh(d) and self.utype(d)["cls"] == "heavy"
                for d in defenders) and \
            not any(d["type"] in ("foederatti", "syrian_archers")
-                   for d in defenders):
-            drm -= 1                          # [13.3 + ** note]
+                   for d in defenders) and \
+           not any(self.utype(o)["cls"] == "siege_engine"
+                   for o in self._occupants(tgt)) and \
+           not art_primary:
+            drm -= 1
         if any(d["type"] == "judaean_militia" for d in defenders):
             drm += 1
+        # the printed drm block, complete [game card / 9.x / B2]. A combined
+        # attack rolls one die; per-firer trace penalties apply at the WORST
+        # single firer (the convention the old indirect handling set).
         lof_drm = 0
+        ground = GROUND | {"builtup"}
         for f in firers:
             u = self.s["units"][f]
-            if (self.utype(u).get("missile")):
-                ok, ld, _ = self._lof(u["hex"], tgt)
-                lof_drm = min(lof_drm, ld)    # indirect applies to the attack
-        # towers fired through [9.13]
+            if not self.utype(u).get("missile"):
+                continue
+            ok, _ld, _w, info = self._lof(u["hex"], tgt)
+            if not ok:
+                continue
+            fd = -info["towers"]              # -1 per Tower hex [9.13]
+            if self.hex_t(u["hex"]) == "breach":
+                fd -= 1                       # firing from a Breach [card]
+            gb = (info["breach_cross"] > 0
+                  and self.hex_t(u["hex"]) in ground
+                  and self.hex_t(tgt) in ground)
+            # * footnote: indirect -1 and ground-through-Breach -1 are not
+            # cumulative with each other [9.9/card]
+            if info["indirect"] or gb:
+                fd -= 1
+            lof_drm = min(lof_drm, fd)
+        # -1 Judaean Artillery outside Primary Range: UNREACHABLE in Gallus
+        # (the only Judaean artillery in the card OOB is Cauldrons - counter
+        # census; units-only evidence). Build with the campaign scenarios.
         drm += lof_drm
         die = self.roll_die()
         adj = die + drm
@@ -890,19 +964,90 @@ class SoJGame(GateGame):
         self.s["fired_hexes"].append(tgt)
         detail = {"af": af, "row": row, "col": col, "die": die, "drm": drm,
                   "result": result}
-        if result == "-":
-            return detail
-        letters = list(result)
-        self._queue_losses(tgt, letters, enemy, source="fire")
+        # errant artillery fire [9.31 + Q&A]: natural 1, artillery firing at
+        # a higher-elevation target, friendly units adjacent to the target
+        # (ground or elevated) outside the firing hexes
+        errant = None
+        if die == 1:
+            fire_hexes = {self.s["units"][f]["hex"] for f in firers}
+            art_up = any(self.utype(self.s["units"][f])["cls"] == "artillery"
+                         and self.hex_t(self.s["units"][f]["hex"])
+                         not in ELEVATED
+                         for f in firers) and self.hex_t(tgt) in ELEVATED
+            if art_up:
+                cands = [o["pid"] for n in self._nb(tgt)
+                         for o in self._occupants(n)
+                         if o["side"] == side and o["hex"] not in fire_hexes]
+                if cands:
+                    errant = {"kind": "errant", "hex": tgt, "by": enemy,
+                              "cands": cands}
+        if result != "-":
+            self._queue_losses(tgt, list(result), enemy, source="fire",
+                               primary=self._primary_pids(tgt, action, row))
+        if errant:
+            if self.s["pending"] is None:
+                detail["errant"] = self._install_errant(errant)
+            else:
+                self.s["pending"]["then_errant"] = errant
+                detail["errant"] = "pending"
         detail["pending"] = self.s["pending"] is not None
         return detail
 
+    def _primary_pids(self, tgt, action, row):
+        """The Primary Target units for 13.2 loss allocation: the declared
+        primary class when it picked the row, or the ground artillery that
+        forced the artillery row."""
+        occ = self._occupants(tgt)
+        pc = action.get("primary_class")
+        if pc in ("tower", "armored_tower", "ram"):
+            return [o["pid"] for o in occ if o["type"] == pc]
+        if row == "testudo_artillery_ground":
+            return [o["pid"] for o in occ
+                    if self.utype(o)["cls"] == "artillery"]
+        return None
+
+    def _install_errant(self, spec):
+        """Errant fire pending [9.31]: the DEFENDER picks which
+        attacker-side unit adjacent to the target is disrupted. Auto-applies
+        when only one candidate exists."""
+        cands = [p for p in spec["cands"]
+                 if self.s["units"][p]["hex"] is not None]
+        if not cands:
+            return "no eligible unit"
+        if len(cands) == 1:
+            return self._apply_errant(cands[0])
+        self.s["pending"] = dict(spec, cands=cands)
+        return "pending"
+
+    def _apply_errant(self, pid):
+        """[9.31] 'must be disrupted': Fresh -> Disrupted. The rule says
+        'disrupted', not a ladder step, so a non-Fresh unit takes no
+        further effect."""
+        u = self.s["units"][pid]
+        if self._fresh(u):
+            u["state"] = "disrupted"
+            return f"{pid} disrupted by errant fire [9.31]"
+        return f"{pid} already Disrupted - no further effect [9.31]"
+
+    def _resolve_errant_verdict(self, side, action):
+        p = self.s.get("pending")
+        if not p or p["kind"] != "errant":
+            return self._v(False, "no errant fire to resolve")
+        if side != p["by"]:
+            return self._v(False, "the defender chooses the errant victim [9.31]")
+        pid = str(action.get("pid"))
+        if pid not in p["cands"]:
+            return self._v(False, f"pick one of {p['cands']} [9.31]")
+        return self._v(True, "errant victim chosen")
+
     # ------------------------------------------------------------ losses
-    def _queue_losses(self, tgt, letters, defender, source):
-        """Create the defender-choice pending, auto-resolving forced cases."""
+    def _queue_losses(self, tgt, letters, defender, source, primary=None):
+        """Create the defender-choice pending, auto-resolving forced cases.
+        `primary` = pids the most severe result must fall on [13.2 Q&A]."""
         letters = [c for c in letters if c in ("B", "D", "E")]
         self.s["pending"] = {"kind": "loss", "hex": tgt, "letters": letters,
-                             "by": defender, "source": source}
+                             "by": defender, "source": source,
+                             "primary": primary}
         self._auto_resolve_pending()
 
     def _apply_letter(self, u, letter, source):
@@ -966,6 +1111,15 @@ class SoJGame(GateGame):
             u = self.s["units"].get(str(pk.get("pid")))
             if not u or u["hex"] != p["hex"] or u["side"] != side:
                 return self._v(False, "pick units in the affected hex")
+        # the most severe result must fall on the Primary Target [13.2 Q&A]
+        prim = [pid for pid in (p.get("primary") or [])
+                if self.s["units"].get(pid, {}).get("hex") == p["hex"]]
+        if prim and need:
+            sev = min(need, key=lambda c: {"E": 0, "D": 1}.get(c, 2))
+            if not any(need[i] == sev and str(pk.get("pid")) in prim
+                       for i, pk in enumerate(picks)):
+                return self._v(False, "the most severe result must be taken "
+                                      "against the Primary Target [13.2 Q&A]")
         sub = action.get("substitute_d")
         if sub is not None:
             if "B" not in p["letters"] or p["source"] != "melee":
@@ -1566,7 +1720,7 @@ class SoJGame(GateGame):
                 continue                      # [18.22]
             if self._range_af(e, d) is None:
                 continue
-            ok, _d, _w = self._lof(e["hex"], u["hex"])
+            ok, _d, _w, _i = self._lof(e["hex"], u["hex"])
             if ok:
                 return True
         return False
@@ -1581,6 +1735,8 @@ class SoJGame(GateGame):
                 return self._resolve_loss_verdict(side, action)
             if a == "resolve_retreat":
                 return self._resolve_retreat_verdict(side, action)
+            if a == "resolve_errant":
+                return self._resolve_errant_verdict(side, action)
             return self._v(False, f"a {self.s['pending']['kind']} pending must be resolved first")
         phase = self.s["phase"]
         if a == "deploy":
@@ -1717,6 +1873,10 @@ class SoJGame(GateGame):
             return self._apply_loss(side, action)
         if a == "resolve_retreat":
             return self._apply_retreat(side, action)
+        if a == "resolve_errant":
+            out = self._apply_errant(str(action["pid"]))
+            self.s["pending"] = None
+            return {"errant": out}
         if a == "end_phase":
             return self._advance_phase(action)
         raise AssertionError(f"apply fell through for {a!r}")
@@ -1761,6 +1921,8 @@ class SoJGame(GateGame):
                                      "by": side, "rkind": "disrupt",
                                      "attackers": p.get("attacker_pids")
                                      or []}
+        if self.s["pending"] is None and p.get("then_errant"):
+            events.append({"errant": self._install_errant(p["then_errant"])})
         return {"events": events,
                 "retreat_pending": self.s["pending"] is not None}
 

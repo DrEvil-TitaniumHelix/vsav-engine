@@ -359,6 +359,294 @@ def retreat_engine_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def fire_drm_checks(g):
+    """B2/B3/B4/B5 + N3/N4: the complete printed Missile Table drm block,
+    errant fire, primary-target allocation, wall-bonus denial, ZOC-exerter
+    preference, and 9.9's one-hex indirect limit - engineered boards through
+    submit() (throwaway game, log never replayed). The one exception: the
+    errant case pins the die to a natural 1 by overriding the throwaway's
+    roll_die - resolution logic given a die, like the table checks."""
+    live = tempfile.mkdtemp(prefix="soj_drm_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=41)
+        U = tg.s["units"]
+        tg.s["phase"], tg.s["deploy_done"] = "rom_fire", True
+        tg.s["seg"] = "Rom"
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def place(u, h, state="fresh"):
+            u["hex"], u["state"] = h, state
+
+        cmdR = next(u for u in U.values() if u["type"] == "gallus")
+        jleads = {u.get("faction"): u for u in U.values()
+                  if u["type"] == "judaean_leader"}
+
+        def with_hq(u):
+            """CC for the engineered firer [5.x]: its commander/leader
+            shares the hex (HQs free-stack). All other leaders park off-map
+            so a leftover HQ never becomes a stray mandatory target."""
+            for h_ in [cmdR] + list(jleads.values()):
+                h_["hex"] = None
+            hq = cmdR if u["side"] == "Rom" else jleads[u["faction"]]
+            hq["hex"], hq["state"] = u["hex"], "fresh"
+
+        def reset_fire(seg):
+            tg.s["fired"], tg.s["fired_hexes"] = [], []
+            tg.s["phase"] = "rom_fire" if seg == "Rom" else "jud_fire"
+            tg.s["seg"] = seg
+            tg.s["pending"] = None
+
+        def axis(h, dq, dr, k):
+            c, r = int(h[:2]), int(h[2:])
+            n = r - c // 2
+            c2, n2 = c + dq * k, n + dr * k
+            return f"{c2:02d}{n2 + c2 // 2:02d}"
+
+        AXES = [(1, 0), (0, 1), (1, -1)]
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and not tg._occupants(h))
+
+        def clear_line(k):
+            """k colinear clear unoccupied playable hexes, isolated."""
+            for h in sorted(tg.hex_t0):
+                for dq, dr in AXES:
+                    for sign in (1, -1):
+                        L = [axis(h, dq * sign, dr * sign, i)
+                             for i in range(k)]
+                        if all(clear1(x) and
+                               all(m in tg.playable for m in tg._nb(x))
+                               for x in L):
+                            return L
+            raise AssertionError(f"no clear {k}-line")
+
+        # ---- A: 9.13 -1 per Tower hex fired through + Fresh-HI -1
+        L = clear_line(3)
+        jr = take("judaean_regular", 3)
+        tower = take("tower", 1)[0]
+        vet = take("roman_veteran", 4)
+        place(jr[0], L[0])
+        with_hq(jr[0])
+        place(tower, L[1])
+        place(vet[0], L[2])
+        reset_fire("Jud")
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [jr[0]["pid"]],
+                                  "target": tg.hex_name[L[2]]})
+        det = r["result"]
+        assert det["drm"] == -2, det   # -1 tower [9.13], -1 Fresh HI [13.3]
+        print(f"fire drm: 9.13 tower -1 + Fresh-HI -1 -> drm {det['drm']} OK")
+        tower["hex"] = None
+        reset_fire("Jud")
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [jr[0]["pid"]],
+                                  "target": tg.hex_name[L[2]]})
+        assert r["result"]["drm"] == -1     # tower gone: only Fresh-HI
+        tg.s["pending"] = None
+        # SE in the target hex suppresses the Fresh-HI -1 [13.3 ** footnote]
+        ram = take("ram", 1)[0]
+        place(ram, L[2])
+        reset_fire("Jud")
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [jr[0]["pid"]],
+                                  "target": tg.hex_name[L[2]]})
+        assert r["result"]["drm"] == 0, r["result"]
+        print("fire drm: Fresh-HI -1 suppressed by SE in target hex OK")
+        for u in (jr[0], vet[0], ram):
+            u["hex"] = None
+
+        # ---- B/C: breach drm - find a wall with colinear ground on both
+        # sides: g0 -> w1(breached) -> g2 [-> g3]
+        found = None
+        for w in sorted(tg.hex_t0):
+            if tg.hex_t(w) not in ("wall", "north_wall"):
+                continue
+            for dq, dr in AXES:
+                for sign in (1, -1):
+                    a, b = dq * sign, dr * sign
+                    g0, g2 = axis(w, a, b, -1), axis(w, a, b, 1)
+                    g3 = axis(w, a, b, 2)
+                    if clear1(g0) and clear1(g2) and clear1(g3):
+                        found = (g0, w, g2, g3)
+                        break
+                if found:
+                    break
+            if found:
+                break
+        assert found, "no ground-wall-ground axis line"
+        g0, w1, g2, g3 = found
+        tg.s["breach"][w1] = 99            # the wall is now a Breach
+        assert tg.hex_t(w1) == "breach"
+        vel = take("velitae", 2)
+        # firing FROM a Breach: -1 [game card]
+        place(vel[0], w1)
+        with_hq(vel[0])
+        place(jr[1], g2)
+        reset_fire("Rom")
+        r = submit_ok(tg, "Rom", {"type": "fire", "firers": [vel[0]["pid"]],
+                                  "target": tg.hex_name[g2]})
+        assert r["result"]["drm"] == -1, r["result"]
+        print("fire drm: firing from a Breach -1 OK")
+        vel[0]["hex"] = None
+        tg.s["pending"] = None
+        # ground-through-Breach + indirect together = -1, not -2 [* footnote]
+        place(vel[1], g0)
+        with_hq(vel[1])
+        place(jr[2], g2)                   # occupied crossing (indirect)
+        jr[1]["hex"] = g3                  # the target beyond
+        reset_fire("Rom")
+        r = submit_ok(tg, "Rom", {"type": "fire", "firers": [vel[1]["pid"]],
+                                  "target": tg.hex_name[g3]})
+        det = r["result"]
+        assert det["drm"] == -1, det       # breach-cross + indirect = -1
+        print("fire drm: *-pair (indirect + through-Breach) not cumulative OK")
+        for u in (vel[1], jr[1], jr[2]):
+            u["hex"] = None
+        del tg.s["breach"][w1]
+        tg.s["pending"] = None
+
+        # ---- E: 9.8 wall bonus - denied over intervening units; gates are
+        # never Wall hexes (F.19 ruling)
+        wline = None
+        for w in sorted(tg.hex_t0):
+            if tg.hex_t(w) not in ("wall", "north_wall"):
+                continue
+            for dq, dr in AXES:
+                for sign in (1, -1):
+                    W = [axis(w, dq * sign, dr * sign, i) for i in range(4)]
+                    if all(x in tg.hex_t0 and
+                           tg.hex_t(x) in ("wall", "north_wall")
+                           and not tg._occupants(x) for x in W):
+                        wline = W
+                        break
+                if wline:
+                    break
+            if wline:
+                break
+        assert wline, "no colinear wall 4-line"
+        w0, w1b, w2, w3 = wline            # blocker NOT adjacent to w0
+        jr2 = take("judaean_regular", 1)[0]
+        jr2b = next(u for u in U.values()
+                    if u["type"] == "judaean_regular" and u["hex"] is None
+                    and u["faction"] == jr2["faction"])
+        place(jr2, w0)
+        place(jr2b, w1b)                   # wall limit 1: one per hex
+        with_hq(jr2)                       # same faction: one leader covers
+        place(vet[1], w3)
+        reset_fire("Jud")
+        r = submit_ok(tg, "Jud", {"type": "fire",
+                                  "firers": [jr2["pid"], jr2b["pid"]],
+                                  "target": tg.hex_name[w3]})
+        af2 = r["result"]["af"]
+        tg.s["pending"] = None
+        # intervening unit: artillery, so it is never a mandatory target
+        # [9.7] and exerts no ZOC - only the 9.8 denial is in play
+        blk = take("roman_ballista", 1)[0]
+        place(blk, w2)
+        reset_fire("Jud")
+        r = submit_ok(tg, "Jud", {"type": "fire",
+                                  "firers": [jr2["pid"], jr2b["pid"]],
+                                  "target": tg.hex_name[w3]})
+        af1 = r["result"]["af"]
+        assert af2 == 2 * af1, (af2, af1)  # bonus doubled, then denied
+        print(f"fire drm: 9.8 wall bonus {af1}->{af2} doubled, denied over "
+              "intervening units OK")
+        for u in (jr2, jr2b, vet[1], blk):
+            u["hex"] = None
+        tg.s["pending"] = None
+
+        # ---- F: 13.2 the most severe result falls on the Primary Target
+        spot = clear_line(1)[0]
+        ball = take("roman_ballista", 1)[0]
+        place(ball, spot)
+        place(vet[3], spot)
+        tg.s["pending"] = {"kind": "loss", "hex": spot, "letters": ["D", "E"],
+                           "by": "Rom", "source": "fire",
+                           "primary": [ball["pid"]]}
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": ball["pid"]},
+                                        {"pid": vet[3]["pid"]}]},
+                  "Primary Target")        # E (severest) on the non-primary
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": vet[3]["pid"]},
+                                        {"pid": ball["pid"]}]})
+        assert ball["state"] == "eliminated", ball
+        print("fire drm: 13.2 severest result forced onto Primary Target OK")
+        vet[3]["hex"] = None
+
+        # ---- G: 9.7 may not ignore a ZOC-exerter for a non-exerter
+        fhex = None
+        for w in sorted(tg.hex_t0):
+            if tg.hex_t(w) in ("wall", "north_wall"):
+                for n in tg._nb(w):
+                    if clear1(n) and any(clear1(m) for m in tg._nb(n)):
+                        fhex, whex = n, w
+                        break
+            if fhex:
+                break
+        gnd = next(m for m in tg._nb(fhex) if clear1(m))
+        jr3 = take("judaean_regular", 1)[0]
+        vets2 = take("roman_veteran", 2)
+        place(jr3, fhex)
+        with_hq(jr3)
+        place(vets2[0], gnd)               # ground HI: exerts ZOC over jr3
+        place(vets2[1], whex)              # elevated: exerts none on ground
+        reset_fire("Jud")
+        submit_no(tg, "Jud", {"type": "fire", "firers": [jr3["pid"]],
+                              "target": tg.hex_name[whex]}, "[9.7]")
+        submit_ok(tg, "Jud", {"type": "fire", "firers": [jr3["pid"]],
+                              "target": tg.hex_name[gnd]})
+        tg.s["pending"] = None
+        for u in (jr3, vets2[0], vets2[1]):
+            u["hex"] = None
+
+        # ---- H: 9.31 errant fire on a natural 1 (die pinned)
+        wt = next(h for h in sorted(tg.hex_t0)
+                  if tg.hex_t(h) in ("wall", "north_wall")
+                  and not tg._occupants(h)
+                  and sum(1 for n in tg._nb(h) if clear1(n)) >= 3)
+        mil = take("judaean_militia", 1)[0]
+        place(mil, wt)
+        gs = [n for n in tg._nb(wt) if clear1(n)]
+        ball2 = take("roman_ballista", 1)[0]
+        place(ball2, gs[0])                # the firing hex
+        with_hq(ball2)
+        va, vb = take("roman_veteran", 2)
+        place(va, gs[1])
+        place(vb, gs[2])                   # two friendly errant candidates
+        reset_fire("Rom")
+        tg.roll_die = lambda: 1            # pin the natural 1 [9.31]
+        r = submit_ok(tg, "Rom", {"type": "fire", "firers": [ball2["pid"]],
+                                  "target": tg.hex_name[wt]})
+        del tg.roll_die
+        assert r["result"]["die"] == 1
+        assert r["result"].get("errant") == "pending", r["result"]
+        # any hit letters resolve first, then the errant choice is the
+        # DEFENDER's [9.31]
+        while tg.s.get("pending") and tg.s["pending"]["kind"] == "loss":
+            p = tg.s["pending"]
+            need = [c for c in p["letters"] if c != "B"]
+            submit_ok(tg, "Jud", {"type": "resolve_loss",
+                                  "picks": [{"pid": mil["pid"]}
+                                            for _ in need]})
+        p = tg.s.get("pending")
+        assert p and p["kind"] == "errant" and p["by"] == "Jud", p
+        assert set(p["cands"]) == {va["pid"], vb["pid"]}, p
+        submit_no(tg, "Rom", {"type": "resolve_errant", "pid": va["pid"]},
+                  "defender")
+        submit_ok(tg, "Jud", {"type": "resolve_errant", "pid": va["pid"]})
+        assert va["state"] == "disrupted" and vb["state"] == "fresh"
+        print("fire drm: 9.31 errant fire - defender disrupts an attacker "
+              "unit adjacent to the target OK")
+        print("fire drm checks: PASS (B2/B3/B4/B5 + N3/N4)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -492,6 +780,7 @@ def main():
         engine_math(tg)
         gate_ring_checks(tg)
         retreat_engine_checks(g)
+        fire_drm_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
