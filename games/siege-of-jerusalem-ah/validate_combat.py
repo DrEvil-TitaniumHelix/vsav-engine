@@ -1135,6 +1135,274 @@ def marker_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def multiple_attack_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_ma_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=77)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        tg.s["phase"] = "rom_melee"
+        N = tg.hex_name
+        DIE = [4]
+        tg.roll_die = lambda: DIE[0]
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def pocket():
+            return (h for h in sorted(tg.hex_t0)
+                    if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                    and all(clear1(m) for n in tg._nb(h)
+                            for m in tg._nb(n)))
+
+        def reset():
+            tg.s["meleed"] = []
+            tg.s["melee_hexes"] = []
+            tg.s["cc_hex"] = None
+
+        po = pocket()
+        h0 = next(po)
+        c0 = next(h for h in po if tg._dist(h, h0) > 6)
+        ring = tg._nb(h0)
+        h1 = ring[0]
+        z1 = ring[1]
+        z2 = next(n for n in tg._nb(z1) if tg._dist(n, h0) == 2)
+        z3 = next(n for n in tg._nb(z2)
+                  if tg._dist(n, h0) == 2 and n != z1)
+
+        L1 = take("roman_veteran", 1)[0]
+        v2 = take("velitae", 1)[0]
+        ms = take("judaean_militia", 4)
+        L1["hex"] = h1
+        for m, h in zip(ms, (h0, z1, z2, z3)):
+            m["hex"] = h
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [L1["pid"]]})
+        assert r["result"]["result"] == "E" \
+            and r["result"]["mk_stage"] is None, r["result"]
+        assert ms[0]["state"] == "eliminated"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["mk"] == "A" \
+            and p["pids"] == [L1["pid"]], p
+        submit_no(tg, "Jud", {"type": "resolve_advance", "pids": []},
+                  "victorious attacker")
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [v2["pid"]]}, "did not attack")
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]]})
+        assert L1["hex"] == h0 and L1["mk"] == "A"
+        assert tg.s["control"][h0] == "Rom"
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[z1],
+                                  "attackers": [L1["pid"]]})
+        assert r["result"]["mk_stage"] == "A" and not L1.get("mk")
+        v2["mk"] = "A"
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]]})
+        assert L1["hex"] == z1 and L1["mk"] == "B"
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[z2],
+                                  "attackers": [L1["pid"]]})
+        assert r["result"]["mk_stage"] == "B"
+        assert not v2.get("mk"), \
+            "an attack with a B marker removes every A marker [11.9]"
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]]})
+        assert L1["hex"] == z2 and L1["mk"] == "C"
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[z3],
+                                  "attackers": [L1["pid"]]})
+        assert r["result"]["mk_stage"] == "C"
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]]})
+        assert L1["hex"] == z3 and L1["mk"] == "A", \
+            "the chain begins anew with A after C [11.9]"
+        assert tg.s["melee_hexes"] == [h0, z1, z2, z3]
+        print("multiple attacks: advance door + A->B->C->A ladder, B wipes "
+              "every A, marker bypass of the once-per-phase locks, "
+              "non-attacker/wrong-side refusals OK [11.9]")
+
+        reset()
+        za = take("zealot", 2)
+        v3 = take("roman_veteran", 1)[0]
+        v4 = take("velitae", 1)[0]
+        m6 = take("judaean_militia", 1)[0]
+        cr = tg._nb(c0)
+        za[0]["hex"] = za[1]["hex"] = c0
+        v3["hex"] = cr[0]
+        v4["hex"] = cr[1]
+        DIE[0] = 1
+        assert L1["mk"] == "A"
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[c0],
+                                  "attackers": [v3["pid"]]})
+        assert r["result"]["result"] == "-", r["result"]
+        assert not L1.get("mk"), \
+            "a markerless attack removes ALL Multiple Attack markers [11.9]"
+        assert tg.s["pending"] is None
+        assert all(z["state"] == "fresh" and z["hex"] == c0 for z in za)
+        submit_no(tg, "Rom", {"type": "melee", "target": N[c0],
+                              "attackers": [v4["pid"]]}, "[11.81]")
+        v4["mk"] = "A"
+        assert tg.propose("Rom", {"type": "melee", "target": N[c0],
+                                  "attackers": [v4["pid"]]})["legal"], \
+            "a Multiple Attack marker re-opens an attacked hex [11.81/11.9]"
+        v4.pop("mk")
+        m6["hex"] = next(n for n in tg._nb(cr[0]) if clear1(n))
+        submit_no(tg, "Rom", {"type": "melee", "target": N[m6["hex"]],
+                              "attackers": [v3["pid"]]},
+                  "[11.1/11.87/11.9]")
+        print("multiple attacks: 11.81 hex-once lock + marker re-open + "
+              "markerless global wipe + spent-unit refusal OK")
+
+        hb = next(h for h in sorted(tg.hex_t0)
+                  if clear1(h)
+                  and any(tg.hex_t(n) == "builtup" and n in tg.playable
+                          and not tg._occupants(n) for n in tg._nb(h))
+                  and any(clear1(n) for n in tg._nb(h)))
+        bu = next(n for n in tg._nb(hb) if tg.hex_t(n) == "builtup"
+                  and n in tg.playable and not tg._occupants(n))
+        cz = next(n for n in tg._nb(hb) if clear1(n))
+        v5 = take("syrian_archers", 1)[0]
+        mb, mc = take("judaean_militia", 2)
+        v5["hex"], mb["hex"], mc["hex"] = hb, bu, cz
+        v5["mk"] = "A"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[bu],
+                              "attackers": [v5["pid"]]},
+                  "must Melee a unit in its ZOC")
+        assert tg.propose("Rom", {"type": "melee", "target": N[cz],
+                                  "attackers": [v5["pid"]]})["legal"]
+        v5.pop("mk")
+        assert tg.propose("Rom", {"type": "melee", "target": N[bu],
+                                  "attackers": [v5["pid"]]})["legal"]
+        for u in (v5, mb, mc):
+            u["hex"] = None
+        print("multiple attacks: advanced unit must melee into its ZOC, "
+              "free choice without ZOC enemies / without marker OK [11.9]")
+
+        va, vb = take("foederatti", 2)
+        vc = take("velitae", 1)[0]
+        free = [n for n in cr if clear1(n)]
+        va["hex"], vb["hex"], vc["hex"] = free[0], free[1], free[2]
+        tg.s["meleed"] += [va["pid"], vb["pid"]]
+        tg.s["cc_hex"] = {"hex": c0, "pids": sorted([va["pid"], vb["pid"]])}
+        assert tg.propose("Rom", {"type": "melee", "target": N[c0],
+                                  "attackers": [va["pid"], vb["pid"]]}
+                          )["legal"], \
+            "CC re-attack with the same units must stand [11.87]"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[c0],
+                              "attackers": [va["pid"]]}, "[11.87]")
+        submit_no(tg, "Rom", {"type": "melee", "target": N[c0],
+                              "attackers": [va["pid"], vb["pid"],
+                                            vc["pid"]]}, "[11.87]")
+        tg.s["cc_hex"] = None
+        print("multiple attacks: Continuous Combat same-units audit OK "
+              "(exact set; subset/superset refused) [11.87]")
+
+        reset()
+        v6 = take("roman_recruit", 1)[0]
+        m7 = take("judaean_militia", 1)[0]
+        v7 = take("foederatti", 1)[0]
+        m7["hex"] = h1
+        v6["hex"] = next(n for n in tg._nb(h1) if clear1(n))
+        DIE[0] = 4
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h1],
+                                  "attackers": [v6["pid"]]})
+        assert r["result"]["result"] == "D", r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p["rkind"] == "disrupt" \
+            and p["pids"] == [m7["pid"]], \
+            "an auto-resolved lone melee D must still retreat [14.3]"
+        drain_pendings(tg)
+        dest = m7["hex"]
+        assert dest is not None and dest != h1 \
+            and m7["state"] == "disrupted"
+        v7["hex"] = next(n for n in tg._nb(dest) if clear1(n))
+        assert tg.propose("Rom", {"type": "melee", "target": N[dest],
+                                  "attackers": [v7["pid"]]})["legal"], \
+            "an eligible unit may attack an enemy that retreated adjacent " \
+            "to it this Melee Phase [11.9 Q&A item 15]"
+        print("multiple attacks: auto-lone-D retreat fix [14.3] + Q&A "
+              "retreat-adjacent attack OK")
+
+        reset()
+        for u in (v6, v7, m7):
+            u["hex"] = None
+        m8 = take("judaean_militia", 1)[0]
+        m8["hex"] = h0
+        vg = take("roman_veteran", 2) + take("roman_line", 1) \
+            + take("roman_recruit", 1)
+        spots = [n for n in tg._nb(h0) if clear1(n)]
+        assert len(spots) >= 4
+        for u, h in zip(vg, spots):
+            u["hex"] = h
+        DIE[0] = 1
+        submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                              "attackers": [u["pid"] for u in vg]})
+        assert m8["state"] == "eliminated"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and len(p["pids"]) == 4
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [u["pid"] for u in vg]},
+                  "stacking limit")
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [u["pid"] for u in vg[:3]]})
+        assert all(u["hex"] == h0 and u["mk"] == "A" for u in vg[:3])
+        assert vg[3]["hex"] != h0 and not vg[3].get("mk")
+        tg.s["cc_hex"] = None
+        print("multiple attacks: advance capped at the stacking limit, "
+              "chosen subset advances with A markers OK [11.9]")
+
+        reset()
+        m9 = take("judaean_militia", 1)[0]
+        v8 = take("roman_line", 1)[0]
+        m9["hex"] = z1
+        v8h = next(n for n in tg._nb(z1) if clear1(n))
+        v8["hex"] = v8h
+        DIE[0] = 4
+        submit_ok(tg, "Rom", {"type": "melee", "target": N[z1],
+                              "attackers": [v8["pid"]]})
+        assert tg.s["pending"]["kind"] == "advance"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[h0],
+                              "attackers": [vg[0]["pid"]]},
+                  "advance pending must be resolved")
+        submit_ok(tg, "Rom", {"type": "resolve_advance", "pids": []})
+        assert tg.s["pending"] is None and v8["hex"] == v8h \
+            and not v8.get("mk")
+        print("multiple attacks: advance is modal (blocks other actions) "
+              "and declinable OK [11.9]")
+
+        assert not vg[0].get("mk"), \
+            "the markerless decline attack must have wiped every marker [11.9]"
+        assert "melee_hexes" in tg.HASH_KEYS
+        hh = tg.state_hash()
+        vg[0]["mk"] = "A"
+        assert tg.state_hash() != hh, "markers must move the state hash"
+        vg[0].pop("mk")
+        assert tg.state_hash() == hh
+        tg.s["melee_hexes"].append(c0)
+        assert tg.state_hash() != hh, "melee_hexes must move the state hash"
+        tg.s["melee_hexes"].pop()
+        assert tg.state_hash() == hh
+        vg[1]["mk"] = "B"
+        del tg.roll_die
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["phase"] == "jud_rally"
+        assert tg.s["meleed"] == [] and tg.s["melee_hexes"] == []
+        assert not any(u.get("mk") for u in U.values()), \
+            "Multiple Attack markers do not survive the Melee Phase"
+        print("multiple attack checks: PASS (B11 + X.16/X.23/X.25 + "
+              "A/B/C ledger row + 14.3 auto-lone-D fix)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -1272,6 +1540,7 @@ def main():
         se_facing_checks(g)
         lof_crest_checks(g)
         marker_checks(g)
+        multiple_attack_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
@@ -1442,7 +1711,9 @@ def main():
 def drain_pendings(tg):
     while tg.s.get("pending"):
         p = tg.s["pending"]
-        if p["kind"] == "loss":
+        if p["kind"] == "advance":
+            submit_ok(tg, p["by"], {"type": "resolve_advance", "pids": []})
+        elif p["kind"] == "loss":
             need = [c for c in p["letters"] if c != "B"]
             occ = [o for o in tg._occupants(p["hex"]) if o["side"] == p["by"]]
             picks = [{"pid": occ[min(i, len(occ) - 1)]["pid"]}

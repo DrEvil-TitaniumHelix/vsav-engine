@@ -70,7 +70,7 @@ class SoJGame(GateGame):
     HASH_KEYS = ("units", "turn", "phase", "seg", "seed", "rng_calls",
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
-                 "escaped", "markers")
+                 "escaped", "markers", "melee_hexes")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -87,6 +87,7 @@ class SoJGame(GateGame):
                             required=("units", "phase", "control", "pool",
                                       "breach", "pending"))
         self.s.setdefault("markers", [])   # pre-B9/B10 in-flight saves
+        self.s.setdefault("melee_hexes", [])
 
     def rules_scope(self):
         """Matrix-regime composition (spec #13 as amended 2026-08-09),
@@ -321,6 +322,7 @@ class SoJGame(GateGame):
             "control": control, "deploy_done": {"Jud": False, "Rom": False},
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
+            "melee_hexes": [],
             "winner": None, "over": False,
         }
         self._reset_log()
@@ -1295,6 +1297,14 @@ class SoJGame(GateGame):
             events.append(self._apply_letter(u, c, p["source"]))
         self.s["pending"] = None
         p["auto"] = events
+        if p["source"] == "melee" and "disrupted" in events \
+                and u["state"] == "disrupted" \
+                and self.hex_t(p["hex"]) not in ("fortress",):
+            self.s["pending"] = {"kind": "retreat", "hex": p["hex"],
+                                 "pids": [u["pid"]], "by": p["by"],
+                                 "rkind": "disrupt",
+                                 "attackers": p.get("attacker_pids") or [],
+                                 "mk": p.get("mk")}
 
     def _resolve_loss_verdict(self, side, action):
         p = self.s.get("pending")
@@ -1431,8 +1441,6 @@ class SoJGame(GateGame):
         defenders = [o for o in self._occupants(tgt) if o["side"] == enemy]
         if not defenders:
             return self._v(False, "no enemy units in the target hex")
-        att = 0.0
-        factions = set()
         atk_units = []
         for pid in action.get("attackers", []):
             u = self.s["units"].get(str(pid))
@@ -1440,8 +1448,6 @@ class SoJGame(GateGame):
                 return self._v(False, "unknown/enemy attacker")
             if not self._fresh(u):
                 return self._v(False, f"{u['pid']} is not Fresh [11.1/16.2]")
-            if u["pid"] in self.s["meleed"] and self.s.get("cc_hex") != tgt:
-                return self._v(False, f"{u['pid']} already attacked this Melee Phase [11.1]")
             if self.utype(u)["cls"] in ("artillery", "siege_engine"):
                 return self._v(False, "Artillery/Siege Engines may not melee [2.46/11.x]")
             if u["type"] == "cauldron":
@@ -1451,14 +1457,37 @@ class SoJGame(GateGame):
                 return self._v(False, "no attacks from a hex containing a Panicked unit [17.22]")
             if self._dist(u["hex"], tgt) != 1:
                 return self._v(False, "melee attacks adjacent hexes [11.1]")
+            atk_units.append(u)
+        if not atk_units:
+            return self._v(False, "no attackers")
+        marked = any(u.get("mk") for u in atk_units)
+        cc = self.s.get("cc_hex")
+        cc_same = (isinstance(cc, dict) and tgt == cc["hex"]
+                   and {u["pid"] for u in atk_units} == set(cc["pids"]))
+        if (isinstance(cc, dict) and tgt == cc["hex"]
+                and not cc_same and not marked):
+            return self._v(False, "Continuous Combat re-attacks the same hex with the same units [11.87]")
+        for u in atk_units:
+            if u["pid"] in self.s["meleed"] and not (cc_same or marked):
+                return self._v(False, f"{u['pid']} already attacked this Melee Phase [11.1/11.87/11.9]")
+        if tgt in self.s["melee_hexes"] and not (cc_same or marked):
+            return self._v(False, "hex already attacked this Melee Phase - needs Continuous Combat or a Multiple Attack marker [11.81]")
+        if not self.is_night():
+            for u in atk_units:
+                if u.get("mk"):
+                    zhexes = {h for h in self._unit_zoc(u)
+                              if any(o["side"] == enemy
+                                     for o in self._occupants(h))}
+                    if zhexes and tgt not in zhexes:
+                        return self._v(False, f"{u['pid']} advanced after combat and must Melee a unit in its ZOC [11.9]")
+        att = 0.0
+        factions = set()
+        for u in atk_units:
             mult, why = self._melee_approach(u, tgt)
             if mult is None:
                 return self._v(False, f"no legal approach: {why} [11.1]")
             att += self._melee_val(u) * mult
             factions.add(u.get("faction"))
-            atk_units.append(u)
-        if not atk_units:
-            return self._v(False, "no attackers")
         return dict(self._v(True, "melee set"),
                     att=att, factions=len(factions - {None}) or 1)
 
@@ -1522,17 +1551,33 @@ class SoJGame(GateGame):
         adj = die + drm
         key = str(max(-1, min(8, adj)))
         result = self.melee_t["rows"][key][cols.index(col)]
+        mks = [a["mk"] for a in atk_units if a.get("mk")]
+        stage = max(mks, key="ABC".index) if mks else None
+        if stage is None:
+            for x in self.s["units"].values():
+                x.pop("mk", None)
+        else:
+            if stage == "B":
+                for x in self.s["units"].values():
+                    if x.get("mk") == "A":
+                        x.pop("mk")
+            for a in atk_units:
+                a.pop("mk", None)
+        nxt = {"A": "B", "B": "C", "C": "A"}.get(stage, "A")
         for a in atk_units:
             self.s["meleed"].append(a["pid"])
+        self.s["melee_hexes"].append(tgt)
         detail = {"att": att, "def": deff, "col": col, "die": die,
-                  "drm": drm, "result": result}
+                  "drm": drm, "result": result, "mk_stage": stage}
         # continuous combat [11.87]: die >= 6 before or after drm
-        self.s["cc_hex"] = tgt if (die >= 6 or adj >= 6) else None
+        self.s["cc_hex"] = ({"hex": tgt,
+                             "pids": sorted(a["pid"] for a in atk_units)}
+                            if (die >= 6 or adj >= 6) else None)
         if result == "-":
             return detail
         letters = list(result)
         self._queue_melee_result(tgt, letters, enemy, side,
-                                 [a["pid"] for a in atk_units])
+                                 [a["pid"] for a in atk_units], nxt)
         detail["pending"] = self.s["pending"] is not None
         return detail
 
@@ -1547,25 +1592,73 @@ class SoJGame(GateGame):
         return 0
 
     def _queue_melee_result(self, tgt, letters, defender, attacker,
-                            attacker_pids=None):
+                            attacker_pids=None, mk=None):
         self.s["pending"] = {"kind": "loss", "hex": tgt, "letters": letters,
                              "by": defender, "source": "melee",
                              "attacker": attacker,
-                             "attacker_pids": attacker_pids or []}
+                             "attacker_pids": attacker_pids or [], "mk": mk}
         self._auto_resolve_pending()
         if self.s["pending"] is None:
             # auto-resolved: any survivor with B retreats via its own pending
             if "B" in letters:
-                self._queue_retreat(tgt, defender, attacker_pids)
+                self._queue_retreat(tgt, defender, attacker_pids, mk)
+            if self.s["pending"] is None and mk:
+                self._open_adv(tgt, attacker, attacker_pids, mk)
 
-    def _queue_retreat(self, tgt, defender, attacker_pids=None):
+    def _queue_retreat(self, tgt, defender, attacker_pids=None, mk=None):
         movers = [o["pid"] for o in self._occupants(tgt)
                   if o["side"] == defender]
         if movers:
             self.s["pending"] = {"kind": "retreat", "hex": tgt,
                                  "pids": movers, "by": defender,
                                  "rkind": "b",
-                                 "attackers": attacker_pids or []}
+                                 "attackers": attacker_pids or [], "mk": mk}
+
+    def _open_adv(self, h, side, apids, mk):
+        if any(o["side"] == self._enemy(side) for o in self._occupants(h)):
+            return
+        pids = [str(p) for p in (apids or [])
+                if self.s["units"].get(str(p), {}).get("hex") is not None]
+        if pids:
+            self.s["pending"] = {"kind": "advance", "hex": h, "by": side,
+                                 "pids": pids, "mk": mk}
+
+    def _resolve_advance_verdict(self, side, action):
+        p = self.s.get("pending")
+        if not p or p["kind"] != "advance":
+            return self._v(False, "no advance to resolve")
+        if side != p["by"]:
+            return self._v(False, "the victorious attacker chooses the advance [11.9]")
+        pids = [str(x) for x in (action.get("pids") or [])]
+        if len(set(pids)) != len(pids):
+            return self._v(False, "duplicate advancing unit")
+        units = []
+        for pid in pids:
+            if pid not in p["pids"]:
+                return self._v(False, f"{pid} did not attack the vacated hex [11.9]")
+            u = self.s["units"][pid]
+            c, why = self._entry_cost(u, u["hex"], p["hex"], side)
+            if c is None:
+                return self._v(False, f"illegal advance terrain: {why} [11.9/11.86]")
+            units.append(u)
+        if units:
+            bad = self._stack_check(p["hex"], side, units)
+            if bad:
+                return self._v(False, f"advance up to the stacking limit [11.9]: {bad}")
+        return self._v(True, ("advance set" if pids else "advance declined")
+                       + " [11.9]")
+
+    def _apply_advance(self, action):
+        p = self.s["pending"]
+        pids = [str(x) for x in (action.get("pids") or [])]
+        for pid in pids:
+            u = self.s["units"][pid]
+            u["hex"] = p["hex"]
+            u["mk"] = p["mk"]
+            self.s["control"][p["hex"]] = p["by"]
+        self.s["pending"] = None
+        return {"advanced": pids, "mk": p["mk"] if pids else None,
+                "hex": self.hex_name[p["hex"]]}
 
     # ------------------------------------------------ retreats [14.2/15.x]
     # The 15.1/15.3 retreat is a constrained search, not a step count: an MF
@@ -1951,6 +2044,8 @@ class SoJGame(GateGame):
                 return self._resolve_retreat_verdict(side, action)
             if a == "resolve_errant":
                 return self._resolve_errant_verdict(side, action)
+            if a == "resolve_advance":
+                return self._resolve_advance_verdict(side, action)
             return self._v(False, f"a {self.s['pending']['kind']} pending must be resolved first")
         phase = self.s["phase"]
         if a == "deploy":
@@ -2163,6 +2258,8 @@ class SoJGame(GateGame):
             return self._apply_loss(side, action)
         if a == "resolve_retreat":
             return self._apply_retreat(side, action)
+        if a == "resolve_advance":
+            return self._apply_advance(action)
         if a == "change_facing":
             u = self.s["units"][str(action["pid"])]
             u["facing"] = verdict["face_dir"]
@@ -2202,10 +2299,11 @@ class SoJGame(GateGame):
                         "kind": "retreat", "hex": p["hex"],
                         "pids": [e["pid"] for e in movers], "by": side,
                         "rkind": "disrupt",
-                        "attackers": p.get("attacker_pids") or []}
+                        "attackers": p.get("attacker_pids") or [],
+                        "mk": p.get("mk")}
             else:
                 self._queue_retreat(p["hex"], side,
-                                    p.get("attacker_pids"))
+                                    p.get("attacker_pids"), p.get("mk"))
         elif p["source"] == "melee":
             movers = [e for e in events if e["event"] == "disrupted"]
             if movers and self.hex_t(p["hex"]) not in ("fortress",):
@@ -2214,7 +2312,11 @@ class SoJGame(GateGame):
                                      "pids": [e["pid"] for e in movers],
                                      "by": side, "rkind": "disrupt",
                                      "attackers": p.get("attacker_pids")
-                                     or []}
+                                     or [], "mk": p.get("mk")}
+        if self.s["pending"] is None and p.get("mk") \
+                and p["source"] == "melee":
+            self._open_adv(p["hex"], p["attacker"],
+                           p.get("attacker_pids"), p["mk"])
         if self.s["pending"] is None and p.get("then_errant"):
             events.append({"errant": self._install_errant(p["then_errant"])})
         return {"events": events,
@@ -2246,6 +2348,9 @@ class SoJGame(GateGame):
             out.append({"pid": pid, "to": None, "state": "eliminated",
                         "why": "no survivable retreat [15.1/14.21/7.5]"})
         self.s["pending"] = None
+        if p.get("mk"):
+            self._open_adv(p["hex"], self._enemy(p["by"]),
+                           p.get("attackers"), p["mk"])
         return {"retreated": out}
 
     def _advance_phase(self, action=None):
@@ -2269,6 +2374,9 @@ class SoJGame(GateGame):
         self.s["cc_hex"] = None
         if p == "jud_melee":
             self.s["meleed"] = []
+            self.s["melee_hexes"] = []
+            for x in self.s["units"].values():
+                x.pop("mk", None)
             n = self._roman_builtup_count()
             result["roman_builtup"] = n
             need = self.scenario["vp"]["roman_win"]["builtup_controlled"]
@@ -2287,6 +2395,9 @@ class SoJGame(GateGame):
         else:
             if p.endswith("_melee"):
                 self.s["meleed"] = []
+                self.s["melee_hexes"] = []
+                for x in self.s["units"].values():
+                    x.pop("mk", None)
             self.s["phase"] = self.PHASES[i + 1]
         if self.s["phase"].endswith("_fire"):
             phasing = "Rom" if self.s["phase"].startswith("rom_") else "Jud"
