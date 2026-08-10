@@ -1573,10 +1573,6 @@ def escalade_checks(g):
         tg.s["phase"] = "rom_melee"
         submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
                               "attackers": [v1["pid"]]}, "[11.6]")
-        tg.s["phase"] = "jud_fire"
-        tg.s["seg"] = "Jud"
-        submit_no(tg, "Jud", {"type": "fire", "firers": [mm["pid"]],
-                              "target": N[A]}, "F.32")
         tg.s["phase"] = "rom_fire"
         tg.s["seg"] = "Rom"
         vb = take("roman_ballista", 1)[0]
@@ -1592,7 +1588,7 @@ def escalade_checks(g):
         assert cost is None and "[6.3]" in why
         print("escalade: Judaean entry/retreat blocked (8.11 fronts the "
               "6.5 armor - a Base always occupies), Artillery bars [6.3], "
-              "fire-from bar [9.4], loud F.32/X.15/11.6 guards OK")
+              "fire-from bar [9.4], loud X.15/11.6 guards OK")
 
         g0 = next(h for h in pocket() if tg._dist(h, h0) > 6)
         vz = take("roman_veteran", 1)[0]
@@ -1652,6 +1648,105 @@ def escalade_checks(g):
         print("escalade: place+remove at 4 MF each drains the full MA "
               "across three actions OK [6.5/8.7]")
 
+        for x in list(U.values()):
+            if x["hex"] in (A, B, C, D, X1, h0):
+                x["hex"] = None
+        gallus["hex"] = B
+        rl = [u for u in U.values() if u["type"] == "roman_line"
+              and u["state"] == "fresh" and u["hex"] is None]
+        assert len(rl) >= 9
+        base, k1, k2 = rl[:3]
+        mph("rom_move")
+        base["hex"] = A
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": base["pid"]})
+        k1["hex"], k1["up"] = A, True
+        k2["hex"], k2["up"] = A, True
+        jr = take("judaean_regular", 1)[0]
+        jr["hex"] = C
+        tg.s["phase"], tg.s["seg"] = "jud_fire", "Jud"
+        tg.s["fired"], tg.s["fired_hexes"] = [], []
+        tg.roll_die = lambda: 4
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [jr["pid"]],
+                                  "target": N[A]})
+        del tg.roll_die
+        assert r["result"]["result"] == "D", r["result"]
+        assert tg.s["pending"] and tg.s["pending"]["kind"] == "loss"
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": base["pid"]}]}, "[9.12]")
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": k1["pid"]}]})
+        assert k1["state"] == "disrupted" and base["state"] == "fresh" \
+            and tg.s["pending"] is None
+        print("escalade fire: door open (F.32 closed), climbers absorb "
+              "first, Base pick refused [9.12]")
+
+        k2["hex"] = None
+        k2.pop("up", None)
+        k1["state"] = "fresh"
+        tg._queue_losses(A, ["D", "D"], "Rom", source="fire")
+        assert tg.s["pending"] is None
+        assert k1["state"] == "eliminated" and k1["hex"] is None
+        assert base["state"] == "fresh" and tg._esc_at(A) is not None
+        k3 = rl[3]
+        k3["hex"], k3["up"] = A, True
+        tg._queue_losses(A, ["D", "E"], "Rom", source="fire")
+        assert tg.s["pending"] is None and k3["state"] == "eliminated" \
+            and base["state"] == "fresh"
+        print("escalade fire: DD vs one-atop-one-below eliminates the top "
+              "unit, Base untouched; DE spent entirely above [9.12/14.33]")
+
+        k4 = rl[4]
+        k4["hex"], k4["up"] = A, True
+        tg._queue_losses(A, ["E", "E"], "Rom", source="fire")
+        assert k4["state"] == "eliminated" and base["state"] == "eliminated"
+        tg._esc_sweep()
+        assert tg._esc_at(A) is None
+        mph("rom_move")
+        b2 = rl[5]
+        b2["hex"] = A
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": b2["pid"]})
+        tg._queue_losses(A, ["D", "D"], "Rom", source="fire")
+        assert b2["state"] == "eliminated"
+        tg._esc_sweep()
+        assert tg._esc_at(A) is None
+        print("escalade fire: EE spills onto the Base once it is the last "
+              "unit left; lone-Base DD eliminates [9.12/14.33/14.4]")
+
+        mph("rom_move")
+        b3, m1, m2 = rl[6:9]
+        b3["hex"] = A
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": b3["pid"]})
+        m1["hex"], m1["up"] = A, True
+        m2["hex"], m2["up"] = A, True
+        tg._queue_losses(A, ["D", "D"], "Rom", source="fire")
+        assert tg.s["pending"] is not None
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": m1["pid"]},
+                                        {"pid": m1["pid"]}]}, "[14.33]")
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": m1["pid"]},
+                                        {"pid": b3["pid"]}]}, "[9.12]")
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": m1["pid"]},
+                                        {"pid": m2["pid"]}]})
+        assert m1["state"] == "disrupted" and m2["state"] == "disrupted" \
+            and b3["state"] == "fresh"
+        j1, j2 = take("judaean_militia", 2)
+        j1["hex"] = j2["hex"] = h0
+        tg._queue_losses(h0, ["D", "D"], "Jud", source="fire")
+        submit_no(tg, "Jud", {"type": "resolve_loss",
+                              "picks": [{"pid": j1["pid"]},
+                                        {"pid": j1["pid"]}]}, "[14.33]")
+        submit_ok(tg, "Jud", {"type": "resolve_loss",
+                              "picks": [{"pid": j1["pid"]},
+                                        {"pid": j2["pid"]}]})
+        assert j1["state"] == "disrupted" and j2["state"] == "disrupted"
+        print("fire DD: same-unit double absorption refused in any hex "
+              "(closed a silent gap in X.30's claim) [14.33]")
+
         assert "esc" in tg.HASH_KEYS
         hh = tg.state_hash()
         tg.s["esc"].append({"hex": A, "base": "probe", "used": []})
@@ -1665,8 +1760,9 @@ def escalade_checks(g):
         assert tg.state_hash() != hh
         v5.pop("mv")
         assert tg.state_hash() == hh
-        print("escalade checks: PASS (B12 movement slice + 7.2 ZOC fix + "
-              "MF-accumulation fix; fire/melee slices ride on loud guards)")
+        print("escalade checks: PASS (B12 movement+fire slices + 7.2 ZOC "
+              "fix + MF-accumulation + 14.33 distinctness fixes; melee "
+              "slice rides on loud guards)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 
