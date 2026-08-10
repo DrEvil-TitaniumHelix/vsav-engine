@@ -1,10 +1,10 @@
 {
 "provenance": {
 "generated": "2026-08-07/08 by The Vassal: classify_terrain.py pass 2 (calibrated palette + ring detection on SoJ_map.jpg) + hand verification of every wall/strongpoint/builtup hex via labeled zoom crops. Grid: x=71.0749*L+207.60, y=82.2902*(N+L/2)-1840.52 (validated, 3071 v2.3 regions <10px + rulebook landmarks W36/P51/G39). Hex key = col(L)+row(N+L//2), 2 digits each.",
-"scope": "Gallus-intro battlefield verified (North Wall arc + Second Wall + New City crescent + outside approach). Old city south of the Second Wall NOT verified \u2014 strongpoints there zeroed to clear, re-encode on campaign touch.",
+"scope": "Gallus-intro battlefield verified (North Wall arc + Second Wall + New City crescent + outside approach). Old city south of the Second Wall NOT verified — strongpoints there zeroed to clear, re-encode on campaign touch.",
 "known_limits": [
 "interior roads NOT encoded (v1.1 with module author verification)",
-"crest hexsides NOT encoded (no slopes in primary battlefield; verify west/east approaches)",
+"crest hexsides encoded 2026-08-10 from the printed art (ingest/crest_hexsides.json, 182 sides, dark_frac>=0.5, printed examples RR8-SS8 + SS47|RR48 reproduced); the old 'no slopes in primary battlefield' note was wrong - 574 slope hexes exist",
 "second-wall staircases inferred from pattern, not art-confirmed"
 ],
 "stairs_art_confirmed": [
@@ -14,7 +14,8 @@
 "Y24"
 ],
 "amended": "2026-08-09 A5+A6: 4 gate hexes retyped per gates_overlay.json (G40/R49/LL30/MM32); ring class added to all 9 gate hexes (decode-prep 6: gate breach/missile defense = printed ring colour); entrance sides added for G40/R49/LL30/MM32/P51 and corrected for W36 (W35->V36) + OO33 (PP32->OO34); 10 non-adjacent staircase hexsides deleted + Z33|Z34 added per staircases_evidence.json. 19 doubtful staircases untouched (R4).",
-"amended2": "2026-08-09 A3+A4: 42 hexes flipped clear->builtup per ingest/builtup_evidence.json (PREP-4; Gallus Built-up = 92, incl. the New City western quarter I39-Q44); builtup_uncertain DELETED (all 8 resolved by the printed art: BUILT-UP BB24/X32/R38/T36, CLEAR Z25/X26/W34/MM19); V42 retyped fort->gate_wall + ring fort + entrance sides V42|U42, V42|W41 per ingest/gates_overlay.json (Second-Wall corner gate, inside the A4 bound via its U42 crescent border). Old City hexes stay unencoded: the A4 southern bound (scenario playable_area) puts them off the battlefield."
+"amended2": "2026-08-09 A3+A4: 42 hexes flipped clear->builtup per ingest/builtup_evidence.json (PREP-4; Gallus Built-up = 92, incl. the New City western quarter I39-Q44); builtup_uncertain DELETED (all 8 resolved by the printed art: BUILT-UP BB24/X32/R38/T36, CLEAR Z25/X26/W34/MM19); V42 retyped fort->gate_wall + ring fort + entrance sides V42|U42, V42|W41 per ingest/gates_overlay.json (Second-Wall corner gate, inside the A4 bound via its U42 crescent border). Old City hexes stay unencoded: the A4 southern bound (scenario playable_area) puts them off the battlefield.",
+"amended3": "2026-08-10 B7/X.7: crest flags added to sides per ingest/crest_hexsides.json (extract_crest_hexsides.py on SoJ_map.jpg; 11.17 dark-brown criterion, contact-sheet adjudicated). Sides dict now carries crest:true on 182 slope|clear boundaries."
 },
 "hexes": {
 "0125": {
@@ -12782,6 +12783,552 @@
 },
 "2253|2352": {
 "entrance": true
+},
+"0335|0436": {
+"crest": true
+},
+"0336|0436": {
+"crest": true
+},
+"0435|0436": {
+"crest": true
+},
+"0436|0437": {
+"crest": true
+},
+"0436|0535": {
+"crest": true
+},
+"0437|0536": {
+"crest": true
+},
+"0535|0536": {
+"crest": true
+},
+"0536|0537": {
+"crest": true
+},
+"0536|0636": {
+"crest": true
+},
+"0536|0637": {
+"crest": true
+},
+"0638|0737": {
+"crest": true
+},
+"0638|0738": {
+"crest": true
+},
+"0639|0738": {
+"crest": true
+},
+"0639|0739": {
+"crest": true
+},
+"0640|0739": {
+"crest": true
+},
+"0640|0740": {
+"crest": true
+},
+"0641|0740": {
+"crest": true
+},
+"0641|0741": {
+"crest": true
+},
+"0642|0741": {
+"crest": true
+},
+"0752|0853": {
+"crest": true
+},
+"0753|0853": {
+"crest": true
+},
+"0853|0854": {
+"crest": true
+},
+"1068|1167": {
+"crest": true
+},
+"1068|1168": {
+"crest": true
+},
+"1069|1168": {
+"crest": true
+},
+"1069|1169": {
+"crest": true
+},
+"1070|1169": {
+"crest": true
+},
+"1070|1170": {
+"crest": true
+},
+"1071|1170": {
+"crest": true
+},
+"1071|1171": {
+"crest": true
+},
+"1072|1171": {
+"crest": true
+},
+"1073|1172": {
+"crest": true
+},
+"1073|1173": {
+"crest": true
+},
+"1074|1173": {
+"crest": true
+},
+"1074|1174": {
+"crest": true
+},
+"1075|1174": {
+"crest": true
+},
+"1076|1175": {
+"crest": true
+},
+"1175|1176": {
+"crest": true
+},
+"1176|1276": {
+"crest": true
+},
+"1977|1978": {
+"crest": true
+},
+"1978|2078": {
+"crest": true
+},
+"2078|2079": {
+"crest": true
+},
+"2259|2260": {
+"crest": true
+},
+"2260|2359": {
+"crest": true
+},
+"2359|2360": {
+"crest": true
+},
+"2359|2460": {
+"crest": true
+},
+"2460|2559": {
+"crest": true
+},
+"2559|2560": {
+"crest": true
+},
+"2559|2660": {
+"crest": true
+},
+"2859|2860": {
+"crest": true
+},
+"2859|2959": {
+"crest": true
+},
+"2958|2959": {
+"crest": true
+},
+"2958|3059": {
+"crest": true
+},
+"3058|3158": {
+"crest": true
+},
+"3067|3167": {
+"crest": true
+},
+"3068|3167": {
+"crest": true
+},
+"3165|3266": {
+"crest": true
+},
+"3259|3359": {
+"crest": true
+},
+"3260|3359": {
+"crest": true
+},
+"3260|3360": {
+"crest": true
+},
+"3261|3360": {
+"crest": true
+},
+"3261|3361": {
+"crest": true
+},
+"3262|3361": {
+"crest": true
+},
+"3263|3363": {
+"crest": true
+},
+"3264|3363": {
+"crest": true
+},
+"3264|3364": {
+"crest": true
+},
+"3265|3266": {
+"crest": true
+},
+"3265|3364": {
+"crest": true
+},
+"3278|3279": {
+"crest": true
+},
+"3279|3378": {
+"crest": true
+},
+"3479|3480": {
+"crest": true
+},
+"3480|3579": {
+"crest": true
+},
+"3559|3660": {
+"crest": true
+},
+"3560|3660": {
+"crest": true
+},
+"3560|3661": {
+"crest": true
+},
+"3579|3679": {
+"crest": true
+},
+"3650|3749": {
+"crest": true
+},
+"3662|3663": {
+"crest": true
+},
+"3678|3679": {
+"crest": true
+},
+"3749|3750": {
+"crest": true
+},
+"3762|3763": {
+"crest": true
+},
+"3775|3876": {
+"crest": true
+},
+"4055|4056": {
+"crest": true
+},
+"4128|4228": {
+"crest": true
+},
+"4185|4286": {
+"crest": true
+},
+"4228|4229": {
+"crest": true
+},
+"4229|4328": {
+"crest": true
+},
+"4328|4329": {
+"crest": true
+},
+"4329|4429": {
+"crest": true
+},
+"4366|4467": {
+"crest": true
+},
+"4367|4467": {
+"crest": true
+},
+"4375|4476": {
+"crest": true
+},
+"4376|4476": {
+"crest": true
+},
+"4385|4486": {
+"crest": true
+},
+"4429|4430": {
+"crest": true
+},
+"4430|4529": {
+"crest": true
+},
+"4430|4530": {
+"crest": true
+},
+"4431|4530": {
+"crest": true
+},
+"4431|4531": {
+"crest": true
+},
+"4432|4531": {
+"crest": true
+},
+"4432|4532": {
+"crest": true
+},
+"4433|4532": {
+"crest": true
+},
+"4433|4533": {
+"crest": true
+},
+"4434|4533": {
+"crest": true
+},
+"4434|4534": {
+"crest": true
+},
+"4435|4534": {
+"crest": true
+},
+"4435|4535": {
+"crest": true
+},
+"4436|4535": {
+"crest": true
+},
+"4436|4536": {
+"crest": true
+},
+"4437|4536": {
+"crest": true
+},
+"4437|4537": {
+"crest": true
+},
+"4438|4537": {
+"crest": true
+},
+"4438|4538": {
+"crest": true
+},
+"4439|4538": {
+"crest": true
+},
+"4439|4539": {
+"crest": true
+},
+"4440|4539": {
+"crest": true
+},
+"4442|4541": {
+"crest": true
+},
+"4443|4543": {
+"crest": true
+},
+"4444|4543": {
+"crest": true
+},
+"4444|4544": {
+"crest": true
+},
+"4445|4544": {
+"crest": true
+},
+"4445|4545": {
+"crest": true
+},
+"4447|4546": {
+"crest": true
+},
+"4447|4547": {
+"crest": true
+},
+"4448|4547": {
+"crest": true
+},
+"4449|4548": {
+"crest": true
+},
+"4449|4549": {
+"crest": true
+},
+"4450|4549": {
+"crest": true
+},
+"4451|4550": {
+"crest": true
+},
+"4451|4551": {
+"crest": true
+},
+"4452|4551": {
+"crest": true
+},
+"4456|4555": {
+"crest": true
+},
+"4456|4556": {
+"crest": true
+},
+"4457|4556": {
+"crest": true
+},
+"4457|4557": {
+"crest": true
+},
+"4458|4557": {
+"crest": true
+},
+"4458|4558": {
+"crest": true
+},
+"4459|4558": {
+"crest": true
+},
+"4459|4559": {
+"crest": true
+},
+"4460|4559": {
+"crest": true
+},
+"4460|4560": {
+"crest": true
+},
+"4461|4560": {
+"crest": true
+},
+"4461|4561": {
+"crest": true
+},
+"4462|4561": {
+"crest": true
+},
+"4462|4562": {
+"crest": true
+},
+"4463|4562": {
+"crest": true
+},
+"4463|4563": {
+"crest": true
+},
+"4464|4563": {
+"crest": true
+},
+"4464|4564": {
+"crest": true
+},
+"4465|4564": {
+"crest": true
+},
+"4465|4565": {
+"crest": true
+},
+"4469|4568": {
+"crest": true
+},
+"4469|4569": {
+"crest": true
+},
+"4470|4569": {
+"crest": true
+},
+"4470|4570": {
+"crest": true
+},
+"4471|4570": {
+"crest": true
+},
+"4472|4571": {
+"crest": true
+},
+"4472|4572": {
+"crest": true
+},
+"4473|4572": {
+"crest": true
+},
+"4473|4573": {
+"crest": true
+},
+"4474|4573": {
+"crest": true
+},
+"4474|4574": {
+"crest": true
+},
+"4551|4552": {
+"crest": true
+},
+"4552|4652": {
+"crest": true
+},
+"4552|4653": {
+"crest": true
+},
+"4553|4653": {
+"crest": true
+},
+"4553|4654": {
+"crest": true
+},
+"4554|4555": {
+"crest": true
+},
+"4554|4654": {
+"crest": true
+},
+"4554|4655": {
+"crest": true
+},
+"4584|4685": {
+"crest": true
+},
+"4626|4627": {
+"crest": true
+},
+"4626|4725": {
+"crest": true
+},
+"4725|4726": {
+"crest": true
+},
+"4826|4925": {
+"crest": true
+},
+"4886|4985": {
+"crest": true
+},
+"4927|5027": {
+"crest": true
+},
+"4927|5028": {
+"crest": true
+},
+"4928|5028": {
+"crest": true
+},
+"4984|4985": {
+"crest": true
+},
+"5028|5029": {
+"crest": true
+},
+"5084|5085": {
+"crest": true
 }
 },
 "areas": {

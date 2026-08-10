@@ -1,0 +1,1109 @@
+{
+ "source": "SoJ_map.jpg (printed map scan, module SOJ)",
+ "rule": "11.17 - Slope hexsides dark brown on one side and Clear on the other are Crest hexsides; attacker Melee strength halved attacking across a Crest vs a Ground-level non-Slope defender",
+ "method": "per-hexside paired luminance sampling, dark_frac = fraction of 15 points where clear-side minus slope-side luminance > 28; crest <=> dark_frac >= 0.5",
+ "audit": "bimodal distribution; full 0.30-0.80 band + 24 validation samples adjudicated on contact sheets (crest_sheets/), threshold agreed in every case",
+ "caveat": "out-of-Gallus-bound strongpoints zeroed to clear (W48|X48, JJ45|JJ44 areas) can fake a dark strip via structure art - all observed instances are on unplayable hexes",
+ "candidates": 997,
+ "crest_count": 182,
+ "calibration": {
+  "RR8-SS8 printed crest [11.17]": "PASS",
+  "SS47|RR48 = the 9.52 example crest": "PASS",
+  "SS7|SS6 band-tip fade is NOT crest": "PASS",
+  "TT8|UU8 band base is NOT crest": "PASS"
+ },
+ "crests": [
+  {
+   "key": "0335|0436",
+   "slope": "C34",
+   "clear": "D34",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "0336|0436",
+   "slope": "C35",
+   "clear": "D34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0435|0436",
+   "slope": "D33",
+   "clear": "D34",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "0436|0437",
+   "slope": "D35",
+   "clear": "D34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0436|0535",
+   "slope": "E33",
+   "clear": "D34",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "0437|0536",
+   "slope": "D35",
+   "clear": "E34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0535|0536",
+   "slope": "E33",
+   "clear": "E34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0536|0537",
+   "slope": "E35",
+   "clear": "E34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0536|0636",
+   "slope": "F33",
+   "clear": "E34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0536|0637",
+   "slope": "F34",
+   "clear": "E34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0638|0737",
+   "slope": "F35",
+   "clear": "G34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0638|0738",
+   "slope": "F35",
+   "clear": "G35",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0639|0738",
+   "slope": "F36",
+   "clear": "G35",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "0639|0739",
+   "slope": "F36",
+   "clear": "G36",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0640|0739",
+   "slope": "F37",
+   "clear": "G36",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "0640|0740",
+   "slope": "F37",
+   "clear": "G37",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "0641|0740",
+   "slope": "F38",
+   "clear": "G37",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0641|0741",
+   "slope": "F38",
+   "clear": "G38",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "0642|0741",
+   "slope": "F39",
+   "clear": "G38",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "0752|0853",
+   "slope": "G49",
+   "clear": "H49",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "0753|0853",
+   "slope": "G50",
+   "clear": "H49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "0853|0854",
+   "slope": "H50",
+   "clear": "H49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1068|1167",
+   "slope": "J63",
+   "clear": "K62",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "1068|1168",
+   "slope": "J63",
+   "clear": "K63",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "1069|1168",
+   "slope": "J64",
+   "clear": "K63",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1069|1169",
+   "slope": "J64",
+   "clear": "K64",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1070|1169",
+   "slope": "J65",
+   "clear": "K64",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "1070|1170",
+   "slope": "J65",
+   "clear": "K65",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "1071|1170",
+   "slope": "J66",
+   "clear": "K65",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1071|1171",
+   "slope": "J66",
+   "clear": "K66",
+   "dark_frac": 0.53
+  },
+  {
+   "key": "1072|1171",
+   "slope": "J67",
+   "clear": "K66",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "1073|1172",
+   "slope": "J68",
+   "clear": "K67",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1073|1173",
+   "slope": "J68",
+   "clear": "K68",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1074|1173",
+   "slope": "J69",
+   "clear": "K68",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "1074|1174",
+   "slope": "J69",
+   "clear": "K69",
+   "dark_frac": 0.53
+  },
+  {
+   "key": "1075|1174",
+   "slope": "J70",
+   "clear": "K69",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1076|1175",
+   "slope": "J71",
+   "clear": "K70",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1175|1176",
+   "slope": "K71",
+   "clear": "K70",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "1176|1276",
+   "slope": "K71",
+   "clear": "L70",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "1977|1978",
+   "slope": "S69",
+   "clear": "S68",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "1978|2078",
+   "slope": "S69",
+   "clear": "T68",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "2078|2079",
+   "slope": "T69",
+   "clear": "T68",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2259|2260",
+   "slope": "V48",
+   "clear": "V49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2260|2359",
+   "slope": "W48",
+   "clear": "V49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2359|2360",
+   "slope": "W48",
+   "clear": "W49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2359|2460",
+   "slope": "W48",
+   "clear": "X48",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2460|2559",
+   "slope": "Y47",
+   "clear": "X48",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "2559|2560",
+   "slope": "Y47",
+   "clear": "Y48",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2559|2660",
+   "slope": "Y47",
+   "clear": "Z47",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "2859|2860",
+   "slope": "BB45",
+   "clear": "BB46",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "2859|2959",
+   "slope": "BB45",
+   "clear": "CC45",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "2958|2959",
+   "slope": "CC44",
+   "clear": "CC45",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "2958|3059",
+   "slope": "CC44",
+   "clear": "DD44",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3058|3158",
+   "slope": "DD43",
+   "clear": "EE43",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "3067|3167",
+   "slope": "EE52",
+   "clear": "DD52",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3068|3167",
+   "slope": "EE52",
+   "clear": "DD53",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3165|3266",
+   "slope": "FF50",
+   "clear": "EE50",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3259|3359",
+   "slope": "GG43",
+   "clear": "FF43",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "3260|3359",
+   "slope": "GG43",
+   "clear": "FF44",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3260|3360",
+   "slope": "GG44",
+   "clear": "FF44",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3261|3360",
+   "slope": "GG44",
+   "clear": "FF45",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3261|3361",
+   "slope": "GG45",
+   "clear": "FF45",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3262|3361",
+   "slope": "GG45",
+   "clear": "FF46",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3263|3363",
+   "slope": "GG47",
+   "clear": "FF47",
+   "dark_frac": 0.67
+  },
+  {
+   "key": "3264|3363",
+   "slope": "GG47",
+   "clear": "FF48",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3264|3364",
+   "slope": "GG48",
+   "clear": "FF48",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3265|3266",
+   "slope": "FF50",
+   "clear": "FF49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3265|3364",
+   "slope": "GG48",
+   "clear": "FF49",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3278|3279",
+   "slope": "FF63",
+   "clear": "FF62",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "3279|3378",
+   "slope": "FF63",
+   "clear": "GG62",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "3479|3480",
+   "slope": "HH63",
+   "clear": "HH62",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3480|3579",
+   "slope": "HH63",
+   "clear": "II62",
+   "dark_frac": 0.67
+  },
+  {
+   "key": "3559|3660",
+   "slope": "II42",
+   "clear": "JJ42",
+   "dark_frac": 0.53
+  },
+  {
+   "key": "3560|3660",
+   "slope": "II43",
+   "clear": "JJ42",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3560|3661",
+   "slope": "II43",
+   "clear": "JJ43",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "3579|3679",
+   "slope": "JJ61",
+   "clear": "II62",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "3650|3749",
+   "slope": "KK31",
+   "clear": "JJ32",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3662|3663",
+   "slope": "JJ45",
+   "clear": "JJ44",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "3678|3679",
+   "slope": "JJ61",
+   "clear": "JJ60",
+   "dark_frac": 0.53
+  },
+  {
+   "key": "3749|3750",
+   "slope": "KK31",
+   "clear": "KK32",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "3762|3763",
+   "slope": "KK45",
+   "clear": "KK44",
+   "dark_frac": 0.67
+  },
+  {
+   "key": "3775|3876",
+   "slope": "KK57",
+   "clear": "LL57",
+   "dark_frac": 0.53
+  },
+  {
+   "key": "4055|4056",
+   "slope": "NN35",
+   "clear": "NN36",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "4128|4228",
+   "slope": "PP7",
+   "clear": "OO8",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "4185|4286",
+   "slope": "PP65",
+   "clear": "OO65",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4228|4229",
+   "slope": "PP7",
+   "clear": "PP8",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4229|4328",
+   "slope": "QQ7",
+   "clear": "PP8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4328|4329",
+   "slope": "QQ7",
+   "clear": "QQ8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4329|4429",
+   "slope": "RR7",
+   "clear": "QQ8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4366|4467",
+   "slope": "RR45",
+   "clear": "QQ45",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4367|4467",
+   "slope": "RR45",
+   "clear": "QQ46",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4375|4476",
+   "slope": "RR54",
+   "clear": "QQ54",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4376|4476",
+   "slope": "RR54",
+   "clear": "QQ55",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4385|4486",
+   "slope": "RR64",
+   "clear": "QQ64",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4429|4430",
+   "slope": "RR7",
+   "clear": "RR8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4430|4529",
+   "slope": "SS7",
+   "clear": "RR8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4430|4530",
+   "slope": "SS8",
+   "clear": "RR8",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4431|4530",
+   "slope": "SS8",
+   "clear": "RR9",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4431|4531",
+   "slope": "SS9",
+   "clear": "RR9",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4432|4531",
+   "slope": "SS9",
+   "clear": "RR10",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4432|4532",
+   "slope": "SS10",
+   "clear": "RR10",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "4433|4532",
+   "slope": "SS10",
+   "clear": "RR11",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4433|4533",
+   "slope": "SS11",
+   "clear": "RR11",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4434|4533",
+   "slope": "SS11",
+   "clear": "RR12",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4434|4534",
+   "slope": "SS12",
+   "clear": "RR12",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "4435|4534",
+   "slope": "SS12",
+   "clear": "RR13",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4435|4535",
+   "slope": "SS13",
+   "clear": "RR13",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4436|4535",
+   "slope": "SS13",
+   "clear": "RR14",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4436|4536",
+   "slope": "SS14",
+   "clear": "RR14",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4437|4536",
+   "slope": "SS14",
+   "clear": "RR15",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4437|4537",
+   "slope": "SS15",
+   "clear": "RR15",
+   "dark_frac": 0.67
+  },
+  {
+   "key": "4438|4537",
+   "slope": "SS15",
+   "clear": "RR16",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4438|4538",
+   "slope": "SS16",
+   "clear": "RR16",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4439|4538",
+   "slope": "SS16",
+   "clear": "RR17",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4439|4539",
+   "slope": "SS17",
+   "clear": "RR17",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4440|4539",
+   "slope": "SS17",
+   "clear": "RR18",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4442|4541",
+   "slope": "SS19",
+   "clear": "RR20",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4443|4543",
+   "slope": "SS21",
+   "clear": "RR21",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4444|4543",
+   "slope": "SS21",
+   "clear": "RR22",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4444|4544",
+   "slope": "SS22",
+   "clear": "RR22",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4445|4544",
+   "slope": "SS22",
+   "clear": "RR23",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4445|4545",
+   "slope": "SS23",
+   "clear": "RR23",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4447|4546",
+   "slope": "SS24",
+   "clear": "RR25",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4447|4547",
+   "slope": "SS25",
+   "clear": "RR25",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "4448|4547",
+   "slope": "SS25",
+   "clear": "RR26",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4449|4548",
+   "slope": "SS26",
+   "clear": "RR27",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4449|4549",
+   "slope": "SS27",
+   "clear": "RR27",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4450|4549",
+   "slope": "SS27",
+   "clear": "RR28",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4451|4550",
+   "slope": "SS28",
+   "clear": "RR29",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4451|4551",
+   "slope": "SS29",
+   "clear": "RR29",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4452|4551",
+   "slope": "SS29",
+   "clear": "RR30",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4456|4555",
+   "slope": "SS33",
+   "clear": "RR34",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4456|4556",
+   "slope": "SS34",
+   "clear": "RR34",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4457|4556",
+   "slope": "SS34",
+   "clear": "RR35",
+   "dark_frac": 0.67
+  },
+  {
+   "key": "4457|4557",
+   "slope": "SS35",
+   "clear": "RR35",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4458|4557",
+   "slope": "SS35",
+   "clear": "RR36",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4458|4558",
+   "slope": "SS36",
+   "clear": "RR36",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4459|4558",
+   "slope": "SS36",
+   "clear": "RR37",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4459|4559",
+   "slope": "SS37",
+   "clear": "RR37",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4460|4559",
+   "slope": "SS37",
+   "clear": "RR38",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4460|4560",
+   "slope": "SS38",
+   "clear": "RR38",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4461|4560",
+   "slope": "SS38",
+   "clear": "RR39",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4461|4561",
+   "slope": "SS39",
+   "clear": "RR39",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4462|4561",
+   "slope": "SS39",
+   "clear": "RR40",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4462|4562",
+   "slope": "SS40",
+   "clear": "RR40",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4463|4562",
+   "slope": "SS40",
+   "clear": "RR41",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4463|4563",
+   "slope": "SS41",
+   "clear": "RR41",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4464|4563",
+   "slope": "SS41",
+   "clear": "RR42",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4464|4564",
+   "slope": "SS42",
+   "clear": "RR42",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4465|4564",
+   "slope": "SS42",
+   "clear": "RR43",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4465|4565",
+   "slope": "SS43",
+   "clear": "RR43",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4469|4568",
+   "slope": "SS46",
+   "clear": "RR47",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4469|4569",
+   "slope": "SS47",
+   "clear": "RR47",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4470|4569",
+   "slope": "SS47",
+   "clear": "RR48",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4470|4570",
+   "slope": "SS48",
+   "clear": "RR48",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4471|4570",
+   "slope": "SS48",
+   "clear": "RR49",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4472|4571",
+   "slope": "SS49",
+   "clear": "RR50",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4472|4572",
+   "slope": "SS50",
+   "clear": "RR50",
+   "dark_frac": 0.87
+  },
+  {
+   "key": "4473|4572",
+   "slope": "SS50",
+   "clear": "RR51",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4473|4573",
+   "slope": "SS51",
+   "clear": "RR51",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4474|4573",
+   "slope": "SS51",
+   "clear": "RR52",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4474|4574",
+   "slope": "SS52",
+   "clear": "RR52",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4551|4552",
+   "slope": "SS29",
+   "clear": "SS30",
+   "dark_frac": 0.8
+  },
+  {
+   "key": "4552|4652",
+   "slope": "TT29",
+   "clear": "SS30",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4552|4653",
+   "slope": "TT30",
+   "clear": "SS30",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4553|4653",
+   "slope": "TT30",
+   "clear": "SS31",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4553|4654",
+   "slope": "TT31",
+   "clear": "SS31",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4554|4555",
+   "slope": "SS33",
+   "clear": "SS32",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4554|4654",
+   "slope": "TT31",
+   "clear": "SS32",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4554|4655",
+   "slope": "TT32",
+   "clear": "SS32",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4584|4685",
+   "slope": "TT62",
+   "clear": "SS62",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4626|4627",
+   "slope": "TT3",
+   "clear": "TT4",
+   "dark_frac": 0.6
+  },
+  {
+   "key": "4626|4725",
+   "slope": "TT3",
+   "clear": "UU2",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4725|4726",
+   "slope": "UU3",
+   "clear": "UU2",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4826|4925",
+   "slope": "VV2",
+   "clear": "WW1",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4886|4985",
+   "slope": "VV62",
+   "clear": "WW61",
+   "dark_frac": 0.93
+  },
+  {
+   "key": "4927|5027",
+   "slope": "WW3",
+   "clear": "XX2",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4927|5028",
+   "slope": "WW3",
+   "clear": "XX3",
+   "dark_frac": 0.73
+  },
+  {
+   "key": "4928|5028",
+   "slope": "WW4",
+   "clear": "XX3",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "4984|4985",
+   "slope": "WW60",
+   "clear": "WW61",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "5028|5029",
+   "slope": "XX4",
+   "clear": "XX3",
+   "dark_frac": 1.0
+  },
+  {
+   "key": "5084|5085",
+   "slope": "XX59",
+   "clear": "XX60",
+   "dark_frac": 0.93
+  }
+ ]
+}
