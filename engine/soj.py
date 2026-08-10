@@ -1,5 +1,5 @@
 """
-soj.py - The Siege of Jerusalem (AH 1989) legality gate. Tier-2 scope.
+soj.py - The Siege of Jerusalem (AH 1989) legality gate.
 
 The Assault of Gallus introductory scenario: free deployment, per-class TEC
 movement, SoJ zones of control, stacking, hex control [18.3], the Giora
@@ -10,11 +10,11 @@ Table combat with drm/strength modifiers, defender-choice loss pendings,
 retreats toward Refuge, the disruption ladder (Fresh-Disrupted-Routed-
 Panicked), the Rally Phase, Command Control, and night-turn effects.
 
-Enforced-with-simplifications (declared in scenario rules_scope, module-
-author review pending): siege-engine facing is not enforced (breach attacks
-allowed vs any adjacent Elevated hex); Escalades and Testudo are not
-available in v1; multi-hex advance after combat is limited to the vacated
-hex; CC tracing and Refuge routing use documented approximations.
+Coverage-matrix regime (spec #13 as amended 2026-08-09): the scenario's
+COVERAGE_MATRIX.md is the playability instrument. Open rows (the scenario
+rules_scope `build_open` list) are defects that block playability - never
+player-umpired corners; "umpired" is retired as a state. The gate ships
+whole or not at all.
 
 Authority: official Q&A > rulebook; the two official Q&A documents agree
 everywhere (decode-prep 6) - their one citation mismatch (17.23 vs 17.3)
@@ -78,6 +78,29 @@ class SoJGame(GateGame):
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "phase", "control", "pool",
                                       "breach", "pending"))
+
+    def rules_scope(self):
+        """Matrix-regime composition (spec #13 as amended 2026-08-09),
+        shadowing the tiered base: the scenario declares `enforced` /
+        `enforced_tier2` (true claims only) and `build_open` — the open
+        coverage-matrix rows, presented as not-enforced DEFECTS that block
+        playability, never as umpired corners. Sandbox (tier < 2) makes no
+        combat enforcement claims at all."""
+        sc = self.scenario.get("rules_scope", {})
+        rulings = sc.get("rulings", [])
+        if self.tier >= 2:
+            return {"enforced": (sc.get("enforced", []) +
+                                 sc.get("enforced_tier2", [])),
+                    "not_enforced": sc.get("build_open", []),
+                    "rulings": rulings,
+                    "banner": "BUILD IN PROGRESS - NOT PLAYABLE by the "
+                              "coverage-matrix standard (open rows below)"}
+        return {"enforced": sc.get("enforced", []),
+                "not_enforced": (sc.get("enforced_tier2", []) +
+                                 sc.get("build_open", [])),
+                "rulings": rulings,
+                "banner": "SANDBOX MODE - combat is not gated and no "
+                          "enforcement claim is made for it"}
 
     # ------------------------------------------------------------ terrain
     def _index_terrain(self):
@@ -555,8 +578,8 @@ class SoJGame(GateGame):
                            "Judaean unit in Roman Heavy Infantry ground-level "
                            "ZOC may not move [7.311; official Q&A 1/6/1992]")
         if u["state"] in ("routed", "panicked"):
-            # must head for Refuge [15.3/17.21]; v1 enforces direction
-            # (full-MF obligation is advisory - see rules_scope)
+            # must head for Refuge [15.3/17.21]; direction enforced here
+            # (full-MF obligation still open - matrix M.16 -> B16)
             if self._refuge_dist(side, path[-1]) >= \
                     self._refuge_dist(side, path[0]):
                 return self._v(False, "Routed/Panicked units must move towards Refuge [15.3/17.21]")
@@ -698,7 +721,7 @@ class SoJGame(GateGame):
             if "C" in classes and occ_combat:
                 indirect = True
         # [9.51] elevation-adjacency Built-up blocks are approximated by the
-        # crossed-hex P rule above (declared in rules_scope; author review)
+        # crossed-hex P rule above (open - matrix F.10 -> B6; must be exact)
         return True, (-1 if indirect else 0), None
 
     def _range_af(self, u, dist):
@@ -1349,15 +1372,15 @@ class SoJGame(GateGame):
             return self._move_verdict(side, u, path)
         if a == "fire":
             if self.tier < 2:
-                return self._v(False, "combat is umpired at tier 1")
+                return self._v(False, "combat is not gated in sandbox mode")
             return self._fire_verdict(side, action)
         if a == "breach_attack":
             if self.tier < 2:
-                return self._v(False, "combat is umpired at tier 1")
+                return self._v(False, "combat is not gated in sandbox mode")
             return self._breach_verdict(side, action)
         if a == "melee":
             if self.tier < 2:
-                return self._v(False, "combat is umpired at tier 1")
+                return self._v(False, "combat is not gated in sandbox mode")
             return self._melee_verdict(side, action)
         if a == "end_phase":
             if phase in ("deploy_jud", "deploy_rom"):
