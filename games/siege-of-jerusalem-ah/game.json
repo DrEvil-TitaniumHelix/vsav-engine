@@ -105,6 +105,12 @@
   "hexside_rules": [],
   "zoc": {"exerts": false, "note": "SoJ ZOC (ground/gate/elevated, hard vs soft, night-off) is family-owned in engine/soj.py - the generic flags cannot express it"},
   "note": "Generic block covers ROMAN INFANTRY ground movement only (TEC: Clear 1 / Slope 3 / Built-up 3; Judaeans pay 2 in Built-up [8.95]); wall-class hexes are 99 here because entry is staircase/gate/breach-governed [8.91-8.93] - engine/soj.py owns the real per-class TEC below.",
+  "roads": {
+   "_cite": "8.94 (roads within the city usable by both sides; roads outside Jerusalem destroyed), 8.95 (Cavalry and Artillery enter/exit Built-up only through road hexsides), 12.4 + The General 26-4 p.13 (road movement rate = 1/2 MF)",
+   "rate": 0.5,
+   "sides": "terrain.json sides[*].road (105 hexsides, ingest/road_hexsides.json - art-derived, detector + full contact-sheet adjudication)",
+   "_notes": "Rate replaces the terrain entry cost when crossing a road hexside; ZOC/overstack/panic modifiers still apply on top [7.32/8.13/17.21]. Gate hexes carry no road sides - 8.91 entrance costs govern. Ground roads have no damage transition in Gallus (Clearance 18.37 is campaign scope); the Elevated 12.4 transition lives in the wall-top half-C cost. Testudo Built-up prohibition even on roads [6.61] lands with B13."
+  },
   "tec": {
    "_cite": "Terrain Effects Chart (module TEC.jpg, fully legible) + notes; costs per class [Infantry / Artillery / Cavalry / Tower / Ram / Testudo]; X = prohibited; fractions retained and cumulative [2.7]",
    "clear":    {"infantry": 1, "artillery": 1, "cavalry": 1, "tower": 1, "ram": 1, "testudo": 1},
