@@ -1403,6 +1403,274 @@ def multiple_attack_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def escalade_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_esc_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=55)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        N = tg.hex_name
+        ELEV = soj.ELEVATED
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def pocket():
+            return (h for h in sorted(tg.hex_t0)
+                    if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                    and all(clear1(m) for n in tg._nb(h)
+                            for m in tg._nb(n)))
+
+        def mph(phase="rom_move"):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        h0 = next(pocket())
+        n1 = tg._nb(h0)[0]
+        v5 = take("roman_veteran", 1)[0]
+        v5["hex"] = h0
+        submit_ok(tg, "Rom", {"type": "move", "pid": v5["pid"],
+                              "path": [N[h0], N[n1], N[h0], N[n1]]})
+        assert abs(v5.get("mv", 0) - 3.0) < 1e-9
+        submit_no(tg, "Rom", {"type": "move", "pid": v5["pid"],
+                              "path": [N[n1], N[h0], N[n1], N[h0], N[n1],
+                                       N[h0], N[n1]]},
+                  "movement allowance exceeded")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v5["pid"],
+                              "path": [N[n1], N[h0], N[n1], N[h0], N[n1],
+                                       N[h0]]})
+        assert abs(v5["mv"] - 8.0) < 1e-9
+        print("escalade: MF spend now accumulates across a unit's actions "
+              "in one MPh (closed the fresh-budget-per-action hole) [8.11]")
+
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and sum(1 for n in tg._nb(h) if clear1(n)) >= 1
+                    and any(sum(1 for m in tg._nb(n) if clear1(m)) >= 4
+                            for n in tg._nb(h) if clear1(n)))
+        A = next(n for n in tg._nb(wall)
+                 if clear1(n) and sum(1 for m in tg._nb(n)
+                                      if clear1(m)) >= 4)
+        B, C, D, X1 = [n for n in tg._nb(A) if clear1(n)][:4]
+        v1, v2, v3, v4 = take("roman_veteran", 4)
+        gallus = take("gallus", 1)[0]
+        fdt = take("foederatti", 1)[0]
+        v1["hex"], v2["hex"], v3["hex"], v4["hex"] = A, B, C, D
+        gallus["hex"] = B
+
+        vp = take("roman_veteran", 1)[0]
+        vp["hex"] = h0
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": vp["pid"]}, "adjacent to an Elevated")
+        vp["hex"] = None
+        fdt["hex"] = A
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": fdt["pid"]},
+                  "Fresh Heavy Infantry or Velitae")
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v1["pid"]},
+                  "units other than Heavy Infantry, Velitae, or HQ")
+        fdt["hex"] = None
+        v1["state"] = "disrupted"
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v1["pid"]}, "[16.3]")
+        v1["state"] = "fresh"
+        v1["mv"] = 5.0
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v1["pid"]}, "four MF")
+        v1.pop("mv")
+        wall2 = next(h for h in sorted(tg.hex_t0)
+                     if tg.hex_t0[h] == "wall" and h in tg.playable
+                     and tg._dist(h, B) > 14
+                     and any(clear1(n) for n in tg._nb(h)))
+        vf = take("roman_veteran", 1)[0]
+        vf["hex"] = next(n for n in tg._nb(wall2) if clear1(n))
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": vf["pid"]}, "[5.3]")
+        vf["hex"] = None
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v1["pid"]})
+        e = tg._esc_at(A)
+        assert e and e["base"] == v1["pid"] and abs(v1["mv"] - 4.0) < 1e-9
+        submit_no(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v1["pid"]}, "one Base unit")
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "path": [N[A], N[B]]}, "beneath an Escalade")
+        assert tg._unit_zoc(v1) == set(), \
+            "Romans in an Escalade hex exert no ZOC [7.2]"
+        print("escalade: placement door (class/occupants/16.3/MF/5.3/"
+              "adjacency/one-base) + base locked + no ZOC OK [6.5/8.7/7.2]")
+
+        submit_ok(tg, "Rom", {"type": "move", "pid": v2["pid"],
+                              "path": [N[B], N[A]], "up": True})
+        assert v2.get("up") and abs(v2["mv"] - 5.0) < 1e-9 \
+            and e["used"] == [v2["pid"]]
+        fdt["hex"] = C
+        submit_no(tg, "Rom", {"type": "move", "pid": fdt["pid"],
+                              "path": [N[C], N[A]], "up": True},
+                  "only Heavy Infantry, Velitae, or a HQ")
+        fdt["hex"] = None
+        submit_ok(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[C], N[A]], "up": True})
+        assert len(e["used"]) == 2
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[D], N[A]], "up": True},
+                  "Fully Occupied")
+        e["used"] = []
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[D], N[A]], "up": True},
+                  "two units (plus a HQ) may be above")
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[D], N[A], N[B]]},
+                  "filled to capacity")
+        submit_no(tg, "Rom", {"type": "escalade", "op": "remove",
+                              "pid": v1["pid"]}, "on top")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v2["pid"],
+                              "path": [N[A], N[wall]]})
+        assert v2["hex"] == wall and not v2.get("up") \
+            and abs(v2["mv"] - 7.0) < 1e-9, \
+            "scaling an adjacent Elevated hex costs a flat 2 MF [8.7]"
+        assert tg.s["control"][wall] == "Rom"
+        submit_ok(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[A], N[C]]})
+        assert not v3.get("up")
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[D], N[A]]},
+                  "beneath an Escalade - climb")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[D], N[A], N[B]]})
+        print("escalade: climb 4+entry, per-phase two-unit use cap, "
+              "two-above capacity, no-stop-beneath, transit full/free, "
+              "scale to the Wall at 2 MF, descend free OK [6.5/8.7]")
+
+        mm = take("judaean_militia", 1)[0]
+        mm["hex"] = X1
+        v3["hex"] = v4["hex"] = None
+        mph("jud_move")
+        submit_no(tg, "Jud", {"type": "move", "pid": mm["pid"],
+                              "path": [N[X1], N[A]]}, "[8.11]")
+        v3["hex"], v4["hex"] = C, B
+        ona = take("roman_onager", 1)[0]
+        ona["hex"], ona["state"] = D, "disrupted"
+        mph("rom_move")
+        submit_no(tg, "Rom", {"type": "move", "pid": ona["pid"],
+                              "path": [N[D], N[A]]}, "[6.3]")
+        tg.s["phase"] = "jud_melee"
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [mm["pid"]]}, "X.15")
+        tg.s["phase"] = "rom_melee"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
+                              "attackers": [v1["pid"]]}, "[11.6]")
+        tg.s["phase"] = "jud_fire"
+        tg.s["seg"] = "Jud"
+        submit_no(tg, "Jud", {"type": "fire", "firers": [mm["pid"]],
+                              "target": N[A]}, "F.32")
+        tg.s["phase"] = "rom_fire"
+        tg.s["seg"] = "Rom"
+        vb = take("roman_ballista", 1)[0]
+        vb["hex"] = A
+        submit_no(tg, "Rom", {"type": "fire", "firers": [vb["pid"]],
+                              "target": N[X1]}, "occupying an Escalade")
+        vb["hex"] = None
+        tg.s["seg"] = None
+        cost, why = tg._retreat_step(mm, X1, A, "Jud", set(), {})
+        assert cost is None and "[8.11" in why, \
+            "the Roman Base makes 6.5's Judaean bar structurally 8.11"
+        cost, why = tg._retreat_step(ona, D, A, "Rom", set(), {})
+        assert cost is None and "[6.3]" in why
+        print("escalade: Judaean entry/retreat blocked (8.11 fronts the "
+              "6.5 armor - a Base always occupies), Artillery bars [6.3], "
+              "fire-from bar [9.4], loud F.32/X.15/11.6 guards OK")
+
+        g0 = next(h for h in pocket() if tg._dist(h, h0) > 6)
+        vz = take("roman_veteran", 1)[0]
+        tw = take("tower", 1)[0]
+        vz["hex"] = g0
+        assert tg._unit_zoc(vz) != set()
+        tw["hex"] = g0
+        assert tg._unit_zoc(vz) == set(), \
+            "Romans stacked with a Siege Engine exert no ZOC [7.2]"
+        tw["hex"] = None
+        print("escalade: SE co-location ZOC exclusion OK [7.2] "
+              "(closed a silent gap - pushers were exerting ZOC)")
+
+        mm["state"] = "disrupted"
+        mph("rom_move")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[B], N[A]], "up": True})
+        assert v4.get("up") and tg._esc_at(A)["used"] == [v4["pid"]]
+        tg.s["phase"] = "rom_melee"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
+                              "attackers": [v4["pid"]]}, "B12 melee slice")
+        ve = take("roman_veteran", 1)[0]
+        ve["hex"] = C
+        out = tg._install_errant({"kind": "errant", "by": "Rom", "hex": A,
+                                  "cands": [v1["pid"], ve["pid"]]})
+        assert ve["pid"] in out and ve["state"] == "disrupted" \
+            and v1["state"] == "fresh", \
+            "errant may not hit a Base unit with climbers [9.31]"
+        mph("rom_move")
+        e = tg._esc_at(A)
+        e["used"] = [v4["pid"]]
+        v1["mv"] = 2.0
+        r = submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg._esc_at(A)["used"] == [] and "mv" not in v1, \
+            "the Fully-Occupied face returns to front at phase end [8.7]"
+        mph("rom_move")
+        v1["state"] = "disrupted"
+        submit_ok(tg, "Rom", {"type": "move", "pid": v5["pid"],
+                              "path": [N[h0], N[n1]]})
+        assert tg._esc_at(A) is None and not v4.get("up") \
+            and v4["hex"] == A, \
+            "a Disrupted Base automatically loses its Escalade [8.7]"
+        print("escalade: errant base-exclusion [9.31], phase-end face "
+              "reset, auto-collapse on Disrupted base OK [8.7]")
+
+        v1["state"] = "fresh"
+        mph("rom_move")
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": v4["pid"]})
+        assert tg._esc_at(A)["base"] == v4["pid"]
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "remove",
+                              "pid": v4["pid"]})
+        assert tg._esc_at(A) is None and abs(v4["mv"] - 8.0) < 1e-9
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[A], N[B]]},
+                  "movement allowance exceeded")
+        print("escalade: place+remove at 4 MF each drains the full MA "
+              "across three actions OK [6.5/8.7]")
+
+        assert "esc" in tg.HASH_KEYS
+        hh = tg.state_hash()
+        tg.s["esc"].append({"hex": A, "base": "probe", "used": []})
+        assert tg.state_hash() != hh, "escalades must move the state hash"
+        tg.s["esc"].pop()
+        assert tg.state_hash() == hh
+        v5["up"] = True
+        assert tg.state_hash() != hh
+        v5.pop("up")
+        v5["mv"] = 1.0
+        assert tg.state_hash() != hh
+        v5.pop("mv")
+        assert tg.state_hash() == hh
+        print("escalade checks: PASS (B12 movement slice + 7.2 ZOC fix + "
+              "MF-accumulation fix; fire/melee slices ride on loud guards)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -1541,6 +1809,7 @@ def main():
         lof_crest_checks(g)
         marker_checks(g)
         multiple_attack_checks(g)
+        escalade_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
