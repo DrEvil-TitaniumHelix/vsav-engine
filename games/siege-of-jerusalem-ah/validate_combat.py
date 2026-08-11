@@ -2879,6 +2879,265 @@ def tower_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def advance_bonus_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_adv_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=77)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        tg.s["phase"] = "rom_melee"
+        N = tg.hex_name
+        DIE = [4]
+        tg.roll_die = lambda: DIE[0]
+
+        def take(t, n, fac=None):
+            pool = [u for u in U.values()
+                    if u["type"] == t and u["hex"] is None
+                    and u["state"] == "fresh"
+                    and (fac is None or u.get("faction") == fac)]
+            if fac is None:
+                by = {}
+                for u in pool:
+                    by.setdefault(u.get("faction"), []).append(u)
+                pool = next((v for v in by.values() if len(v) >= n), [])
+            out = pool[:n]
+            assert len(out) == n, f"need {n} same-faction {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def reset():
+            tg.s["meleed"] = []
+            tg.s["melee_hexes"] = []
+            tg.s["cc_hex"] = None
+            assert tg.s["pending"] is None
+
+        h0 = next(h for h in sorted(tg.hex_t0)
+                  if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                  and all(clear1(m) for n in tg._nb(h) for m in tg._nb(n)))
+        ring = tg._nb(h0)
+        a1, a2, z1 = ring[0], ring[3], ring[1]
+        z2 = next(n for n in tg._nb(z1) if tg._dist(n, h0) == 2)
+        gh = next(n for n in tg._nb(z2)
+                  if tg._dist(n, h0) == 2 and n != z1 and clear1(n))
+
+        # ---- EE vs a lone defender: xe = 1, the full refusal battery,
+        #      then a one-hex bonus advance [11.86/11.9]
+        L1 = take("roman_veteran", 1)[0]
+        L2 = take("roman_line", 1, L1.get("faction"))[0]
+        ms = take("judaean_militia", 2)
+        m0, m1 = ms
+        m0["hex"] = h0
+        L1["hex"], L2["hex"] = a1, a2
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [L1["pid"], L2["pid"]]})
+        assert r["result"]["result"] == "EE", r["result"]
+        assert m0["state"] == "eliminated"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["xe"] == 1, p
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]],
+                              "beyond": {L2["pid"]: [N[z1]]}},
+                  "is not advancing")
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]],
+                              "beyond": {L1["pid"]: [N[z1], N[z2]]}},
+                  "at most 1")
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]],
+                              "beyond": {L1["pid"]: [N[z1]]}},
+                  "Command Control")
+        gal = next(u for u in U.values() if u["type"] == "gallus")
+        gal["hex"] = gh
+        m1["hex"], m1["state"] = z1, "disrupted"
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]],
+                              "beyond": {L1["pid"]: [N[z1]]}},
+                  "enemy-occupied")
+        m1["hex"], m1["state"] = None, "fresh"
+        zc = take("zealot", 1)[0]
+        zc["hex"] = ring[2]
+        assert tg.propose("Rom", {"type": "resolve_advance",
+                                  "pids": [L1["pid"], L2["pid"]]})["legal"], \
+            "ZOC never blocks the advance INTO the vacated hex [11.9]"
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"]],
+                              "beyond": {L1["pid"]: [N[z1]]}},
+                  "ZOC prevents")
+        zc["hex"] = None
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [L1["pid"], L2["pid"]],
+                              "beyond": {L1["pid"]: [N[z1]]}})
+        assert L1["hex"] == z1 and L2["hex"] == h0
+        assert L1["mk"] == "A" and L2["mk"] == "A"
+        assert tg.s["control"][h0] == "Rom" and tg.s["control"][z1] == "Rom"
+        print("advance bonus: EE vs one defender earns xe=1; non-advancer/"
+              "over-length/out-of-CC/enemy-occupied/ZOC refusals; one-hex "
+              "bonus advance with mk + control OK [11.86/11.9]")
+
+        # ---- plain E: no bonus earned [11.86]
+        reset()
+        for u in (L1, L2):
+            u["hex"] = None
+            u.pop("mk", None)
+        v5 = take("roman_veteran", 1)[0]
+        m1["hex"], m1["state"] = h0, "fresh"
+        v5["hex"] = a1
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [v5["pid"]]})
+        assert r["result"]["result"] == "E", r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["xe"] == 0, p
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [v5["pid"]],
+                              "beyond": {v5["pid"]: [N[z1]]}},
+                  "no bonus advance")
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [v5["pid"]]})
+        assert v5["hex"] == h0
+        print("advance bonus: a plain E earns no bonus - beyond refused, "
+              "vacated-hex advance unchanged OK [11.86]")
+
+        # ---- manual picks: EEE vs two defenders, the excess pick is
+        #      forfeit and earns the bonus [11.82/11.86]
+        reset()
+        v5["hex"] = None
+        v5.pop("mk", None)
+        vg = take("roman_veteran", 4)
+        mm = take("judaean_militia", 2)
+        for m in mm:
+            m["hex"] = h0
+        vg[0]["hex"] = vg[1]["hex"] = a1
+        vg[2]["hex"] = vg[3]["hex"] = a2
+        DIE[0] = 6
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [u["pid"] for u in vg]})
+        assert r["result"]["result"] == "EEE", r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss", p
+        r = submit_ok(tg, "Jud", {"type": "resolve_loss", "picks": [
+            {"pid": mm[0]["pid"]}, {"pid": mm[1]["pid"]},
+            {"pid": mm[1]["pid"]}]})
+        assert all(m["state"] == "eliminated" for m in mm)
+        assert sum(1 for e in r["result"]["events"]
+                   if e["event"].startswith("forfeit")) == 1, r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["xe"] == 1, p
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [u["pid"] for u in vg[:3]],
+                              "beyond": {vg[0]["pid"]: [N[z1]]}})
+        assert vg[0]["hex"] == z1 \
+            and all(u["hex"] == h0 for u in vg[1:3]) \
+            and vg[3]["hex"] == a2
+        assert all(u["mk"] == "A" for u in vg[:3]) and not vg[3].get("mk")
+        print("advance bonus: manual loss picks - the excess E is forfeit "
+              "with no eligible target and earns xe=1 OK [11.82/11.86]")
+
+        # ---- EEE vs a lone defender: xe = 2, two-hex bonus [11.86]
+        reset()
+        for u in vg:
+            u["hex"] = None
+            u.pop("mk", None)
+        va, vb = take("roman_veteran", 2)
+        m2 = take("judaean_militia", 1)[0]
+        m2["hex"] = h0
+        va["hex"], vb["hex"] = a1, a2
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [va["pid"], vb["pid"]]})
+        assert r["result"]["result"] == "EEE", r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["xe"] == 2, p
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [va["pid"]],
+                              "beyond": {va["pid"]: [N[z1], N[z2],
+                                                     N[h0]]}},
+                  "at most 2")
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [va["pid"], vb["pid"]],
+                              "beyond": {va["pid"]: [N[z1], N[z2]]}})
+        assert va["hex"] == z2 and vb["hex"] == h0
+        assert tg.s["control"][z1] == "Rom" \
+            and tg.s["control"][z2] == "Rom", \
+            "hexes passed through are captured [11.86]"
+        print("advance bonus: EEE vs one defender earns xe=2, two-hex "
+              "advance captures the transit hex OK [11.86]")
+
+        # ---- BEE vs a lone defender: B blocks the auto-path, the manual
+        #      excess E still earns the bonus [14.2/11.86]
+        reset()
+        for u in (va, vb):
+            u["hex"] = None
+            u.pop("mk", None)
+        wa, wb = take("roman_veteran", 2)
+        m3 = take("judaean_militia", 1)[0]
+        m3["hex"] = h0
+        wa["hex"], wb["hex"] = a1, a2
+        DIE[0] = 4
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[h0],
+                                  "attackers": [wa["pid"], wb["pid"]]})
+        assert r["result"]["result"] == "BEE", r["result"]
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss", p
+        submit_ok(tg, "Jud", {"type": "resolve_loss", "picks": [
+            {"pid": m3["pid"]}, {"pid": m3["pid"]}]})
+        assert m3["state"] == "eliminated"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["xe"] == 1, p
+        submit_ok(tg, "Rom", {"type": "resolve_advance", "pids": []})
+        print("advance bonus: BEE vs one defender - manual path via the B "
+              "result, excess E earns xe=1, decline still free OK "
+              "[14.2/11.86]")
+
+        # ---- the eligibility guard: an excess pick may not land on a
+        #      live unit at the other Tower level [9.11/11.21/14.33]
+        reset()
+        for u in (wa, wb):
+            u["hex"] = None
+            u.pop("mk", None)
+        ELEV = soj.ELEVATED
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and any(clear1(n) for n in tg._nb(h)))
+        A = next(n for n in tg._nb(wall) if clear1(n))
+        tw = next(u for u in U.values() if u["type"] == "tower")
+        tw["hex"] = A
+        tw["facing"] = tg._dir_of(A, wall)
+        p1, p2 = take("roman_veteran", 2)
+        p1["hex"] = p2["hex"] = A
+        vt = take("velitae", 1)[0]
+        vt["hex"] = A
+        vt["up"] = True
+        gal["hex"] = A
+        gal["up"] = True
+        tg._queue_melee_result(A, ["E", "E", "E"], "Rom", "Jud", [], None,
+                               "above")
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss" and p.get("lvl") == "above", p
+        r = submit_ok(tg, "Rom", {"type": "resolve_loss", "picks": [
+            {"pid": vt["pid"]}, {"pid": gal["pid"]}, {"pid": p1["pid"]}]})
+        assert vt["state"] == "eliminated" \
+            and gal["state"] == "eliminated"
+        assert p1["state"] == "fresh" and p1["hex"] == A, \
+            "an excess result may never fall on the immune level [9.11]"
+        assert r["result"]["events"][2]["event"].startswith("forfeit"), \
+            r["result"]
+        assert tw["state"] == "fresh", \
+            "pushing units keep the cleared Tower standing [11.21]"
+        assert tg.s["pending"] is None
+        print("advance bonus: excess-pick eligibility guard - the third E "
+              "forfeits instead of hitting the pushing unit below OK "
+              "[9.11/11.21/14.33]")
+
+        print("advance bonus checks: PASS (B15 11.86 excess-E multi-hex "
+              "advance + 11.82 forfeit accounting)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_cbt_")
     try:
@@ -2899,6 +3158,7 @@ def main():
         escalade_checks(g)
         testudo_checks(g)
         tower_checks(g)
+        advance_bonus_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
