@@ -539,9 +539,9 @@ class SoJGame(GateGame):
         free_cls = {"artillery", "cauldron", "hq", "siege_engine"}
         return sum(1 for u in occ if self.utype(u)["cls"] not in free_cls)
 
-    def _stack_check(self, h, side, adding):
+    def _stack_check(self, h, side, adding, skip=()):
         add = adding if isinstance(adding, list) else [adding]
-        occ = self._occupants(h) + add
+        occ = [o for o in self._occupants(h) if o["pid"] not in skip] + add
         if self._combat_count(occ) > self._stack_limit(h, side):
             return f"stacking limit exceeded in {self.hex_name[h]} [TEC/6.0]"
         for cls in ("artillery", "hq", "siege_engine"):
@@ -1638,22 +1638,24 @@ class SoJGame(GateGame):
         if letters.count("D") >= 2:
             letters = ["E"] + [c for c in letters if c == "E"]
             p["auto_note"] = "DD vs a lone eligible target eliminates it [14.33/9.12]"
-        events, u = [], None
+        events, u, done = [], None, []
         for c in letters:
             el = self._loss_elig(p["hex"], p["by"], p.get("lvl"))
             if not el:
                 break
             u = el[0]
+            done.append(c)
             events.append(self._apply_letter(u, c, p["source"]))
         self.s["pending"] = None
         p["auto"] = events
+        p["xe"] = letters.count("E") - done.count("E")
         if p["source"] == "melee" and "disrupted" in events and u \
                 and u["state"] == "disrupted":
             self.s["pending"] = {"kind": "retreat", "hex": p["hex"],
                                  "pids": [u["pid"]], "by": p["by"],
                                  "rkind": "disrupt", "lvl": p.get("lvl"),
                                  "attackers": p.get("attacker_pids") or [],
-                                 "mk": p.get("mk"),
+                                 "mk": p.get("mk"), "xe": p["xe"],
                                  "optional": self._melee_stay_ok(p["hex"])}
 
     def _resolve_loss_verdict(self, side, action):
@@ -2111,23 +2113,25 @@ class SoJGame(GateGame):
 
     def _queue_melee_result(self, tgt, letters, defender, attacker,
                             attacker_pids=None, mk=None, lvl=None):
-        self.s["pending"] = {"kind": "loss", "hex": tgt, "letters": letters,
-                             "by": defender, "source": "melee",
-                             "attacker": attacker,
-                             "attacker_pids": attacker_pids or [], "mk": mk,
-                             "lvl": lvl}
+        p = {"kind": "loss", "hex": tgt, "letters": letters,
+             "by": defender, "source": "melee",
+             "attacker": attacker,
+             "attacker_pids": attacker_pids or [], "mk": mk,
+             "lvl": lvl}
+        self.s["pending"] = p
         self._auto_resolve_pending()
+        xe = p.get("xe", 0)
         if self.s["pending"] is None:
             # auto-resolved: any survivor with B retreats via its own pending
             if "B" in letters:
-                self._queue_retreat(tgt, defender, attacker_pids, mk, lvl)
+                self._queue_retreat(tgt, defender, attacker_pids, mk, lvl, xe)
             if self.s["pending"] is None and lvl == "above":
                 self._tower_fall(tgt)
             if self.s["pending"] is None and mk and lvl != "above":
-                self._open_adv(tgt, attacker, attacker_pids, mk)
+                self._open_adv(tgt, attacker, attacker_pids, mk, xe)
 
     def _queue_retreat(self, tgt, defender, attacker_pids=None, mk=None,
-                       lvl=None):
+                       lvl=None, xe=0):
         movers = [o["pid"] for o in self._occupants(tgt)
                   if o["side"] == defender
                   and self.utype(o)["cls"] != "siege_engine"
@@ -2136,16 +2140,17 @@ class SoJGame(GateGame):
             self.s["pending"] = {"kind": "retreat", "hex": tgt,
                                  "pids": movers, "by": defender,
                                  "rkind": "b", "lvl": lvl,
-                                 "attackers": attacker_pids or [], "mk": mk}
+                                 "attackers": attacker_pids or [], "mk": mk,
+                                 "xe": xe}
 
-    def _open_adv(self, h, side, apids, mk):
+    def _open_adv(self, h, side, apids, mk, xe=0):
         if any(o["side"] == self._enemy(side) for o in self._occupants(h)):
             return
         pids = [str(p) for p in (apids or [])
                 if self.s["units"].get(str(p), {}).get("hex") is not None]
         if pids:
             self.s["pending"] = {"kind": "advance", "hex": h, "by": side,
-                                 "pids": pids, "mk": mk}
+                                 "pids": pids, "mk": mk, "xe": xe}
 
     def _resolve_esc_up_verdict(self, side, action):
         p = self.s.get("pending")
@@ -2170,6 +2175,49 @@ class SoJGame(GateGame):
         return self._v(True, ("escalade move-up set" if moves
                               else "escalade move-up declined") + " [11.6]")
 
+    def _adv_step(self, u, frm, to, side, zoc, last):
+        if to not in self._nb(frm):
+            return f"{self.hex_name.get(to, to)} is not adjacent to {self.hex_name.get(frm, frm)}"
+        enemy = self._enemy(side)
+        if any(o["side"] == enemy for o in self._occupants(to)):
+            return "may not advance into an enemy-occupied hex [8.11/11.86]"
+        c, why = self._entry_cost(u, frm, to, side)
+        if c is None:
+            return f"{why} [11.86]"
+        cls = self.utype(u)["cls"]
+        if cls in ("siege_engine", "artillery", "cauldron") and \
+                self._markers_at(to, "siege_engine" if cls == "siege_engine"
+                                 else "artillery"):
+            return "a Wreck/Elim marker blocks similar units from moving into/through that hex [11.4/13.21/14.5]"
+        if to in zoc and u["state"] != "fresh" \
+                and not (side == "Jud" and self.is_night()):
+            return "Disrupted units may not enter an enemy ZOC [16.51]"
+        if not last and any(o["side"] == side and o["state"] == "panicked"
+                            for o in self._occupants(to)):
+            return "must stop on entering a hex with a Panicked unit [17.21]"
+        if self._tst_at(to, broken=False) is not None:
+            return "may not advance into a Testudo hex - joining is a Movement Phase action [6.61/8.8]"
+        if self._esc_at(to) is not None:
+            if cls in ("artillery", "cauldron"):
+                return "Artillery may not enter an Escalade hex [6.3]"
+            if sum(1 for o in self._occupants(to)
+                   if self.utype(o)["cls"] != "hq") >= 3:
+                return "the Escalade hex is filled to capacity by units above and below [8.7]"
+            if last and cls != "hq":
+                return "only one Fresh Heavy Infantry or Velitae (plus a HQ) may be beneath an Escalade - the advance may not end there [8.7]"
+        se = self._se_at(to)
+        if se is not None and se["side"] == side:
+            if cls not in ("heavy", "light", "hq"):
+                return "only Infantry may enter or pass through a Siege Engine hex [6.4]"
+            if cls != "hq" and sum(
+                    1 for o in self._pushers(to)
+                    if o["pid"] != u["pid"]) >= 2:
+                return "a Siege Engine hex with two pushing units is filled to capacity [6.4]"
+            if last and cls != "hq" \
+                    and not (cls == "heavy" or u["type"] == "velitae"):
+                return "up to two Heavy Infantry and/or Velitae (plus a HQ) may be beneath a Siege Engine [6.4]"
+        return None
+
     def _resolve_advance_verdict(self, side, action):
         p = self.s.get("pending")
         if not p or p["kind"] != "advance":
@@ -2179,6 +2227,9 @@ class SoJGame(GateGame):
         pids = [str(x) for x in (action.get("pids") or [])]
         if len(set(pids)) != len(pids):
             return self._v(False, "duplicate advancing unit")
+        beyond = {str(k): [str(n) for n in (v or [])]
+                  for k, v in (action.get("beyond") or {}).items()}
+        xe = p.get("xe") or 0
         units = []
         for pid in pids:
             if pid not in p["pids"]:
@@ -2189,23 +2240,61 @@ class SoJGame(GateGame):
                 return self._v(False, f"illegal advance terrain: {why} [11.9/11.86]")
             units.append(u)
         if units:
-            bad = self._stack_check(p["hex"], side, units)
+            bad = self._stack_check(p["hex"], side, units, skip=set(pids))
             if bad:
                 return self._v(False, f"advance up to the stacking limit [11.9]: {bad}")
+        if beyond and not xe:
+            return self._v(False, "no bonus advance: the number of 'E' results did not exceed the number of defending units [11.86]")
+        ends = {}
+        zoc = self._zoc_map(self._enemy(side))
+        for pid, names in beyond.items():
+            if pid not in pids:
+                return self._v(False, f"{pid} is not advancing into the vacated hex [11.86]")
+            if not 1 <= len(names) <= xe:
+                return self._v(False, f"the excess-'E' bonus allows at most {xe} hex(es) beyond the vacated hex [11.86]")
+            u = self.s["units"][pid]
+            if not self.in_cc(u):
+                return self._v(False, "lack of Command Control prevents any advance beyond the vacated hex [11.9/5.3]")
+            prev = p["hex"]
+            path = [self.name_hex.get(n, n) for n in names]
+            for i, h in enumerate(path):
+                if prev in zoc:
+                    return self._v(False, "enemy ZOC prevents any advance beyond that hex [11.9/7.311]")
+                why = self._adv_step(u, prev, h, side, zoc,
+                                     i == len(path) - 1)
+                if why:
+                    return self._v(False, why)
+                prev = h
+            ends.setdefault(prev, []).append(u)
+        for h, us in ends.items():
+            if h == p["hex"]:
+                continue
+            bad = self._stack_check(h, side, us, skip=set(pids))
+            if bad:
+                return self._v(False, f"the bonus advance must respect stacking [11.86/6.0]: {bad}")
         return self._v(True, ("advance set" if pids else "advance declined")
                        + " [11.9]")
 
     def _apply_advance(self, action):
         p = self.s["pending"]
         pids = [str(x) for x in (action.get("pids") or [])]
+        beyond = {str(k): [str(n) for n in (v or [])]
+                  for k, v in (action.get("beyond") or {}).items()}
         for pid in pids:
             u = self.s["units"][pid]
             u["hex"] = p["hex"]
             u["mk"] = p["mk"]
             self.s["control"][p["hex"]] = p["by"]
+            for hn in beyond.get(pid, []):
+                h = self.name_hex.get(hn, hn)
+                u["hex"] = h
+                self.s["control"][h] = p["by"]
         self.s["pending"] = None
-        return {"advanced": pids, "mk": p["mk"] if pids else None,
-                "hex": self.hex_name[p["hex"]]}
+        out = {"advanced": pids, "mk": p["mk"] if pids else None,
+               "hex": self.hex_name[p["hex"]]}
+        if beyond:
+            out["beyond"] = {pid: v for pid, v in beyond.items() if v}
+        return out
 
     # ------------------------------------------------ retreats [14.2/15.x]
     # The 15.1/15.3 retreat is a constrained search, not a step count: an MF
@@ -3089,9 +3178,16 @@ class SoJGame(GateGame):
         p = self.s["pending"]
         need = [c for c in p["letters"] if c != "B"]
         events = []
+        xe = 0
         for pk, letter in zip(action["picks"], need):
             u = self.s["units"][str(pk["pid"])]
-            if u["state"] == "eliminated":
+            el = {o["pid"] for o in
+                  self._loss_elig(p["hex"], p["by"], p.get("lvl"))}
+            if u["state"] == "eliminated" or u["pid"] not in el:
+                xe += letter == "E"
+                events.append({"pid": u["pid"], "event":
+                               "forfeit - excess loss with no eligible "
+                               "target [14.33/11.82]"})
                 continue
             events.append({"pid": u["pid"],
                            "event": self._apply_letter(u, letter, p["source"])})
@@ -3113,12 +3209,12 @@ class SoJGame(GateGame):
                         "pids": [e["pid"] for e in movers], "by": side,
                         "rkind": "disrupt", "lvl": p.get("lvl"),
                         "attackers": p.get("attacker_pids") or [],
-                        "mk": p.get("mk"),
+                        "mk": p.get("mk"), "xe": xe,
                         "optional": self._melee_stay_ok(p["hex"])}
             else:
                 self._queue_retreat(p["hex"], side,
                                     p.get("attacker_pids"), p.get("mk"),
-                                    p.get("lvl"))
+                                    p.get("lvl"), xe)
         elif p["source"] == "melee":
             movers = [e for e in events if e["event"] == "disrupted"]
             if movers:
@@ -3127,7 +3223,7 @@ class SoJGame(GateGame):
                                      "by": side, "rkind": "disrupt",
                                      "lvl": p.get("lvl"),
                                      "attackers": p.get("attacker_pids")
-                                     or [], "mk": p.get("mk"),
+                                     or [], "mk": p.get("mk"), "xe": xe,
                                      "optional":
                                      self._melee_stay_ok(p["hex"])}
         if self.s["pending"] is None and p["source"] == "melee" \
@@ -3140,7 +3236,7 @@ class SoJGame(GateGame):
         if self.s["pending"] is None and p.get("mk") \
                 and p["source"] == "melee" and p.get("lvl") != "above":
             self._open_adv(p["hex"], p["attacker"],
-                           p.get("attacker_pids"), p["mk"])
+                           p.get("attacker_pids"), p["mk"], xe)
         if self.s["pending"] is None and p.get("then_errant"):
             events.append({"errant": self._install_errant(p["then_errant"])})
         return {"events": events,
@@ -3186,7 +3282,7 @@ class SoJGame(GateGame):
                                    "[11.21]"})
         if p.get("mk") and p.get("lvl") != "above":
             self._open_adv(p["hex"], self._enemy(p["by"]),
-                           p.get("attackers"), p["mk"])
+                           p.get("attackers"), p["mk"], p.get("xe", 0))
         return {"retreated": out}
 
     def _esc_up_opts(self):
