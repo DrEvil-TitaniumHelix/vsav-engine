@@ -189,6 +189,9 @@ def main():
         # ---------------- C. interior roads [8.94/8.95/12.4] - B8
         road_checks(tg)
 
+        # ---------------- D. rout/panic movement obligations - B16
+        rout_obligation_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -422,6 +425,255 @@ def road_checks(tg):
         print("road checks [8.94/8.95/12.4]: PASS")
     finally:
         tg.s["units"] = snap
+
+
+def rout_obligation_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_rout_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=31)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def chain_n(h, length):
+            def dfs(c):
+                if len(c) == length + 1:
+                    return c
+                for n in tg._nb(c[-1]):
+                    if n not in c and clear1(n) and \
+                            tg._refuge_dist("Rom", n) < \
+                            tg._refuge_dist("Rom", c[-1]):
+                        r = dfs(c + [n])
+                        if r:
+                            return r
+                return None
+            return dfs([h])
+
+        def pocket(avoid=()):
+            return next(h for h in sorted(tg.hex_t0)
+                        if clear1(h)
+                        and all(clear1(n) for n in tg._nb(h))
+                        and all(clear1(m) for n in tg._nb(h)
+                                for m in tg._nb(n))
+                        and all(tg._dist(h, a) > 5 for a in avoid)
+                        and chain_n(h, 5))
+
+        def mph(phase):
+            tg.s["phase"] = phase
+            tg.s["pmoved"] = False
+            tg._mph_bookkeeping()
+
+        def toward(h):
+            d0 = tg._refuge_dist("Rom", h)
+            return [n for n in tg._nb(h)
+                    if tg._refuge_dist("Rom", n) < d0]
+
+        def lateral(h):
+            d0 = tg._refuge_dist("Rom", h)
+            return [n for n in tg._nb(h)
+                    if tg._refuge_dist("Rom", n) == d0]
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("fin", None)
+
+        # ---- full-MF obligation + per-hex direction + end_phase gate
+        mph("rom_move")
+        h0 = pocket()
+        vr = take("roman_veteran", 1)[0]
+        vr["hex"], vr["state"] = h0, "routed"
+        away = next(n for n in tg._nb(h0)
+                    if tg._refuge_dist("Rom", n) > tg._refuge_dist("Rom", h0))
+        no_move(tg, "Rom", vr["pid"], [N[h0], N[away]], "must be closer")
+        no_move(tg, "Rom", vr["pid"], [N[h0], N[lateral(h0)[0]]],
+                "must be closer")
+        submit_no(tg, "Rom", {"type": "end_phase"},
+                  "using all available MF")
+        assert abs(tg._ma(vr) - 5.0) < 1e-9
+        steps = chain_n(h0, 5)
+        ok_move(tg, "Rom", vr["pid"], [N[steps[0]], N[steps[1]]])
+        submit_no(tg, "Rom", {"type": "end_phase"},
+                  "using all available MF")
+        ok_move(tg, "Rom", vr["pid"], [N[h] for h in steps[1:]])
+        assert vr["hex"] == steps[5] and abs(vr["mv"] - 5.0) < 1e-9
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["phase"] == "rom_melee"
+        print("rout obligations: away/lateral steps refused, end_phase "
+              "gated until the routed unit spends its full Disrupted MA "
+              "towards Refuge OK [15.3/17.21/8.1]")
+
+        # ---- unable to move (enemy ZOC over every closer hex) = stay
+        park(vr)
+        mph("rom_move")
+        h1 = pocket()
+        vr2 = take("roman_veteran", 1)[0]
+        vr2["hex"], vr2["state"] = h1, "routed"
+        tw1 = toward(h1)
+        zs = take("zealot", len(tw1))
+        for z, t1 in zip(zs, tw1):
+            z["hex"] = t1
+        for t1 in tw1:
+            no_move(tg, "Rom", vr2["pid"], [N[h1], N[t1]],
+                    "may not enter an enemy-occupied hex")
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        print("rout obligations: a Routed unit unable to move (every "
+              "closer hex enemy-held) remains in place - phase may end "
+              "OK [17.21]")
+
+        # ---- Panicked move last; a Panicked move ends all other movement
+        park(vr2, *zs)
+        mph("rom_move")
+        h2 = pocket()
+        h3 = pocket(avoid=(h2,))
+        h4 = pocket(avoid=(h2, h3))
+        vp, vr3, vn = take("roman_veteran", 3)
+        vp["hex"], vp["state"] = h2, "panicked"
+        vr3["hex"], vr3["state"] = h3, "routed"
+        vn["hex"] = h4
+        c2 = chain_n(h2, 5)
+        t2 = c2[1]
+        no_move(tg, "Rom", vp["pid"], [N[h2], N[t2]],
+                "before Panicked units move")
+        s3 = chain_n(h3, 5)
+        ok_move(tg, "Rom", vr3["pid"], [N[h] for h in s3])
+        v4 = next(n for n in tg._nb(h4) if clear1(n))
+        ok_move(tg, "Rom", vn["pid"], [N[h4], N[v4]])
+        ok_move(tg, "Rom", vp["pid"], [N[h2], N[t2]])
+        assert tg.s["pmoved"] is True
+        no_move(tg, "Rom", vn["pid"], [N[v4], N[h4]],
+                "after all other units have finished")
+        ok_move(tg, "Rom", vp["pid"], [N[h] for h in c2[1:]])
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["pmoved"] is False
+        print("rout obligations: Panicked units move only after Routed "
+              "obligations are met, and their move ends all other "
+              "movement OK [4.13/8.1/17.21]")
+
+        # ---- entering a Panicked hex ends the mover's MPh [17.21]
+        park(vp, vr3, vn)
+        mph("rom_move")
+        h5 = pocket()
+        vp2, vn2 = take("roman_veteran", 2)
+        vp2["hex"], vp2["state"] = h5, "panicked"
+        e5 = next(n for n in tg._nb(h5) if clear1(n))
+        e6 = next(n for n in tg._nb(h5) if clear1(n) and n != e5)
+        vn2["hex"] = e5
+        no_move(tg, "Rom", vn2["pid"], [N[e5], N[h5], N[e6]],
+                "must stop on entering a hex with a Panicked unit")
+        r = ok_move(tg, "Rom", vn2["pid"], [N[e5], N[h5]])
+        assert r["result"].get("fin") and vn2.get("fin")
+        no_move(tg, "Rom", vn2["pid"], [N[h5], N[e6]],
+                "MPh ended when it entered a hex containing a Panicked")
+        submit_no(tg, "Rom", {"type": "escalade", "pid": vn2["pid"],
+                              "op": "place"},
+                  "MPh ended when it entered a hex containing a Panicked")
+        mph("rom_move")
+        assert not vn2.get("fin"), "fin clears at the phase boundary"
+        print("rout obligations: the forced stop in a Panicked hex ends "
+              "that unit's MPh - further moves and MF-spending refused, "
+              "flag clears at phase change OK [17.21]")
+
+        # ---- forced stop that overstacks eliminates the enterer [17.21]
+        park(vn2)
+        vf = take("roman_veteran", 2)
+        vf[0]["hex"] = vf[1]["hex"] = h5
+        vn3 = take("roman_veteran", 1)[0]
+        vn3["hex"] = e6
+        assert tg._combat_count(tg._occupants(h5)) == 3
+        r = ok_move(tg, "Rom", vn3["pid"], [N[e6], N[h5]])
+        assert "overstacked" in r["result"].get("eliminated", ""), r
+        assert vn3["state"] == "eliminated" and vn3["hex"] is None
+        assert all(x["state"] != "eliminated"
+                   for x in (vp2, vn2, *vf))
+        vr4 = take("roman_veteran", 1)[0]
+        s5 = next(n for n in tg._nb(h5)
+                  if tg._refuge_dist("Rom", n) >
+                  tg._refuge_dist("Rom", h5) and clear1(n))
+        vr4["hex"], vr4["state"] = s5, "routed"
+        if tg._refuge_dist("Rom", h5) < tg._refuge_dist("Rom", s5):
+            no_move(tg, "Rom", vr4["pid"], [N[s5], N[h5]],
+                    "never ends in elimination")
+        print("rout obligations: a voluntary entry that overstacks the "
+              "Panicked hex is legal but eliminates the entering unit; "
+              "a mandatory Refuge move may never do so OK [17.21]")
+
+        # ---- 15.3 road lock (Judaean routed unit on the city roads)
+        park(vp2, vn2, vr4, *vf)
+        mph("jud_move")
+        rd0 = tg._road_ref_dist("Jud", set())
+        jm = take("judaean_militia", 1)[0]
+        cavs = [u for u in U.values() if u["type"] == "roman_cavalry"
+                and u["hex"] is None]
+
+        def unblock():
+            for b in cavs:
+                b["hex"] = None
+
+        R = off = on = off2 = None
+        for h, d in sorted(rd0.items(), key=lambda kv: kv[1]):
+            if d < 2 or tg._occupants(h):
+                continue
+            offs = [n for n in tg._nb(h)
+                    if tg._refuge_dist("Jud", n) < tg._refuge_dist("Jud", h)
+                    and tuple(sorted((h, n))) not in tg.roads
+                    and not tg._occupants(n)
+                    and tg._entry_cost(jm, h, n, "Jud")[0] is not None]
+            ons = [n for n in tg._nb(h)
+                   if tuple(sorted((h, n))) in tg.roads
+                   and rd0.get(n, 99) < d and not tg._occupants(n)]
+            rnb = [n for n in tg._nb(h)
+                   if tuple(sorted((h, n))) in tg.roads]
+            if not (offs and ons) or len(rnb) > len(cavs):
+                continue
+            for b, n in zip(cavs, rnb):
+                b["hex"] = n
+            zocR = tg._zoc_map("Rom")
+            o2 = [n for n in offs if n not in zocR
+                  and not tg._occupants(n)]
+            if h not in tg._road_ref_dist("Jud", zocR) \
+                    and h not in tg._heavy_ground_zoc("Rom") and o2:
+                R, off, on, off2 = h, offs[0], ons[0], o2[0]
+                unblock()
+                break
+            unblock()
+        assert R is not None, "test geometry: no suitable locked road hex"
+        jm["hex"], jm["state"] = R, "routed"
+        no_move(tg, "Jud", jm["pid"], [N[R], N[off]],
+                "must remain on that road")
+        v = tg._move_verdict("Jud", jm, [R, on])
+        assert v["legal"], v["reasons"]
+        for b, n in zip(cavs, [n for n in tg._nb(R)
+                               if tuple(sorted((R, n))) in tg.roads]):
+            b["hex"] = n
+        assert R not in tg._road_ref_dist("Jud", tg._zoc_map("Rom"))
+        v = tg._move_verdict("Jud", jm, [R, off2])
+        assert v["legal"], \
+            ("an obstructed road frees the unit to leave it towards "
+             "Refuge [15.3]", v["reasons"])
+        unblock()
+        print("road lock: on an unobstructed road to Refuge the unit must "
+              "keep to it; obstruction frees it to leave towards Refuge "
+              "OK [15.3]")
+
+        print("rout obligation checks: PASS (B16 15.3/17.21/8.1/4.13)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
 
 
 if __name__ == "__main__":
