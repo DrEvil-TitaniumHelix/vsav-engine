@@ -322,6 +322,24 @@
     "resolution": "Wrecks persist to the end of the Assault Period, the only defined referent, corroborated by 13.21's parallel wording. In Gallus - a single Assault Period - markers are therefore never removed during play.",
     "authority": "Dangling reference resolved to the only defined term; 13.21 corroborates. Escalated with R7 for campaign scope.",
     "enforced": true
+   },
+   {
+    "id": "testudo-disrupted-velitae-join",
+    "kind": "editing_error",
+    "rules": ["6.61", "16.4"],
+    "defect": "6.61's exception list omits the Velitae that 16.4 explicitly admits. 6.61: 'Disrupted units may not enter a Testudo hex [Exception: Disrupted HQ may join a Testudo provided the HQ is not Panicked].' 16.4: 'The only Disrupted units with the ability and sufficient MF to form or join Testudo are HQ and Velitae. ... A Disrupted HQ and/or Velitae may join a Testudo if not already fully-occupied.' (Both verified off the page scans, pp.6/12.)",
+    "resolution": "16.4 governs: it is the dedicated Disruption-Effects clause, names Velitae twice, and its MF observation is exact (Disrupted Velitae MA 6 = the printed 6 MF join cost; Disrupted Heavy Infantry MA 5 cannot pay it). The gate admits Disrupted (not Routed/Panicked) Velitae and non-Panicked HQ joins; 6.61's exception list is read as incomplete.",
+    "authority": "The rulebook's own specific clause over the incomplete general list; the MF arithmetic corroborates. No Q&A entry touches it.",
+    "enforced": true
+   },
+   {
+    "id": "testudo-forming-mf-remainder",
+    "kind": "editing_error",
+    "rules": ["8.8", "2.41", "2.54"],
+    "defect": "8.8: two Fresh Heavy Infantry declare Testudo at a cost of six MF, '(leaving the Testudo with one MF remaining during that MPh - unless the component units had already used one or two MF before forming Testudo)'. Every printed Heavy Infantry counter and the 2.41 unit diagrams carry Fresh MA 8 (byte-verified against the module counters), so unmoved formers retain 8 - 6 = TWO MF, not one; 'one MF remaining' is consistent only with an MA of 7 that no Heavy Infantry counter has.",
+    "resolution": "The MF arithmetic governs: forming charges 6 MF to each forming unit and the new formation may spend min(Testudo MA 4, lowest Fresh member remainder) that MPh - 2 MF for unmoved formers. The parenthetical's 'one' is an arithmetic slip (its own 'one or two MF already used' range matches MA 8: remainders 1 and 0).",
+    "authority": "Printed counter values (2.41/2.54, module counters byte-verified); validator pins the remainder at exactly 2 MF.",
+    "enforced": true
    }
   ]
  }
