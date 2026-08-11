@@ -1568,8 +1568,9 @@ def escalade_checks(g):
         submit_no(tg, "Rom", {"type": "move", "pid": ona["pid"],
                               "path": [N[D], N[A]]}, "[6.3]")
         tg.s["phase"] = "jud_melee"
-        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
-                              "attackers": [mm["pid"]]}, "X.15")
+        v = tg.propose("Jud", {"type": "melee", "target": N[A],
+                               "attackers": [mm["pid"]]})
+        assert v["legal"] and v["lvl"] == "ground", v
         tg.s["phase"] = "rom_melee"
         submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
                               "attackers": [v1["pid"]]}, "[11.6]")
@@ -1588,7 +1589,8 @@ def escalade_checks(g):
         assert cost is None and "[6.3]" in why
         print("escalade: Judaean entry/retreat blocked (8.11 fronts the "
               "6.5 armor - a Base always occupies), Artillery bars [6.3], "
-              "fire-from bar [9.4], loud X.15/11.6 guards OK")
+              "fire-from bar [9.4], melee doors open, Base-attack bar "
+              "[11.6] OK")
 
         g0 = next(h for h in pocket() if tg._dist(h, h0) > 6)
         vz = take("roman_veteran", 1)[0]
@@ -1609,7 +1611,8 @@ def escalade_checks(g):
         assert v4.get("up") and tg._esc_at(A)["used"] == [v4["pid"]]
         tg.s["phase"] = "rom_melee"
         submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
-                              "attackers": [v4["pid"]]}, "B12 melee slice")
+                              "attackers": [v4["pid"]]},
+                  "only adjacent units in Elevated")
         ve = take("roman_veteran", 1)[0]
         ve["hex"] = C
         out = tg._install_errant({"kind": "errant", "by": "Rom", "hex": A,
@@ -1747,6 +1750,152 @@ def escalade_checks(g):
         print("fire DD: same-unit double absorption refused in any hex "
               "(closed a silent gap in X.30's claim) [14.33]")
 
+        for x in U.values():
+            x.pop("up", None)
+            x.pop("mk", None)
+        tg.s["esc"] = []
+        for x in U.values():
+            if x["hex"] in (A, B, C, D, X1, wall):
+                x["hex"] = None
+        tg.s["pending"] = None
+        mph("rom_move")
+        rv = [u for u in U.values() if u["type"] == "roman_veteran"
+              and u["state"] == "fresh" and u["hex"] is None]
+        assert len(rv) >= 6
+        bg, c1, c2, c3, c4, c5 = rv[:6]
+        gallus["hex"] = B
+        bg["hex"] = A
+        submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
+                              "pid": bg["pid"]})
+        gallus["hex"] = None
+        c1["hex"], c1["up"] = A, True
+        c2["hex"], c2["up"] = A, True
+        jz = take("zealot", 1)[0]
+        jz["hex"] = C
+        tg.s["phase"] = "jud_melee"
+        tg.s["meleed"], tg.s["melee_hexes"] = [], []
+        tg.s["cc_hex"] = None
+        tg.roll_die = lambda: 5
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [jz["pid"]]})
+        del tg.roll_die
+        det = r["result"]
+        assert det["lvl"] == "ground" and abs(det["def"] - 3.5) < 1e-9 \
+            and det["result"] == "D", det
+        assert tg.s["pending"] and tg.s["pending"]["kind"] == "loss"
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": bg["pid"]}]}, "[9.12]")
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": c1["pid"]}]})
+        assert c1["state"] == "disrupted" and bg["state"] == "fresh"
+        drain_pendings(tg)
+        assert [A, "ground"] in tg.s["melee_hexes"]
+        print("escalade melee: ground attack [11.62] - Base defends alone "
+              "at half strength, climbers absorb first, Base pick refused")
+
+        jw = take("judaean_regular", 1)[0]
+        jw["hex"] = wall
+        tg.roll_die = lambda: 7
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [jw["pid"]]})
+        del tg.roll_die
+        det = r["result"]
+        assert det["lvl"] == "above" and abs(det["att"] - 5.0) < 1e-9 \
+            and abs(det["def"] - 3.5) < 1e-9 and det["result"] == "E", det
+        assert c2["state"] == "eliminated" and bg["state"] == "fresh"
+        assert tg.s["pending"] is None and tg._esc_at(A) is not None
+        print("escalade melee: above attack [11.61] - climbers defend "
+              "halved, Base untouchable, no advance possible")
+
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [jw["pid"]]}, "[11.61]")
+        jz2 = take("judaean_militia", 1)[0]
+        jz2["hex"] = D
+        tg.s["cc_hex"] = None
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [jz2["pid"]]}, "from that level")
+        tg.s["melee_hexes"] = []
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [jz2["pid"], jw["pid"]]},
+                  "separate battle")
+        print("escalade melee: per-level hex-once lock + no-beneath-target "
+              "+ combined-levels refusal OK [11.6/11.81]")
+
+        jw["hex"] = jz2["hex"] = jz["hex"] = None
+        tg.s["phase"] = "rom_melee"
+        tg.s["meleed"], tg.s["melee_hexes"] = [], []
+        tg.s["cc_hex"] = None
+        c3["hex"], c3["up"] = A, True
+        jm = take("judaean_militia", 1)[0]
+        jm["hex"] = X1
+        submit_no(tg, "Rom", {"type": "melee", "target": N[X1],
+                              "attackers": [c3["pid"]]},
+                  "only adjacent units in Elevated")
+        jm["hex"] = None
+        jd = take("judaean_militia", 1)[0]
+        jd["hex"] = wall
+        tg.roll_die = lambda: 7
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[wall],
+                                  "attackers": [c3["pid"]]})
+        del tg.roll_die
+        det = r["result"]
+        assert abs(det["att"] - 3.5) < 1e-9 and abs(det["def"] - 4.0) < 1e-9 \
+            and det["result"] == "E", det
+        assert jd["state"] == "eliminated"
+        assert tg.s["pending"] and tg.s["pending"]["kind"] == "advance"
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [c3["pid"]]})
+        assert c3["hex"] == wall and not c3.get("up") and c3.get("mk") == "A"
+        print("escalade melee: climber attacks halved into Elevated only "
+              "[11.6], advance after combat clears the ladder [8.7/11.9]")
+
+        c3["hex"] = None
+        c3.pop("mk", None)
+        c4["hex"], c4["up"] = A, True
+        c5["hex"], c5["up"] = A, True
+        r = submit_ok(tg, "Rom", {"type": "end_phase"})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "esc_up" and tg.s["phase"] == "rom_melee"
+        assert N[wall] in p["opts"][c4["pid"]] \
+            and N[wall] in p["opts"][c5["pid"]]
+        submit_no(tg, "Jud", {"type": "resolve_esc_up", "moves": {}},
+                  "Roman player")
+        submit_no(tg, "Rom", {"type": "resolve_esc_up",
+                              "moves": {c4["pid"]: N[h0]}},
+                  "adjacent vacant Elevated")
+        submit_no(tg, "Rom", {"type": "resolve_esc_up",
+                              "moves": {c4["pid"]: N[wall],
+                                        c5["pid"]: N[wall]}},
+                  "within the stacking limit")
+        submit_ok(tg, "Rom", {"type": "resolve_esc_up",
+                              "moves": {c4["pid"]: N[wall]}})
+        assert c4["hex"] == wall and not c4.get("up") \
+            and tg.s["phase"] == "jud_rally" and tg.s["pending"] is None
+        assert tg.s["control"][wall] == "Rom"
+        c4["hex"] = None
+        tg.s["phase"] = "rom_melee"
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["pending"] and tg.s["pending"]["kind"] == "esc_up"
+        submit_ok(tg, "Rom", {"type": "resolve_esc_up", "moves": {}})
+        assert tg.s["phase"] == "jud_rally" and c5.get("up") \
+            and c5["hex"] == A
+        c5["state"] = "disrupted"
+        tg.s["phase"] = "rom_melee"
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["pending"] is None and tg.s["phase"] == "jud_rally"
+        print("escalade melee: end-of-Roman-Melee-Phase move-up is a modal "
+              "pending - assignments, stacking, decline, Fresh-only OK "
+              "[11.6/16.3]")
+
+        tg.s["esc"] = []
+        for x in U.values():
+            x.pop("up", None)
+            x.pop("mk", None)
+            if x["hex"] in (A, B, C, D, X1, wall):
+                x["hex"] = None
+        tg.s["pending"] = None
+        tg.s["cc_hex"] = None
+
         assert "esc" in tg.HASH_KEYS
         hh = tg.state_hash()
         tg.s["esc"].append({"hex": A, "base": "probe", "used": []})
@@ -1760,9 +1909,8 @@ def escalade_checks(g):
         assert tg.state_hash() != hh
         v5.pop("mv")
         assert tg.state_hash() == hh
-        print("escalade checks: PASS (B12 movement+fire slices + 7.2 ZOC "
-              "fix + MF-accumulation + 14.33 distinctness fixes; melee "
-              "slice rides on loud guards)")
+        print("escalade checks: PASS (B12 movement+fire+melee slices + "
+              "7.2 ZOC fix + MF-accumulation + 14.33 distinctness fixes)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 
@@ -2078,9 +2226,11 @@ def drain_pendings(tg):
         p = tg.s["pending"]
         if p["kind"] == "advance":
             submit_ok(tg, p["by"], {"type": "resolve_advance", "pids": []})
+        elif p["kind"] == "esc_up":
+            submit_ok(tg, p["by"], {"type": "resolve_esc_up", "moves": {}})
         elif p["kind"] == "loss":
             need = [c for c in p["letters"] if c != "B"]
-            occ = [o for o in tg._occupants(p["hex"]) if o["side"] == p["by"]]
+            occ = tg._loss_elig(p["hex"], p["by"], p.get("lvl"))
             picks = [{"pid": occ[min(i, len(occ) - 1)]["pid"]}
                      for i in range(len(need))]
             submit_ok(tg, p["by"], {"type": "resolve_loss", "picks": picks})
