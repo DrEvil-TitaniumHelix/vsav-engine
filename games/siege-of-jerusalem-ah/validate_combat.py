@@ -2261,8 +2261,10 @@ def testudo_checks(g):
         tg.s["phase"] = "jud_melee"
         tg._queue_melee_result(h2, ["D"], "Rom", "Jud", [z["pid"]],
                                None, None)
-        submit_ok(tg, "Rom", {"type": "resolve_loss",
-                              "picks": [{"pid": vh["pid"]}]})
+        # B14: the SE no longer counts as a loss-eligible occupant [9.1/
+        # 11.21], so the lone escort auto-resolves and the pending goes
+        # straight to the optional retreat
+        assert vh["state"] == "disrupted", vh
         p = tg.s["pending"]
         assert p and p["kind"] == "retreat" and p.get("optional"), \
             f"14.31 covers Siege Engine hexes too (was forced): {p}"
@@ -2433,6 +2435,450 @@ def cycle_to_phase(tg, phase, turn=None):
     raise AssertionError(f"never reached {phase}")
 
 
+def tower_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_twr_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=77)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        N = tg.hex_name
+        ELEV = soj.ELEVATED
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def mph(phase="rom_move"):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and any(clear1(n) and sum(1 for m in tg._nb(n)
+                                              if clear1(m)) >= 3
+                            for n in tg._nb(h)))
+        A = next(n for n in tg._nb(wall)
+                 if clear1(n) and sum(1 for m in tg._nb(n)
+                                      if clear1(m)) >= 3)
+        B, C, D = [n for n in tg._nb(A) if clear1(n)][:3]
+
+        # ---- boarding door: below/atop capacity + transit [6.4/6.42/8.61]
+        tw = next(u for u in U.values() if u["type"] == "tower")
+        v1, v2, v3 = take("roman_veteran", 3)
+        vl = take("velitae", 1)[0]
+        fdt = take("foederatti", 1)[0]
+        tw["hex"] = A
+        tw["facing"] = tg._dir_of(A, wall)
+        v1["hex"] = B
+        submit_ok(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "path": [N[B], N[A]]})
+        assert v1["hex"] == A and not v1.get("up")
+        vl["hex"] = B
+        submit_ok(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[B], N[A]], "up": True})
+        assert vl.get("up") and abs(vl["mv"] - 1.0) < 1e-9, \
+            "no additional cost to climb the Tower [8.61]"
+        fdt["hex"] = B
+        submit_no(tg, "Rom", {"type": "move", "pid": fdt["pid"],
+                              "path": [N[B], N[A]], "up": True},
+                  "atop a Siege Tower at once")
+        submit_no(tg, "Rom", {"type": "move", "pid": fdt["pid"],
+                              "path": [N[B], N[A]]},
+                  "beneath a Siege Engine")
+        fdt["hex"] = None
+        v2["hex"] = B
+        submit_ok(tg, "Rom", {"type": "move", "pid": v2["pid"],
+                              "path": [N[B], N[A]]})
+        v3["hex"] = B
+        submit_no(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[B], N[A]]}, "filled to capacity")
+        submit_no(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[B], N[A], N[C]]},
+                  "filled to capacity")
+        v3["hex"] = None
+        print("tower: boarding door - two pushers + one rider, Velitae "
+              "rider ok, Foederatti below refused, entry/transit blocked at "
+              "two pushing units OK [6.4/6.42/8.61]")
+
+        # ---- locked-stack move: rider carried, 2 MF per SE MF, transit
+        # marker charges the late boarder [8.3/8.61]
+        mph()
+        assert tw["crew0"] == sorted([v1["pid"], v2["pid"]]), \
+            "the rider is not pushing crew [8.6]"
+        v3["hex"] = C
+        submit_no(tg, "Rom", {"type": "move", "pid": tw["pid"],
+                              "path": [N[A], N[C]],
+                              "crew": [v1["pid"], v2["pid"]]},
+                  "occupied by any unit")
+        v3["hex"] = None
+        r = submit_ok(tg, "Rom", {"type": "move", "pid": tw["pid"],
+                                  "path": [N[A], N[C]],
+                                  "crew": [v1["pid"], v2["pid"]]})
+        assert r["result"]["riders"] == [vl["pid"]]
+        tmf = tw["tmf"]
+        assert tmf > 0
+        assert vl["hex"] == C and vl.get("up") \
+            and abs(vl["mv"] - 2.0 * tmf) < 1e-9, vl
+        nb_c = next(n for n in tg._nb(C) if clear1(n))
+        c_out = tg._entry_cost(vl, C, nb_c, "Rom")[0]
+        submit_ok(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[C], N[nb_c]]})
+        assert not vl.get("up") \
+            and abs(vl["mv"] - (2.0 * tmf + c_out)) < 1e-9
+        c_in = tg._entry_cost(vl, nb_c, C, "Rom")[0]
+        submit_no(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[nb_c], N[C]], "up": True},
+                  "filled to capacity")
+        v2["hex"] = None
+        submit_ok(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[nb_c], N[C]], "up": True})
+        v2["hex"] = C
+        assert vl.get("up") and abs(
+            vl["mv"] - (2.0 * tmf + c_out + c_in + 2.0 * tmf)) < 1e-9, \
+            "late boarder pays +2 MF per SE MF spent (damage marker) [8.61]"
+        print("tower: locked stack carries the rider at +2 MF per SE MF; "
+              "the damage-number transit marker charges the late boarder "
+              "OK [8.3/8.61]")
+
+        # ---- ramp move-off, level-crossing lock, Elevated boarding [8.61/10.11]
+        tw["hex"] = A
+        for x in (v1, v2, vl):
+            x["hex"] = A
+        vl["up"] = True
+        mph()
+        tw["facing"] = tg._dir_of(A, C)
+        submit_no(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[A], N[wall]]},
+                  "ramp (arrow) hexside")
+        tw["facing"] = tg._dir_of(A, wall)
+        submit_ok(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[A], N[wall]]})
+        assert vl["hex"] == wall and not vl.get("up") \
+            and abs(vl["mv"] - 2.0) < 1e-9, \
+            "move off the ramp costs two MF [8.61]"
+        assert tw.get("lk")
+        submit_no(tg, "Rom", {"type": "move", "pid": tw["pid"],
+                              "path": [N[A], N[C]],
+                              "crew": [v1["pid"], v2["pid"]]},
+                  "may move no further")
+        submit_no(tg, "Rom", {"type": "change_facing", "pid": tw["pid"],
+                              "face": N[C]}, "may not change facing")
+        v2["hex"] = None
+        submit_ok(tg, "Rom", {"type": "move", "pid": vl["pid"],
+                              "path": [N[wall], N[A]], "up": True})
+        v2["hex"] = A
+        assert vl.get("up") and vl["hex"] == A
+        mph()
+        assert not tw.get("lk") and tw.get("tmf") is None
+        submit_ok(tg, "Rom", {"type": "change_facing", "pid": tw["pid"],
+                              "face": N[wall]})
+        print("tower: 2-MF ramp move-off through the Facing hexside only; "
+              "level-crossing locks tower movement and facing for the MPh; "
+              "boarding from Elevated via the ramp OK [8.61/10.11]")
+
+        # ---- fire: rider door open, pusher barred; 9.11 levels [9.4/9.11]
+        tg.s["phase"] = "rom_fire"
+        tg.s["seg"] = "Rom"
+        jr = take("judaean_regular", 1)[0]
+        jr["hex"] = B
+        submit_no(tg, "Rom", {"type": "fire", "target": N[B],
+                              "firers": [v1["pid"]]},
+                  "may not fire if beneath")
+        r = tg.propose("Rom", {"type": "fire", "target": N[B],
+                               "firers": [vl["pid"]]})
+        assert r["legal"], r
+        assert tg._target_row(A) == "builtup_northwall_tower", \
+            "both levels use the Tower row [Q&A 9.11]"
+        tg.s["seg"] = "Jud"
+        r = tg.propose("Jud", {"type": "fire", "target": N[A],
+                               "firers": [jr["pid"]], "level": "above"})
+        assert r["legal"] and r["lvl"] == "above", r
+        r = tg.propose("Jud", {"type": "fire", "target": N[A],
+                               "firers": [jr["pid"]], "level": "below"})
+        assert r["legal"] and r["lvl"] == "below", r
+        submit_no(tg, "Jud", {"type": "fire", "target": N[A],
+                              "firers": [jr["pid"]], "level": "top"},
+                  "level must be")
+        zl = take("zealot", 1)[0]
+        zl["hex"] = wall
+        submit_no(tg, "Jud", {"type": "fire", "target": N[A],
+                              "firers": [zl["pid"]], "level": "above"},
+                  "may not fire vs the riding units")
+        r = tg.propose("Jud", {"type": "fire", "target": N[A],
+                               "firers": [zl["pid"]], "level": "below"})
+        assert r["legal"], r
+        zl["hex"] = None
+        sav = [(x, x["hex"]) for x in (v1, v2, vl)]
+        for x, _h in sav:
+            x["hex"] = None
+        submit_no(tg, "Jud", {"type": "fire", "target": N[A],
+                              "firers": [jr["pid"]]},
+                  "Fire does not affect Siege Engines")
+        for x, h_ in sav:
+            x["hex"] = h_
+        print("tower: rider fire door open, pusher refused; level declared "
+              "vs a Tower hex; Cauldron/rock never vs riders; SE itself "
+              "immune to fire OK [9.4/9.11/9.1/Q&A 11.1]")
+
+        # ---- 9.11 allocation: other level immune, DD-vs-lone eliminates
+        tg._queue_losses(A, ["D"], "Rom", "fire", lvl="below")
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss", p
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": vl["pid"]}]}, "immune")
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": v2["pid"]}]})
+        assert v2["state"] == "disrupted" and vl["state"] == "fresh"
+        tg._queue_losses(A, ["D", "D"], "Rom", "fire", lvl="above")
+        assert tg.s["pending"] is None
+        assert vl["state"] == "eliminated" and vl["hex"] is None, \
+            "DD vs the lone rider eliminates it outright [9.11]"
+        assert v1["state"] == "fresh" and tw["state"] == "fresh"
+        tg.s["fired_hexes"].append(A)
+        submit_no(tg, "Jud", {"type": "fire", "target": N[A],
+                              "firers": [jr["pid"]], "level": "below"},
+                  "already missile-attacked")
+        print("tower: 9.11 level allocation - other level immune, DD vs "
+              "lone rider eliminates outright, one missile attack per "
+              "Tower hex per phase OK [9.11/Q&A 9.6]")
+
+        # ---- melee: rider x2 via ramp, pusher/ram bars [11.2/11.3/10.11]
+        tg.s["fired_hexes"] = []
+        v2["state"] = "fresh"
+        vl2 = take("velitae", 1)[0]
+        vl2["hex"] = A
+        vl2["up"] = True
+        zl["hex"] = wall
+        tg.s["phase"] = "rom_melee"
+        v = tg.propose("Rom", {"type": "melee", "target": N[wall],
+                               "attackers": [vl2["pid"]]})
+        assert v["legal"] and abs(v["att"] - 6.0) < 1e-9, \
+            f"rider melee doubled through the ramp [11.2]: {v}"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[wall],
+                              "attackers": [v1["pid"]]},
+                  "whether atop or beneath")
+        tw["facing"] = tg._dir_of(A, C)
+        submit_no(tg, "Rom", {"type": "melee", "target": N[wall],
+                              "attackers": [vl2["pid"]]}, "Facing arrow")
+        jr["hex"] = C
+        submit_no(tg, "Rom", {"type": "melee", "target": N[C],
+                              "attackers": [vl2["pid"]]},
+                  "Ground or Built-up")
+        tw["facing"] = tg._dir_of(A, wall)
+        ram = next(u for u in U.values() if u["type"] == "ram")
+        vr = take("roman_line", 1)[0]
+        ram["hex"] = vr["hex"] = D
+        jm = take("judaean_militia", 1)[0]
+        jm["hex"] = next(n for n in tg._nb(D) if clear1(n))
+        submit_no(tg, "Rom", {"type": "melee", "target": N[jm["hex"]],
+                              "attackers": [vr["pid"]]},
+                  "whether atop or beneath")
+        print("tower: rider melee x2 through the ramp only, Elevated "
+              "targets only; pushers and Ram co-occupants may not Melee "
+              "OK [11.2/11.3/10.11]")
+
+        # ---- Jud melee vs the Tower hex: levels, order, halving [11.21/11.22]
+        tg.s["phase"] = "jud_melee"
+        w2 = next((n for n in tg._nb(A)
+                   if n != wall and tg.hex_t(n) in ELEV), None)
+        if w2 is not None:
+            z2 = take("zealot", 1)[0]
+            z2["hex"] = w2
+            submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [z2["pid"]]},
+                      "ramp hexside")
+            z2["hex"] = None
+        hqg = take("gallus", 1)[0]
+        hqg["hex"] = A
+        hqg["up"] = True
+        tg._queue_melee_result(A, ["D"], "Rom", "Jud", [jr["pid"]],
+                               None, "ground")
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss", p
+        submit_no(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": v1["pid"]}]},
+                  "riding atop are affected")
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": vl2["pid"]}]})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p.get("optional"), p
+        submit_ok(tg, "Rom", {"type": "resolve_retreat", "paths": {}})
+        assert vl2["state"] == "disrupted" and vl2.get("up")
+        tg._queue_melee_result(A, ["E"], "Rom", "Jud", [jr["pid"]],
+                               None, "ground")
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss", p
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": vl2["pid"]}]})
+        assert vl2["state"] == "eliminated", \
+            "riders take results before the pushing units [11.22]"
+        assert v1["state"] == "fresh" and v2["state"] == "fresh" \
+            and tw["state"] == "fresh", "ground clear never fells the Tower"
+        hqg["hex"] = None
+        hqg.pop("up", None)
+        v = tg.propose("Jud", {"type": "melee", "target": N[A],
+                               "attackers": [jr["pid"]]})
+        assert v["legal"] and v["lvl"] == "ground", v
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [jr["pid"]]})
+        assert abs(r["result"]["def"] - 14.0) < 1e-9, \
+            f"pushers defend at normal strength, no terrain mult: {r}"
+        drain_pendings(tg)
+        print("tower: ramp-hexside-only from Elevated; ground battle - "
+              "riders absorb first, pushers defend at normal strength "
+              "OK [11.21/11.22]")
+
+        # ---- no pushers: riders defend at half strength [11.22]
+        tg.s["meleed"] = []
+        tg.s["melee_hexes"] = []
+        tg.s["cc_hex"] = None
+        for x in (v1, v2):
+            x["hex"] = None
+        vf = take("velitae", 1)[0]
+        vf["hex"] = A
+        vf["up"] = True
+        jr["hex"] = C
+        jr["state"] = "fresh"
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [jr["pid"]]})
+        assert abs(r["result"]["def"] - 1.5) < 1e-9, \
+            f"no pushing units: riders defend at half strength [11.22]: {r}"
+        drain_pendings(tg)
+        print("tower: no pushers - riders defend at half strength "
+              "OK [11.22]")
+
+        # ---- above battle E2E: riders cleared + no pushers = Tower falls
+        tg.s["meleed"] = []
+        tg.s["melee_hexes"] = []
+        tg.s["cc_hex"] = None
+        vf["hex"] = A
+        vf["up"] = True
+        vf["state"] = "fresh"
+        zl["hex"] = wall
+        zl["state"] = "fresh"
+        tg._queue_melee_result(A, ["E"], "Rom", "Jud", [zl["pid"]],
+                               None, "above")
+        assert vf["state"] == "eliminated"
+        assert tw["state"] == "eliminated" and tw["hex"] is None, \
+            "no pushing units and the Melee removed all Romans atop [11.21]"
+        assert tg._markers_at(A, "siege_engine"), "Wreck placed [11.4/14.5]"
+        print("tower: above battle clears the top with no pushers - Tower "
+              "eliminated, Wreck placed OK [11.21/11.4]")
+
+        # ---- vacant Tower: ramp melee auto-wreck; ground refused [11.4/11.22]
+        tg.s["markers"] = []
+        tg.s["meleed"] = []
+        tg.s["melee_hexes"] = []
+        tw["hex"], tw["state"] = A, "fresh"
+        tw["facing"] = tg._dir_of(A, wall)
+        jm2 = take("judaean_militia", 1)[0]
+        jm2["hex"] = C
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [jm2["pid"]]},
+                  "by entering its hex in the MPh")
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [zl["pid"]]})
+        assert r["result"].get("wrecked") == tw["pid"], r
+        assert tw["state"] == "eliminated" \
+            and tg._markers_at(A, "siege_engine")
+        assert zl["pid"] in tg.s["meleed"] \
+            and [A, "above"] in tg.s["melee_hexes"]
+        print("tower: vacant Tower wrecked by ramp melee from Elevated "
+              "(no dice), ground melee refused OK [11.4/11.21/11.22]")
+
+        # ---- both-levels = separate battles, then per-level lock [11.2/11.81]
+        tg.s["markers"] = []
+        tg.s["meleed"] = []
+        tg.s["melee_hexes"] = []
+        tg.s["cc_hex"] = None
+        tw["hex"], tw["state"] = A, "fresh"
+        tw["facing"] = tg._dir_of(A, wall)
+        p1, p2 = take("roman_veteran", 2)
+        p1["hex"] = p2["hex"] = A
+        vt = take("velitae", 1)[0]
+        vt["hex"] = A
+        vt["up"] = True
+        zl["hex"] = wall
+        zl["state"] = "fresh"
+        jm2["hex"] = C
+        jm2["state"] = "fresh"
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [zl["pid"]]})
+        assert r["result"].get("lvl") == "above"
+        drain_pendings(tg)
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[A],
+                                  "attackers": [jm2["pid"]]})
+        assert r["result"].get("lvl") == "ground"
+        drain_pendings(tg)
+        jr["state"] = "fresh"
+        jr["hex"] = C
+        submit_no(tg, "Jud", {"type": "melee", "target": N[A],
+                              "attackers": [jr["pid"]]},
+                  "from that level")
+        print("tower: attacked from Ground AND Elevated as separate "
+              "battles in one phase; a third attack on a used level "
+              "refused OK [11.2/11.81]")
+
+        # ---- retreat: no route into/through a two-pusher SE hex [15.2]
+        rr = take("roman_recruit", 1)[0]
+        rr["hex"] = B
+        occ_ok = any(not o.get("up")
+                     and tg.utype(o)["cls"] not in ("hq", "siege_engine")
+                     for o in tg._occupants(A))
+        assert occ_ok
+        c_, why = tg._retreat_step(rr, B, A, "Rom", set(), {})
+        if len(tg._pushers(A)) >= 2:
+            assert c_ is None and "15.2" in why, (c_, why)
+        p2["hex"] = None
+        c_, why = tg._retreat_step(rr, B, A, "Rom", set(), {})
+        assert c_ is not None, why
+        p2["hex"] = A
+        c_, why = tg._retreat_step(rr, B, A, "Rom", set(), {})
+        assert c_ is None and "15.2" in why, (c_, why)
+        rr["hex"] = None
+        print("tower: Infantry may not retreat into/through a Siege "
+              "Engine hex with two pushing units OK [15.2]")
+
+        # ---- end-of-Melee-Phase move-up: rider onto the vacant ramp hex
+        for x in (zl, jm2, jr):
+            x["hex"] = None
+        tg.s["phase"] = "rom_melee"
+        tg.s["meleed"] = []
+        tg.s["melee_hexes"] = []
+        vt["state"] = "fresh"
+        tw["facing"] = tg._dir_of(A, C)
+        assert vt["pid"] not in tg._esc_up_opts(), \
+            "move-up only through the ramp onto a vacant Elevated hex"
+        tw["facing"] = tg._dir_of(A, wall)
+        opts = tg._esc_up_opts()
+        assert opts.get(vt["pid"]) == [N[wall]], opts
+        r = submit_ok(tg, "Rom", {"type": "end_phase"})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "esc_up", p
+        submit_ok(tg, "Rom", {"type": "resolve_esc_up",
+                              "moves": {vt["pid"]: N[wall]}})
+        assert vt["hex"] == wall and not vt.get("up")
+        print("tower: end-of-Roman-Melee-Phase move-up through the ramp "
+              "onto the vacant Elevated hex (modal, declinable) OK [11.2]")
+
+        print("tower checks: PASS (B14 riding/boarding, 8.61 transit "
+              "costs + locks, 9.11 fire levels, 11.2x melee, 11.4 wrecks, "
+              "15.2 retreat gate)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_cbt_")
     try:
@@ -2452,6 +2898,7 @@ def main():
         multiple_attack_checks(g)
         escalade_checks(g)
         testudo_checks(g)
+        tower_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
