@@ -1915,6 +1915,403 @@ def escalade_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def testudo_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_tst_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=77)
+        U = tg.s["units"]
+        N = tg.hex_name
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and tg.hex_t(h) == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def pocket():
+            return (h for h in sorted(tg.hex_t0)
+                    if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                    and all(clear1(m) for n in tg._nb(h)
+                            for m in tg._nb(n)))
+
+        def mph(phase="rom_move"):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        tg.s["phase"] = "deploy_rom"
+        d1, d2 = take("roman_veteran", 2)
+        camp = next(h for h in sorted(tg.rom_zone)
+                    if tg.hex_t(h) == "clear" and not tg._occupants(h))
+        submit_ok(tg, "Rom", {"type": "deploy", "pid": d1["pid"],
+                              "hex": N[camp]})
+        submit_ok(tg, "Rom", {"type": "deploy", "pid": d2["pid"],
+                              "hex": N[camp]})
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [d1["pid"], d2["pid"]]})
+        assert tg._tst_at(camp) is not None and not d1.get("mv")
+        d3 = take("roman_veteran", 1)[0]
+        submit_no(tg, "Rom", {"type": "deploy", "pid": d3["pid"],
+                              "hex": N[camp]}, "[6.61]")
+        print("testudo: setup-in-Testudo (3.4, no MF) + deploy-into-"
+              "formation refused OK [3.4/6.61] (P0.8 closed)")
+        tg.s["testudo"] = []
+        d1["hex"] = d2["hex"] = None
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        mph()
+
+        h0 = next(pocket())
+        v1, v2, v3, v4 = take("roman_veteran", 4)
+        vel = take("velitae", 1)[0]
+        fdt = take("foederatti", 1)[0]
+        cmd = next(u for u in U.values() if u["type"] == "gallus")
+        cmd["hex"], cmd["state"] = h0, "fresh"
+        v1["hex"] = h0
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], cmd["pid"]]},
+                  "two or three Fresh Heavy Infantry")
+        v2["hex"] = h0
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"]]},
+                  "every unit in the hex")
+        fdt["hex"] = h0
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], fdt["pid"],
+                                       cmd["pid"]]},
+                  "only Heavy Infantry, Velitae, and a HQ")
+        fdt["hex"] = None
+        v2["state"] = "disrupted"
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]},
+                  "must be Fresh")
+        v2["state"] = "fresh"
+        v2["faction"] = "XV"
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]},
+                  "different Legions")
+        v2["faction"] = "XII"
+        v1["mv"] = 3.0
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]},
+                  "six MF per forming unit")
+        v1.pop("mv")
+        cmd["hex"] = None
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"]]}, "[5.3]")
+        cmd["hex"] = h0
+        wall0 = next(h for h in sorted(tg.hex_t0)
+                     if tg.hex_t0[h] == "wall" and h in tg.playable
+                     and not tg._occupants(h))
+        v1["hex"] = v2["hex"] = cmd["hex"] = wall0
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]},
+                  "Elevated hex")
+        v1["hex"] = v2["hex"] = cmd["hex"] = h0
+        tg.s["esc"].append({"hex": h0, "base": v1["pid"], "used": []})
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]},
+                  "[6.5]")
+        tg.s["esc"] = []
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]})
+        t = tg._tst_at(h0)
+        assert t and t["legion"] == "XII" and abs(v1["mv"] - 6.0) < 1e-9 \
+            and not cmd.get("mv")
+        assert tg._unit_zoc(v1) == set(), "no ZOC while in Testudo [7.2]"
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"]]},
+                  "already holds")
+        print("testudo: form door (composition/class/Fresh/legion/MF/CC/"
+              "Elevated/escalade/all-occupants) + 6 MF to formers, HQ free, "
+              "no ZOC OK [6.1/6.5/6.6/6.61/5.3/7.2/8.8]")
+
+        a1 = next(n for n in tg._nb(h0) if clear1(n))
+        a2 = next(n for n in tg._nb(a1) if clear1(n) and n != h0)
+        a3 = next(n for n in tg._nb(a2) if clear1(n) and n not in (h0, a1))
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True,
+                              "path": [N[h0], N[a1], N[a2], N[a3]]},
+                  "Testudo movement allowance exceeded")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True,
+                              "path": [N[h0], N[a1], N[a2]]})
+        assert v1["hex"] == v2["hex"] == cmd["hex"] == a2 \
+            and t["hex"] == a2 and abs(t["mv"] - 2.0) < 1e-9 \
+            and tg.s["control"][a2] == "Rom"
+        cur = a2
+        nxt = next(n for n in tg._nb(cur) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]},
+                  "allowance exceeded")
+        print("testudo: forming-MPh remainder = MA 8 - 6 = 2 MF exactly "
+              "(pins the registered 8.8 'one MF remaining' arithmetic "
+              "defect resolution) + members move as one stack OK [8.3/8.8]")
+
+        fdt["hex"] = nxt
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]},
+                  "occupied by any unit")
+        fdt["hex"] = None
+        t0_save = tg.hex_t0[nxt]
+        tg.hex_t0[nxt] = "builtup"
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]},
+                  "even on a road")
+        tg.hex_t0[nxt] = "wall"
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]},
+                  "Elevated hex")
+        tg.s["breach"][nxt] = 8
+        mph()
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]},
+                  "[8.96]")
+        cav = take("roman_cavalry", 1)[0]
+        cav["hex"] = next(n for n in tg._nb(nxt) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": cav["pid"],
+                              "path": [N[cav["hex"]], N[nxt]]}, "[8.96]")
+        cav["hex"] = None
+        nxt2 = next(n for n in tg._nb(nxt)
+                    if clear1(n) and n != cur)
+        tg.hex_t0[nxt2] = "wall"
+        tg.s["breach"][nxt2] = 8
+        submit_ok(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[nxt]]})
+        assert t["hex"] == nxt
+        submit_ok(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[nxt], N[cur]]})
+        tg.hex_t0[nxt] = t0_save
+        tg.hex_t0[nxt2] = "clear"
+        del tg.s["breach"][nxt], tg.s["breach"][nxt2]
+        print("testudo: empty-hex bar, no Built-up (even on a road), no "
+              "Elevated, 8.96 connecting-Breach test (Testudo AND Cavalry - "
+              "N19 closed) OK [6.61/8.96]")
+
+        mph()
+        v3["hex"] = next(n for n in tg._nb(cur) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[v3["hex"]], N[cur],
+                                       N[next(n for n in tg._nb(cur)
+                                              if clear1(n))]]},
+                  "the move ends there")
+        submit_ok(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[v3["hex"]], N[cur]]})
+        assert v3["hex"] == cur and abs(v3["mv"] - 6.0) < 1e-9 \
+            and t.get("hold")
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True,
+                              "path": [N[cur],
+                                       N[next(n for n in tg._nb(cur)
+                                              if clear1(n))]]},
+                  "may not move this MPh")
+        v4["hex"] = next(n for n in tg._nb(cur) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": v4["pid"],
+                              "path": [N[v4["hex"]], N[cur]]},
+                  "at most three Heavy Infantry")
+        v4["hex"] = None
+        vel["hex"] = next(n for n in tg._nb(cur) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": vel["pid"],
+                              "path": [N[vel["hex"]], N[cur]]},
+                  "fully occupied")
+        vel["hex"] = None
+        led = next(u for u in U.values() if u["type"] == "judaean_leader"
+                   and u["hex"] is None)
+        led_save = (led["side"], led.get("faction"))
+        led["side"], led["faction"] = "Rom", "XII"
+        led["hex"] = next(n for n in tg._nb(cur) if clear1(n))
+        submit_no(tg, "Rom", {"type": "move", "pid": led["pid"],
+                              "path": [N[led["hex"]], N[cur]]},
+                  "one HQ may stack")
+        led["hex"] = None
+        led["side"], led["faction"] = led_save
+        print("testudo: join at 6 MF flat, join-before-move locks the "
+              "formation, transit refused, capacity (3 HI / Velitae slot / "
+              "one HQ) OK [6.6/6.61/8.8/16.4]")
+
+        mph()
+        lv = next(n for n in tg._nb(cur) if clear1(n))
+        submit_ok(tg, "Rom", {"type": "move", "pid": v3["pid"],
+                              "path": [N[cur], N[lv]]})
+        assert v3["hex"] == lv and abs(v3["mv"] - 5.0) < 1e-9, \
+            "leave = entry cost 1 + half-MA forfeit 4 [8.8]"
+        submit_no(tg, "Rom", {"type": "move", "pid": v2["pid"],
+                              "path": [N[cur], N[lv]]},
+                  "below two Fresh Heavy Infantry")
+        v3["hex"] = None
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "disband",
+                              "hex": N[cur]})
+        assert tg._tst_at(cur) is None and abs(v1["mv"] - 6.0) < 1e-9 \
+            and abs(cmd["mv"] - 6.0) < 1e-9
+        mph()
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"], cmd["pid"]]})
+        t = tg._tst_at(cur)
+        step = next(n for n in tg._nb(cur) if clear1(n))
+        submit_ok(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "testudo": True, "path": [N[cur], N[step]]})
+        submit_no(tg, "Rom", {"type": "testudo", "op": "disband",
+                              "hex": N[step]}, "not yet moved")
+        cur = step
+        print("testudo: leave forfeits half MA and below-2-HI leave "
+              "refused; disband 6 MF to each Fresh occupant (HQ included), "
+              "only-before-moving OK [8.8/16.4]")
+
+        reg = take("judaean_regular", 1)[0]
+        reg["hex"] = next(n for n in tg._nb(cur) if clear1(n))
+        jl = next(u for u in U.values() if u["type"] == "judaean_leader")
+        tg.s["phase"], tg.s["seg"] = "jud_fire", "Jud"
+        tg.s["fired"], tg.s["fired_hexes"] = [], []
+        DIE = [4]
+        tg.roll_die = lambda: DIE[0]
+        v = tg.propose("Jud", {"type": "fire", "firers": [reg["pid"]],
+                               "target": N[cur]})
+        assert v["legal"] and v["row"] == "testudo_artillery_ground", v
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [reg["pid"]],
+                                  "target": N[cur]})
+        assert r["result"]["drm"] == 0, \
+            f"13.3 Fresh-HI -1 suppressed in a Testudo hex: {r['result']}"
+        v2["state"] = "disrupted"
+        tg._tst_sweep()
+        t = tg._tst_at(cur)
+        assert t and t.get("broken") and v1["pid"] in t["members"]
+        assert tg._unit_zoc(v1) != set(), \
+            "Broken Testudo with a Fresh unit exerts ZOC [16.4]"
+        tg.s["fired"], tg.s["fired_hexes"] = [], []
+        v = tg.propose("Jud", {"type": "fire", "firers": [reg["pid"]],
+                               "target": N[cur]})
+        assert v["legal"] and v["row"] == "breach_broken_testudo", v
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [reg["pid"]],
+                                  "target": N[cur]})
+        assert r["result"]["drm"] == 0, \
+            f"13.3 suppression holds for Broken Testudo: {r['result']}"
+        del tg.roll_die
+        reg["hex"] = None
+        mph()
+        assert abs(v1.get("mv", 0) - 6.0) < 1e-9 and not v2.get("mv"), \
+            "-6 MF to Fresh units in a Broken Testudo, Disrupted exempt [16.4]"
+        far = next(n for n in tg._nb(cur) if clear1(n))
+        far2 = next(n for n in tg._nb(far) if clear1(n) and n != cur)
+        far3 = next(n for n in tg._nb(far2) if clear1(n) and n not in
+                    (cur, far))
+        submit_no(tg, "Rom", {"type": "move", "pid": v1["pid"],
+                              "path": [N[cur], N[far], N[far2], N[far3]]},
+                  "movement allowance exceeded")
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["testudo"] == [], \
+            "Broken Testudo markers removed during the next Roman MPh [16.4]"
+        print("testudo: missile row Testudo -> Broken (lower) row, 13.3 "
+              "Fresh-HI drm suppressed both faces, break on <2 Fresh HI, "
+              "-6 MF next Roman MPh (Disrupted exempt) then marker removed, "
+              "Broken ZOC restored OK [13.2/13.3/16.4]")
+
+        v1["state"] = v2["state"] = "fresh"
+        v1["hex"] = v2["hex"] = cmd["hex"] = None
+        h1 = next(pocket())
+        v1["hex"] = v2["hex"] = h1
+        cmd["hex"] = next(n for n in tg._nb(h1) if clear1(n))
+        mph()
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [v1["pid"], v2["pid"]]})
+        z = take("zealot", 1)[0]
+        z["hex"] = next(n for n in tg._nb(h1) if clear1(n))
+        tg.s["phase"] = "rom_melee"
+        submit_no(tg, "Rom", {"type": "melee", "target": N[z["hex"]],
+                              "attackers": [v1["pid"]]},
+                  "may not Melee attack")
+        tg.s["phase"] = "jud_melee"
+        v = tg.propose("Jud", {"type": "melee", "target": N[h1],
+                               "attackers": [z["pid"]]})
+        assert v["legal"], v
+        zw_save = tg.hex_t0[z["hex"]]
+        tg.hex_t0[z["hex"]] = "wall"
+        submit_no(tg, "Jud", {"type": "melee", "target": N[h1],
+                              "attackers": [z["pid"]]},
+                  "Ground, Gate and Built-up")
+        tg.hex_t0[z["hex"]] = zw_save
+        tg._queue_melee_result(h1, ["D"], "Rom", "Jud", [z["pid"]],
+                               None, None)
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": v2["pid"]}]})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p.get("optional"), p
+        submit_no(tg, "Rom", {"type": "resolve_retreat",
+                              "eliminate": [v2["pid"]]}, "[14.31]")
+        submit_ok(tg, "Rom", {"type": "resolve_retreat", "paths": {}})
+        assert v2["hex"] == h1 and v2["state"] == "disrupted"
+        t = tg._tst_at(h1)
+        assert t and t.get("broken"), \
+            "the D broke the formation after the stay [16.4]"
+        fort = next(h for h, ty in tg.hex_t0.items() if ty == "fortress")
+        assert tg._melee_stay_ok(fort), "[14.31] Fortress branch"
+        print("testudo: 11.5 melee bars both ways + 14.31 optional retreat "
+              "(decline stays, eliminate refused) then involuntary disband "
+              "OK [11.5/14.31/16.4]")
+
+        tw = next(u for u in U.values() if u["type"] == "tower")
+        vh = take("roman_veteran", 1)[0]
+        h2 = next(pocket())
+        tw["hex"], vh["hex"] = h2, h2
+        z["hex"] = next(n for n in tg._nb(h2) if clear1(n))
+        tg.s["phase"] = "jud_melee"
+        tg._queue_melee_result(h2, ["D"], "Rom", "Jud", [z["pid"]],
+                               None, None)
+        submit_ok(tg, "Rom", {"type": "resolve_loss",
+                              "picks": [{"pid": vh["pid"]}]})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p.get("optional"), \
+            f"14.31 covers Siege Engine hexes too (was forced): {p}"
+        submit_ok(tg, "Rom", {"type": "resolve_retreat", "paths": {}})
+        assert vh["hex"] == h2
+        tw["hex"] = vh["hex"] = z["hex"] = None
+        print("testudo: 14.31 Siege-Engine-hex exemption enforced - the "
+              "forced-retreat silent gap is closed [14.31]")
+
+        f1, f2 = take("roman_veteran", 2)
+        h3 = next(pocket())
+        f1["hex"] = f2["hex"] = h3
+        cmd["hex"] = next(n for n in tg._nb(h3) if clear1(n))
+        mph()
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [f1["pid"], f2["pid"]]})
+        vr = take("roman_veteran", 1)[0]
+        nb3 = next(n for n in tg._nb(h3) if clear1(n))
+        vr["hex"] = nb3
+        assert tg._retreat_step(vr, nb3, h3, "Rom", set(), {}) == (6.0, None)
+        c, why = tg._retreat_step(fdt, nb3, h3, "Rom", set(), {})
+        assert c is None and "join" in why, why
+        vd = take("roman_veteran", 1)[0]
+        vd["hex"], vd["state"] = nb3, "disrupted"
+        c, why = tg._retreat_step(vd, nb3, h3, "Rom", set(), {})
+        assert c is None and "Fresh Heavy Infantry" in why, why
+        vd["hex"], vd["state"] = None, "fresh"
+        veld = take("velitae", 1)[0]
+        veld["hex"], veld["state"] = nb3, "disrupted"
+        assert tg._retreat_step(veld, nb3, h3, "Rom", set(), {}) == \
+            (6.0, None), "Disrupted Velitae may join [16.4]"
+        veld["hex"], veld["state"] = None, "fresh"
+        z["hex"] = next(n for n in tg._nb(nb3) if clear1(n) and n != h3)
+        tg.s["phase"] = "jud_melee"
+        tg._queue_melee_result(nb3, ["B"], "Rom", "Jud", [z["pid"]],
+                               None, None)
+        submit_ok(tg, "Rom", {"type": "resolve_loss", "picks": []})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and not p.get("optional")
+        submit_ok(tg, "Rom", {"type": "resolve_retreat",
+                              "paths": {vr["pid"]: [N[nb3], N[h3]]}})
+        assert vr["hex"] == h3 and tg._tst_at(h3, broken=False) is not None
+        print("testudo: retreat-join gate (Fresh HI 6 MF yes; Foederatti/"
+              "Disrupted-HI no; Disrupted Velitae yes [16.4]) + B-retreat "
+              "into the formation E2E OK [14.2/15.2]")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def gate_ring_checks(tg):
     """A5/A6 regression. Decode-prep 6: neither printed table has a Gate
     row, so a gate's breach defense and missile row resolve on its printed
@@ -2054,6 +2451,7 @@ def main():
         marker_checks(g)
         multiple_attack_checks(g)
         escalade_checks(g)
+        testudo_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
@@ -2235,6 +2633,10 @@ def drain_pendings(tg):
                      for i in range(len(need))]
             submit_ok(tg, p["by"], {"type": "resolve_loss", "picks": picks})
         elif p["kind"] == "retreat":
+            if p.get("optional"):
+                submit_ok(tg, p["by"], {"type": "resolve_retreat",
+                                        "paths": {}})
+                continue
             paths, elim = {}, []
             enemy = tg._enemy(p["by"])
             zoc = tg._zoc_map(enemy)
