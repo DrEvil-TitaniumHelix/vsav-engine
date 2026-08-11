@@ -70,7 +70,8 @@ class SoJGame(GateGame):
     HASH_KEYS = ("units", "turn", "phase", "seg", "seed", "rng_calls",
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
-                 "escaped", "markers", "melee_hexes", "esc", "testudo")
+                 "escaped", "markers", "melee_hexes", "esc", "testudo",
+                 "pmoved")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -90,6 +91,7 @@ class SoJGame(GateGame):
         self.s.setdefault("melee_hexes", [])
         self.s.setdefault("esc", [])
         self.s.setdefault("testudo", [])
+        self.s.setdefault("pmoved", False)
 
     def rules_scope(self):
         """Matrix-regime composition (spec #13 as amended 2026-08-09),
@@ -325,7 +327,7 @@ class SoJGame(GateGame):
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
             "melee_hexes": [], "esc": [], "testudo": [],
-            "winner": None, "over": False,
+            "pmoved": False, "winner": None, "over": False,
         }
         self._reset_log()
         self._log({"event": "init", "mode": "soj",
@@ -787,6 +789,48 @@ class SoJGame(GateGame):
             return min(self._dist(h, g) for g in self.refuge_gates)
         return int(h[2:])
 
+    def _road_ref_dist(self, side, zoc):
+        if side != "Jud":
+            return {}
+        enemy = self._enemy(side)
+
+        def blocked(h):
+            return h in zoc or any(o["side"] == enemy
+                                   for o in self._occupants(h))
+        rd = {}
+        frontier = []
+        for g in self.refuge_gates:
+            if blocked(g):
+                continue
+            for n in self._nb(g):
+                if n not in rd and not blocked(n) and any(
+                        tuple(sorted((n, m))) in self.roads
+                        for m in self._nb(n)):
+                    rd[n] = 0
+                    frontier.append(n)
+        while frontier:
+            nxt = []
+            for h in frontier:
+                for n in self._nb(h):
+                    if tuple(sorted((h, n))) in self.roads \
+                            and n not in rd and not blocked(n):
+                        rd[n] = rd[h] + 1
+                        nxt.append(n)
+            frontier = nxt
+        return rd
+
+    def _refuge_laggards(self, side, skip=None, states=("routed",
+                                                        "panicked")):
+        out = []
+        for u in self.s["units"].values():
+            if u["side"] != side or u["hex"] is None or u["pid"] == skip \
+                    or u["state"] not in states:
+                continue
+            if any(self._move_verdict(side, u, [u["hex"], n])["legal"]
+                   for n in sorted(self._nb(u["hex"]))):
+                out.append(u["pid"])
+        return sorted(out)
+
     def _half_damaged(self, h):
         t = self.hex_t0[h]
         d = self.s.get("breach", {}).get(h, 0)
@@ -818,6 +862,15 @@ class SoJGame(GateGame):
             return self._v(False, "not your unit")
         if u.get("pushed"):
             return self._v(False, "already moved as part of a Siege Engine stack this MPh [8.3]")
+        if u.get("fin"):
+            return self._v(False, "this unit's MPh ended when it entered a hex containing a Panicked unit [17.21]")
+        if u["state"] == "panicked":
+            lag = self._refuge_laggards(side, skip=u["pid"],
+                                        states=("routed",))
+            if lag:
+                return self._v(False, f"Routed units must complete their mandatory move towards Refuge before Panicked units move [4.13/8.1/17.21]: {lag[0]}")
+        elif self.s.get("pmoved"):
+            return self._v(False, "Panicked units move only after all other units have finished movement - no further non-Panicked moves this MPh [8.1/17.21]")
         if any(e["base"] == u["pid"] for e in self.s["esc"]):
             return self._v(False, "a unit beneath an Escalade may not move - remove it first (4 MF) [8.7]")
         t0 = self._tst_at(u["hex"], broken=False) \
@@ -885,12 +938,8 @@ class SoJGame(GateGame):
             return self._v(False,
                            "Judaean unit in Roman Heavy Infantry ground-level "
                            "ZOC may not move [7.311; official Q&A 1/6/1992]")
-        if u["state"] in ("routed", "panicked"):
-            # must head for Refuge [15.3/17.21]; direction enforced here
-            # (full-MF obligation still open - matrix M.16 -> B16)
-            if self._refuge_dist(side, path[-1]) >= \
-                    self._refuge_dist(side, path[0]):
-                return self._v(False, "Routed/Panicked units must move towards Refuge [15.3/17.21]")
+        rd_lock = (self._road_ref_dist(side, zoc)
+                   if u["state"] in ("routed", "panicked") else None)
         picked = [str(p) for p in (crew or [])]
         if picked and cls != "siege_engine":
             return self._v(False, "only Siege Engines move with a pushing crew [8.3]")
@@ -923,6 +972,14 @@ class SoJGame(GateGame):
         for i, h in enumerate(path[1:], 1):
             if h not in self._nb(prev):
                 return self._v(False, f"{self.hex_name.get(h, h)} is not adjacent to {self.hex_name.get(prev, prev)}")
+            if rd_lock is not None:
+                if rd_lock.get(prev, 0) > 0:
+                    if tuple(sorted((prev, h))) not in self.roads \
+                            or rd_lock.get(h, 1 << 20) >= rd_lock[prev]:
+                        return self._v(False, "on an unobstructed road to Refuge the unit must remain on that road, moving along it, until it reaches Refuge [15.3]")
+                elif self._refuge_dist(side, h) >= \
+                        self._refuge_dist(side, prev):
+                    return self._v(False, "Routed/Panicked units must move towards Refuge - every hex entered must be closer [15.3/17.21]")
             enemy_occ = [o for o in self._occupants(h) if o["side"] == enemy]
             if enemy_occ:
                 # 11.4 carve-out of 8.11: a Siege Engine 'not stacked with
@@ -1046,12 +1103,18 @@ class SoJGame(GateGame):
         if cls == "siege_engine":
             movers += [o for o in self._occupants(path[0]) if o.get("up")]
         bad = self._stack_check(dest, side, movers)
+        pstop = any(o["side"] == side and o["state"] == "panicked"
+                    and o["pid"] != u["pid"] for o in self._occupants(dest))
         if bad:
-            return self._v(False, bad)
+            if not pstop:
+                return self._v(False, bad)
+            if u["state"] in ("routed", "panicked"):
+                return self._v(False, "a mandatory Refuge move never ends in elimination - the unit remains in place instead [17.21/15.1]")
         fd = self._dir_of(dest, face) if face is not None else None
         return dict(self._v(True, f"cost {spent:g} of {budget:g} MF"),
                     crew=picked, face_dir=fd, spent=spent, up=bool(up),
-                    forfeit=forfeit)
+                    forfeit=forfeit, pstop=pstop,
+                    panic_elim=bool(bad and pstop))
 
     def _tst_move_verdict(self, side, u, t, path):
         if side != "Rom":
@@ -2756,6 +2819,10 @@ class SoJGame(GateGame):
                 return self._v(False, "finish deployment with deploy_done")
             if side != self.side_to_move():
                 return self._v(False, "not your phase")
+            if phase.endswith("_move") and self.tier >= 2:
+                lag = self._refuge_laggards(side)
+                if lag:
+                    return self._v(False, "Routed/Panicked units must move towards Refuge using all available MF before the phase ends [15.3/17.21/8.1]: " + ", ".join(lag))
             return self._v(True, f"end of {phase}"
                            + (f" ({self.s['seg']} segment)" if self.s.get("seg") else ""))
         return self._v(False, f"unknown action type {a!r}")
@@ -2774,6 +2841,8 @@ class SoJGame(GateGame):
             return self._v(False, "a Disrupted unit cannot place, maintain, or climb an Escalade [16.3]")
         if u.get("pushed"):
             return self._v(False, "already moved as part of a Siege Engine stack this MPh [8.3]")
+        if u.get("fin"):
+            return self._v(False, "this unit's MPh ended when it entered a hex containing a Panicked unit [17.21]")
         if self._ma(u) - u.get("mv", 0.0) < 4.0 - 1e-9:
             return self._v(False, "placing or removing an Escalade costs four MF [6.5/8.7]")
         h = u["hex"]
@@ -3111,6 +3180,15 @@ class SoJGame(GateGame):
                     self._eliminate(self.s["units"][pid_])
                 if wrecked:
                     out["wrecked"] = wrecked
+            if u["state"] == "panicked":
+                self.s["pmoved"] = True
+            if verdict.get("pstop"):
+                u["fin"] = True
+                out["fin"] = True
+                if verdict.get("panic_elim"):
+                    self._eliminate(u)
+                    out["eliminated"] = ("the forced stop overstacked the "
+                                         "hex [17.21]")
             return out
         if a == "escalade":
             u = self.s["units"][str(action["pid"])]
@@ -3341,6 +3419,7 @@ class SoJGame(GateGame):
         self.s["fired"] = []
         self.s["fired_hexes"] = []
         self.s["cc_hex"] = None
+        self.s["pmoved"] = False
         if p == "jud_melee":
             self.s["meleed"] = []
             self.s["melee_hexes"] = []
@@ -3391,6 +3470,7 @@ class SoJGame(GateGame):
             u.pop("mv", None)
             u.pop("tmf", None)
             u.pop("lk", None)
+            u.pop("fin", None)
         for e in self.s.get("esc", []):
             e["used"] = []
         for t in self.s.get("testudo", []):
