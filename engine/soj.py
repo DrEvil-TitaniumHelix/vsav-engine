@@ -71,7 +71,7 @@ class SoJGame(GateGame):
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
                  "escaped", "markers", "melee_hexes", "esc", "testudo",
-                 "pmoved")
+                 "pmoved", "incc")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -92,6 +92,8 @@ class SoJGame(GateGame):
         self.s.setdefault("esc", [])
         self.s.setdefault("testudo", [])
         self.s.setdefault("pmoved", False)
+        if "incc" not in self.s:
+            self._cc_snapshot()
 
     def rules_scope(self):
         """Matrix-regime composition (spec #13 as amended 2026-08-09),
@@ -327,7 +329,7 @@ class SoJGame(GateGame):
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
             "melee_hexes": [], "esc": [], "testudo": [],
-            "pmoved": False, "winner": None, "over": False,
+            "pmoved": False, "incc": [], "winner": None, "over": False,
         }
         self._reset_log()
         self._log({"event": "init", "mode": "soj",
@@ -615,25 +617,51 @@ class SoJGame(GateGame):
         return out
 
     # ------------------------------------------------------------ CC [5]
+    def _cc_step(self, hq, frm, to, side, enemy, ezoc, night, occ_of):
+        occ = occ_of.get(to, [])
+        eo = [o for o in occ if o["side"] == enemy]
+        if eo:
+            if not (side == "Jud" and all(
+                    self.utype(o)["cls"] == "siege_engine" for o in eo)):
+                return False, False
+            if self.hex_t(frm) in ELEVATED:
+                return False, False
+        c, _w = self._entry_cost(hq, frm, to, side)
+        if c is None:
+            return False, False
+        if to in ezoc and not self._fresh(hq) \
+                and not (side == "Jud" and night):
+            return False, False
+        if self._esc_at(to) is not None and sum(
+                1 for o in occ if self.utype(o)["cls"] != "hq") >= 3:
+            return False, False
+        th = self._tst_at(to, broken=False)
+        if th is not None and not self._tst_join_ok(hq, th)[0]:
+            return False, False
+        thru = th is None and not any(
+            o["side"] == side and o["state"] == "panicked" for o in occ)
+        return True, thru
+
     def _cc_map(self, side):
-        """Hexes in command for `side` this moment. BFS from each HQ through
-        hexes the HQ could move through [5.2 - passability approximation,
-        module-author review note]; radius 10, -2 night [5.11], -2 HQ not
-        Fresh [16.1]. Judaean auto-CC [5.6] handled in in_cc()."""
+        enemy = self._enemy(side)
+        ezoc = self._zoc_map(enemy)
+        night = self.is_night()
+        occ_of = {}
+        for o in self.s["units"].values():
+            if o["hex"] is not None:
+                occ_of.setdefault(o["hex"], []).append(o)
         cover = {}
         for hq in self.s["units"].values():
             if hq["side"] != side or hq["hex"] is None \
                     or self.utype(hq)["cls"] != "hq":
                 continue
-            rad = 10 - (2 if self.is_night() else 0) \
-                     - (0 if self._fresh(hq) else 2)
+            rad = 10 - (2 if night else 0) - (0 if self._fresh(hq) else 2)
             if rad <= 0:
                 continue
             scope = ("all" if self.utype(hq).get("hq") == "commander"
                      else hq.get("faction"))
             seen = {hq["hex"]: 0}
             frontier = [hq["hex"]]
-            enemy = self._enemy(side)
             while frontier:
                 nxt = []
                 for h in frontier:
@@ -641,43 +669,51 @@ class SoJGame(GateGame):
                     if d >= rad:
                         continue
                     for n in self._nb(h):
-                        if n in seen or n not in self.playable:
+                        if n in seen:
                             continue
-                        if any(o["side"] == enemy for o in self._occupants(n)):
-                            continue
-                        c, _w = self._entry_cost(hq, h, n, side)
-                        if c is None:
+                        ok, thru = self._cc_step(hq, h, n, side, enemy,
+                                                 ezoc, night, occ_of)
+                        if not ok:
                             continue
                         seen[n] = d + 1
-                        nxt.append(n)
+                        if thru:
+                            nxt.append(n)
                 frontier = nxt
             for h in seen:
                 cover.setdefault(h, set()).add(scope)
         return cover
 
-    def in_cc(self, u, cc=None):
-        """[5.1-5.6]. Judaean auto-CC: in an unbreached Fortress/Fort, or on
-        Elevated tracing a Roman-free unbreached Elevated path to a
-        Judaean-controlled Fortress/Fort [5.6]."""
-        if self.utype(u)["cls"] == "hq":
-            return True                      # 17.3: disrupted HQ always in CC
+    def _cc_unit(self, u, cover):
         if u["side"] == "Jud":
             t = self.hex_t(u["hex"])
             if t in ("fort", "fortress"):
                 return True
             if t in ELEVATED and self._elevated_path_to_fortress(u["hex"]):
                 return True
-        cover = cc if cc is not None else self._cc_map(u["side"])
         scopes = cover.get(u["hex"], set())
         if "all" in scopes:
             return True
-        # zealots/cauldrons/artillery: any Judaean HQ controls [5.4 exc]
         if u["side"] == "Jud" and u["type"] in ("zealot", "cauldron") \
                 and scopes:
             return True
         if self.utype(u)["cls"] in ("artillery", "cauldron") and scopes:
             return True
         return u.get("faction") in scopes
+
+    def _cc_snapshot(self):
+        incc = []
+        for side in ("Rom", "Jud"):
+            cover = self._cc_map(side)
+            for u in self.s["units"].values():
+                if u["side"] != side or u["hex"] is None \
+                        or self.utype(u)["cls"] == "hq":
+                    continue
+                if self._cc_unit(u, cover):
+                    incc.append(u["pid"])
+        self.s["incc"] = sorted(incc)
+
+    def in_cc(self, u):
+        return self.utype(u)["cls"] == "hq" or u["pid"] in self.s["incc"]
 
     def _elevated_path_to_fortress(self, start):
         seen = {start}
@@ -2651,7 +2687,6 @@ class SoJGame(GateGame):
         """Auto-resolve the mandatory Rally Phase [17.1]: HQ first, then the
         board sweep in alpha-numerical order (row A before row B; A1 before
         A2 [17.1]). Returns per-unit events for the log."""
-        cc = self._cc_map(side)
         enemy = self._enemy(side)
         zoc = self._zoc_map(enemy)
         units = [u for u in self.s["units"].values()
@@ -2683,7 +2718,7 @@ class SoJGame(GateGame):
                         and self._fresh(o) and own_hq_ok(o):
                     best = min(best, -2 if self.utype(o).get("hq") == "commander" else -1)
             drm += best
-            if not self.in_cc(u, cc):
+            if not self.in_cc(u):
                 drm += 1                      # [5.12]
             if self._enemy_missile_threat(u):
                 drm += 1                      # [17.24]
@@ -3160,6 +3195,10 @@ class SoJGame(GateGame):
             if entering:
                 self.s["entry_queue"] = [q for q in self.s["entry_queue"]
                                          if q["pid"] != u["pid"]]
+                if self.utype(u)["cls"] != "hq" \
+                        and self._cc_unit(u, self._cc_map(side)):
+                    self.s["incc"] = sorted(set(self.s["incc"])
+                                            | {u["pid"]})
             out = {"to": self.hex_name[path[-1]]}
             crew = verdict.get("crew") or []
             for p in crew:
@@ -3510,6 +3549,7 @@ class SoJGame(GateGame):
                         x = self.s["units"].get(p_)
                         if x and x["hex"] == t["hex"] and self._fresh(x):
                             x["mv"] = 6.0
+        self._cc_snapshot()
         if not self.s["phase"].endswith("_move"):
             return
         for se in self.s["units"].values():
