@@ -778,7 +778,9 @@ class SoJGame(GateGame):
         if to not in self.playable:
             return None, "off the Gallus battlefield (card scope statement)"
         if side == "Rom" and to in self.rom_prohibited:
-            return None, "Romans may never enter Garrison hexes P50/QQ32 (card)"
+            return None, ("Roman entry of Garrison Areas is not allowed "
+                          "(card; extent = declared ruling, see source_defects "
+                          "'gallus-garrison-extent')")
 
         if cls == "cauldron":
             if not both_elev:
@@ -2540,7 +2542,8 @@ class SoJGame(GateGame):
             u = self.s["units"][pid]
             c, why = self._entry_cost(u, u["hex"], p["hex"], side)
             if c is None and self.hex_t(p["hex"]) in GATES and \
-                    tuple(sorted((u["hex"], p["hex"]))) in self.entrances:
+                    tuple(sorted((u["hex"], p["hex"]))) in self.entrances and \
+                    not (side == "Rom" and p["hex"] in self.rom_prohibited):
                 c, why = 1.0, None
             if c is None:
                 return self._v(False, f"illegal advance terrain: {why} [11.9/11.86]")
@@ -3725,6 +3728,7 @@ class SoJGame(GateGame):
                     continue
                 hs = [self.hex_name[n] for n in self._nb(u["hex"])
                       if n in self.playable and self.hex_t(n) in ELEVATED
+                      and n not in self.rom_prohibited
                       and not self._occupants(n)]
             else:
                 se = self._se_at(u["hex"])
@@ -3736,6 +3740,7 @@ class SoJGame(GateGame):
                 hs = [self.hex_name[fh]] if (
                     fh is not None and fh in self.playable
                     and self.hex_t(fh) in ELEVATED
+                    and fh not in self.rom_prohibited
                     and not self._occupants(fh)
                     and (self._fresh(u) or fh not in zoc)) else []
             if hs:

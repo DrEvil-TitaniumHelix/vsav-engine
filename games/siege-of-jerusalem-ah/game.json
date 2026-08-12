@@ -300,6 +300,15 @@
     "enforced": true
    },
    {
+    "id": "gallus-garrison-extent",
+    "kind": "ambiguous_wording",
+    "rules": ["Gallus scenario card", "18.4", "18.3", "5.6"],
+    "defect": "The card bars Roman entry of Garrison Areas with examples only: 'Roman entry of Garrison Areas is not allowed (e.g., Romans may never enter P50 or QQ32)' - 'e.g.' leaves the areas' hex extents undefined, and 18.4 names three multi-hex areas (Temple Quarter, Herod's Palace inclusive of the Fortress Triangle and Yafo Gate complex, Antonia Fortress) whose boundaries are drawn nowhere in hex terms.",
+    "resolution": "Prohibited = the nine battlefield-reachable perimeter hexes of the three areas: P50 + Q49 (west, Yafo Gate complex/Fortress Triangle) and MM31, MM32, MM33, NN33, OO33 (Tadi Gate), PP33, QQ32 (east, Antonia Fortress + Temple Quarter north wall). Derivation: 18.3 divides city areas BY walls; 5.6 counts the Temple area's outer walls as Temple-area hexes; the printed map's ANTONIA FORTRESS / TEMPLE QUARTER / TADI GATE / YAFO GATE labels fix which walls bound which area; both card examples are perimeter strongpoints, proving the perimeter reading; every interior hex is off the bounded battlefield. Q49 (Second Wall's southern gate opening into the fortress complex) is the one ambiguous junction, prohibited under the declared ambiguity-goes-prohibited tiebreak. Corollary: both Giora reinforcement entry gates (OO33, Q49) are Roman-prohibited, so the relief-force doors can never be occupied. Consequence carried through the engine: since 11.1 melee eligibility = 'could enter if vacated', Romans can neither enter NOR melee-attack a Garrison hex (missile/rock fire remains legal) - the same reading the two printed example hexes have always had; Judaean entry, deployment and defense there are unrestricted [18.4].",
+    "authority": "Declared ruling (2026-08-12), pending module-author/expert review; the enforced behaviour is strictly a superset of the card's printed examples.",
+    "enforced": true
+   },
+   {
     "id": "general-26-4-interphase-sequence",
     "kind": "editing_error",
     "rules": ["19", "The General Vol 26 No 4"],

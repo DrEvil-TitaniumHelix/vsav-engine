@@ -9623,7 +9623,7 @@
    "name": "MM29"
   },
   "3949": {
-   "t": "bastion",
+   "t": "clear",
    "name": "MM30"
   },
   "3950": {
@@ -12717,10 +12717,6 @@
    "staircase": true,
    "inferred": true
   },
-  "3949|4050": {
-   "staircase": true,
-   "inferred": true
-  },
   "3950|4051": {
    "staircase": true,
    "inferred": true
@@ -13994,6 +13990,7 @@
    "3946",
    "3947",
    "3948",
+   "3949",
    "4038",
    "4039",
    "4040",
