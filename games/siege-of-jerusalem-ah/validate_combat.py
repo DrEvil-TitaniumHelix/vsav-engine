@@ -1969,8 +1969,32 @@ def testudo_checks(g):
                               "hex": N[camp]}, "[6.61]")
         print("testudo: setup-in-Testudo (3.4, no MF) + deploy-into-"
               "formation refused OK [3.4/6.61] (P0.8 closed)")
+        d4, d5 = take("roman_veteran", 2)
+        camp2 = next(h for h in sorted(tg.rom_zone)
+                     if tg.hex_t(h) == "clear" and not tg._occupants(h)
+                     and h != camp)
+        submit_ok(tg, "Rom", {"type": "deploy", "pid": d4["pid"],
+                              "hex": N[camp2]})
+        submit_ok(tg, "Rom", {"type": "deploy", "pid": d5["pid"],
+                              "hex": N[camp2]})
+        far = next(h for h in sorted(tg.rom_zone)
+                   if tg.hex_t(h) == "clear" and not tg._occupants(h)
+                   and h not in (camp, camp2))
+        tg.s["testudo"].append({"hex": far, "mv": 0.0, "legion": "X"})
+        submit_no(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [d4["pid"], d5["pid"]]},
+                  "one Testudo formation per Legion")
+        tb = tg._tst_at(camp)
+        tb["broken"], tb["members"] = True, [d1["pid"], d2["pid"]]
+        submit_ok(tg, "Rom", {"type": "testudo", "op": "form",
+                              "pids": [d4["pid"], d5["pid"]]})
+        print("testudo: one INTACT formation per Legion - second XII form "
+              "refused while XII's counter is in use, an intact X-Legion "
+              "formation never blocks it (per-Legion, not global), a Broken "
+              "Testudo frees the counter OK [2.6; declared ruling R2, "
+              "source_defects testudo-one-per-legion]")
         tg.s["testudo"] = []
-        d1["hex"] = d2["hex"] = None
+        d1["hex"] = d2["hex"] = d4["hex"] = d5["hex"] = None
         tg.s["deploy_done"] = {"Jud": True, "Rom": True}
         tg.s["turn"] = 1
         mph()

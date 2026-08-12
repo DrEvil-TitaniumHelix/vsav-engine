@@ -410,7 +410,7 @@
   ],
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
-   "Blocked on module-author answers: testudo one-per-legion limit (the formation machinery is DONE; only the counter-mix count question holds this cell), fort staircase hexsides, Giora dice count (Elim-vs-Wreck no longer blocks Gallus: outcome-equivalence proven, R7 stays open for campaign scope; Garrison Area extents closed by declared ruling 2026-08-12 - see source_defects 'gallus-garrison-extent')",
+   "Blocked on module-author answers: fort staircase hexsides, Giora dice count (Elim-vs-Wreck no longer blocks Gallus: outcome-equivalence proven, R7 stays open for campaign scope; Garrison Area extents + testudo one-per-legion limit closed by declared rulings 2026-08-12 - see source_defects 'gallus-garrison-extent' / 'testudo-one-per-legion')",
    "Data-defect item queued (post-R-cells): five North Wall hexes typed north_wall carry bastion-strength control-map rings + tower art (G45, G47, H48, I50, J37) - if real Bastions, the card SR1 min-force requirement is under-enforced by five hexes and their ring class/staircase standing changes; needs its own evidence pass before E2E"
   ],
   "rulings": [
