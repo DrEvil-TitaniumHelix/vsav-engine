@@ -71,7 +71,7 @@ class SoJGame(GateGame):
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
                  "escaped", "markers", "melee_hexes", "esc", "testudo",
-                 "pmoved", "incc", "lastm")
+                 "pmoved", "incc", "lastm", "sortie")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -93,6 +93,7 @@ class SoJGame(GateGame):
         self.s.setdefault("testudo", [])
         self.s.setdefault("pmoved", False)
         self.s.setdefault("lastm", [])
+        self.s.setdefault("sortie", [])
         if "incc" not in self.s:
             self._cc_snapshot()
 
@@ -330,7 +331,7 @@ class SoJGame(GateGame):
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
             "melee_hexes": [], "esc": [], "testudo": [],
-            "pmoved": False, "incc": [], "lastm": [],
+            "pmoved": False, "incc": [], "lastm": [], "sortie": [],
             "winner": None, "over": False,
         }
         self._reset_log()
@@ -386,6 +387,21 @@ class SoJGame(GateGame):
     def _melee_val(self, u):
         t = self.utype(u)
         return t["melee"][0 if self._fresh(u) else 1]
+
+    def _hi_mixed(self, u):
+        fs = u["type"] in ("foederatti", "syrian_archers")
+        hv = self.utype(u)["cls"] == "heavy"
+        if not (fs or hv):
+            return False
+        for o in self._occupants(u["hex"]):
+            if o["side"] != u["side"] or o["pid"] == u["pid"] \
+                    or bool(o.get("up")) != bool(u.get("up")):
+                continue
+            if hv and o["type"] in ("foederatti", "syrian_archers"):
+                return True
+            if fs and self.utype(o)["cls"] == "heavy":
+                return True
+        return False
 
     def _occupants(self, h):
         return [u for u in self.s["units"].values() if u["hex"] == h]
@@ -1468,6 +1484,8 @@ class SoJGame(GateGame):
                 return self._v(False, f"{f['pid']} is not Fresh [9.1/16.2]")
             if f["pid"] in self.s["fired"]:
                 return self._v(False, f"{f['pid']} already fired this phase [9.1]")
+            if self._hi_mixed(f):
+                return self._v(False, "Heavy Infantry stacked with Foederatti or Syrian Archers may not Melee or fire, and vice versa [11.1/Q&A 11.1]")
             if any(self.utype(o)["cls"] == "siege_engine"
                    for o in self._occupants(f["hex"])) and not f.get("up"):
                 return self._v(False, "Missile units may not fire if beneath a Siege Engine - units riding atop a Tower may [9.4/Q&A 11.1]")
@@ -1810,6 +1828,58 @@ class SoJGame(GateGame):
                                  "mk": p.get("mk"), "xe": p["xe"],
                                  "optional": self._melee_stay_ok(p["hex"])}
 
+    def _resolve_counterattack_verdict(self, side, action):
+        p = self.s.get("pending")
+        if not p or p["kind"] != "counterattack":
+            return self._v(False, "no counterattack to resolve")
+        if side != p["by"]:
+            return self._v(False, "the sortied-at defender chooses whether to counterattack [11.14]")
+        if action.get("decline"):
+            return self._v(True, "counterattack declined - the Gate is considered closed again [11.14]")
+        pids = [str(x) for x in action.get("attackers", [])]
+        if not pids or len(set(pids)) != len(pids):
+            return self._v(False, "name distinct counterattackers or decline [11.14]")
+        bad = [q for q in pids if q not in p["cands"]]
+        if bad:
+            return self._v(False, "counterattacks are made only from the sortied hex across the Gate Entrance hexside, by Fresh eligible units [11.14/11.2/11.1]")
+        us = [self.s["units"][q] for q in pids]
+        att = float(sum(self._melee_val(u) for u in us))
+        facs = {u.get("faction") for u in us} - {None}
+        return dict(self._v(True, "bonus Melee vs the Gate at normal strength [11.14/11.2]"),
+                    att=att, factions=len(facs) or 1, lvl=None, wreck=False)
+
+    def _arm_counterattack(self):
+        for x in self.s["sortie"]:
+            if x["used"]:
+                continue
+            x["used"] = True
+            ca = self._enemy(x["s"])
+            if not any(o["side"] == x["s"]
+                       and self.utype(o)["cls"] != "siege_engine"
+                       for o in self._occupants(x["g"])):
+                continue
+            if self._tst_at(x["h"], broken=False) is not None:
+                continue
+            if any(o["state"] == "panicked" and o["side"] == ca
+                   for o in self._occupants(x["h"])):
+                continue
+            cands = sorted(
+                o["pid"] for o in self._occupants(x["h"])
+                if o["side"] == ca and self._fresh(o)
+                and self.utype(o)["cls"] not in ("artillery",
+                                                 "siege_engine", "cauldron")
+                and not o.get("up") and not self._hi_mixed(o)
+                and not any(e["base"] == o["pid"] for e in self.s["esc"]))
+            if not cands:
+                continue
+            self.s["pending"] = {"kind": "counterattack", "by": ca,
+                                 "gate": x["g"], "hex": x["h"],
+                                 "cands": cands}
+            return {"pending": "counterattack", "next": self.s["phase"],
+                    "gate": self.hex_name[x["g"]],
+                    "from": self.hex_name[x["h"]]}
+        return None
+
     def _resolve_loss_verdict(self, side, action):
         p = self.s.get("pending")
         if not p or p["kind"] != "loss":
@@ -1982,8 +2052,11 @@ class SoJGame(GateGame):
         key = tuple(sorted((frm, tgt)))
         if key in self.stairs:
             mult = 0.5                        # [11.11/11.12]
-        if self.hex_t(frm) == "breach" and self.hex_t(tgt) not in GROUND:
+        if self.hex_t(frm) == "breach":
             mult = 0.5                        # [11.13]
+        if self.hex_t(frm) in GATES and \
+                (key in self.entrances or self.hex_t(tgt) == "breach"):
+            mult = 0.5                        # [11.14]
         if key in self.crests and self.hex_t(tgt) != "slope":
             # [11.17] attacker halved across a Crest hexside vs a defender
             # at Ground level on a non-Slope hex (crest sides are slope|clear,
@@ -2018,10 +2091,14 @@ class SoJGame(GateGame):
                 return self._v(False, "unknown/enemy attacker")
             if not self._fresh(u):
                 return self._v(False, f"{u['pid']} is not Fresh [11.1/16.2]")
+            if self._hi_mixed(u):
+                return self._v(False, "Heavy Infantry stacked with Foederatti or Syrian Archers may not Melee or fire, and vice versa [11.1/Q&A 11.1]")
             if self.utype(u)["cls"] in ("artillery", "siege_engine"):
                 return self._v(False, "Artillery/Siege Engines may not melee [2.46/11.x]")
-            if u["type"] == "cauldron":
-                return self._v(False, "Cauldrons melee only defensively in this scenario scope")
+            if u["type"] == "cauldron" and not (
+                    self.hex_t(u["hex"]) in ELEVATED
+                    and self.hex_t(tgt) in ELEVATED):
+                return self._v(False, "Artillery may not Melee attack, except Cauldrons attacking connected Elevated Hexes [11.1]")
             if self._tst_at(u["hex"], broken=False) is not None:
                 return self._v(False, "units in a Testudo may not Melee attack [11.5]")
             if tt is not None and self.hex_t(u["hex"]) not in \
@@ -2124,9 +2201,13 @@ class SoJGame(GateGame):
                 mult *= 0.5
             att += self._melee_val(u) * mult
             factions.add(u.get("faction"))
+        sortie = sorted({u["hex"] for u in atk_units
+                         if self.hex_t(u["hex"]) in GATES
+                         and tuple(sorted((u["hex"], tgt)))
+                         in self.entrances})
         return dict(self._v(True, "melee set"),
                     att=att, factions=len(factions - {None}) or 1, lvl=lvl,
-                    wreck=wreck)
+                    wreck=wreck, sortie=sortie)
 
     def _resolve_melee(self, side, action, verdict):
         tgt = self.name_hex.get(action["target"], action["target"])
@@ -2195,6 +2276,13 @@ class SoJGame(GateGame):
         # defender in built-up (not edifice) [11.19]
         if t == "builtup":
             drm -= 1
+        if t in ELEVATED and esc is None and tse is None and not any(
+                self.hex_t(a["hex"]) in ELEVATED
+                or self.hex_t(a["hex"]) == "breach"
+                or tuple(sorted((a["hex"], tgt))) in self.stairs
+                or tuple(sorted((a["hex"], tgt))) in self.entrances
+                for a in atk_units):
+            drm -= 1                          # [11.7/11.18]
         if any(self._fresh(d) and self.utype(d)["cls"] == "heavy"
                for d in dunits):
             drm -= 1
@@ -2237,8 +2325,15 @@ class SoJGame(GateGame):
             self.s["meleed"].append(a["pid"])
         self.s["melee_hexes"].append(
             [tgt, lvl] if (esc is not None or tse is not None) else tgt)
+        for gh in verdict.get("sortie") or []:
+            if not any(x["g"] == gh and x["h"] == tgt and not x["used"]
+                       for x in self.s["sortie"]):
+                self.s["sortie"].append({"g": gh, "h": tgt, "s": side,
+                                         "used": False})
         detail = {"att": att, "def": deff, "col": col, "die": die,
                   "drm": drm, "result": result, "mk_stage": stage}
+        if verdict.get("sortie"):
+            detail["sortie"] = [self.hex_name[x] for x in verdict["sortie"]]
         if lvl:
             detail["lvl"] = lvl
         # continuous combat [11.87]: die >= 6 before or after drm
@@ -2388,6 +2483,9 @@ class SoJGame(GateGame):
                 return self._v(False, f"{pid} did not attack the vacated hex [11.9]")
             u = self.s["units"][pid]
             c, why = self._entry_cost(u, u["hex"], p["hex"], side)
+            if c is None and self.hex_t(p["hex"]) in GATES and \
+                    tuple(sorted((u["hex"], p["hex"]))) in self.entrances:
+                c, why = 1.0, None
             if c is None:
                 return self._v(False, f"illegal advance terrain: {why} [11.9/11.86]")
             units.append(u)
@@ -2860,6 +2958,8 @@ class SoJGame(GateGame):
                 return self._resolve_advance_verdict(side, action)
             if a == "resolve_esc_up":
                 return self._resolve_esc_up_verdict(side, action)
+            if a == "resolve_counterattack":
+                return self._resolve_counterattack_verdict(side, action)
             return self._v(False, f"a {self.s['pending']['kind']} pending must be resolved first")
         phase = self.s["phase"]
         if a == "deploy":
@@ -3371,6 +3471,19 @@ class SoJGame(GateGame):
             out = self._apply_errant(str(action["pid"]))
             self.s["pending"] = None
             return {"errant": out}
+        if a == "resolve_counterattack":
+            p = self.s["pending"]
+            self.s["pending"] = None
+            g = self.hex_name[p["gate"]]
+            if action.get("decline"):
+                return {"counterattack": "declined", "gate": g}
+            out = self._resolve_melee(
+                side, {"target": g,
+                       "attackers": [str(x) for x in action["attackers"]]},
+                verdict)
+            self.s["cc_hex"] = None
+            out["counterattack"] = g
+            return out
         if a == "end_phase":
             return self._advance_phase(action)
         raise AssertionError(f"apply fell through for {a!r}")
@@ -3516,6 +3629,10 @@ class SoJGame(GateGame):
 
     def _advance_phase(self, action=None):
         p = self.s["phase"]
+        if p.endswith("_melee"):
+            ca = self._arm_counterattack()
+            if ca:
+                return ca
         if p == "rom_melee" and not (action or {}).get("esc_up_done"):
             opts = self._esc_up_opts()
             if opts:
@@ -3546,6 +3663,7 @@ class SoJGame(GateGame):
         if p == "jud_melee":
             self.s["meleed"] = []
             self.s["melee_hexes"] = []
+            self.s["sortie"] = []
             for x in self.s["units"].values():
                 x.pop("mk", None)
             n = self._roman_builtup_count()
@@ -3567,6 +3685,7 @@ class SoJGame(GateGame):
             if p.endswith("_melee"):
                 self.s["meleed"] = []
                 self.s["melee_hexes"] = []
+                self.s["sortie"] = []
                 for x in self.s["units"].values():
                     x.pop("mk", None)
             self.s["phase"] = self.PHASES[i + 1]

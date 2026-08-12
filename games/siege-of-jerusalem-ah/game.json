@@ -164,6 +164,9 @@
    ],
    "strength_mods": [
     {"x": 0.5, "when": "attacking through Staircase hexside (total, either direction)", "cite": "[11.11-11.13]"},
+    {"x": 0.5, "when": "any melee attack out of a Breach hex (Ground/Built-up/formerly connected Elevated targets alike)", "cite": "[11.13]"},
+    {"x": 0.5, "when": "Gate occupants attacking Ground/Built-up through the Entrance hexside (Sortie, down the inherent Staircase) or a connected Breach", "cite": "[11.14]"},
+    {"x": 1.0, "when": "Sortie counterattack: bonus Melee vs the Gate at end of the Melee Phase, normal strength, Entrance hexside only, pushing units included", "cite": "[11.14, 11.2, 11.3]"},
     {"x": 0.5, "when": "attacking upslope through Crest hexside vs Ground-level defender", "cite": "[11.17]"},
     {"x": 2.0, "when": "flank attack: all six hexes around defender occupied by enemy/impassable/enemy-ZOC", "cite": "[11.85]"},
     {"x": 2.0, "when": "cavalry attacking both into and from Clear", "cite": "[11.88]"},

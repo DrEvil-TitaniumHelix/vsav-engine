@@ -1843,13 +1843,13 @@ def escalade_checks(g):
         jm["hex"] = None
         jd = take("judaean_militia", 1)[0]
         jd["hex"] = wall
-        tg.roll_die = lambda: 7
+        tg.roll_die = lambda: 8
         r = submit_ok(tg, "Rom", {"type": "melee", "target": N[wall],
                                   "attackers": [c3["pid"]]})
         del tg.roll_die
         det = r["result"]
         assert abs(det["att"] - 3.5) < 1e-9 and abs(det["def"] - 4.0) < 1e-9 \
-            and det["result"] == "E", det
+            and det["drm"] == -1 and det["result"] == "E", det
         assert jd["state"] == "eliminated"
         assert tg.s["pending"] and tg.s["pending"]["kind"] == "advance"
         submit_ok(tg, "Rom", {"type": "resolve_advance",
@@ -3150,6 +3150,383 @@ def advance_bonus_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def melee_completion_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_mc_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=61)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+        DIE = [1]
+        tg.roll_die = lambda: DIE[0]
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("up", None)
+
+        def reset():
+            tg.s["meleed"] = []
+            tg.s["melee_hexes"] = []
+            tg.s["cc_hex"] = None
+            tg.s["sortie"] = []
+            tg.s["pending"] = None
+            tg.s["turn"] = 1
+
+        def gate_pick():
+            for h in sorted(tg.hex_t0):
+                if tg.hex_t0[h] not in soj.GATES or h not in tg.playable:
+                    continue
+                for pr in tg.entrances:
+                    if h in pr:
+                        o = pr[0] if pr[1] == h else pr[1]
+                        if o in tg.playable and tg.hex_t0[o] == "clear" \
+                                and o in tg.outside \
+                                and not tg._occupants(o):
+                            return h, o
+            raise AssertionError("no gate/entrance geometry")
+
+        gh, out = gate_pick()
+        assert tg.s["control"][gh] == "Jud"
+
+        tg.s["phase"] = "jud_melee"
+        z = take("zealot", 1)[0]
+        z["hex"] = gh
+        r1 = take("roman_veteran", 1)[0]
+        r1["hex"] = out
+        bad_n = next((n for n in tg._nb(gh)
+                      if n in tg.playable and tg.hex_t(n) == "clear"
+                      and tuple(sorted((gh, n))) not in tg.entrances), None)
+        if bad_n is not None:
+            r2x = take("roman_recruit", 1)[0]
+            r2x["hex"] = bad_n
+            submit_no(tg, "Jud", {"type": "melee", "target": N[bad_n],
+                                  "attackers": [z["pid"]]}, "[8.91-8.93]")
+            park(r2x)
+        DIE[0] = 1
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[out],
+                                  "attackers": [z["pid"]]})
+        det = r["result"]
+        assert det["att"] == 3.5 and det["drm"] == -1 \
+            and det["sortie"] == [N[gh]], det
+        assert det["result"] == "-", det
+        assert tg.s["sortie"] == [{"g": gh, "h": out, "s": "Jud",
+                                   "used": False}]
+        r = submit_ok(tg, "Jud", {"type": "end_phase"})
+        assert r["result"].get("pending") == "counterattack" \
+            and tg.s["phase"] == "jud_melee", r["result"]
+        p = tg.s["pending"]
+        assert p["by"] == "Rom" and p["cands"] == [r1["pid"]] \
+            and p["gate"] == gh and p["hex"] == out, p
+        submit_no(tg, "Jud", {"type": "resolve_counterattack",
+                              "attackers": [z["pid"]]}, "chooses whether")
+        submit_no(tg, "Rom", {"type": "melee", "target": N[gh],
+                              "attackers": [r1["pid"]]},
+                  "counterattack pending")
+        submit_no(tg, "Rom", {"type": "resolve_counterattack",
+                              "attackers": [z["pid"]]}, "sortied hex")
+        submit_ok(tg, "Rom", {"type": "resolve_counterattack",
+                              "decline": True})
+        assert tg.s["pending"] is None
+        submit_ok(tg, "Jud", {"type": "end_phase"})
+        assert tg.s["phase"] == "rom_rally" and tg.s["sortie"] == []
+        print("sortie: entrance-hexside halving + counterattack window + "
+              "modal lock + decline-closes-gate OK [11.14]")
+
+        park(z, r1)
+        reset()
+        tg.s["phase"] = "jud_melee"
+        m1 = take("judaean_militia", 1)[0]
+        m1["hex"] = gh
+        rv = take("roman_line", 1)[0]
+        rv["hex"] = out
+        DIE[0] = 1
+        submit_ok(tg, "Jud", {"type": "melee", "target": N[out],
+                              "attackers": [m1["pid"]]})
+        submit_ok(tg, "Jud", {"type": "end_phase"})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "counterattack" \
+            and p["cands"] == [rv["pid"]], p
+        DIE[0] = 6
+        r = submit_ok(tg, "Rom", {"type": "resolve_counterattack",
+                                  "attackers": [rv["pid"]]})
+        det = r["result"]
+        assert det["counterattack"] == N[gh]
+        assert det["att"] == 6.0 and det["def"] == 4.0 \
+            and det["drm"] == 0, det
+        assert det["result"] == "E", det
+        assert tg.s["cc_hex"] is None
+        assert m1["state"] == "eliminated"
+        p = tg.s["pending"]
+        assert p and p["kind"] == "advance" and p["pids"] == [rv["pid"]], p
+        submit_ok(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [rv["pid"]]})
+        assert rv["hex"] == gh and tg.s["control"][gh] == "Rom"
+        submit_ok(tg, "Jud", {"type": "end_phase"})
+        assert tg.s["phase"] == "rom_rally"
+        print("counterattack: normal strength across the Entrance, gate x2 "
+              "defense, -1 forfeit, E + advance = enemy occupation of the "
+              "Gate OK [11.14/11.2/11.7]")
+        park(rv)
+        tg.s["control"][gh] = "Jud"
+
+        reset()
+        tg.s["phase"] = "rom_melee"
+        w, gnd = next(
+            (wx, n) for wx in sorted(tg.hex_t0)
+            if tg.hex_t0[wx] in ("wall", "north_wall") and wx in tg.playable
+            and not tg._occupants(wx)
+            for n in tg._nb(wx)
+            if n in tg.playable and tg.hex_t0[n] == "clear"
+            and n in tg.outside and not tg._occupants(n))
+        mj = take("judaean_regular", 1)[0]
+        mj["hex"] = w
+        b1, c1 = take("roman_veteran", 2)
+        b1["hex"] = c1["hex"] = gnd
+        c1["up"] = True
+        tg.s["esc"].append({"hex": gnd, "base": b1["pid"], "used": []})
+        DIE[0] = 1
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[w],
+                                  "attackers": [c1["pid"]]})
+        det = r["result"]
+        assert det["att"] == 3.5 and det["def"] == 10.0 \
+            and det["drm"] == -1, det
+        reset()
+        w2 = next(n for n in tg._nb(w)
+                  if n in tg.playable and tg.hex_t0[n] in soj.ELEVATED
+                  and not tg._occupants(n))
+        rr = take("roman_recruit", 1)[0]
+        rr["hex"] = w2
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[w],
+                                  "attackers": [rr["pid"]]})
+        assert r["result"]["drm"] == 0 and r["result"]["att"] == 5.0, \
+            r["result"]
+        reset()
+        e_, c_ = next(
+            ((a, b) for pr in sorted(tg.stairs)
+             for a, b in (pr, pr[::-1])
+             if tg.hex_t0[a] in soj.ELEVATED and a in tg.playable
+             and not tg._occupants(a)
+             and tg.hex_t0[b] == "clear" and b in tg.playable
+             and not tg._occupants(b)))
+        mj2 = take("judaean_regular", 1)[0]
+        mj2["hex"] = e_
+        ra = take("roman_veteran", 1)[0]
+        ra["hex"] = c_
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[e_],
+                                  "attackers": [ra["pid"]]})
+        det = r["result"]
+        assert det["att"] == 3.5 and det["drm"] == 0, det
+        tg.s["esc"] = []
+        park(mj, b1, c1, rr, mj2, ra)
+        print("elevated defense drm: -1 vs escalade assault; forfeit from "
+              "connected Elevated and from Staircase OK [11.7/11.18]")
+
+        reset()
+        tg.s["phase"] = "rom_melee"
+        hh = next(h for h in sorted(tg.hex_t0)
+                  if h in tg.playable and h in tg.outside
+                  and tg.hex_t0[h] == "clear" and len(tg._nb(h)) == 6
+                  and not tg._occupants(h)
+                  and all(n in tg.playable and tg.hex_t0[n] == "clear"
+                          and not tg._occupants(n) for n in tg._nb(h)))
+        nn = tg._nb(hh)[0]
+        hv1 = take("roman_veteran", 1)[0]
+        hv1["hex"] = hh
+        fd = take("foederatti", 1)[0]
+        fd["hex"] = hh
+        mt = take("judaean_militia", 1)[0]
+        mt["hex"] = nn
+        submit_no(tg, "Rom", {"type": "melee", "target": N[nn],
+                              "attackers": [hv1["pid"]]},
+                  "Foederatti or Syrian Archers")
+        submit_no(tg, "Rom", {"type": "melee", "target": N[nn],
+                              "attackers": [fd["pid"]]},
+                  "Foederatti or Syrian Archers")
+        tg.s["phase"] = "rom_fire"
+        tg.s["seg"] = "Rom"
+        submit_no(tg, "Rom", {"type": "fire", "firers": [fd["pid"]],
+                              "target": N[nn]},
+                  "may not Melee or fire")
+        sy = take("syrian_archers", 1)[0]
+        sy["hex"] = hh
+        fd["hex"] = None
+        submit_no(tg, "Rom", {"type": "fire", "firers": [sy["pid"]],
+                              "target": N[nn]},
+                  "may not Melee or fire")
+        sy["hex"] = None
+        tg.s["phase"] = "rom_melee"
+        assert tg.propose("Rom", {"type": "melee", "target": N[nn],
+                                  "attackers": [hv1["pid"]]})["legal"]
+        tw = take("tower", 1)[0]
+        hh2 = next(n for n in tg._nb(nn)
+                   if n != hh and n in tg.playable
+                   and tg.hex_t0[n] == "clear" and not tg._occupants(n))
+        tw["hex"] = hh2
+        tw["facing"] = 0
+        hv2 = take("roman_line", 1)[0]
+        hv2["hex"] = hh2
+        fd["hex"] = hh2
+        fd["up"] = True
+        tg.s["phase"] = "rom_fire"
+        tg.s["seg"] = "Rom"
+        tg.s["fired"] = []
+        tg.s["fired_hexes"] = []
+        DIE[0] = 1
+        submit_ok(tg, "Rom", {"type": "fire", "firers": [fd["pid"]],
+                              "target": N[nn]})
+        drain_pendings(tg)
+        park(hv1, fd, mt, sy, tw, hv2)
+        print("mixed HI+Foederatti/Syrian stacks combat-inert both ways; "
+              "tower rider at another elevation exempt OK [11.1/Q&A 11.1]")
+
+        reset()
+        tg.s["phase"] = "jud_melee"
+        w3, w4 = next(
+            (a, b) for a in sorted(tg.hex_t0)
+            if tg.hex_t0[a] in soj.ELEVATED and a in tg.playable
+            and not tg._occupants(a)
+            for b in tg._nb(a)
+            if b in tg.playable and tg.hex_t0[b] in soj.ELEVATED
+            and not tg._occupants(b))
+        cd = take("cauldron", 1)[0]
+        cd["hex"] = w3
+        rb = take("roman_recruit", 1)[0]
+        rb["hex"] = w4
+        DIE[0] = 1
+        r = submit_ok(tg, "Jud", {"type": "melee", "target": N[w4],
+                                  "attackers": [cd["pid"]]})
+        det = r["result"]
+        assert det["att"] == 1.0 and det["def"] == 10.0 \
+            and det["drm"] == -7, det
+        reset()
+        rg = take("roman_recruit", 1)[0]
+        gnd3 = next((n for n in tg._nb(w3)
+                     if n in tg.playable and tg.hex_t(n) == "clear"
+                     and not tg._occupants(n)), None)
+        if gnd3 is not None:
+            rg["hex"] = gnd3
+            submit_no(tg, "Jud", {"type": "melee", "target": N[gnd3],
+                                  "attackers": [cd["pid"]]},
+                      "except Cauldrons attacking connected Elevated")
+        park(cd, rb, rg)
+        print("cauldron melee: connected-Elevated attack legal at 1.0, "
+              "ground target refused OK [11.1]")
+
+        reset()
+        tg.s["phase"] = "rom_melee"
+        hA = hh
+        m1a = take("judaean_militia", 1)[0]
+        m1a["hex"] = hA
+        H2 = min((n for n in tg._nb(hA)), key=lambda h2:
+                 tg._refuge_dist("Jud", h2))
+        m2a = take("judaean_militia", 1)[0]
+        m2a["hex"] = H2
+        rA = take("roman_veteran", 1)[0]
+        rA["hex"] = next(n for n in tg._nb(hA)
+                         if n != H2 and not tg._occupants(n)
+                         and tg._dist(n, H2) > 1)
+        DIE[0] = 2
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[hA],
+                                  "attackers": [rA["pid"]]})
+        assert r["result"]["result"] == "B", r["result"]
+        if tg.s["pending"]["kind"] == "loss":
+            submit_ok(tg, "Jud", {"type": "resolve_loss", "picks": []})
+        p = tg.s["pending"]
+        assert p and p["kind"] == "retreat" and p["pids"] == [m1a["pid"]], p
+        submit_ok(tg, "Jud", {"type": "resolve_retreat",
+                              "paths": {m1a["pid"]: [N[hA], N[H2]]}})
+        assert m1a["hex"] == H2 and m1a["state"] == "fresh"
+        if tg.s["pending"] and tg.s["pending"]["kind"] == "advance":
+            submit_ok(tg, "Rom", {"type": "resolve_advance", "pids": []})
+        rB = take("roman_veteran", 1)[0]
+        rB["hex"] = next(n for n in tg._nb(H2)
+                         if not tg._occupants(n) and tg._dist(n, hA) > 1
+                         and tg.hex_t(n) == "clear" and n in tg.playable)
+        DIE[0] = 1
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[H2],
+                                  "attackers": [rB["pid"]]})
+        assert r["result"]["def"] == 4.0, r["result"]
+        park(m1a, m2a, rA, rB)
+        print("Q&A 11.81: a unit that retreated into a hex defends it in a "
+              "later melee this phase OK")
+
+        reset()
+        tg.s["phase"] = "rom_melee"
+        hD = hh
+        m_f = take("judaean_militia", 1)[0]
+        m_f["hex"] = hD
+        m_d = take("judaean_militia", 1)[0]
+        m_d["hex"] = hD
+        m_d["state"] = "disrupted"
+        ring = tg._nb(hD)
+        rc1, rc2 = take("roman_veteran", 2)
+        rc1["hex"] = ring[0]
+        rc2["hex"] = ring[4]
+        DIE[0] = 5
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[hD],
+                                  "attackers": [rc1["pid"], rc2["pid"]]})
+        det = r["result"]
+        assert det["result"] == "DE" and det["drm"] == 0, det
+        p = tg.s["pending"]
+        assert p and p["kind"] == "loss" and p["letters"] == ["D", "E"], p
+        submit_ok(tg, "Jud", {"type": "resolve_loss",
+                              "picks": [{"pid": m_f["pid"]},
+                                        {"pid": m_d["pid"]}]})
+        assert m_f["state"] == "disrupted" \
+            and m_d["state"] == "eliminated", (m_f["state"], m_d["state"])
+        drain_pendings(tg)
+        park(m_f, m_d, rc1, rc2)
+        print("Q&A 14.3: DE split - eliminate the Disrupted unit, disrupt "
+              "the Fresh one OK")
+
+        reset()
+        tg.s["phase"] = "rom_melee"
+        wb, tb = next(
+            (a, b) for a in sorted(tg.hex_t0)
+            if tg.hex_t0[a] in ("wall", "north_wall") and a in tg.playable
+            and not tg._occupants(a)
+            for b in tg._nb(a)
+            if b in tg.playable and tg.hex_t0[b] == "clear"
+            and not tg._occupants(b))
+        tg.s["breach"][wb] = 99
+        assert tg.hex_t(wb) == "breach"
+        rb2 = take("roman_veteran", 1)[0]
+        rb2["hex"] = wb
+        mb = take("judaean_militia", 1)[0]
+        mb["hex"] = tb
+        DIE[0] = 1
+        r = submit_ok(tg, "Rom", {"type": "melee", "target": N[tb],
+                                  "attackers": [rb2["pid"]]})
+        assert r["result"]["att"] == 3.5, r["result"]
+        del tg.s["breach"][wb]
+        park(rb2, mb)
+        print("11.13: ALL melee out of a Breach is at half strength "
+              "(Ground/Built-up targets included) OK")
+
+        assert "sortie" in tg.HASH_KEYS
+        hh0 = tg.state_hash()
+        tg.s["sortie"].append({"g": gh, "h": out, "s": "Jud",
+                               "used": False})
+        assert tg.state_hash() != hh0, "sortie must move the state hash"
+        tg.s["sortie"].pop()
+        assert tg.state_hash() == hh0
+        print("melee completion checks: PASS (N7/N8/N9/N22/N24 + 11.13 "
+              "breach-out halving)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_cbt_")
     try:
@@ -3171,6 +3548,7 @@ def main():
         testudo_checks(g)
         tower_checks(g)
         advance_bonus_checks(g)
+        melee_completion_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)
@@ -3343,6 +3721,9 @@ def drain_pendings(tg):
         p = tg.s["pending"]
         if p["kind"] == "advance":
             submit_ok(tg, p["by"], {"type": "resolve_advance", "pids": []})
+        elif p["kind"] == "counterattack":
+            submit_ok(tg, p["by"], {"type": "resolve_counterattack",
+                                    "decline": True})
         elif p["kind"] == "esc_up":
             submit_ok(tg, p["by"], {"type": "resolve_esc_up", "moves": {}})
         elif p["kind"] == "loss":
