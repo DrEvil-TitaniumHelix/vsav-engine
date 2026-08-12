@@ -140,6 +140,46 @@ def bound_and_builtup_checks(tg):
           f"{len(tg.playable)} playable, Old City off-battlefield)")
 
 
+def setup_option_checks(tg):
+    """N13 [3.4]: Roman Artillery may set up either Fresh or Disrupted
+    (movable); no other unit, and no other side, may choose a setup status.
+    N17 [3.3]: Gallus has no off-board Legion setup - every Roman unit deploys
+    on-board and the only reinforcements are the Judaean South Wall force."""
+    deploy_jud(tg)
+    assert tg.s["phase"] == "deploy_rom"
+    arts = [u for u in tg.s["units"].values()
+            if u["side"] == "Rom" and tg.utype(u)["cls"] == "artillery"]
+    assert len(arts) >= 3, len(arts)
+    heavy = next(u for u in tg.s["units"].values()
+                 if u["side"] == "Rom" and tg.utype(u)["cls"] == "heavy"
+                 and u["hex"] is None)
+    ground = [h for h in sorted(tg.rom_zone)
+              if tg.hex_t(h) not in soj.ELEVATED]
+
+    submit_ok(tg, "Rom", {"type": "deploy", "pid": arts[0]["pid"],
+                          "hex": tg.hex_name[ground[0]], "status": "disrupted"})
+    assert arts[0]["state"] == "disrupted", arts[0]
+    submit_ok(tg, "Rom", {"type": "deploy", "pid": arts[1]["pid"],
+                          "hex": tg.hex_name[ground[2]], "status": "fresh"})
+    assert arts[1]["state"] == "fresh", arts[1]
+    submit_ok(tg, "Rom", {"type": "deploy", "pid": arts[2]["pid"],
+                          "hex": tg.hex_name[ground[4]]})
+    assert arts[2]["state"] == "fresh", arts[2]        # default is Fresh
+
+    submit_no(tg, "Rom", {"type": "deploy", "pid": heavy["pid"],
+                          "hex": tg.hex_name[ground[6]], "status": "disrupted"},
+              "only Roman Artillery")
+    submit_no(tg, "Rom", {"type": "deploy", "pid": arts[3]["pid"],
+                          "hex": tg.hex_name[ground[6]], "status": "routed"},
+              "Fresh or Disrupted")
+
+    dep = tg.scenario["deployment"]
+    assert "offboard" not in dep and "legions" not in dep, dep.keys()
+    assert all(p["side"] == "Jud" for p in tg.scenario["reinforcement_pool"])
+    print("setup-option checks: PASS (N13 Artillery Fresh/Disrupted; N17 "
+          "no off-board Legion setup in Gallus - Romans all on-board)")
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_dep_")
     try:
@@ -150,6 +190,11 @@ def main():
         assert tg.tier == 2 and tg.tier_earned == 2, \
             f"validated combat => tier 2 earned (got {tg.tier_earned})"
         assert tg.s["phase"] == "deploy_jud"
+
+        # N13/N17 setup options on a throwaway (its own log, not replayed here)
+        stg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                          tempfile.mkdtemp(prefix="soj_setup_"), seed=7)
+        setup_option_checks(stg)
 
         juds = [u for u in tg.s["units"].values() if u["side"] == "Jud"]
         roms = [u for u in tg.s["units"].values() if u["side"] == "Rom"]
