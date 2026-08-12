@@ -1540,12 +1540,14 @@ def escalade_checks(g):
                   "filled to capacity")
         submit_no(tg, "Rom", {"type": "escalade", "op": "remove",
                               "pid": v1["pid"]}, "on top")
+        v2.pop("m0", None)
         submit_ok(tg, "Rom", {"type": "move", "pid": v2["pid"],
                               "path": [N[A], N[wall]]})
         assert v2["hex"] == wall and not v2.get("up") \
             and abs(v2["mv"] - 7.0) < 1e-9, \
             "scaling an adjacent Elevated hex costs a flat 2 MF [8.7]"
         assert tg.s["control"][wall] == "Rom"
+        v3.pop("m0", None)
         submit_ok(tg, "Rom", {"type": "move", "pid": v3["pid"],
                               "path": [N[A], N[C]]})
         assert not v3.get("up")

@@ -71,7 +71,7 @@ class SoJGame(GateGame):
                  "control", "pool", "entry_queue", "deploy_done", "breach",
                  "fired", "fired_hexes", "meleed", "pending", "cc_hex",
                  "escaped", "markers", "melee_hexes", "esc", "testudo",
-                 "pmoved", "incc")
+                 "pmoved", "incc", "lastm")
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
@@ -92,6 +92,7 @@ class SoJGame(GateGame):
         self.s.setdefault("esc", [])
         self.s.setdefault("testudo", [])
         self.s.setdefault("pmoved", False)
+        self.s.setdefault("lastm", [])
         if "incc" not in self.s:
             self._cc_snapshot()
 
@@ -329,7 +330,8 @@ class SoJGame(GateGame):
             "breach": {}, "fired": [], "fired_hexes": [], "meleed": [],
             "pending": None, "cc_hex": None, "escaped": [], "markers": [],
             "melee_hexes": [], "esc": [], "testudo": [],
-            "pmoved": False, "incc": [], "winner": None, "over": False,
+            "pmoved": False, "incc": [], "lastm": [],
+            "winner": None, "over": False,
         }
         self._reset_log()
         self._log({"event": "init", "mode": "soj",
@@ -543,6 +545,18 @@ class SoJGame(GateGame):
         free_cls = {"artillery", "cauldron", "hq", "siege_engine"}
         return sum(1 for u in occ if self.utype(u)["cls"] not in free_cls)
 
+    def _full_to_mph(self, u, h, side):
+        occ = [o for o in self._occupants(h) if o["pid"] != u["pid"]]
+        cls = self.utype(u)["cls"]
+        if cls == "hq":
+            return any(self.utype(o)["cls"] == "hq" for o in occ)
+        if cls == "cauldron":
+            art = [o for o in occ
+                   if self.utype(o)["cls"] in ("artillery", "cauldron")]
+            return (any(self.utype(o)["cls"] == "cauldron" for o in art)
+                    or len(art) >= (2 if self.hex_t(h) == "fortress" else 1))
+        return self._combat_count(occ) >= self._stack_limit(h, side)
+
     def _stack_check(self, h, side, adding, skip=()):
         add = adding if isinstance(adding, list) else [adding]
         occ = [o for o in self._occupants(h) if o["pid"] not in skip] + add
@@ -557,6 +571,8 @@ class SoJGame(GateGame):
             cap = 2 if (cls == "artillery" and self.hex_t(h) == "fortress") else 1
             if n > cap:
                 return f"max one {cls.replace('_', ' ')} per hex [6.3/6.4/@]"
+        if sum(1 for u in occ if self.utype(u)["cls"] == "cauldron") > 1:
+            return "a Fortress may contain two Artillery provided one and only one is a Cauldron [6.3]"
         has_cav = any(self.utype(u)["cls"] == "cavalry" for u in occ)
         has_inf = any(self.utype(u)["cls"] in ("heavy", "light") for u in occ)
         if has_cav and has_inf:
@@ -749,10 +765,14 @@ class SoJGame(GateGame):
         if cls == "cauldron":
             if not both_elev:
                 return None, "Cauldrons move only between connected Elevated hexes [8.5/TEC**]"
-            other_art = any(self.utype(o)["cls"] in ("artillery", "cauldron")
-                            for o in self._occupants(to))
-            if other_art and t_to != "fortress":
-                return None, "Cauldron may not join Artillery outside a Fortress [6.3/8.5]"
+            occ_art = [o for o in self._occupants(to)
+                       if self.utype(o)["cls"] in ("artillery", "cauldron")]
+            if occ_art and (
+                    t_to != "fortress"
+                    or any(self.utype(o)["cls"] == "cauldron"
+                           for o in occ_art)
+                    or len(occ_art) >= 2):
+                return None, "a Cauldron may enter a hex containing Artillery only if it is a Fortress not already containing a Cauldron [6.3/8.5]"
             return 0.5, None
 
         if t_to in ELEVATED and u.get("up") and cls in ("heavy", "light") \
@@ -761,12 +781,16 @@ class SoJGame(GateGame):
             return 2.0, None
 
         if t_to in ELEVATED:
-            if cls == "cavalry":
-                return None, "Cavalry may never enter Elevated hexes [6.2]"
-            if cls == "siege_engine":
-                return None, "Siege Engines may not enter Elevated hexes [6.4]"
-            if cls == "artillery":
-                return None, "Roman Artillery on the ground may not enter Elevated hexes [8.4]"
+            if cls in ("cavalry", "artillery", "siege_engine"):
+                if t_to in GATES and key in self.entrances \
+                        and self.s["control"].get(to) == side \
+                        and (cls != "siege_engine" or u["type"] == "ram"):
+                    return 1.0, None
+                if cls == "cavalry":
+                    return None, "Cavalry may never enter Elevated hexes - they may only pass through a Gate controlled by other Roman units, via its Entrance hexsides [6.2]"
+                if cls == "siege_engine":
+                    return None, "Siege Engines may not enter Elevated hexes - only a Ram may pass through a Gate occupied or controlled by the Romans [6.4]"
+                return None, "Roman Artillery on the ground may not enter Elevated hexes - it may only pass through a controlled Gate via its Entrance hexsides [8.4]"
             if both_elev:
                 half = 1.0 if self._half_damaged(to) else 0.5   # [12.4]
                 return half, None
@@ -907,6 +931,8 @@ class SoJGame(GateGame):
                 return self._v(False, f"Routed units must complete their mandatory move towards Refuge before Panicked units move [4.13/8.1/17.21]: {lag[0]}")
         elif self.s.get("pmoved"):
             return self._v(False, "Panicked units move only after all other units have finished movement - no further non-Panicked moves this MPh [8.1/17.21]")
+        if u.get("m0") and u["pid"] not in (self.s.get("lastm") or []):
+            return self._v(False, "a unit's movement is completed for the current MPh as soon as another unit begins to move [8.2]")
         if any(e["base"] == u["pid"] for e in self.s["esc"]):
             return self._v(False, "a unit beneath an Escalade may not move - remove it first (4 MF) [8.7]")
         t0 = self._tst_at(u["hex"], broken=False) \
@@ -1034,8 +1060,28 @@ class SoJGame(GateGame):
                 cat = "siege_engine" if cls == "siege_engine" else "artillery"
                 if self._markers_at(h, cat):
                     return self._v(False, "a Wreck/Elim marker blocks similar units from moving into/through that hex [11.4/13.21/14.5]")
-            if cls == "siege_engine" and self._occupants(h):
+            if cls == "siege_engine" and self._occupants(h) and not (
+                    u["type"] == "ram" and self.hex_t(h) in GATES):
                 return self._v(False, "a Siege Engine may not enter a hex occupied by any unit [6.4]")
+            fro = [o for o in self._occupants(h)
+                   if o["side"] == side and o["pid"] != u["pid"]]
+            if cls == "cavalry" and self.hex_t(h) not in GATES and any(
+                    self.utype(o)["cls"] not in ("hq", "cavalry")
+                    for o in fro):
+                return self._v(False, "Cavalry may never enter a hex occupied by any other type of unit except a HQ [6.2]")
+            if cls in ("heavy", "light") and any(
+                    self.utype(o)["cls"] == "cavalry" for o in fro):
+                return self._v(False, "Infantry may not enter a hex containing Cavalry [6.1]")
+            if cls == "artillery":
+                if any(self.utype(o)["cls"] in ("siege_engine", "cavalry")
+                       for o in fro):
+                    return self._v(False, "Artillery may not enter a hex occupied by a Siege Engine, Testudo, Escalade, Cavalry, or other Artillery [6.3]")
+                art_in = [o for o in fro if self.utype(o)["cls"]
+                          in ("artillery", "cauldron")]
+                if art_in and not (
+                        self.hex_t(h) == "fortress" and len(art_in) == 1
+                        and self.utype(art_in[0])["cls"] == "cauldron"):
+                    return self._v(False, "Artillery may not enter a hex occupied by other Artillery - a Fortress may pair two only with a single Cauldron [6.3]")
             sh = self._se_at(h)
             if sh is not None and sh["side"] == side:
                 if cls not in ("heavy", "light", "hq"):
@@ -1113,11 +1159,10 @@ class SoJGame(GateGame):
                 return self._v(False, "out of Command Control: may not move adjacent to an enemy unit on an Elevated hex [5.3]")
             if i == 1 and started_in_zoc and not soft and h in zoc:
                 return self._v(False, "leaving a hard ZOC: the first hex entered must be free of enemy ZOC [7.311]")
-            if soft and prev in zoc:
-                cost += 3.0                   # [7.32/7.4]
-            occ = self._occupants(h)
-            if self._combat_count(occ) >= self._stack_limit(h, side) \
-                    and i < len(path) - 1:
+            if soft and prev in zoc \
+                    and not (i == 1 and started_in_zoc and h not in zoc):
+                cost += 3.0                   # [7.32/7.4/7.321]
+            if self._full_to_mph(u, h, side) and i < len(path) - 1:
                 cost *= 2.0                   # [8.13]
             # leaving a hex with a Panicked friend doubles the next cost [17.21]
             if any(o["side"] == side and o["state"] == "panicked"
@@ -1130,6 +1175,10 @@ class SoJGame(GateGame):
                 return self._v(False, "must stop on entering an enemy ZOC [7.31]")
             prev = h
         dest = path[-1]
+        if self.hex_t(dest) in GATES and (
+                cls in ("cavalry", "artillery")
+                or (cls == "siege_engine" and u["type"] == "ram")):
+            return self._v(False, "may pass through a Gate but may not stop there [6.2/6.4/8.4]")
         if self.hex_t(dest) in GATES and self.hex_t(path[-2]) not in ELEVATED \
                 and tuple(sorted((path[-2], dest))) in self.entrances:
             spent += 2.0
@@ -1162,6 +1211,10 @@ class SoJGame(GateGame):
         if len(path) < 2:
             return self._v(False, "empty move")
         members = self._occupants(t["hex"])
+        last = self.s.get("lastm") or []
+        if any(m.get("m0") for m in members) \
+                and not any(m["pid"] in last for m in members):
+            return self._v(False, "a unit's movement is completed for the current MPh as soon as another unit begins to move [8.2]")
         budget = 4.0 - t.get("mv", 0.0)
         for m in members:
             if self._fresh(m):
@@ -3165,6 +3218,8 @@ class SoJGame(GateGame):
                     m = self.s["units"][pid_]
                     m["hex"] = dest
                     m["mv"] = m.get("mv", 0.0) + verdict["spent"]
+                    m["m0"] = True
+                self.s["lastm"] = sorted(verdict["members"])
                 t["hex"] = dest
                 t["mv"] = t.get("mv", 0.0) + verdict["spent"]
                 for h in path[1:]:
@@ -3180,6 +3235,8 @@ class SoJGame(GateGame):
             u["hex"] = path[-1]
             u["mv"] = u.get("mv", 0.0) + verdict.get("spent", 0.0) \
                 + verdict.get("forfeit", 0.0)
+            u["m0"] = True
+            self.s["lastm"] = [u["pid"]] + list(verdict.get("crew") or [])
             tj = self._tst_at(path[-1], broken=False)
             if tj is not None and not tj.get("mv"):
                 tj["hold"] = True
@@ -3214,8 +3271,10 @@ class SoJGame(GateGame):
                 for o in rid:
                     o["hex"] = path[-1]
                     o["mv"] = o.get("mv", 0.0) + 2.0 * spent
+                    o["m0"] = True
                 if rid:
                     out["riders"] = sorted(o["pid"] for o in rid)
+                    self.s["lastm"] += [o["pid"] for o in rid]
             if was_up and se0 is not None and len(path) > 1 \
                     and self.hex_t(path[1]) in ELEVATED:
                 se0["lk"] = True
@@ -3535,6 +3594,8 @@ class SoJGame(GateGame):
             u.pop("tmf", None)
             u.pop("lk", None)
             u.pop("fin", None)
+            u.pop("m0", None)
+        self.s["lastm"] = []
         for e in self.s.get("esc", []):
             e["used"] = []
         for t in self.s.get("testudo", []):

@@ -201,6 +201,9 @@ def main():
         # ---------------- F. Command Control exact tracing [5.1/5.2] - B18
         cc_trace_checks(g)
 
+        # ---------------- G. MPh doors: 8.2/7.321/8.13/gates/6.x - Bite 21
+        mph_door_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -974,6 +977,265 @@ def cc_trace_checks(g):
               "([5.3] refusal witnessed), both re-determined at the next "
               "phase OK [5.1/5.3]")
         print("cc trace checks: PASS (B18 5.1/5.2)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def mph_door_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_mdoor_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=37)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+        gal = next(u for u in U.values() if u["type"] == "gallus")
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def pocket(avoid=()):
+            return next(h for h in sorted(tg.hex_t0)
+                        if clear1(h)
+                        and all(clear1(n) for n in tg._nb(h))
+                        and all(clear1(m) for n in tg._nb(h)
+                                for m in tg._nb(n))
+                        and all(tg._dist(h, a) > 6 for a in avoid))
+
+        def mph(phase):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("up", None)
+
+        # ---- 8.2 movement finality [M.21/N11]
+        h0 = pocket()
+        h1 = pocket(avoid=(h0,))
+        v1, v2 = take("roman_veteran", 2)
+        v1["hex"], v2["hex"] = h0, h1
+        mph("rom_move")
+        a0 = next(n for n in tg._nb(h0) if clear1(n))
+        ok_move(tg, "Rom", v1["pid"], [N[h0], N[a0]])
+        b0 = next(n for n in tg._nb(a0) if clear1(n) and n != h0)
+        ok_move(tg, "Rom", v1["pid"], [N[a0], N[b0]])
+        a1 = next(n for n in tg._nb(h1) if clear1(n))
+        ok_move(tg, "Rom", v2["pid"], [N[h1], N[a1]])
+        no_move(tg, "Rom", v1["pid"], [N[b0], N[a0]], "[8.2]")
+        b1 = next(n for n in tg._nb(a1) if clear1(n) and n != h1)
+        ok_move(tg, "Rom", v2["pid"], [N[a1], N[b1]])
+        mph("rom_move")
+        ok_move(tg, "Rom", v1["pid"], [N[b0], N[a0]])
+        print("mph doors: a unit moves in multiple legs until another "
+              "begins, then its movement is completed; cleared at the "
+              "phase boundary OK [8.2]")
+        park(v1, v2)
+
+        # ---- 7.321 free soft-ZOC first-step exit [M.10/N6]
+        h2 = pocket(avoid=(h0, h1))
+        cav = take("roman_cavalry", 1)[0]
+        z1 = take("zealot", 1)[0]
+        cav["hex"] = h2
+        zn = next(n for n in tg._nb(h2) if clear1(n))
+        z1["hex"] = zn
+        gal["hex"] = next(n for n in tg._nb(h2)
+                          if clear1(n) and n not in tg._nb(zn))
+        mph("rom_move")
+        zoc = tg._zoc_map("Jud")
+        assert h2 in zoc
+        free = next(n for n in tg._nb(h2)
+                    if clear1(n) and n not in zoc)
+        both = next(n for n in tg._nb(h2)
+                    if n in tg._nb(zn) and clear1(n))
+        v = tg._move_verdict("Rom", cav, [h2, free])
+        assert v["legal"] and abs(v["spent"] - 1.0) < 1e-9, v
+        v = tg._move_verdict("Rom", cav, [h2, both])
+        assert v["legal"] and abs(v["spent"] - 4.0) < 1e-9, v
+        cav["hex"] = free
+        mph("rom_move")
+        out2 = next(n for n in tg._nb(h2)
+                    if clear1(n) and n not in zoc and n != free)
+        v = tg._move_verdict("Rom", cav, [free, h2, out2])
+        assert v["legal"] and abs(v["spent"] - 5.0) < 1e-9, v
+        print("mph doors: soft-ZOC exit is FREE when the first hex entered "
+              "is ZOC-free; +3 ZOC-to-ZOC and +3 on later exits stand "
+              "OK [7.321/7.32]")
+        park(cav, z1, gal)
+
+        # ---- 8.13 fully-stacked carve-out [M.20/N20]
+        h3 = pocket(avoid=(h0, h1, h2))
+        m1, m2, m3 = take("judaean_militia", 3)
+        jh1 = take("judaean_leader", 2)
+        m1["hex"] = m2["hex"] = h3
+        s3 = next(n for n in tg._nb(h3) if clear1(n))
+        t3 = next(n for n in tg._nb(h3) if clear1(n) and n != s3)
+        jh1[0]["hex"] = s3
+        mph("jud_move")
+        assert tg._stack_limit(h3, "Jud") == 2
+        v = tg._move_verdict("Jud", jh1[0], [s3, h3, t3])
+        assert v["legal"] and abs(v["spent"] - 2.0) < 1e-9, v
+        m3["hex"] = s3
+        v = tg._move_verdict("Jud", m3, [s3, h3, t3])
+        assert v["legal"] and abs(v["spent"] - 3.0) < 1e-9, v
+        jh1[1]["hex"] = h3
+        v = tg._move_verdict("Jud", jh1[0], [s3, h3, t3])
+        assert v["legal"] and abs(v["spent"] - 3.0) < 1e-9, v
+        print("mph doors: a combat-full hex is not fully stacked to an "
+              "entering HQ (no transit doubling) until its own slot is "
+              "taken; other entrants still pay double OK [8.13]")
+        park(m1, m2, m3, *jh1)
+
+        # ---- 6.3 one-Cauldron doors
+        fort = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "fortress" and h in tg.playable
+                    and not tg._occupants(h)
+                    and any(tg.hex_t0[n] in soj.ELEVATED
+                            and n in tg.playable and not tg._occupants(n)
+                            for n in tg._nb(h)))
+        e1 = next(n for n in tg._nb(fort)
+                  if tg.hex_t0[n] in soj.ELEVATED and n in tg.playable
+                  and not tg._occupants(n))
+        c1, c2 = take("cauldron", 2)
+        c1["hex"], c2["hex"] = fort, e1
+        mph("jud_move")
+        no_move(tg, "Jud", c2["pid"], [N[e1], N[fort]],
+                "not already containing a Cauldron")
+        bad = tg._stack_check(fort, "Jud", c2)
+        assert bad and "only one is a Cauldron" in bad, bad
+        print("mph doors: a Cauldron may not enter (nor stack in) a "
+              "Fortress already containing a Cauldron OK [6.3]")
+        park(c1, c2)
+
+        # ---- N16: Cavalry/Artillery/Ram pass through controlled Gates
+        gate = e_in = e_out = None
+        for G in sorted(tg.hex_t0):
+            if tg.hex_t0[G] not in soj.GATES or G not in tg.playable:
+                continue
+            gr = [x for p in tg.entrances if G in p
+                  for x in p if x != G and x in tg.playable
+                  and tg.hex_t0[x] == "clear" and not tg._occupants(x)]
+            if len(gr) >= 2:
+                gate, e_in, e_out = G, gr[0], gr[1]
+                break
+        assert gate, "no gate with two clear entrance-side ground hexes"
+        tg.s["control"][gate] = "Rom"
+        cav2 = take("roman_cavalry", 1)[0]
+        cav2["hex"] = e_in
+        mph("rom_move")
+        no_move(tg, "Rom", cav2["pid"], [N[e_in], N[gate]],
+                "may not stop there")
+        ok_move(tg, "Rom", cav2["pid"], [N[e_in], N[gate], N[e_out]])
+        assert cav2["hex"] == e_out
+        park(cav2)
+        tg.s["control"][gate] = "Jud"
+        cav3 = take("roman_cavalry", 1)[0]
+        cav3["hex"] = e_in
+        mph("rom_move")
+        no_move(tg, "Rom", cav3["pid"], [N[e_in], N[gate], N[e_out]],
+                "[6.2]")
+        park(cav3)
+        tg.s["control"][gate] = "Rom"
+        art = take("roman_ballista", 1)[0]
+        art["hex"], art["state"] = e_in, "disrupted"
+        mph("rom_move")
+        no_move(tg, "Rom", art["pid"], [N[e_in], N[gate]],
+                "may not stop there")
+        ok_move(tg, "Rom", art["pid"], [N[e_in], N[gate], N[e_out]])
+        park(art)
+        ram = take("ram", 1)[0]
+        cr1, cr2 = take("roman_veteran", 2)
+        ram["hex"] = cr1["hex"] = cr2["hex"] = e_in
+        vg = take("roman_veteran", 1)[0]
+        vg["hex"] = gate
+        mph("rom_move")
+        crew = sorted([cr1["pid"], cr2["pid"]])
+        r = {"type": "move", "pid": ram["pid"], "crew": crew}
+        submit_no(tg, "Rom", dict(r, path=[N[e_in], N[gate]]),
+                  "may not stop there")
+        submit_ok(tg, "Rom", dict(r, path=[N[e_in], N[gate], N[e_out]]))
+        assert ram["hex"] == e_out and cr1["hex"] == e_out
+        park(ram, cr1, cr2)
+        vg["hex"] = None
+        twr = take("tower", 1)[0]
+        cr3, cr4 = take("roman_veteran", 2)
+        twr["hex"] = cr3["hex"] = cr4["hex"] = e_in
+        mph("rom_move")
+        submit_no(tg, "Rom", {"type": "move", "pid": twr["pid"],
+                              "crew": sorted([cr3["pid"], cr4["pid"]]),
+                              "path": [N[e_in], N[gate], N[e_out]]},
+                  "only a Ram may pass through")
+        park(twr, cr3, cr4)
+        vg["hex"], vg["state"] = gate, "panicked"
+        cav4 = take("roman_cavalry", 1)[0]
+        cav4["hex"] = e_in
+        mph("rom_move")
+        no_move(tg, "Rom", cav4["pid"], [N[e_in], N[gate], N[e_out]],
+                "Panicked")
+        park(cav4, vg)
+        print("mph doors: Cavalry/flipped-Artillery/crewed Ram pass through "
+              "a Roman Gate via its Entrance hexsides but may not stop; "
+              "uncontrolled Gate, Tower, and a Panicked occupant refuse "
+              "OK [6.2/6.4/8.4/M.29]")
+
+        # ---- 6.1/6.2/6.3 entry prohibitions bind on ENTRY, not stacking
+        h5 = pocket(avoid=(h0, h1, h2, h3))
+        vx = take("roman_veteran", 1)[0]
+        cv = take("roman_cavalry", 1)[0]
+        s5 = next(n for n in tg._nb(h5) if clear1(n))
+        t5 = next(n for n in tg._nb(h5)
+                  if clear1(n) and n != s5 and n in tg._nb(s5))
+        vx["hex"] = h5
+        cv["hex"] = s5
+        mph("rom_move")
+        v = tg._move_verdict("Rom", cv, [s5, h5, t5])
+        assert not v["legal"] and any("6.2" in r for r in v["reasons"]), v
+        gal["hex"] = h5
+        vx["hex"] = t5
+        v = tg._move_verdict("Rom", cv, [s5, h5])
+        assert v["legal"], v
+        v = tg._move_verdict("Rom", vx, [t5, s5])
+        assert not v["legal"] and any("6.1" in r for r in v["reasons"]), v
+        v = tg._move_verdict("Rom", gal, [h5, s5])
+        assert v["legal"], v
+        cv2 = take("roman_cavalry", 1)[0]
+        cv2["hex"] = t5
+        vx["hex"] = None
+        v = tg._move_verdict("Rom", cv2, [t5, s5])
+        assert v["legal"], v
+        a1_, a2_ = take("roman_catapult", 2)
+        a1_["hex"], a1_["state"] = h5, "disrupted"
+        a2_["hex"], a2_["state"] = t5, "disrupted"
+        gal["hex"] = None
+        park(cv, cv2)
+        mph("rom_move")
+        v = tg._move_verdict("Rom", a2_, [t5, h5, s5])
+        assert not v["legal"] and any("6.3" in r for r in v["reasons"]), v
+        cv["hex"] = h5
+        a1_["hex"] = None
+        v = tg._move_verdict("Rom", a2_, [t5, h5, s5])
+        assert not v["legal"] and any("6.3" in r for r in v["reasons"]), v
+        cv["hex"] = None
+        v = tg._move_verdict("Rom", a2_, [t5, h5, s5])
+        assert v["legal"], v
+        print("mph doors: 6.1/6.2/6.3 are ENTRY prohibitions - Cavalry "
+              "into a non-HQ hex, Infantry into a Cavalry hex, Artillery "
+              "into an Artillery/Cavalry hex all refused mid-path; "
+              "HQ-with-Cavalry and Cavalry-with-Cavalry legal OK")
+        print("mph door checks: PASS (Bite 21 N6/N11/N16/N20 + 6.x entry "
+              "doors)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 
