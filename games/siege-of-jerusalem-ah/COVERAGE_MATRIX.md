@@ -39,7 +39,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | P0.1 | card | Judaeans deploy first, inside New City / on its outer walls | ENFORCED — `_deploy_verdict` jud_zone; VD |
 | P0.2 | card SR1 | ≥1 unit in each North Wall Bastion/Fortress O50..QQ29 (21 hexes) before deploy_done | ENFORCED — `_deploy_done_verdict` min_force; VD |
 | P0.3 | card | Romans second, outside Jerusalem, ≥5 hexes from any Elevated hex, after observing | ENFORCED — `_roman_zone`; VD |
-| P0.4 | card | Romans never enter Garrison Areas | OPEN → **R1** (only the 2 example hexes encoded; area extents are Rob's) |
+| P0.4 | card | Romans never enter Garrison Areas | ENFORCED — **R1 closed by declared ruling (Bruce 2026-08-12, module-author review pending)**: `rom_prohibited` = the 9 battlefield-reachable perimeter hexes of the three 18.4 areas (P50, Q49, MM31, MM32, MM33, NN33, OO33, PP33, QQ32 — derivation in source_defects `gallus-garrison-extent`); one `_entry_cost` door inherited by movement/retreat/advance/climb/CC-trace, advance-into-gate carve-out garrison-guarded, `_esc_up_opts` filtered, 11.1 melee eligibility inherits, fire stays legal; MM30 bastion-typing defect fixed in the same pass (clear, New City — ring census + art + entrance record); VM `garrison_checks` |
 | P0.5 | 6.2/6.4/8.4/8.5 | per-class placement: no cavalry/SE/Roman artillery on Elevated; Cauldrons Elevated-only | ENFORCED — `_deploy_verdict`; VD |
 | P0.6 | 2.46/8.4 | Judaean Ballista/Onager/Catapult set up on Elevated only | UNREACHABLE — units absent from Gallus OOB (card; counter census `COUNTERS_VERIFIED.md`) |
 | P0.7 | 3.4 | Roman Artillery may set up Fresh **or** Disrupted (player's choice) | ENFORCED — **N13** closed (Bite 23): `deploy` accepts `status`, Roman-Artillery-only, `dep_state` on apply; VC `setup_option_checks` (row synced Bite 24 — the §5 close missed this twin) |
@@ -405,9 +405,13 @@ auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`). The N-l
 CLOSED WHOLE (N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
 closed inside B14; N6/N11/N16/N20 closed by Bite 21; N7/N8/N9/N22/N24 closed by Bite 22;
 N2/N5/N13/N15/N17/N18 closed by Bite 23; N12 closed by Bite 24). Open:
-R1/R2/R4/R8 (blocked on
-Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
-outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+R2/R4/R8 (R1 closed by Bite 25's declared ruling — P0.4 whole, Rob's confirmation converts the
+authority tier when it lands; R2/R4/R8 queue for the same declared-ruling treatment in-session;
+R7 no longer blocks Gallus: Elim-vs-Wreck proven outcome-equivalent, campaign identity still with
+Rob). QUEUED DATA ITEM (found by Bite 25's ring audit, own evidence pass before E2E): five North
+Wall hexes typed `north_wall` carry bastion-strength control-map rings + tower art (G45, G47,
+H48, I50, J37) — if real Bastions, P0.2's 21-hex min-force list is under-enumerated and their
+ring class/staircase standing changes.** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`

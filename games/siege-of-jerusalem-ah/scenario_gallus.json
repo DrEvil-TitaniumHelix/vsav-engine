@@ -59,9 +59,16 @@
   "min_force_cite": "special rule 1: >= 1 unit in each Bastion and Fortress of the North Wall O50..QQ29 inclusive (Forts count: 'Fortresses and Forts are considered identical' [2.11]); requirement void from the start of turn 4; a hex vacated by combat results need not be reoccupied",
   "roman_prohibited_hexes": [
    "P50",
+   "Q49",
+   "MM31",
+   "MM32",
+   "MM33",
+   "NN33",
+   "OO33",
+   "PP33",
    "QQ32"
   ],
-  "roman_prohibited_cite": "card: Roman entry of Garrison Areas is not allowed (e.g., Romans may never enter P50 or QQ32)",
+  "roman_prohibited_cite": "card: Roman entry of Garrison Areas is not allowed (e.g., Romans may never enter P50 or QQ32). 'e.g.' makes the printed pair examples, not the extent; the encoded list = every battlefield-reachable perimeter hex of the three 18.4 Garrison Areas (Herod's Palace incl. Fortress Triangle + Yafo Gate complex: P50, Q49; Antonia Fortress + Temple Quarter north perimeter: MM31, MM32, MM33, NN33, OO33 Tadi Gate, PP33, QQ32) - all interior hexes are already off the A4-bounded battlefield. Derived from the printed map (area labels + 18.3 walls-divide-areas + 5.6 Temple outer walls); Q49 is the one ambiguous junction hex, prohibited per the declared ambiguity-goes-prohibited tiebreak. Declared ruling (Bruce 2026-08-12), module-author review pending - see source_defects 'gallus-garrison-extent'. Both Giora entry gates (OO33/Q49) land on the list, so Romans can never occupy the reinforcement doors.",
   "playable_area": {
    "method": "flood_outside_bounded_plus_crescent",
    "outside_seed": "A25",
@@ -403,11 +410,13 @@
   ],
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
-   "Blocked on module-author answers: Garrison Area extents, testudo one-per-legion limit (the formation machinery is DONE; only the counter-mix count question holds this cell), fort staircase hexsides, Giora dice count (Elim-vs-Wreck no longer blocks Gallus: outcome-equivalence proven, R7 stays open for campaign scope)"
+   "Blocked on module-author answers: testudo one-per-legion limit (the formation machinery is DONE; only the counter-mix count question holds this cell), fort staircase hexsides, Giora dice count (Elim-vs-Wreck no longer blocks Gallus: outcome-equivalence proven, R7 stays open for campaign scope; Garrison Area extents closed by declared ruling 2026-08-12 - see source_defects 'gallus-garrison-extent')",
+   "Data-defect item queued (post-R-cells): five North Wall hexes typed north_wall carry bastion-strength control-map rings + tower art (G45, G47, H48, I50, J37) - if real Bastions, the card SR1 min-force requirement is under-enforced by five hexes and their ring class/staircase standing changes; needs its own evidence pass before E2E"
   ],
   "rulings": [
    "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents AGREE everywhere (decode-prep 6, item by item) - their one discrepancy is a rule-citation mismatch (17.23 vs 17.3) registered in source_defects",
    "Bounded battlefield: the old city beyond the Second Wall is out of play; Routed/Panicked units exiting via the south gates toward Refuge are removed from play (scenario scope statement; Bruce-approved; module-author review pending)",
+   "Garrison Area extent (card 'e.g.'): the Roman entry prohibition covers the nine battlefield-reachable perimeter hexes of the three 18.4 areas, ambiguous junctions prohibited (declared ruling, Bruce 2026-08-12; module-author review pending; derivation + evidence in source_defects 'gallus-garrison-extent'). Judaean entry/deployment on those hexes is unrestricted [18.4 'Other Judaean forces may enter Garrison areas']",
    "Coverage-matrix regime (spec #13 as amended 2026-08-09): COVERAGE_MATRIX.md is the playability instrument. The scenario is playable only when every matrix row is ENFORCED or UNREACHABLE-with-evidence; nothing is left to a human umpire. Current verdict: NOT PLAYABLE - the build_open list above blocks release."
   ]
  }

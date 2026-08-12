@@ -207,6 +207,9 @@ def main():
         # ---------------- H. offboard exit [8.14/15.5] - Bite 24 (N12)
         offboard_exit_checks(g)
 
+        # ---------------- I. Garrison Areas declared ruling - Bite 25 (R1)
+        garrison_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -1448,6 +1451,146 @@ def offboard_exit_checks(g):
         print("offboard exit: an intact Testudo marches off whole - "
               "members removed, formation dissolved OK [8.14/8.8]")
         print("offboard exit checks: PASS (Bite 24 N12 - M.33 whole)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def garrison_checks(g):
+    """R1 declared ruling (Bruce 2026-08-12): Roman entry of Garrison Areas
+    is barred on the nine battlefield-reachable perimeter hexes of the three
+    18.4 areas (see source_defects 'gallus-garrison-extent'). Battery: the
+    data list is pinned; every hex refuses Roman movement with the garrison
+    verdict; Judaean entry through both Giora doors stays legal; the
+    advance-into-vacated-gate carve-out no longer lifts the bar; 11.1 melee
+    eligibility inherits it; missile fire INTO a garrison hex stays legal;
+    the end-of-melee climb-up offer filters garrison destinations."""
+    live = tempfile.mkdtemp(prefix="soj_garr_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=41)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+        RULING = ["P50", "Q49", "MM31", "MM32", "MM33",
+                  "NN33", "OO33", "PP33", "QQ32"]
+        assert sorted(N[h] for h in tg.rom_prohibited) == sorted(RULING), \
+            sorted(N[h] for h in tg.rom_prohibited)
+        assert tg.hex_t0[tg.name_hex["MM30"]] == "clear" and \
+            tg.name_hex["MM30"] in tg.new_city
+        print("garrison: 9-hex declared ruling list pinned; MM30 typing "
+              "defect fixed (clear, New City) OK [card/18.4/18.3]")
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def mph(phase):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("mv", None)
+                x.pop("up", None)
+
+        # ---- A: Roman movement refused into every ruled hex
+        vet = take("roman_veteran", 1)[0]
+        for name in RULING:
+            tgt = tg.name_hex[name]
+            adj = next(n for n in tg._nb(tgt)
+                       if n in tg.playable and not tg._occupants(n))
+            vet["hex"] = adj
+            vet.pop("mv", None)
+            mph("rom_move")
+            no_move(tg, "Rom", vet["pid"], [N[adj], name], "Garrison")
+        park(vet)
+        print("garrison: Roman movement refused into all 9 perimeter hexes "
+              "with the garrison verdict OK [card]")
+
+        # ---- B: Judaean entry through both Giora doors; deploy zone keeps
+        # the garrison walls
+        zea = take("zealot", 1)[0]
+        for gate, ent in (("OO33", "OO32"), ("Q49", "Q48")):
+            zea["hex"] = tg.name_hex[ent]
+            zea.pop("mv", None)
+            mph("jud_move")
+            ok_move(tg, "Jud", zea["pid"], [ent, gate])
+            assert zea["hex"] == tg.name_hex[gate]
+            park(zea)
+        assert all(tg.name_hex[n] in tg.jud_zone
+                   for n in ("P50", "QQ32", "MM31", "OO33"))
+        print("garrison: Judaean entry legal through both Giora doors "
+              "(OO33 Tadi, Q49); garrison walls stay in the Judaean "
+              "deployment zone OK [18.4]")
+
+        # ---- C: the advance-into-vacated-gate carve-out no longer lifts
+        # the bar (the pre-fix hole: entrance-hexside gate advance flipped a
+        # refused entry to 1 MF flat)
+        q49 = tg.name_hex["Q49"]
+        q48 = tg.name_hex["Q48"]
+        vet["hex"] = q48
+        tg.s["phase"] = "rom_melee"
+        tg.s["pending"] = {"kind": "advance", "by": "Rom",
+                           "pids": [vet["pid"]], "hex": q49, "xe": 0}
+        submit_no(tg, "Rom", {"type": "resolve_advance",
+                              "pids": [vet["pid"]]}, "Garrison")
+        submit_ok(tg, "Rom", {"type": "resolve_advance", "pids": []})
+        assert tg.s["pending"] is None
+        print("garrison: advance into a vacated garrison Gate across its "
+              "Entrance hexside refused; decline still clean OK "
+              "[11.86/11.9/card]")
+
+        # ---- D: 11.1 melee eligibility inherits the bar (the reading the
+        # two printed example hexes have always had)
+        zea["hex"], zea["state"] = q49, "fresh"
+        vet["hex"] = q48
+        mult, why = tg._melee_approach(vet, q49)
+        assert mult is None and "Garrison" in why, (mult, why)
+        print("garrison: Roman melee against an occupied garrison hex "
+              "ineligible via 11.1 could-enter test OK [11.1/card]")
+
+        # ---- E: missile fire INTO a garrison hex stays legal (entry is
+        # barred, bombardment is not)
+        park(vet)
+        syr = take("syrian_archers", 1)[0]
+        syr["hex"] = q48
+        cmdR = next(u for u in U.values() if u["type"] == "gallus")
+        cmdR["hex"], cmdR["state"] = q48, "fresh"
+        tg.s["phase"], tg.s["seg"] = "rom_fire", "Rom"
+        tg.s["fired"], tg.s["fired_hexes"] = [], []
+        tg.s["pending"] = None
+        tg._cc_snapshot()
+        r = tg.propose("Rom", {"type": "fire", "firers": [syr["pid"]],
+                               "target": "Q49"})
+        assert r["legal"], r
+        park(zea, syr, cmdR)
+        print("garrison: missile fire into a garrison hex remains legal "
+              "OK [9.x/card]")
+
+        # ---- F: end-of-melee climb-up offer filters garrison Elevated
+        # (MM30 ground base: MM31 = garrison fortress, LL30 = battlefield
+        # gate - only the battlefield hex may be offered)
+        mm30 = tg.name_hex["MM30"]
+        base, climber = take("roman_veteran", 2)
+        base["hex"] = mm30
+        climber["hex"], climber["up"] = mm30, True
+        tg.s["esc"].append({"hex": mm30, "base": base["pid"], "used": []})
+        opts = tg._esc_up_opts()
+        assert climber["pid"] in opts, opts
+        assert "MM31" not in opts[climber["pid"]] and \
+            "LL30" in opts[climber["pid"]], opts
+        tg.s["esc"] = [e for e in tg.s["esc"] if e["hex"] != mm30]
+        park(base, climber)
+        print("garrison: climb-up offer excludes garrison Elevated hexes, "
+              "battlefield Elevated still offered OK [11.6/card]")
+        print("garrison checks: PASS (Bite 25 R1 - P0.4 whole, declared "
+              "ruling, module-author review pending)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 
