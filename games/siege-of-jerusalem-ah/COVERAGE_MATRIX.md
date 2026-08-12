@@ -144,7 +144,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.27 | 8.8/6.6/6.61/16.4 | Testudo form/disband (6 MF), MA 4, join/leave costs, entry prohibitions | ENFORCED — `_testudo_verdict` (form: composition 2-3 Fresh HI / 2+Fresh Velitae + one HQ, one Legion, all-occupants-member, no Elevated/escalade hex, 6 MF each, in-CC; disband: unmoved only, 6 MF per Fresh occupant [p.8 tail, transcribed this bite]); `_tst_move_verdict` (MA 4, forming-MPh remainder per the registered 8.8 arithmetic defect, empty-hex/Elevated/Built-up bars, Roman gate pass-through via Entrance hexsides, ZOC stops); join = entering (6 MF flat, `_tst_join_ok`, hold-if-unmoved); leave = half-MA forfeit + never below 2 Fresh HI. Ruling notes: forming barred on Elevated (6.61's own bar — a formation whose movement/melee/missile rules all presuppose ground); HQ pays nothing at form ("stacks within"), joins later at 6 MF; Routed/Panicked never join (15.4/17.21 Refuge obligations; 16.4 names Disrupted only). **One-per-Legion count-limit cell OPEN → R2** (machinery done: formation carries `legion`); VC `testudo_checks` (B13) |
 | M.28 | 6.1/6.2/6.3/6.4 | stacking interactions: Inf/Cav never mix; Artillery exclusions (Fortress 2-artillery-one-Cauldron); SE hex capacity | ENFORCED — `_stack_check`; VM/VD |
 | M.29 | 6.2/6.4/8.4 TEC "P" | Cavalry/Ram/Testudo/Artillery may PASS THROUGH controlled Gate hexes (no stop) | Testudo half ENFORCED — `_tst_move_verdict` gate transit (Entrance hexsides both sides, Roman occupied-or-controlled, never final, no Panicked occupant); Cav/Ram/Artillery OPEN → **N16** |
-| M.30 | 8.4 | Roman Artillery: Fresh may not move; flip-to-move (voluntary flip action); ground-start never Elevated | MA-side ENFORCED (`ma` [0,n]); **voluntary flip action OPEN → B19**; elevated-entry bar ENFORCED — `_entry_cost` |
+| M.30 | 8.4 | Roman Artillery: Fresh may not move; flip-to-move (voluntary flip action); ground-start never Elevated | ENFORCED WHOLE — **B19**. MA-side (`ma` [0,n]): Fresh Roman artillery has MA 0 and physically cannot move. Voluntary `flip` action closes the loud gap that left it immovable forever: own Movement Phase, Roman non-Cauldron Artillery, Fresh→Disrupted, free — the unit then moves at its Disrupted MA "to reflect its increased vulnerability while in transit". "Disrupted moving Artillery must rally before it can fire" is STRUCTURAL: fire is Fresh-only [9.1/16.2] and artillery rally is the R.3 opt-in — no moved-memory state needed. Flip-back is rally, never an action. Cauldrons refused with their own citation (move Fresh or Disrupted, no flip [8.5]); non-Cauldron Judaean artillery + Armored-Tower catapults absent from Gallus OOB (M.31). Elevated-START no-move clause UNREACHABLE — the Roman deployment zone contains no Elevated hex (asserted in VM) and Gallus is a single Assault Period, so "begins an Assault Period in an Elevated Hex" cannot arise; elevated-ENTRY bar ENFORCED — `_entry_cost` (the Gate/Bridge pass-through exception stays N16). VM `artillery_flip_checks` |
 | M.31 | 2.46/8.4 | Judaean Ballista/Onager/Catapult never move in Gallus | UNREACHABLE — units absent from Gallus OOB (also MA 0 both sides + no Interphase; 2.46, counter census) |
 | M.32 | 8.5 | Cauldrons: move Fresh or Disrupted, Elevated-to-Elevated only, artillery-exclusion carve-outs | ENFORCED — `_entry_cost` cauldron branch; VM |
 | M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | OPEN → **N12** (engine forbids leaving the map at board edges) |
@@ -292,8 +292,12 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **B18,
-B19 (engine; B1–B17 closed — **B16 movement obligations CLOSED this commit**: 17.21 read off
+**NOT PLAYABLE.** Open rows: **B18
+(engine — the LAST open B-row; B1–B17/B19 closed — **B19 artillery flip CLOSED this commit**:
+`flip` action (own MPh, Roman non-Cauldron artillery, Fresh→Disrupted, free) ends the
+immovable-Fresh-artillery loud gap; rally-before-fire structural [9.1/16.2 + R.3 opt-in];
+Elevated-start clause proven unreachable (Roman zone holds no Elevated hex, single AP); VM
+`artillery_flip_checks`. Before that **B16 movement obligations CLOSED**: 17.21 read off
 the page and transcribed (it was never in the verified record); M.16 whole (per-hex
 toward-Refuge direction replacing the endpoint test, full-MF obligation via the `end_phase`
 `_refuge_laggards` gate whose probes ARE `_move_verdict`, 15.3 road lock on `_road_ref_dist`
