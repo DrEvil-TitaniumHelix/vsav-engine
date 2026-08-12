@@ -204,6 +204,9 @@ def main():
         # ---------------- G. MPh doors: 8.2/7.321/8.13/gates/6.x - Bite 21
         mph_door_checks(g)
 
+        # ---------------- H. offboard exit [8.14/15.5] - Bite 24 (N12)
+        offboard_exit_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -1236,6 +1239,215 @@ def mph_door_checks(g):
               "HQ-with-Cavalry and Cavalry-with-Cavalry legal OK")
         print("mph door checks: PASS (Bite 21 N6/N11/N16/N20 + 6.x entry "
               "doors)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def offboard_exit_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_off_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=41)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+        gal = next(u for u in U.values() if u["type"] == "gallus")
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def edge1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and len(tg._nb(h)) < 6 and not tg._occupants(h))
+
+        def epick(avoid=()):
+            return next(h for h in sorted(tg.hex_t0)
+                        if edge1(h) and any(clear1(n) for n in tg._nb(h))
+                        and all(tg._dist(h, a) > 6 for a in avoid))
+
+        def pocket(avoid=()):
+            return next(h for h in sorted(tg.hex_t0)
+                        if clear1(h)
+                        and all(clear1(n) for n in tg._nb(h))
+                        and all(tg._dist(h, a) > 6 for a in avoid))
+
+        def mph(phase):
+            tg.s["phase"] = phase
+            tg._mph_bookkeeping()
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("mv", None)
+
+        # ---- exit as-if-Clear: cost, removal, no-return, control flip
+        e0 = epick()
+        s0 = next(n for n in tg._nb(e0) if clear1(n))
+        vA = take("roman_veteran", 1)[0]
+        vA["hex"] = s0
+        tg.s["phase"] = "rom_fire"
+        r = tg.submit("Rom", {"type": "exit", "pid": vA["pid"],
+                              "path": [N[s0], N[e0]]})
+        assert not r["verdict"]["legal"] and \
+            "Movement Phase" in " ".join(r["verdict"]["reasons"])
+        mph("rom_move")
+        r = submit_ok(tg, "Rom", {"type": "exit", "pid": vA["pid"],
+                                  "path": [N[s0], N[e0]]})
+        assert abs(r["verdict"]["spent"] - 2.0) < 1e-9, r["verdict"]
+        assert vA["hex"] is None and vA["state"] == "exited"
+        assert vA["pid"] in tg.s["escaped"]
+        assert tg.s["control"][e0] == "Rom"
+        submit_no(tg, "Rom", {"type": "move", "pid": vA["pid"],
+                              "path": [N[e0], N[s0]]}, "not on the map")
+        vC = take("roman_veteran", 1)[0]
+        vC["hex"] = e0
+        mph("rom_move")
+        vC["mv"] = 7.5
+        submit_no(tg, "Rom", {"type": "exit", "pid": vC["pid"],
+                              "path": [N[e0]]}, "allowance exceeded")
+        vC.pop("mv")
+        submit_no(tg, "Rom", {"type": "exit", "pid": vC["pid"],
+                              "path": [N[e0], N[s0]]}, "mapsheet-edge")
+        submit_ok(tg, "Rom", {"type": "exit", "pid": vC["pid"],
+                              "path": [N[e0]]})
+        print("offboard exit: leaves as if entering a Clear hex (1 MF over "
+              "TEC path), unit removed from play and barred from return, "
+              "hex control flips en route; non-edge hexes and exhausted "
+              "allowance refused OK [8.14/15.5/18.3]")
+
+        # ---- 8.2 finality ledger includes exits
+        p0 = pocket(avoid=(e0,))
+        vB = take("roman_veteran", 1)[0]
+        vB["hex"] = p0
+        vE = take("roman_veteran", 1)[0]
+        vE["hex"] = e0
+        mph("rom_move")
+        a0 = next(n for n in tg._nb(p0) if clear1(n))
+        ok_move(tg, "Rom", vB["pid"], [N[p0], N[a0]])
+        submit_ok(tg, "Rom", {"type": "exit", "pid": vE["pid"],
+                              "path": [N[e0]]})
+        no_move(tg, "Rom", vB["pid"], [N[a0], N[p0]], "[8.2]")
+        park(vB)
+        print("offboard exit: an exit enters the 8.2 finality ledger - the "
+              "previous mover's movement is completed OK [8.2/8.14]")
+
+        # ---- Judaean arm: fresh may leave forever; routed must head for
+        # the Temple Quarter, not the map edge
+        eJ = epick(avoid=(e0, p0))
+        z1, z2 = take("zealot", 2)
+        z1["hex"] = eJ
+        mph("jud_move")
+        submit_ok(tg, "Jud", {"type": "exit", "pid": z1["pid"],
+                              "path": [N[eJ]]})
+        assert z1["state"] == "exited" and z1["pid"] in tg.s["escaped"]
+        z2["hex"], z2["state"] = eJ, "routed"
+        mph("jud_move")
+        r = tg.submit("Jud", {"type": "exit", "pid": z2["pid"],
+                              "path": [N[eJ]]})
+        assert not r["verdict"]["legal"] and \
+            "Temple Quarter" in " ".join(r["verdict"]["reasons"])
+        park(z2)
+        vR = take("roman_veteran", 1)[0]
+        vR["hex"], vR["state"] = e0, "routed"
+        mph("rom_move")
+        submit_ok(tg, "Rom", {"type": "exit", "pid": vR["pid"],
+                              "path": [N[e0]]})
+        assert vR["state"] == "exited"
+        print("offboard exit: Judaean escape legal for Fresh units and "
+              "refused for Routed (Refuge = Temple Quarter); a Routed Roman "
+              "may leave - his Refuge is the board edge OK "
+              "[8.14/15.3/15.4/15.5/18.92]")
+
+        # ---- ZOC arms on the off-map step
+        e4 = zn = x0 = None
+        for h in sorted(tg.hex_t0):
+            if not (edge1(h)
+                    and all(tg._dist(h, a) > 6 for a in (e0, p0, eJ))):
+                continue
+            nbs = [n for n in tg._nb(h) if clear1(n)]
+            pair = next(((a, b) for a in nbs for b in nbs
+                         if b != a and b not in tg._nb(a)), None)
+            if pair:
+                e4, (zn, x0) = h, pair
+                break
+        assert e4, "no edge hex with a non-adjacent clear neighbor pair"
+        z3 = take("zealot", 1)[0]
+        z3["hex"] = zn
+        cav = take("roman_cavalry", 1)[0]
+        cav["hex"] = e4
+        gal["hex"] = next(h for h in sorted(tg.hex_t0)
+                          if clear1(h) and 2 <= tg._dist(h, x0) <= 5
+                          and h not in tg._nb(zn) and h != e4)
+        mph("rom_move")
+        zoc = tg._zoc_map("Jud")
+        assert e4 in zoc and x0 not in zoc
+        v = tg._move_verdict("Rom", cav, [e4, soj.OFF])
+        assert v["legal"] and abs(v["spent"] - 1.0) < 1e-9, v
+        cav["hex"] = x0
+        mph("rom_move")
+        v = tg._move_verdict("Rom", cav, [x0, e4, soj.OFF])
+        assert v["legal"] and abs(v["spent"] - 5.0) < 1e-9, v
+        vH = take("roman_veteran", 1)[0]
+        vH["hex"] = e4
+        mph("rom_move")
+        v = tg._move_verdict("Rom", vH, [e4, soj.OFF])
+        assert v["legal"] and abs(v["spent"] - 1.0) < 1e-9, v
+        park(cav, vH, z3, gal)
+        print("offboard exit: leaving a ZOC straight off-map is a ZOC-free "
+              "first hex (free soft exit, hard exit legal); +3 soft "
+              "surcharge stands on a later-leg exit OK [7.31/7.311/7.321]")
+
+        # ---- class doors: Cauldron never; a crewed Ram leaves with its crew
+        cd = take("cauldron", 1)[0]
+        cd["hex"] = e4
+        mph("jud_move")
+        v = tg._move_verdict("Jud", cd, [e4, soj.OFF])
+        assert not v["legal"] and any("8.5" in x for x in v["reasons"]), v
+        park(cd)
+        rm = take("ram", 1)[0]
+        c1, c2 = take("roman_veteran", 2)
+        rm["hex"] = c1["hex"] = c2["hex"] = e4
+        mph("rom_move")
+        r = submit_ok(tg, "Rom", {"type": "exit", "pid": rm["pid"],
+                                  "crew": sorted([c1["pid"], c2["pid"]]),
+                                  "path": [N[e4]]})
+        assert sorted(r["result"]["exited"]) == \
+            sorted([rm["pid"], c1["pid"], c2["pid"]])
+        assert all(x["state"] == "exited" and x["pid"] in tg.s["escaped"]
+                   for x in (rm, c1, c2))
+        assert not tg.s["markers"]
+        print("offboard exit: Cauldrons refused (Elevated-only movers); a "
+              "crewed Ram exits as the locked stack, crew removed with it, "
+              "no Wreck marker - the engine left alive OK [8.5/8.3/8.14]")
+
+        # ---- Testudo formation exits whole
+        e6 = epick(avoid=(e0, p0, eJ, e4))
+        t1, t2, t3 = take("roman_veteran", 3)
+        t1["hex"] = t2["hex"] = t3["hex"] = e6
+        tg.s["testudo"].append({"hex": e6, "mv": 0.0,
+                                "legion": t1.get("cohort")})
+        mph("rom_move")
+        r = submit_ok(tg, "Rom", {"type": "exit", "pid": t1["pid"],
+                                  "testudo": True, "path": [N[e6]]})
+        assert sorted(r["result"]["exited"]) == \
+            sorted([t1["pid"], t2["pid"], t3["pid"]])
+        assert tg._tst_at(e6) is None
+        assert all(x["state"] == "exited" for x in (t1, t2, t3))
+        print("offboard exit: an intact Testudo marches off whole - "
+              "members removed, formation dissolved OK [8.14/8.8]")
+        print("offboard exit checks: PASS (Bite 24 N12 - M.33 whole)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 

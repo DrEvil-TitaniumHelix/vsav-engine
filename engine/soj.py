@@ -59,6 +59,8 @@ BREACH_DEF = {"fortress": 15, "fort": 12, "bastion": 10, "wall": 8,
 
 DISR_LADDER = ["fresh", "disrupted", "routed", "panicked"]
 
+OFF = "off"
+
 # The hex-grid direction ring in (d_col, d_N) axial deltas (N = row - col//2,
 # the printed-map diagonal number). A Siege Engine's printed Directional
 # Arrow [2.45/8.6/10.11] is stored as an index into DIRS (u["facing"]) so it
@@ -1048,6 +1050,30 @@ class SoJGame(GateGame):
         prev = path[0]
         started_in_zoc = prev in zoc
         for i, h in enumerate(path[1:], 1):
+            if h == OFF:
+                if i != len(path) - 1:
+                    return self._v(False, "leaving the mapsheet ends the unit's movement [8.14]")
+                if len(self._nb(prev)) >= 6:
+                    return self._v(False, "may leave the mapsheet only from a mapsheet-edge hex [8.14]")
+                if cls == "cauldron":
+                    return self._v(False, "Cauldrons move only between connected Elevated hexes [8.5/TEC**]")
+                if rd_lock is not None:
+                    if side == "Jud":
+                        return self._v(False, "Routed/Panicked units must move towards Refuge - the Judaean Refuge is the Temple Quarter, not off the mapsheet [15.3/15.4/17.21]")
+                    if rd_lock.get(prev, 0) > 0:
+                        return self._v(False, "on an unobstructed road to Refuge the unit must remain on that road, moving along it, until it reaches Refuge [15.3]")
+                cost = 1.0
+                if soft and prev in zoc and not (i == 1 and started_in_zoc):
+                    cost += 3.0
+                if any(o["side"] == side and o["state"] == "panicked"
+                       and o["pid"] != u["pid"]
+                       for o in self._occupants(prev)):
+                    cost *= 2.0
+                spent += cost
+                if spent > budget + 1e-9:
+                    return self._v(False, f"movement allowance exceeded: {spent:g} > {budget:g} MF [8.11/8.14/TEC]")
+                prev = h
+                continue
             if h not in self._nb(prev):
                 return self._v(False, f"{self.hex_name.get(h, h)} is not adjacent to {self.hex_name.get(prev, prev)}")
             if rd_lock is not None:
@@ -1191,6 +1217,13 @@ class SoJGame(GateGame):
                 return self._v(False, "must stop on entering an enemy ZOC [7.31]")
             prev = h
         dest = path[-1]
+        if dest == OFF:
+            why = ("Romans may not return until the next Assault Period - none follows in Gallus"
+                   if side == "Rom"
+                   else "Judaean units that leave the mapsheet may never return")
+            return dict(self._v(True, f"exits the mapsheet as if entering a Clear hex - cost {spent:g} of {budget:g} MF; {why} [8.14/15.5]"),
+                        crew=picked, face_dir=None, spent=spent, up=False,
+                        forfeit=forfeit, pstop=False, panic_elim=False)
         if self.hex_t(dest) in GATES and (
                 cls in ("cavalry", "artillery")
                 or (cls == "siege_engine" and u["type"] == "ram")):
@@ -1240,6 +1273,18 @@ class SoJGame(GateGame):
         prev = path[0]
         started_in_zoc = prev in zoc
         for i, h in enumerate(path[1:], 1):
+            if h == OFF:
+                if i != len(path) - 1:
+                    return self._v(False, "leaving the mapsheet ends the move [8.14]")
+                if len(self._nb(prev)) >= 6:
+                    return self._v(False, "may leave the mapsheet only from a mapsheet-edge hex [8.14]")
+                if self.hex_t(prev) in GATES:
+                    return self._v(False, "a Testudo leaves a Gate through its Entrance hexsides only [6.61/8.91]")
+                spent += 1.0
+                if spent > budget + 1e-9:
+                    return self._v(False, f"Testudo movement allowance exceeded: {spent:g} > {budget:g} MF [8.8/6.61]")
+                prev = h
+                continue
             if h not in self._nb(prev):
                 return self._v(False, f"{self.hex_name.get(h, h)} is not adjacent to {self.hex_name.get(prev, prev)}")
             if h not in self.playable:
@@ -2995,6 +3040,18 @@ class SoJGame(GateGame):
                                       crew=action.get("crew"), face=face,
                                       up=bool(action.get("up")),
                                       tst=bool(action.get("testudo")))
+        if a == "exit":
+            if phase != f"{'rom' if side == 'Rom' else 'jud'}_move":
+                return self._v(False, f"not the {side} Movement Phase")
+            u = self.s["units"].get(str(action.get("pid")))
+            if not u:
+                return self._v(False, "unknown unit")
+            path = [self.name_hex.get(h, h) for h in action.get("path", [])]
+            if any(p not in self.hex_t0 for p in path):
+                return self._v(False, "path contains unknown hexes")
+            return self._move_verdict(side, u, path + [OFF],
+                                      crew=action.get("crew"),
+                                      tst=bool(action.get("testudo")))
         if a == "escalade":
             return self._escalade_verdict(side, action)
         if a == "testudo":
@@ -3426,6 +3483,46 @@ class SoJGame(GateGame):
                     self._eliminate(u)
                     out["eliminated"] = ("the forced stop overstacked the "
                                          "hex [17.21]")
+            return out
+        if a == "exit":
+            u = self.s["units"][str(action["pid"])]
+            path = [self.name_hex.get(h, h) for h in action["path"]]
+            entering = u["hex"] is None
+            if verdict.get("tst"):
+                t = self._tst_at(path[0])
+                out_pids = list(verdict["members"])
+                self.s["testudo"] = [x for x in self.s["testudo"]
+                                     if x is not t]
+            else:
+                out_pids = [u["pid"]] + list(verdict.get("crew") or [])
+                if verdict.get("crew"):
+                    out_pids += [o["pid"] for o in self._occupants(path[0])
+                                 if o.get("up")]
+            if u["state"] == "panicked":
+                self.s["pmoved"] = True
+            for pid_ in out_pids:
+                x = self.s["units"][pid_]
+                x["hex"], x["state"] = None, "exited"
+                x.pop("up", None)
+            self.s["escaped"] = sorted(set(self.s["escaped"])
+                                       | set(out_pids))
+            self.s["lastm"] = sorted(out_pids)
+            for h2 in (path if entering else path[1:]):
+                self.s["control"][h2] = side
+            if entering:
+                self.s["entry_queue"] = [q for q in self.s["entry_queue"]
+                                         if q["pid"] != u["pid"]]
+            out = {"exited": sorted(out_pids), "off_map": True}
+            if side == "Jud":
+                wrecked = [o["pid"]
+                           for h2 in (path if entering else path[1:])
+                           for o in self._occupants(h2)
+                           if o["side"] == "Rom"
+                           and self.utype(o)["cls"] == "siege_engine"]
+                for pid_ in wrecked:
+                    self._eliminate(self.s["units"][pid_])
+                if wrecked:
+                    out["wrecked"] = wrecked
             return out
         if a == "flip":
             u = self.s["units"][str(action["pid"])]

@@ -42,9 +42,9 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | P0.4 | card | Romans never enter Garrison Areas | OPEN → **R1** (only the 2 example hexes encoded; area extents are Rob's) |
 | P0.5 | 6.2/6.4/8.4/8.5 | per-class placement: no cavalry/SE/Roman artillery on Elevated; Cauldrons Elevated-only | ENFORCED — `_deploy_verdict`; VD |
 | P0.6 | 2.46/8.4 | Judaean Ballista/Onager/Catapult set up on Elevated only | UNREACHABLE — units absent from Gallus OOB (card; counter census `COUNTERS_VERIFIED.md`) |
-| P0.7 | 3.4 | Roman Artillery may set up Fresh **or** Disrupted (player's choice) | OPEN → **N13** (deploy places every unit fresh; option denied) |
+| P0.7 | 3.4 | Roman Artillery may set up Fresh **or** Disrupted (player's choice) | ENFORCED — **N13** closed (Bite 23): `deploy` accepts `status`, Roman-Artillery-only, `dep_state` on apply; VC `setup_option_checks` (row synced Bite 24 — the §5 close missed this twin) |
 | P0.8 | 3.4 | Roman Infantry may set up in Testudo | ENFORCED — `testudo` form admitted in `deploy_rom` (no MF, no CC gate at setup); deploy into a formed hex refused [6.61]; VC `testudo_checks` (B13) |
-| P0.9 | 3.3 | off-board Legion setup w/ recorded turn/edge | OPEN → **N17** — verify the Gallus card permits/forbids it, then enforce or evidence unreachable |
+| P0.9 | 3.3 | off-board Legion setup w/ recorded turn/edge | UNREACHABLE — **N17** closed (Bite 23): the Gallus card gives no off-board Legion arrival (no `offboard`/`legions` deployment key; reinforcement pool all-Judaean; every Roman deploys on-board); asserted in VC `setup_option_checks` (row synced Bite 24 — the §5 close missed this twin) |
 | P0.10 | 6.x | stacking legal at end of deployment | ENFORCED — `_stack_check` in deploy; VD |
 
 ### P1/P5 — RALLY PHASE (Roman 4.11 / Judaean 4.21)
@@ -95,7 +95,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.26 | 13.21 | Artillery rout/panic ladder under fire; Elim marker on final elimination | ENFORCED — ladder (`_apply_letter`) + Elim marker via the single `_eliminate` door; marker holds the Artillery slot to scenario end (`_stack_check`/`_move_verdict`/`_retreat_full`); Elim-vs-Wreck conflict registered + proven outcome-equivalent in Gallus (`elim-vs-wreck-eliminated-artillery`; R7 stays a campaign question); VC `marker_checks` |
 | F.27 | 13.21 | Cauldrons are not Artillery for Disrupt results (no ladder, no Elim marker) | ENFORCED — `_apply_letter` checks cls `artillery` only (cauldron cls separate) |
 | F.28 | 2.523/10.2 | rocks: Fresh Zealots/Militia/Cauldrons on Elevated vs adjacent lower units | ENFORCED — `_fire_verdict` rock path; VC |
-| F.29 | 10.2 | rocks from Bastion/Fortress vs **connected lower Elevated** hexes | OPEN → **N2** (gate refuses any Elevated target) |
+| F.29 | 10.2 | rocks from Bastion/Fortress vs **connected lower Elevated** hexes | ENFORCED — **N2** closed (Bite 23): `_rock_height` (Fortress/Fort 3 > Bastion 2 > Wall 1 [2.11]) + `_fire_verdict` rock branch admits a strictly-lower adjacent Elevated target from STRONGPOINTS; VC `rock_lower_elevated_checks` (row synced Bite 24 — the §5 close missed this twin) |
 | F.30 | 10.2 | +1 drm per attacking Cauldron; may combine with missile/artillery fire | ENFORCED — `cauldrons` count |
 | F.31 | 9.11 + Q&A | fire vs Towers: declare pushers/riders/both; other level immune; DD-vs-lone eliminates; Cauldrons/rocks never vs riders | ENFORCED — **B14**: fire action `level` = above/below/both (default both = normal defender allocation); loss pending carries `lvl`, `_loss_elig`/`_resolve_loss_verdict` make the other level immune; DD vs the lone at-level unit collapses to elimination (`_auto_resolve_pending`); Cauldron/rock firers must declare `below`; the SE itself is NEVER loss-eligible on any path ("Fire does not affect Siege Engines" [9.1] — the old `_primary_pids` SE branch could force the severest letter ONTO the fire-immune engine, a silent incorrectness closed in the same pass); Q&A 9.11 both levels = Tower row (`_target_row` keys on the occupant SE, not a declared class); Q&A 9.6 split-level double attack = structurally impossible (`fired_hexes` one-attack-per-hex); VC `tower_checks` |
 | F.32 | 9.12 | fire vs Escalades: Base unit hit last; DD top+bottom rule | ENFORCED — **B12 fire slice**: `_loss_elig` makes the Base ineligible while any other defending unit is left in the hex (any unit counts, incl. an HQ — literal "only unit left" reading); target row = the table's own `clear_slope_ramp_escalade` row (no row change); DD vs the lone eligible top unit eliminates it outright, the Base untouched (`_auto_resolve_pending` collapse, 9.11-consistent); E-chains spill onto the Base only once it is the last unit left; sequential-eligibility simulation in `_resolve_loss_verdict` refuses Base picks [9.12]. 9.4's fire-FROM bar unchanged; VC `escalade_checks` (fire scenes: door-open D pending, DD/DE/EE autos, lone-Base DD, manual distinctness) |
@@ -106,7 +106,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | F.37 | 12.5 | combining Rams/Armored Towers from different hexes | UNREACHABLE — Gallus has exactly one Breach-capable unit (1 Ram, 0 Armored Towers; card OOB + counter census) |
 | F.38 | 12.1/12.2 | cumulative damage; breach at ≥ defense; occupants eliminated at that instant; damage markers | ENFORCED — `_resolve_breach` + `breach` state + `hex_t` dynamic terrain; VC |
 | F.39 | 12.2/card | Breach Defense values per hex class (incl. printed-errata QQ32 = Fort) | ENFORCED — `BREACH_DEF` = card values; VC; source_defect `qq32-hexside-color` |
-| F.40 | 12.3 | multi-wall junction hex breached once (e.g. R51) | OPEN → **N18** — verify `hex_t`/`BREACH_DEF` treat junction hexes as one breach; then enforce or evidence |
+| F.40 | 12.3 | multi-wall junction hex breached once (e.g. R51) | ENFORCED — **N18** closed (Bite 23): structurally satisfied by the per-hex `s["breach"]` model (one defense per junction hex, whole hex opens); VC `junction_breach_checks` (row synced Bite 24 — the §5 close missed this twin) |
 | F.41 | decode-prep 6 | a Gate's breach & missile defense = its printed strongpoint ring class | ENFORCED — `_breach_def`/`_target_row` read the hex `ring` (9 gates, gates overlay); gate rows removed from `BREACH_DEF`/`ROW_OF_TERRAIN` so a ringless gate fails loudly; VC `gate_ring_checks` |
 | F.42 | 18.21 | night: fire adjacent-only | ENFORCED — `_fire_verdict`; VC |
 | F.43 | 5.3 | out of CC: fire at adjacent targets only | ENFORCED — `_fire_verdict` |
@@ -147,7 +147,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.30 | 8.4 | Roman Artillery: Fresh may not move; flip-to-move (voluntary flip action); ground-start never Elevated | ENFORCED WHOLE — **B19**. MA-side (`ma` [0,n]): Fresh Roman artillery has MA 0 and physically cannot move. Voluntary `flip` action closes the loud gap that left it immovable forever: own Movement Phase, Roman non-Cauldron Artillery, Fresh→Disrupted, free — the unit then moves at its Disrupted MA "to reflect its increased vulnerability while in transit". "Disrupted moving Artillery must rally before it can fire" is STRUCTURAL: fire is Fresh-only [9.1/16.2] and artillery rally is the R.3 opt-in — no moved-memory state needed. Flip-back is rally, never an action. Cauldrons refused with their own citation (move Fresh or Disrupted, no flip [8.5]); non-Cauldron Judaean artillery + Armored-Tower catapults absent from Gallus OOB (M.31). Elevated-START no-move clause UNREACHABLE — the Roman deployment zone contains no Elevated hex (asserted in VM) and Gallus is a single Assault Period, so "begins an Assault Period in an Elevated Hex" cannot arise; elevated-ENTRY bar ENFORCED — `_entry_cost` (the Gate/Bridge pass-through exception stays N16). VM `artillery_flip_checks` |
 | M.31 | 2.46/8.4 | Judaean Ballista/Onager/Catapult never move in Gallus | UNREACHABLE — units absent from Gallus OOB (also MA 0 both sides + no Interphase; 2.46, counter census) |
 | M.32 | 8.5 | Cauldrons: move Fresh or Disrupted, Elevated-to-Elevated only, artillery-exclusion carve-outs | ENFORCED — `_entry_cost` cauldron branch; VM |
-| M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | OPEN → **N12** (engine forbids leaving the map at board edges) |
+| M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | ENFORCED WHOLE — **N12** closed (Bite 24): `exit` action = `_move_verdict` on the path + the `OFF` sentinel step (all movement doors bind on the on-map leg; the off-map step costs 1 MF as-if-Clear, refused off non-mapsheet-edge hexes — 106 playable edge hexes, all outside ground, both sides reachable); exited units `state="exited"`, `hex=None`, logged in hashed `s["escaped"]`, no Wreck/Elim marker, no return path (Romans return next AP = none in Gallus; Judaeans never [15.5/18.92]); ZOC arms (free first-step off-map exit [7.321], +3 soft later-leg, hard-in-ZOC exit legal), 8.2 finality ledger, Routed Roman may leave (Refuge = board edge [15.4/15.5]) while Routed/Panicked Judaeans are refused (Refuge = Temple Quarter [15.3]), Cauldron refused [8.5], crewed SE exits as the locked stack (riders included), intact Testudo marches off whole; Judaean transit still wrecks unescorted SEs on the path [11.4]. VM `offboard_exit_checks` (7 scene groups) |
 | M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. Dice-count ambiguity registered → **R8** |
 | M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery. A4 DONE: `southern_bound` diagonals anchored on the card's arc ends (cols A–O ≤ printed 50 at O50; QQ–XX ≤ 32 at the QQ31/QQ32 junction) + Elevated fabric playable only where it borders battlefield ground; playable 1925→1341, all 219 Old City art hexes + typed south-junction strongpoints (P51/O53/Q50… cluster, 12 hexes) off-battlefield; VD `bound_and_builtup_checks` |
 | M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | ENFORCED — SE-hex half with B10 (`_move_verdict`: entry legal only for Judaeans, only from non-Elevated, only into unescorted-SE hexes, which it wrecks [11.4]; VC `marker_checks`); Escalade half with B12: structurally covered by 8.11/15.1 (a Fresh Roman Base always occupies the hex) + explicit 6.5 armor in `_move_verdict`/`_retreat_step` for unreachable states; VC `escalade_checks` |
@@ -226,7 +226,7 @@ runs on.
 | current-mover lock (8.2) | every move apply (`s["lastm"]` = the acting stack's pids, hashed in HASH_KEYS; `u["m0"]` = began moving, hashes via units; both cleared in `_mph_bookkeeping` at every phase boundary) | move + Testudo-move verdicts [8.2], 17.21 laggard probes (transitively) | ENFORCED — **Bite 21** (N11 closed); VM `mph_door_checks` |
 | pending (loss/retreat choice) | combat resolution | propose() router | ENFORCED |
 | reinforcement pool + entry queue | `_roll_reinforcements` | move-from-offboard | ENFORCED; VC |
-| escaped (refuge exits) | refuge-exit moves | removal from play | ENFORCED (card/Bruce bound) |
+| escaped (refuge exits + 8.14 offboard exits) | refuge-exit moves; `exit` action (Bite 24) | removal from play, no return; hashed | ENFORCED (card/Bruce bound; VM `offboard_exit_checks`) |
 | turn/phase/segment, night flag | `_advance_phase` | everything phase-gated | ENFORCED; VC |
 | **per-AP artillery start location** | deployment (Gallus = the whole AP) | 8.4 elevated/ground artillery constraints | trivially ENFORCED in Gallus (deployment = AP start; Roman artillery cannot reach Elevated) |
 
@@ -276,7 +276,7 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | N9 | 11.1 | ~~mixed HI + Foederatti/Syrian-Archer stacks allowed to melee and fire~~ **CLOSED — Bite 22** (see X.3): `_hi_mixed` in melee/fire/counterattack doors, Q&A level carve-out; VC `melee_completion_checks` | ✓ |
 | N10 | 15.1/14.21 | ~~retreat engine~~ **CLOSED** — full constrained-search rewrite (see X.27/X.33/X.34); VC `retreat_engine_checks` | ✓ |
 | N11 | 8.2 | ~~unit movement finality untracked~~ **CLOSED — Bite 21** (see M.21): `u["m0"]` + `s["lastm"]`; VM `mph_door_checks` | ✓ |
-| N12 | 8.14 | offboard exit denied (Romans as-if-Clear; Judaeans never return) | 2 |
+| N12 | 8.14 | ~~offboard exit denied~~ **CLOSED — Bite 24** (see M.33): `exit` action, `OFF` sentinel through `_move_verdict`/`_tst_move_verdict`, hashed `s["escaped"]`; VM `offboard_exit_checks` | ✓ |
 | N13 | 3.4 | ~~setup options denied: Roman Artillery Fresh-or-Disrupted choice~~ **CLOSED — Bite 23**: `deploy` accepts `status` (Fresh/Disrupted), gated to Roman Artillery only; `dep_state` set on apply (Infantry-in-Testudo closed with B13 — see P0.8); VC `setup_option_checks` | ✓ |
 | N14 | — | ~~merged into B14~~ **CLOSED with B14** (riders/pushers state = `u["up"]` on Tower hexes) | ✓ |
 | N15 | 2.7 | ~~*verified enforced* (float arithmetic; no truncation found) — kept as a validator case to write~~ **CLOSED — Bite 23**: VC `fraction_checks` pins a melee-1 unit attacking out of a Breach (11.13 ×½) at att 0.5, not 0 — a truncation guard on the strength pipeline | ✓ |
@@ -294,8 +294,17 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **N12 (offboard exit) + R-held ONLY — the engine B-list is FULLY
-CLOSED (B1–B19), and every N-remainder row except N12 is now closed. Bite 23 (this commit)
+**NOT PLAYABLE.** Open rows: **R-held ONLY (P0.4/M.27-count/X.4-hexsides/M.34-dice — Rob/Bruce
+arbitration) — THE ENGINE LIST IS FULLY CLOSED: A-list, B-list (B1–B19), and every N-row (N1–N24).
+Bite 24 (this commit) CLOSED THE LAST ENGINE ROW — N12 (8.14 offboard exit)**: a new `exit`
+action routes the on-map path through `_move_verdict`/`_tst_move_verdict` with an off-map `OFF`
+sentinel step (1 MF as-if-Clear, mapsheet-edge hexes only — 106 in Gallus, all outside ground),
+so every movement door binds unchanged; exited units leave play permanently (`state="exited"`,
+hashed `s["escaped"]`, no markers, no return in Gallus for either side [8.14/15.5/18.92]); ZOC
+arms, 8.2 finality, Routed-Refuge asymmetry (Roman may leave, Judaean may not), Cauldron
+refusal, locked SE stacks and whole-Testudo exits all proven in VM `offboard_exit_checks`
+(7 scene groups). The same bite synced four stale §-section twins of Bite-23 closes
+(P0.7/P0.9/F.29/F.40 still read OPEN after N13/N17/N2/N18 closed). Before that **Bite 23
 CLOSED SIX — N2/N5/N13/N15/N17/N18**: rock attacks from a Bastion/Fortress onto a directly
 connected LOWER Elevated hex (N2 — `_rock_height` Fortress>Bastion>Wall + the `_fire_verdict`
 rock branch; VC `rock_lower_elevated_checks`); per-attacker Gate-Ram doubling so only the
@@ -306,8 +315,7 @@ VC `breach_gate_doubling_checks`); Roman Artillery Fresh-or-Disrupted setup (N13
 UNREACHABLE in Gallus (N17 — no off-board Legion arrival on the card; all Romans on-board;
 asserted in `setup_option_checks`); and multi-wall junction breach-once (N18 — structurally
 satisfied by the per-hex `s["breach"]` model; VC `junction_breach_checks` breaches a live
-junction in one crossing). ONLY N12 (8.14 offboard exit — needs new exit-action plumbing) remains
-of the N-rows. Before that **Bite 22 CLOSED the melee cluster — N7/N8/N9/N22/N24**: the 11.14 Gate
+junction in one crossing). Before that **Bite 22 CLOSED the melee cluster — N7/N8/N9/N22/N24**: the 11.14 Gate
 sortie whole (X.5: entrance/breach halving, `s["sortie"]` hashed log, modal end-of-phase
 `counterattack` pending with the 11.2 pusher exception and the advance-through-Entrance
 "enemy occupation" carve-out), the 11.7/11.18 −1 Elevated-defense drm + forfeit (X.8/X.10 —
@@ -393,10 +401,10 @@ M.26/M.36/M.13-escalade + F.15 base-exclusion + 9.4 fire-from bar; `s["esc"]` +
 fresh-MA-budget silent gaps closed there. B11 before that:
 X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row on `multiple_attack_checks`, `u["mk"]`
 ladder, modal `advance` pending, `melee_hexes` hex-once lock, CC same-units audit, 14.3
-auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`), N12
-(N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
+auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`). The N-list is
+CLOSED WHOLE (N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
 closed inside B14; N6/N11/N16/N20 closed by Bite 21; N7/N8/N9/N22/N24 closed by Bite 22;
-N2/N5/N13/N15/N17/N18 closed by Bite 23),
+N2/N5/N13/N15/N17/N18 closed by Bite 23; N12 closed by Bite 24). Open:
 R1/R2/R4/R8 (blocked on
 Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
 outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),
