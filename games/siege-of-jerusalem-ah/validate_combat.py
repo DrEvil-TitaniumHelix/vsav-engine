@@ -397,12 +397,14 @@ def fire_drm_checks(g):
                 h_["hex"] = None
             hq = cmdR if u["side"] == "Rom" else jleads[u["faction"]]
             hq["hex"], hq["state"] = u["hex"], "fresh"
+            tg._cc_snapshot()
 
         def reset_fire(seg):
             tg.s["fired"], tg.s["fired_hexes"] = [], []
             tg.s["phase"] = "rom_fire" if seg == "Rom" else "jud_fire"
             tg.s["seg"] = seg
             tg.s["pending"] = None
+            tg._cc_snapshot()
 
         def axis(h, dq, dr, k):
             c, r = int(h[:2]), int(h[2:])
@@ -1469,6 +1471,7 @@ def escalade_checks(g):
         fdt = take("foederatti", 1)[0]
         v1["hex"], v2["hex"], v3["hex"], v4["hex"] = A, B, C, D
         gallus["hex"] = B
+        tg._cc_snapshot()
 
         vp = take("roman_veteran", 1)[0]
         vp["hex"] = h0
@@ -1661,6 +1664,7 @@ def escalade_checks(g):
         base, k1, k2 = rl[:3]
         mph("rom_move")
         base["hex"] = A
+        tg._cc_snapshot()
         submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
                               "pid": base["pid"]})
         k1["hex"], k1["up"] = A, True
@@ -1708,6 +1712,7 @@ def escalade_checks(g):
         mph("rom_move")
         b2 = rl[5]
         b2["hex"] = A
+        tg._cc_snapshot()
         submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
                               "pid": b2["pid"]})
         tg._queue_losses(A, ["D", "D"], "Rom", source="fire")
@@ -1720,6 +1725,7 @@ def escalade_checks(g):
         mph("rom_move")
         b3, m1, m2 = rl[6:9]
         b3["hex"] = A
+        tg._cc_snapshot()
         submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
                               "pid": b3["pid"]})
         m1["hex"], m1["up"] = A, True
@@ -1765,6 +1771,7 @@ def escalade_checks(g):
         bg, c1, c2, c3, c4, c5 = rv[:6]
         gallus["hex"] = B
         bg["hex"] = A
+        tg._cc_snapshot()
         submit_ok(tg, "Rom", {"type": "escalade", "op": "place",
                               "pid": bg["pid"]})
         gallus["hex"] = None
@@ -2002,9 +2009,11 @@ def testudo_checks(g):
                   "six MF per forming unit")
         v1.pop("mv")
         cmd["hex"] = None
+        tg._cc_snapshot()
         submit_no(tg, "Rom", {"type": "testudo", "op": "form",
                               "pids": [v1["pid"], v2["pid"]]}, "[5.3]")
         cmd["hex"] = h0
+        tg._cc_snapshot()
         wall0 = next(h for h in sorted(tg.hex_t0)
                      if tg.hex_t0[h] == "wall" and h in tg.playable
                      and not tg._occupants(h))
@@ -2953,6 +2962,7 @@ def advance_bonus_checks(g):
                   "Command Control")
         gal = next(u for u in U.values() if u["type"] == "gallus")
         gal["hex"] = gh
+        tg._cc_snapshot()
         m1["hex"], m1["state"] = z1, "disrupted"
         submit_no(tg, "Rom", {"type": "resolve_advance",
                               "pids": [L1["pid"]],

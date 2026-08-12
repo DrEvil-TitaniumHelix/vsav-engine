@@ -178,8 +178,11 @@ def main():
                       if tuple(sorted((q0["gate"], n))) in tg.entrances
                       and n in tg.new_city and not tg._occupants(n))
         ok_move(tg, "Jud", q0["pid"], [gate_name, inside])
-        assert tg.s["units"][q0["pid"]]["hex"] == tg.name_hex[inside]
+        q0u = tg.s["units"][q0["pid"]]
+        assert q0u["hex"] == tg.name_hex[inside]
         assert all(q["pid"] != q0["pid"] for q in tg.s["entry_queue"])
+        assert tg.in_cc(q0u) == tg._cc_unit(q0u, tg._cc_map("Jud")), \
+            "an entrant's CC is determined at entry [5.1 ruling]"
 
         print("gate-driven cases: PASS")
 
@@ -194,6 +197,9 @@ def main():
 
         # ---------------- E. artillery flip-to-move [8.4] - B19
         artillery_flip_checks(g)
+
+        # ---------------- F. Command Control exact tracing [5.1/5.2] - B18
+        cc_trace_checks(g)
 
         # ---------------- log replays end-to-end
         r = subprocess.run(
@@ -259,6 +265,7 @@ def probes(tg):
         b, c = next((x, y) for x in nbs for y in nbs if y in tg._nb(x))
         rom["hex"], jud["hex"] = a, b        # adjacent ground units
         hq["hex"] = a                        # commander keeps the probe in CC
+        tg._cc_snapshot()
         # ground ZOC: Judaean moving out of Roman heavy ground ZOC = frozen
         # [7.311 + official Q&A 1/6/1992]
         v = tg._move_verdict("Jud", jud, [b, c])
@@ -266,6 +273,7 @@ def probes(tg):
         # the same Judaean as HQ-class is exempt (soft ZOC)
         jl = next(u for u in U.values() if u["type"] == "judaean_leader")
         jl["hex"] = b                        # HQ: soft ZOC, and covers CC
+        tg._cc_snapshot()
         v = tg._move_verdict("Jud", jl, [b, c])
         assert v["legal"], v["reasons"]      # HQ may leave, +3 MF [7.32]
         # hard-ZOC stop on entry [7.31]: Roman moving through Judaean zoc...
@@ -312,6 +320,7 @@ def probes(tg):
                   and not tg._occupants(n))
         jud2["hex"] = cl
         jl["hex"] = cl                       # leader holds the probe in CC
+        tg._cc_snapshot()
         v = tg._move_verdict("Jud", jud2, [cl, s])
         assert v["legal"] and "3" in v["reasons"][0], v
         # siege engine without a pushing crew may not move [8.6]
@@ -331,6 +340,7 @@ def probes(tg):
         print("verdict probes: PASS")
     finally:
         tg.s["units"] = snap
+        tg._cc_snapshot()
 
 
 def road_checks(tg):
@@ -760,6 +770,210 @@ def artillery_flip_checks(g):
               "Disrupted OK [8.5]")
 
         print("artillery flip checks: PASS (B19 8.4)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def cc_trace_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_cc_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=51)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+
+        def take(t, n):
+            out = [u for u in U.values()
+                   if u["type"] == t and u["hex"] is None
+                   and u["state"] == "fresh"][:n]
+            assert len(out) == n, f"need {n} {t}"
+            return out
+
+        def clear1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and h not in tg.rom_prohibited
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        def mph(phase):
+            tg.s["phase"] = phase
+            tg.s["pmoved"] = False
+            tg._mph_bookkeeping()
+
+        def park(*us):
+            for x in us:
+                x["hex"] = None
+                x["state"] = "fresh"
+                x.pop("up", None)
+                x.pop("fin", None)
+
+        def axis_line(k):
+            for h in sorted(tg.hex_t0):
+                for dq, dr in ((1, 0), (0, 1), (1, -1)):
+                    for sign in (1, -1):
+                        L = []
+                        c, r = int(h[:2]), int(h[2:])
+                        n0 = r - c // 2
+                        for i in range(k):
+                            c2 = c + dq * sign * i
+                            n2 = n0 + dr * sign * i
+                            L.append(f"{c2:02d}{n2 + c2 // 2:02d}")
+                        if all(x in tg.hex_t0 and clear1(x) for x in L):
+                            return L
+            raise AssertionError(f"no clear axis {k}-line")
+
+        # ---- the printed 5.2 EXAMPLE: a flanked Wall traces no CC at all
+        wall = mil = jl = None
+        for w in sorted(tg.hex_t0):
+            if tg.hex_t0[w] != "wall" or w not in tg.playable \
+                    or tg._occupants(w):
+                continue
+            elev = [n for n in tg._nb(w) if tg.hex_t(n) in soj.ELEVATED]
+            ground = [n for n in tg._nb(w)
+                      if n in tg.playable and n not in tg.rom_prohibited
+                      and tg.hex_t(n) not in soj.ELEVATED
+                      and tg.hex_t(n) in ("clear", "slope")
+                      and not tg._occupants(n)]
+            if elev and ground and len(elev) <= 3:
+                wall, E, G = w, elev, ground[0]
+                break
+        assert wall, "no flanked-wall topology"
+        mil = take("judaean_militia", 1)[0]
+        mil["hex"] = wall
+        jl = next(u for u in U.values() if u["type"] == "judaean_leader"
+                  and u.get("faction") == mil.get("faction")
+                  and u["hex"] is None)
+        jl["hex"] = G
+        roms = take("roman_veteran", len(E))
+        for x, e in zip(roms, E):
+            x["hex"] = e
+        mph("jud_move")
+        assert not tg.in_cc(mil), \
+            "flanked Wall unit may not trace CC even one hex [5.2 EXAMPLE]"
+        park(roms[0])
+        jl["hex"] = E[0]
+        mph("jud_move")
+        assert tg.in_cc(mil), "open Elevated route restores the trace [5.2]"
+        park(mil, jl, *roms)
+        print("cc trace: the printed 5.2 EXAMPLE reproduced - Romans on the "
+              "connected Elevated hexes cut CC to the Wall entirely (ground "
+              "hexes do not connect to a Wall), reopened route traces OK")
+
+        # ---- unique axis path: radius pin + through-vs-terminal doors
+        L = axis_line(11)
+        K = [tg.name_hex.get(x, x) for x in L]
+        gal = next(u for u in U.values() if u["type"] == "gallus")
+        vet = take("roman_veteran", 1)[0]
+        gal["hex"], vet["hex"] = L[0], L[10]
+        mph("rom_move")
+        assert tg.in_cc(vet), "10 hexes = in range [5.1]"
+
+        va, vb = take("roman_veteran", 2)
+        va["hex"] = vb["hex"] = L[5]
+        tg.s["testudo"].append({"hex": L[5], "legion": va.get("faction"),
+                                "mv": 0.0})
+        mph("rom_move")
+        assert not tg.in_cc(vet), \
+            "an intact Testudo hex is enterable only to JOIN - the trace " \
+            "may not pass through [5.2/6.61]"
+        assert tg.in_cc(va), "the Testudo hex itself still receives CC"
+        tg.s["testudo"] = []
+        mph("rom_move")
+        assert tg.in_cc(vet)
+        park(va, vb)
+
+        pan = take("roman_line", 1)[0]
+        pan["hex"], pan["state"] = L[5], "panicked"
+        mph("rom_move")
+        assert not tg.in_cc(vet), \
+            "the HQ must stop on entering a Panicked hex - no through-trace " \
+            "[5.2/17.21]"
+        assert tg.in_cc(pan), "the Panicked hex itself still receives CC"
+        park(pan)
+
+        z = take("zealot", 1)[0]
+        z["hex"] = next(n for n in tg._nb(L[5]) if clear1(n))
+        gal["state"] = "disrupted"
+        vet["hex"] = L[8]
+        mph("rom_move")
+        assert not tg.in_cc(vet), \
+            "a Disrupted HQ may not enter enemy ZOC - the trace obeys " \
+            "16.51 [5.2/16.51]"
+        gal["state"] = "fresh"
+        mph("rom_move")
+        assert tg.in_cc(vet), \
+            "a Fresh HQ is never stopped by ZOC (soft) - trace passes [7.32]"
+        park(z)
+
+        base = take("roman_line", 1)[0]
+        c1, c2 = take("velitae", 2)
+        vet["hex"] = L[10]
+        base["hex"] = c1["hex"] = c2["hex"] = L[5]
+        c1["up"] = c2["up"] = True
+        tg.s["esc"].append({"hex": L[5], "base": base["pid"], "used": []})
+        mph("rom_move")
+        assert not tg.in_cc(vet), \
+            "an Escalade hex filled to capacity blocks the trace [5.2/8.7]"
+        park(c2)
+        mph("rom_move")
+        assert tg.in_cc(vet), "below capacity the HQ may pass through [8.7]"
+        tg.s["esc"] = []
+        park(base, c1, vet)
+        gal["hex"] = None
+
+        jz = take("zealot", 1)[0]
+        jl2 = next(u for u in U.values() if u["type"] == "judaean_leader"
+                   and u["hex"] is None)
+        ram = take("ram", 1)[0]
+        jl2["hex"], jz["hex"], ram["hex"] = L[0], L[10], L[5]
+        mph("jud_move")
+        assert tg.in_cc(jz), \
+            "an unescorted enemy Siege Engine cannot prevent the trace - " \
+            "the HQ could enter (and wreck) its hex [5.2/11.4]"
+        esc = take("roman_line", 1)[0]
+        esc["hex"] = L[5]
+        mph("jud_move")
+        assert not tg.in_cc(jz), "an escorted engine hex stays closed [8.11]"
+        park(jz, jl2, ram, esc)
+        print("cc trace: exact-tracing doors - Testudo join-only, Panicked "
+              "stop, 16.51 Disrupted-HQ ZOC bar (Fresh HQ soft-passes), "
+              "Escalade capacity, unescorted-enemy-SE passage OK "
+              "[5.2/6.61/17.21/16.51/8.7/11.4]")
+
+        # ---- 5.1: CC is a phase-start determination, both directions
+        z2 = take("zealot", 1)[0]
+        gal["hex"], vet["hex"], z2["hex"] = L[0], L[1], L[3]
+        mph("rom_move")
+        assert tg.in_cc(vet)
+        gal["hex"] = None
+        assert tg.in_cc(vet), \
+            "begins the phase in CC = not penalized this phase [5.1]"
+        ok_move(tg, "Rom", vet["pid"], [K[1], K[2]])
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.s["phase"] == "rom_melee" and not tg.in_cc(vet), \
+            "the next phase re-determines CC [5.1]"
+        park(vet)
+
+        vet2 = take("roman_veteran", 1)[0]
+        vet2["hex"] = L[1]
+        mph("rom_move")
+        assert not tg.in_cc(vet2)
+        gal["hex"] = L[0]
+        assert not tg.in_cc(vet2), \
+            "CC gained mid-phase waits for the next determination [5.1]"
+        no_move(tg, "Rom", vet2["pid"], [K[1], K[2]], "[5.3]")
+        submit_ok(tg, "Rom", {"type": "end_phase"})
+        assert tg.in_cc(vet2), "the new phase sees the HQ [5.1]"
+        park(vet2, z2)
+        gal["hex"] = None
+
+        print("cc trace: 5.1 phase-start snapshot - begins-in-CC protected "
+              "through a real ZOC-entry move, mid-phase CC gain denied "
+              "([5.3] refusal witnessed), both re-determined at the next "
+              "phase OK [5.1/5.3]")
+        print("cc trace checks: PASS (B18 5.1/5.2)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 
