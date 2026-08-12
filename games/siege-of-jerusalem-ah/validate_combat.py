@@ -3527,6 +3527,237 @@ def melee_completion_checks(g):
         shutil.rmtree(live, ignore_errors=True)
 
 
+def rock_lower_elevated_checks(g):
+    """N2 [10.2/2.11]: Fresh Zealots/Militia/Cauldrons on a Bastion or
+    Fortress drop rocks on adjacent Combat units in a directly connected
+    LOWER Elevated hex (rock height Fortress > Bastion > Wall). A plain Wall
+    firer may not reach an Elevated hex, and a target at equal or higher
+    elevation is refused."""
+    live = tempfile.mkdtemp(prefix="soj_rock2_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=52)
+        U = tg.s["units"]
+        tg.s["phase"], tg.s["deploy_done"], tg.s["seg"] = "jud_fire", True, "Jud"
+
+        def take(t):
+            return next(u for u in U.values()
+                        if u["type"] == t and u["hex"] is None)
+
+        pair = None
+        for h, t in tg.hex_t0.items():
+            if t != "bastion" or h not in tg.playable:
+                continue
+            for n in tg._nb(h):
+                if n in tg.playable and tg.hex_t0[n] == "north_wall":
+                    pair = (h, n)
+                    break
+            if pair:
+                break
+        assert pair, "no Bastion-over-North-Wall pair in Gallus"
+        bastion, lower = pair
+
+        z = take("zealot")
+        z["hex"], z["state"] = bastion, "fresh"
+        rom = take("roman_veteran")
+        rom["hex"], rom["state"] = lower, "fresh"
+        tg._cc_snapshot()
+        r = submit_ok(tg, "Jud", {"type": "fire", "firers": [z["pid"]],
+                                  "target": tg.hex_name[lower]})
+        assert r["result"]["af"] >= 2, r["result"]
+        print(f"rock N2: Bastion {tg.hex_name[bastion]} -> connected lower "
+              f"North Wall {tg.hex_name[lower]}, AF {r['result']['af']} OK "
+              "[10.2]")
+
+        tg.s["fired"], tg.s["fired_hexes"] = [], []
+        z["hex"] = rom["hex"] = None
+        mil = take("judaean_militia")
+        mil["hex"], mil["state"] = lower, "fresh"
+        rom2 = take("roman_line")
+        rom2["hex"], rom2["state"] = bastion, "fresh"
+        tg._cc_snapshot()
+        submit_no(tg, "Jud", {"type": "fire", "firers": [mil["pid"]],
+                              "target": tg.hex_name[bastion]},
+                  "directly connected lower")
+        print("rock N2: North Wall firer refused vs the higher Bastion "
+              "OK [10.2/2.11]")
+
+        eqpair = None
+        for h, t in tg.hex_t0.items():
+            if t != "bastion" or h not in tg.playable:
+                continue
+            for n in tg._nb(h):
+                if n in tg.playable and tg.hex_t0[n] in ("bastion", "fortress",
+                                                         "fort"):
+                    eqpair = (h, n)
+                    break
+            if eqpair:
+                break
+        if eqpair:
+            tg.s["fired"], tg.s["fired_hexes"] = [], []
+            mil["hex"] = rom2["hex"] = None
+            z2 = take("zealot")
+            z2["hex"], z2["state"] = eqpair[0], "fresh"
+            rr = take("roman_recruit")
+            rr["hex"], rr["state"] = eqpair[1], "fresh"
+            tg._cc_snapshot()
+            submit_no(tg, "Jud", {"type": "fire", "firers": [z2["pid"]],
+                                  "target": tg.hex_name[eqpair[1]]},
+                      "directly connected lower")
+            print("rock N2: Bastion firer refused vs equal/higher connected "
+                  f"{tg.hex_t0[eqpair[1]]} OK [10.2/2.11]")
+        else:
+            print("rock N2: no Bastion-adjacent equal/higher Elevated pair in "
+                  "Gallus (the higher-target refusal covers the tier rule)")
+        print("rock_lower_elevated checks: PASS (N2)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def breach_gate_doubling_checks(g):
+    """N5 [12.5]: when Rams combine against a Gate, only the Attack Factor of
+    engines attacking through an Entrance hexside is doubled - not the whole
+    combined total. Unreachable in Gallus's one-Ram OOB, so the second engine
+    is synthesised; the arithmetic is the point (old code doubled the sum)."""
+    live = tempfile.mkdtemp(prefix="soj_gate_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=53)
+        tg.s["phase"], tg.s["deploy_done"], tg.s["seg"] = "rom_fire", True, "Rom"
+        tg.roll_die = lambda: 1
+
+        gate = ent = other = None
+        for h, t in tg.hex_t0.items():
+            if t not in soj.GATES or h not in tg.playable:
+                continue
+            grounds = [n for n in tg._nb(h) if n in tg.playable
+                       and tg.hex_t(n) in (soj.GROUND | {"builtup"})]
+            es = [n for n in grounds
+                  if tuple(sorted((n, h))) in tg.entrances]
+            plain = [n for n in grounds
+                     if tuple(sorted((n, h))) not in tg.entrances]
+            if es and plain:
+                gate, ent, other = h, es[0], plain[0]
+                break
+        assert gate, "no Gate with both an Entrance-side and a plain neighbour"
+
+        U = tg.s["units"]
+        ramA = next(u for u in U.values() if u["type"] == "ram")
+        ramB = dict(ramA)
+        ramB["pid"] = ramA["pid"] + "_B"
+        U[ramB["pid"]] = ramB
+        vets = [u for u in U.values()
+                if u["type"] == "roman_veteran" and u["hex"] is None][:2]
+        ramA["hex"], ramA["state"] = ent, "fresh"
+        ramA["facing"] = tg._dir_of(ent, gate)
+        ramB["hex"], ramB["state"] = other, "fresh"
+        ramB["facing"] = tg._dir_of(other, gate)
+        vets[0]["hex"], vets[0]["state"] = ent, "fresh"
+        vets[1]["hex"], vets[1]["state"] = other, "fresh"
+        r = submit_ok(tg, "Rom", {"type": "breach_attack",
+                                  "attackers": [ramA["pid"], ramB["pid"]],
+                                  "target": tg.hex_name[gate]})
+        assert r["result"]["bf"] == 3, r["result"]
+        print(f"breach N5: Gate {tg.hex_name[gate]} combined BF {r['result']['bf']}"
+              " = 2x(Entrance ram) + 1x(plain ram); only the Entrance-side "
+              "doubled OK [12.5]")
+        print("breach_gate_doubling checks: PASS (N5)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def junction_breach_checks(g):
+    """N18 [12.3]: a hex where different Walls join (a Gate/Wall junction:
+    gate_wall / gate_north_wall) need be Breached only once - both sections
+    fall together. The engine tracks Breach damage PER HEX (s['breach'][hex]),
+    so one crossing of the defense opens the whole junction; there is no
+    separate second-section counter left standing."""
+    live = tempfile.mkdtemp(prefix="soj_junc_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=54)
+        tg.s["phase"], tg.s["deploy_done"], tg.s["seg"] = "rom_fire", True, "Rom"
+        junction = ground = None
+        for h, t in tg.hex_t0.items():
+            if t not in ("gate_wall", "gate_north_wall") or h not in tg.playable:
+                continue
+            gs = [n for n in tg._nb(h) if n in tg.playable
+                  and tg.hex_t(n) in (soj.GROUND | {"builtup"})
+                  and tuple(sorted((n, h))) not in tg.entrances]
+            if gs:
+                junction, ground = h, gs[0]
+                break
+        assert junction, "no wall-junction hex with a plain neighbour"
+        U = tg.s["units"]
+        ram = next(u for u in U.values() if u["type"] == "ram")
+        vet = next(u for u in U.values()
+                   if u["type"] == "roman_veteran" and u["hex"] is None)
+        ram["hex"], ram["state"] = ground, "fresh"
+        ram["facing"] = tg._dir_of(ground, junction)
+        vet["hex"], vet["state"] = ground, "fresh"
+        defense = tg._breach_def(junction)
+        one_hit = tg.breach_t["table"]["1"][5]
+        assert one_hit >= 1, one_hit
+        tg.s["breach"][junction] = defense - one_hit
+        tg.roll_die = lambda: 6
+        r = submit_ok(tg, "Rom", {"type": "breach_attack",
+                                  "attackers": [ram["pid"]],
+                                  "target": tg.hex_name[junction]})
+        assert r["result"]["breached"] is True, r["result"]
+        assert tg.hex_t(junction) == "breach", tg.hex_t(junction)
+        assert list(tg.s["breach"].keys()) == [junction], tg.s["breach"]
+        print(f"junction N18: {tg.hex_name[junction]} ({tg.hex_t0[junction]}) "
+              "breached in one crossing - single per-hex counter, both wall "
+              "sections down OK [12.3]")
+        print("junction_breach checks: PASS (N18)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def fraction_checks(g):
+    """N15 [2.7]: strength halvings are never rounded - fractions are retained
+    and cumulative. A melee-1 unit attacking OUT of a Breach [11.13, x1/2]
+    strikes at 0.5, not 0; the resolver carries the fraction into the odds."""
+    live = tempfile.mkdtemp(prefix="soj_frac_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=55)
+        U = tg.s["units"]
+        wall = ground = None
+        for h, t in tg.hex_t0.items():
+            if t != "north_wall" or h not in tg.playable:
+                continue
+            gs = [n for n in tg._nb(h)
+                  if n in tg.playable and tg.hex_t(n) == "clear"]
+            if gs:
+                wall, ground = h, gs[0]
+                break
+        assert wall, "no North Wall beside clear ground"
+        tg.s["breach"][wall] = tg._breach_def(wall)
+        assert tg.hex_t(wall) == "breach"
+        syr = next(u for u in U.values()
+                   if u["type"] == "syrian_archers" and u["hex"] is None)
+        assert syr["side"] == "Rom", syr        # Syrian Archers are Roman
+        cmd = next(u for u in U.values() if u["type"] == "gallus")
+        jud = next(u for u in U.values()
+                   if u["type"] == "zealot" and u["hex"] is None)
+        syr["hex"], syr["state"] = wall, "fresh"
+        jud["hex"], jud["state"] = ground, "fresh"
+        cmd["hex"], cmd["state"] = wall, "fresh"
+        tg.s["phase"], tg.s["deploy_done"], tg.s["seg"] = "rom_melee", True, None
+        tg._cc_snapshot()
+        assert tg._melee_val(syr) == 1
+        r = submit_ok(tg, "Rom", {"type": "melee", "attackers": [syr["pid"]],
+                                  "target": tg.hex_name[ground]})
+        assert r["result"]["att"] == 0.5, r["result"]
+        print(f"fraction N15: Syrian melee 1 out of a Breach -> att "
+              f"{r['result']['att']} (0.5 retained, not truncated) OK "
+              "[2.7/11.13]")
+        print("fraction checks: PASS (N15)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
 def main():
     live = tempfile.mkdtemp(prefix="soj_cbt_")
     try:
@@ -3549,6 +3780,10 @@ def main():
         tower_checks(g)
         advance_bonus_checks(g)
         melee_completion_checks(g)
+        rock_lower_elevated_checks(g)
+        breach_gate_doubling_checks(g)
+        junction_breach_checks(g)
+        fraction_checks(g)
 
         # ---- deployment engineered for the assault: Judaean garrison as
         # usual, Roman camp scripted (ram + crew forward, ballista in range)

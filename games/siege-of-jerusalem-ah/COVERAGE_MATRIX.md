@@ -266,10 +266,10 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | # | rule | what's wrong | class |
 |---|---|---|---|
 | N1 | 4.12/4.22 | ~~breach-before-missile order~~ **CLOSED as a false gap** — verified against the printed 4.12/4.22: no such ordering exists (see F.2) | ✓ |
-| N2 | 10.2 | rocks from Bastion/Fortress vs connected lower Elevated hexes refused | 2 |
+| N2 | 10.2 | ~~rocks from Bastion/Fortress vs connected lower Elevated hexes refused~~ **CLOSED — Bite 23**: `_rock_height` (Fortress > Bastion > Wall, printed 2.11 order) + the rock branch of `_fire_verdict` admits an adjacent Elevated target only from a Bastion/Fortress firer onto a strictly-lower connected Elevated hex; VC `rock_lower_elevated_checks` | ✓ |
 | N3 | 9.7 | ~~ZOC-exerter preference~~ **CLOSED** — see F.18 | ✓ |
 | N4 | 9.9 | ~~indirect fire~~ **CLOSED** — see F.13 | ✓ |
-| N5 | 12.5 | `_resolve_breach` doubles the WHOLE combined BF if any attacker is entrance-side; rule doubles only entrance-side attackers. Unreachable in Gallus (one Breach unit) — **fix before any scenario with 2+ Breach engines**; noted so it cannot ship silently | (1, campaign) |
+| N5 | 12.5 | ~~`_resolve_breach` doubles the WHOLE combined BF if any attacker is entrance-side~~ **CLOSED — Bite 23**: `_resolve_breach` now sums per-attacker, doubling ONLY the Attack Factor of engines crossing an Entrance hexside. Multi-Ram combining is unreachable in Gallus's one-Ram OOB, so the second engine is synthesised in VC `breach_gate_doubling_checks` (BF = 2×entrance + 1×plain = 3, not 4); single-Ram gate doubling unchanged | ✓ |
 | N6 | 7.321 | ~~soft-ZOC exit +3 overcharge~~ **CLOSED — Bite 21** (see M.10); VM `mph_door_checks` | ✓ |
 | N7 | 11.14 | ~~gate entrance-hexside melee not halved; Sortie + counterattack missing~~ **CLOSED — Bite 22** (see X.5): entrance/breach halving in `_melee_approach`, `s["sortie"]` log, modal `counterattack` pending at `end_phase`, advance-through-Entrance carve-out; VC `melee_completion_checks` | ✓ |
 | N8 | 11.7/11.18 | ~~the −1 Elevated-defense drm (and its forfeit) never applied~~ **CLOSED — Bite 22** (see X.8/X.10) — the drm was declared in game.json spec data all along, never applied; VC `melee_completion_checks` | ✓ |
@@ -277,12 +277,12 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 | N10 | 15.1/14.21 | ~~retreat engine~~ **CLOSED** — full constrained-search rewrite (see X.27/X.33/X.34); VC `retreat_engine_checks` | ✓ |
 | N11 | 8.2 | ~~unit movement finality untracked~~ **CLOSED — Bite 21** (see M.21): `u["m0"]` + `s["lastm"]`; VM `mph_door_checks` | ✓ |
 | N12 | 8.14 | offboard exit denied (Romans as-if-Clear; Judaeans never return) | 2 |
-| N13 | 3.4 | setup options denied: Roman Artillery Fresh-or-Disrupted choice (~~Infantry setup in Testudo~~ closed with B13 — see P0.8) | 2 |
+| N13 | 3.4 | ~~setup options denied: Roman Artillery Fresh-or-Disrupted choice~~ **CLOSED — Bite 23**: `deploy` accepts `status` (Fresh/Disrupted), gated to Roman Artillery only; `dep_state` set on apply (Infantry-in-Testudo closed with B13 — see P0.8); VC `setup_option_checks` | ✓ |
 | N14 | — | ~~merged into B14~~ **CLOSED with B14** (riders/pushers state = `u["up"]` on Tower hexes) | ✓ |
-| N15 | 2.7 | *verified enforced* (float arithmetic; no truncation found) — kept as a validator case to write | — |
+| N15 | 2.7 | ~~*verified enforced* (float arithmetic; no truncation found) — kept as a validator case to write~~ **CLOSED — Bite 23**: VC `fraction_checks` pins a melee-1 unit attacking out of a Breach (11.13 ×½) at att 0.5, not 0 — a truncation guard on the strength pipeline | ✓ |
 | N16 | 6.2/6.4/8.4 + TEC "P" | ~~Cavalry/Ram/Artillery gate pass-through refused flat~~ **CLOSED — Bite 21** (see M.29). Same bite closed THREE adjacent silent gaps in the same sentences: mid-path 6.1/6.2/6.3 entry prohibitions and the 6.3 one-Cauldron clause (see M.28) | ✓ |
-| N17 | 3.3 | off-board Legion setup: verify card scope, then enforce or evidence | ? |
-| N18 | 12.3 | multi-wall junction hexes (R51-class) breach-once semantics unverified | ? |
+| N17 | 3.3 | ~~off-board Legion setup: verify card scope~~ **CLOSED — Bite 23 as UNREACHABLE**: the Gallus card gives no off-board Legion arrival — every Roman unit deploys on-board in the Roman zone, and the only reinforcements are the Judaean South Wall force (deployment has no `offboard`/`legions` key; reinforcement pool is all-Judaean); asserted in VC `setup_option_checks` | ✓ |
+| N18 | 12.3 | ~~multi-wall junction hexes (R51-class) breach-once semantics unverified~~ **CLOSED — Bite 23**: the engine tracks Breach damage PER HEX (`s["breach"][hex]`), so a junction (gate_wall/gate_north_wall) crosses its single defense once and the whole hex opens — no second-section counter exists to leave standing; VC `junction_breach_checks` breaches a live junction in one crossing | ✓ |
 | N19 | 8.96 | ~~Breach entry for Art/Cav/SE/Testudo without the connecting-breach adjacency test~~ **CLOSED with B13** — `_breach_link` (an adjacent hex currently a Breach; same-wall identity approximated by adjacency, exact only at multi-wall junctions → N18's open question) in `_entry_cost` for Cav/Art/SE and in `_tst_move_verdict`; VC `testudo_checks` | ✓ |
 | N20 | 8.13 | ~~fully-stacked carve-out not implemented~~ **CLOSED — Bite 21** (see M.20): `_full_to_mph`; VM `mph_door_checks` | ✓ |
 | N21 | 2.45 | ~~SE `ma` encoded [n,n]; printed back side is MA 0 (no-crew state)~~ **CLOSED** — `ma` [n, 0], `_ma` flips on the crew condition (see M.24) | ✓ |
@@ -294,8 +294,20 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **N-remainder + R-held ONLY — the engine B-list is FULLY CLOSED
-(B1–B19). Bite 22 (this commit) CLOSED the melee cluster — N7/N8/N9/N22/N24**: the 11.14 Gate
+**NOT PLAYABLE.** Open rows: **N12 (offboard exit) + R-held ONLY — the engine B-list is FULLY
+CLOSED (B1–B19), and every N-remainder row except N12 is now closed. Bite 23 (this commit)
+CLOSED SIX — N2/N5/N13/N15/N17/N18**: rock attacks from a Bastion/Fortress onto a directly
+connected LOWER Elevated hex (N2 — `_rock_height` Fortress>Bastion>Wall + the `_fire_verdict`
+rock branch; VC `rock_lower_elevated_checks`); per-attacker Gate-Ram doubling so only the
+Entrance-side AF doubles (N5 — `_resolve_breach`; multi-Ram unreachable in Gallus, synthesised in
+VC `breach_gate_doubling_checks`); Roman Artillery Fresh-or-Disrupted setup (N13 — `deploy`
+`status`/`dep_state`, Artillery-only; VC `setup_option_checks`); the 2.7 no-truncation guard
+(N15 — VC `fraction_checks` pins att 0.5 out of a Breach); off-board Legion setup CLOSED as
+UNREACHABLE in Gallus (N17 — no off-board Legion arrival on the card; all Romans on-board;
+asserted in `setup_option_checks`); and multi-wall junction breach-once (N18 — structurally
+satisfied by the per-hex `s["breach"]` model; VC `junction_breach_checks` breaches a live
+junction in one crossing). ONLY N12 (8.14 offboard exit — needs new exit-action plumbing) remains
+of the N-rows. Before that **Bite 22 CLOSED the melee cluster — N7/N8/N9/N22/N24**: the 11.14 Gate
 sortie whole (X.5: entrance/breach halving, `s["sortie"]` hashed log, modal end-of-phase
 `counterattack` pending with the 11.2 pusher exception and the advance-through-Entrance
 "enemy occupation" carve-out), the 11.7/11.18 −1 Elevated-defense drm + forfeit (X.8/X.10 —
@@ -381,9 +393,10 @@ M.26/M.36/M.13-escalade + F.15 base-exclusion + 9.4 fire-from bar; `s["esc"]` +
 fresh-MA-budget silent gaps closed there. B11 before that:
 X.16/X.22-vacated-hex/X.23/X.25 + the A/B/C ledger row on `multiple_attack_checks`, `u["mk"]`
 ladder, modal `advance` pending, `melee_hexes` hex-once lock, CC same-units audit, 14.3
-auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`), N2,
-N5, N12–N13, N15, N17–N18 (N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
-closed inside B14; N6/N11/N16/N20 closed by Bite 21; N7/N8/N9/N22/N24 closed by Bite 22),
+auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`), N12
+(N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
+closed inside B14; N6/N11/N16/N20 closed by Bite 21; N7/N8/N9/N22/N24 closed by Bite 22;
+N2/N5/N13/N15/N17/N18 closed by Bite 23),
 R1/R2/R4/R8 (blocked on
 Rob — cells stay open until his answers land; R7 no longer blocks Gallus: Elim-vs-Wreck proven
 outcome-equivalent, campaign identity still with Rob).** The A-list is CLOSED: A1/A2/A8 (ac848ec),

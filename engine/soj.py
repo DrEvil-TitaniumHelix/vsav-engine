@@ -1442,6 +1442,13 @@ class SoJGame(GateGame):
                 return af
         return None
 
+    def _rock_height(self, t):
+        if t in ("fortress", "fort"):
+            return 3
+        if t == "bastion":
+            return 2
+        return 1
+
     def _fire_verdict(self, side, action):
         p = self.s["phase"]
         if not p.endswith("_fire"):
@@ -1525,11 +1532,16 @@ class SoJGame(GateGame):
                                           "exerting a ZOC over the firer to "
                                           "attack a non-exerter [9.7]")
             if ut.get("rock") is not None and ut.get("missile") is None:
-                # rocks: from Elevated at lower adjacent units [10.2/2.523]
-                if self.hex_t(f["hex"]) not in ELEVATED:
+                ft = self.hex_t(f["hex"])
+                if ft not in ELEVATED:
                     return self._v(False, "rock attacks only from Elevated hexes [10.2]")
-                if d != 1 or self.hex_t(tgt) in ELEVATED:
+                if d != 1:
                     return self._v(False, "rock attacks hit lower, adjacent units [10.2/Weapons Chart]")
+                if self.hex_t(tgt) in ELEVATED and (
+                        ft not in STRONGPOINTS
+                        or self._rock_height(self.hex_t(tgt))
+                        >= self._rock_height(ft)):
+                    return self._v(False, "rocks reach an adjacent Elevated hex only from a Bastion or Fortress onto a directly connected lower Elevated hex [10.2/2.11]")
                 af = ut["rock"]
             else:
                 af = self._range_af(f, d)
@@ -2013,15 +2025,14 @@ class SoJGame(GateGame):
     def _resolve_breach(self, side, action, verdict):
         tgt = self.name_hex.get(action["target"], action["target"])
         bf = verdict["bf"]
-        # gate attacked through its Entrance hexside doubles AF [10.1]
-        doubled = False
         if self.hex_t0[tgt] in GATES:
+            bf = 0
             for pid in action["attackers"]:
                 u = self.s["units"][str(pid)]
+                af = self.utype(u)["breach_af"]
                 if tuple(sorted((u["hex"], tgt))) in self.entrances:
-                    doubled = True
-        if doubled:
-            bf *= 2
+                    af *= 2
+                bf += af
         col = str(min(4, bf)) if bf < 4 else "4"
         die = self.roll_die()
         dmg = self.breach_t["table"][col][die - 1]
@@ -3209,6 +3220,12 @@ class SoJGame(GateGame):
                    "outside Jerusalem, >= 5 hexes from any Elevated hex (card)")
             return self._v(False, f"deployment must be {why}")
         cls = self.utype(u)["cls"]
+        st = action.get("status")
+        if st is not None:
+            if st not in ("fresh", "disrupted"):
+                return self._v(False, "setup status is Fresh or Disrupted [3.4]")
+            if not (side == "Rom" and cls == "artillery"):
+                return self._v(False, "only Roman Artillery may set up Fresh or Disrupted (movable) [3.4]")
         if cls == "cavalry" and self.hex_t(h) in ELEVATED:
             return self._v(False, "Cavalry may never enter Elevated hexes [6.2]")
         if cls in ("siege_engine", "artillery") and self.hex_t(h) in ELEVATED:
@@ -3244,7 +3261,7 @@ class SoJGame(GateGame):
             fd = self._dir_of(h, fh) if fh in self.hex_t0 else None
             if fd is None:
                 return self._v(False, "facing must point at a hex adjacent to the deployment hex [2.45]")
-        return dict(self._v(True, "deploy"), face_dir=fd)
+        return dict(self._v(True, "deploy"), face_dir=fd, dep_state=st or "fresh")
 
     def _deploy_done_verdict(self, side):
         phase = self.s["phase"]
@@ -3285,6 +3302,7 @@ class SoJGame(GateGame):
             u = self.s["units"][str(action["pid"])]
             h = self.name_hex.get(action["hex"], action["hex"])
             u["hex"] = h
+            u["state"] = verdict.get("dep_state", "fresh")
             self.s["control"][h] = side
             out = {"placed": self.hex_name[h]}
             if self.utype(u)["cls"] == "siege_engine":
