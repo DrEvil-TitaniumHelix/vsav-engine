@@ -192,6 +192,9 @@ def main():
         # ---------------- D. rout/panic movement obligations - B16
         rout_obligation_checks(g)
 
+        # ---------------- E. artillery flip-to-move [8.4] - B19
+        artillery_flip_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -672,6 +675,91 @@ def rout_obligation_checks(g):
               "OK [15.3]")
 
         print("rout obligation checks: PASS (B16 15.3/17.21/8.1/4.13)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def artillery_flip_checks(g):
+    live = tempfile.mkdtemp(prefix="soj_flip_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=41)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        N = tg.hex_name
+
+        assert all(tg.hex_t0[h] not in soj.ELEVATED for h in tg.rom_zone), \
+            ("the Roman deployment zone holds no Elevated hex - 8.4's "
+             "Elevated-start clause cannot arise in Gallus")
+
+        def clear1(h):
+            return (h in tg.playable and h in tg.outside
+                    and tg.hex_t0[h] == "clear"
+                    and len(tg._nb(h)) == 6 and not tg._occupants(h))
+
+        bal = next(u for u in U.values() if u["type"] == "roman_ballista")
+        h0 = next(h for h in sorted(tg.hex_t0)
+                  if clear1(h) and all(clear1(n) for n in tg._nb(h))
+                  and all(clear1(m) for n in tg._nb(h) for m in tg._nb(n)))
+        bal["hex"] = h0
+        no_move(tg, "Rom", bal["pid"], [N[h0], N[tg._nb(h0)[0]]],
+                "allowance exceeded")
+        tg.s["phase"] = "rom_fire"
+        submit_no(tg, "Rom", {"type": "flip", "pid": bal["pid"]},
+                  "owning Movement Phase")
+        tg.s["phase"] = "rom_move"
+        vet = next(u for u in U.values() if u["type"] == "roman_veteran"
+                   and u["hex"] is None)
+        submit_no(tg, "Rom", {"type": "flip", "pid": vet["pid"]},
+                  "unit is not on the map")
+        vet["hex"] = tg._nb(h0)[1]
+        submit_no(tg, "Rom", {"type": "flip", "pid": vet["pid"]},
+                  "only Artillery flips")
+        r = submit_ok(tg, "Rom", {"type": "flip", "pid": bal["pid"]})
+        assert r["result"]["state"] == "disrupted" \
+            and bal["state"] == "disrupted"
+        submit_no(tg, "Rom", {"type": "flip", "pid": bal["pid"]},
+                  "only Fresh Artillery")
+        assert abs(tg._ma(bal) - 4.0) < 1e-9
+        chain = clear_chain(tg, h0, 5)
+        no_move(tg, "Rom", bal["pid"], chain[:6], "allowance exceeded")
+        ok_move(tg, "Rom", bal["pid"], chain[:5])
+        assert bal["hex"] == tg.name_hex[chain[4]]
+        print("artillery flip: Fresh Roman Artillery cannot move (MA 0); "
+              "the voluntary flip turns it Disrupted (MA 4) and it "
+              "marches; phase/side/class/state refusals OK [8.4]")
+
+        jm = next(u for u in U.values()
+                  if u["type"] == "judaean_militia" and u["hex"] is None)
+        tgt = tg.name_hex[clear_chain(tg, bal["hex"], 2)[2]]
+        jm["hex"] = tgt
+        tg.s["phase"] = "rom_fire"
+        tg.s["seg"] = "Rom"
+        v = tg.propose("Rom", {"type": "fire", "target": N[tgt],
+                               "firers": [bal["pid"]]})
+        assert not v["legal"] \
+            and "not Fresh" in " ".join(v["reasons"]), v["reasons"]
+        print("artillery flip: the flipped (Disrupted, moving) Artillery "
+              "may not fire until rallied OK [8.4/9.1/16.2]")
+
+        tg.s["phase"] = "jud_move"
+        tg._mph_bookkeeping()
+        cld = next(u for u in U.values() if u["type"] == "cauldron")
+        wall = next(h for h in sorted(tg.hex_t0)
+                    if tg.hex_t0[h] == "wall" and h in tg.playable
+                    and not tg._occupants(h))
+        cld["hex"] = wall
+        submit_no(tg, "Jud", {"type": "flip", "pid": bal["pid"]},
+                  "not your unit")
+        submit_no(tg, "Jud", {"type": "flip", "pid": cld["pid"]},
+                  "no flip needed")
+        print("artillery flip: Cauldrons never flip - they move Fresh or "
+              "Disrupted OK [8.5]")
+
+        print("artillery flip checks: PASS (B19 8.4)")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 

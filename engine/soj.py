@@ -2802,6 +2802,8 @@ class SoJGame(GateGame):
             return self._testudo_verdict(side, action)
         if a == "change_facing":
             return self._change_facing_verdict(side, action)
+        if a == "flip":
+            return self._flip_verdict(side, action)
         if a == "fire":
             if self.tier < 2:
                 return self._v(False, "combat is not gated in sandbox mode")
@@ -2826,6 +2828,25 @@ class SoJGame(GateGame):
             return self._v(True, f"end of {phase}"
                            + (f" ({self.s['seg']} segment)" if self.s.get("seg") else ""))
         return self._v(False, f"unknown action type {a!r}")
+
+    def _flip_verdict(self, side, action):
+        if self.s["phase"] != f"{'rom' if side == 'Rom' else 'jud'}_move":
+            return self._v(False, "Artillery flips to its Disrupted side in the owning Movement Phase, in order to move [8.4]")
+        u = self.s["units"].get(str(action.get("pid")))
+        if not u or u["side"] != side:
+            return self._v(False, "not your unit")
+        if u["hex"] is None:
+            return self._v(False, "unit is not on the map")
+        cls = self.utype(u)["cls"]
+        if cls == "cauldron":
+            return self._v(False, "Cauldrons move whether Fresh or Disrupted - no flip needed [8.5]")
+        if cls != "artillery":
+            return self._v(False, "only Artillery flips to move [8.4]")
+        if side != "Rom":
+            return self._v(False, "non-Cauldron Judaean Artillery may not move during an Assault Period [8.4]")
+        if u["state"] != "fresh":
+            return self._v(False, "only Fresh Artillery flips to its Disrupted side [8.4]")
+        return self._v(True, "flipped to the Disrupted side to move - increased vulnerability in transit; it must rally before it can fire [8.4]")
 
     def _escalade_verdict(self, side, action):
         if self.s["phase"] != f"{'rom' if side == 'Rom' else 'jud'}_move":
@@ -3190,6 +3211,10 @@ class SoJGame(GateGame):
                     out["eliminated"] = ("the forced stop overstacked the "
                                          "hex [17.21]")
             return out
+        if a == "flip":
+            u = self.s["units"][str(action["pid"])]
+            u["state"] = "disrupted"
+            return {"flipped": u["pid"], "state": "disrupted"}
         if a == "escalade":
             u = self.s["units"][str(action["pid"])]
             u["mv"] = u.get("mv", 0.0) + 4.0
