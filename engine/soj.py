@@ -3204,6 +3204,9 @@ class SoJGame(GateGame):
                 if self.utype(x).get("hq") != "commander" \
                         and x.get("faction") not in fac:
                     return self._v(False, "the HQ must belong to the forming Legion [5.4/6.6]")
+            if any(t.get("legion") == next(iter(fac))
+                   and not t.get("broken") for t in self.s["testudo"]):
+                return self._v(False, "one Testudo formation per Legion at a time - the Legion's counter is in use [2.6; declared ruling, see source_defects 'testudo-one-per-legion']")
             if not setup:
                 for x in hv + vl:
                     if x.get("pushed"):

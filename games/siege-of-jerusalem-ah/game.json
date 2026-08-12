@@ -309,6 +309,15 @@
     "enforced": true
    },
    {
+    "id": "testudo-one-per-legion",
+    "kind": "ambiguous_wording",
+    "rules": ["2.6", "6.6", "8.8"],
+    "defect": "Neither the rulebook nor the counter manifest states how many TESTUDO counters the printed mix holds per Legion, and no supply tray or setup places one - so whether 'one testudo formation per Legion at a time' is a physical component limit the gate must enforce is unrecoverable from the printed sources alone (the VASSAL palette is an unlimited supply and proves nothing).",
+    "resolution": "Enforced as ONE INTACT Testudo formation per Legion at a time: rule 2.6's marker figure prints the TESTUDO counter Legion-marked (the sample is the XV counter in XV's colour) and the module supplies exactly one testudo art per Legion (V, X, XII, XV) - consistent with one physical counter each. A BROKEN Testudo does not hold the counter (the Broken Testudo marker is a separate printed counter, 2.6), so a new formation may assemble while a broken one persists. Single-Legion Gallus makes the cross-Legion arm unreachable; the per-Legion (not global) shape is proven by a synthesized second-Legion formation in the validator.",
+    "authority": "Declared ruling (2026-08-12), pending module-author/expert review (ROB_QUESTIONS R2); loosening on Rob's answer never invalidates prior play.",
+    "enforced": true
+   },
+   {
     "id": "general-26-4-interphase-sequence",
     "kind": "editing_error",
     "rules": ["19", "The General Vol 26 No 4"],
