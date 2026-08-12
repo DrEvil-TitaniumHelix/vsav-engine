@@ -130,25 +130,43 @@ def main():
         assert tg.s["phase"] == "jud_move"
 
         # -------- Judaean wall work: climb a staircase through the gate
-        # find a (ground unit, staircase, strongpoint) trio from the actual
-        # deployment (deterministic under the fixed seed)
+        # find a (ground unit, staircase, strongpoint) trio: walk a deployed
+        # Judaean to the ground end of a surviving art-confirmed staircase
+        # (the R4 exclusion removed the session-1 stairs that used to sit
+        # under the deployment), then climb it [8.93]
         climb = None
+        juds = sorted((u for u in tg.s["units"].values()
+                       if u["side"] == "Jud" and u["hex"] is not None
+                       and u["type"] in ("judaean_regular",
+                                         "judaean_militia", "zealot")
+                       and tg.hex_t0[u["hex"]] in ("clear", "builtup")),
+                      key=lambda x: x["pid"])
         for pair in sorted(tg.stairs):
             gnd, wall = ((pair[0], pair[1])
                          if tg.hex_t0[pair[1]] in soj.ELEVATED else (pair[1], pair[0]))
-            if tg.hex_t0[gnd] in soj.ELEVATED:
+            if tg.hex_t0[gnd] in soj.ELEVATED or gnd not in tg.playable \
+                    or wall not in tg.playable:
                 continue
-            unit = next((u for u in tg._occupants(gnd)
-                         if u["side"] == "Jud" and u["type"] in
-                         ("judaean_regular", "judaean_militia", "zealot")), None)
-            if unit is None:
-                continue
-            v = tg._move_verdict("Jud", unit,
-                                 [gnd, wall])
-            if v["legal"]:
-                climb = (unit, gnd, wall, v)
+            for unit in juds:
+                if unit["hex"] != gnd and tg._occupants(gnd):
+                    continue
+                try:
+                    names = walk(tg, unit, gnd)
+                except AssertionError:
+                    continue
+                cost = sum(2.0 if tg.hex_t0[tg.name_hex[n]] == "builtup"
+                           else 1.0 for n in (names or [])[1:])
+                if tg._ma(unit) - cost < 2.0:
+                    continue
+                if names:
+                    ok_move(tg, "Jud", unit["pid"], names)
+                v = tg._move_verdict("Jud", unit, [gnd, wall])
+                if v["legal"]:
+                    climb = (unit, gnd, wall, v)
                 break
-        assert climb, "no staircase climb available from the deployment"
+            if climb:
+                break
+        assert climb, "no staircase climb reachable from the deployment"
         unit, gnd, wall, v = climb
         assert "2 of" in v["reasons"][0], \
             f"staircase climb should cost 2 MF [8.93]: {v['reasons']}"
@@ -209,6 +227,9 @@ def main():
 
         # ---------------- I. Garrison Areas declared ruling - Bite 25 (R1)
         garrison_checks(g)
+
+        # ---------------- J. doubtful-staircase exclusion - Bite 25 (R4)
+        stair_exclusion_checks(g)
 
         # ---------------- log replays end-to-end
         r = subprocess.run(
@@ -1451,6 +1472,60 @@ def offboard_exit_checks(g):
         print("offboard exit: an intact Testudo marches off whole - "
               "members removed, formation dissolved OK [8.14/8.8]")
         print("offboard exit checks: PASS (Bite 24 N12 - M.33 whole)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def stair_exclusion_checks(g):
+    """R4 declared ruling (Bruce 2026-08-12): the 20 doubtful session-1
+    staircase hexsides are EXCLUDED (source_defects
+    'staircase-doubtful-hexsides'); the 28 art-confirmed sides stand.
+    Pin the exclusion set, prove the loud consequence (a stair-less fort
+    refuses ground entry and ground melee with the printed-law citation),
+    and prove a confirmed staircase still opens its wall."""
+    EXCLUDED = [
+        "0743|0844", "0746|0846", "0746|0847", "1355|1356", "1356|1456",
+        "3950|4051", "1556|1557", "4138|4238", "4254|4255", "2253|2353",
+        "3034|3035", "3544|3545", "3635|3636", "1256|1355", "3749|3849",
+        "3951|4052", "1557|1657", "4247|4346", "1255|1256", "3952|3953",
+        "3949|4050",
+    ]
+    live = tempfile.mkdtemp(prefix="soj_stex_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=41)
+        U = tg.s["units"]
+        tg.s["deploy_done"] = {"Jud": True, "Rom": True}
+        tg.s["turn"] = 1
+        N = tg.hex_name
+        assert len(tg.stairs) == 28, len(tg.stairs)
+        for k in EXCLUDED:
+            assert tuple(sorted(k.split("|"))) not in tg.stairs, k
+        print("stair exclusion: 21 doubtful hexsides absent (20 by the R4 "
+              "ruling + MM30's with its typing fix), 28 art-confirmed "
+              "staircases stand OK [8.93/11.11; source_defects "
+              "staircase-doubtful-hexsides]")
+
+        g43 = tg.name_hex["G43"]
+        h42 = tg.name_hex["H42"]
+        vet = next(u for u in U.values() if u["type"] == "roman_veteran"
+                   and u["hex"] is None)
+        vet["hex"] = h42
+        tg.s["phase"] = "rom_move"
+        tg._mph_bookkeeping()
+        r = tg.submit("Rom", {"type": "move", "pid": vet["pid"],
+                              "path": [N[h42], N[g43]]})
+        assert not r["verdict"]["legal"] and \
+            "Staircase" in " ".join(r["verdict"]["reasons"])
+        zea = next(u for u in U.values() if u["type"] == "zealot"
+                   and u["hex"] is None)
+        zea["hex"], zea["state"] = g43, "fresh"
+        mult, why = tg._melee_approach(vet, g43)
+        assert mult is None and "Staircase" in why, (mult, why)
+        vet["hex"], zea["hex"] = None, None
+        print("stair exclusion: the stair-less fort G43 refuses ground "
+              "entry and ground melee with the 8.91-8.93 citation - the "
+              "excluded-stair error mode is LOUD OK [8.93/11.11]")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 

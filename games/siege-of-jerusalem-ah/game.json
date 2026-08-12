@@ -318,6 +318,15 @@
     "enforced": true
    },
    {
+    "id": "staircase-doubtful-hexsides",
+    "kind": "ambiguous_wording",
+    "rules": ["8.93", "11.11", "map terrain key", "The General Vol 26 No 4 p.10"],
+    "defect": "The printed game supplies no legend for the staircase symbol (the map's terrain key has 14 entries, none of them Staircase; the TEC likewise), and the module author's own v2.2 changelog concedes 'Stairway location subject to player interpretation'. The designer's notes confirm staircases exist so Romans can seize weakly-held bastions and/or forts, but not WHICH hexsides carry them. Session 1 encoded 20 hexsides by pattern inference whose art measurement finds nothing (10 ABSENT at protrusion 0.0-0.03, 8 AMBIGUOUS at 0.03-0.06 vs the far-higher CONFIRMED band, 2 CONTAMINATED by adjacent structure art).",
+    "resolution": "All 20 doubtful hexsides EXCLUDED; the 27 art-CONFIRMED staircases (plus the art-confirmed Z33-Z34 addition) stand. Full per-hexside list with verdicts and scores: ingest/staircases_evidence.json + ROB_QUESTIONS R4. Consequence: each affected strongpoint (G40, G43, M50, MM31, O50, PP17, PP33, V42, DD19, II27, JJ17, L50, LL30, MM32, MM33, QQ25) carries no staircase, so it cannot be entered from ground level [8.93] or ground-meleed [11.11] - Romans must breach or escalade it. The error mode is deliberately LOUD (a wrongly-excluded real staircase surfaces as a refused legal attack citing this entry), never silent; any hexside the module author confirms is re-added, invalidating no prior play.",
+    "authority": "Declared ruling (2026-08-12), ambiguity-goes-loud tiebreak; pending module-author adjudication (ROB_QUESTIONS R4, full table prepared).",
+    "enforced": true
+   },
+   {
     "id": "general-26-4-interphase-sequence",
     "kind": "editing_error",
     "rules": ["19", "The General Vol 26 No 4"],

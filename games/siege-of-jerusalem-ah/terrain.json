@@ -12534,47 +12534,13 @@
    "entrance": true
   },
   "0743|0844": {
-   "staircase": true,
-   "inferred": true,
    "entrance": true
-  },
-  "0746|0846": {
-   "staircase": true,
-   "inferred": true
-  },
-  "0746|0847": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1255|1256": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1256|1355": {
-   "staircase": true,
-   "inferred": true
   },
   "1342|1343": {
    "staircase": true,
    "inferred": true
   },
   "1342|1443": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1355|1356": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1356|1456": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1556|1557": {
-   "staircase": true,
-   "inferred": true
-  },
-  "1557|1657": {
    "staircase": true,
    "inferred": true
   },
@@ -12635,10 +12601,6 @@
    "staircase": true,
    "inferred": true
   },
-  "2253|2353": {
-   "staircase": true,
-   "inferred": true
-  },
   "2347|2448": {
    "entrance": true
   },
@@ -12680,10 +12642,6 @@
    "staircase": true,
    "inferred": true
   },
-  "3034|3035": {
-   "staircase": true,
-   "inferred": true
-  },
   "3244|3245": {
    "staircase": true,
    "inferred": true
@@ -12692,20 +12650,8 @@
    "staircase": true,
    "inferred": true
   },
-  "3544|3545": {
-   "staircase": true,
-   "inferred": true
-  },
-  "3635|3636": {
-   "staircase": true,
-   "inferred": true
-  },
   "3748|3849": {
    "entrance": true
-  },
-  "3749|3849": {
-   "staircase": true,
-   "inferred": true
   },
   "3849|3949": {
    "entrance": true
@@ -12717,24 +12663,8 @@
    "staircase": true,
    "inferred": true
   },
-  "3950|4051": {
-   "staircase": true,
-   "inferred": true
-  },
   "3951|4051": {
    "entrance": true
-  },
-  "3951|4052": {
-   "staircase": true,
-   "inferred": true
-  },
-  "3952|3953": {
-   "staircase": true,
-   "inferred": true
-  },
-  "4138|4238": {
-   "staircase": true,
-   "inferred": true
   },
   "4140|4241": {
    "staircase": true,
@@ -12758,19 +12688,11 @@
   "4153|4154": {
    "entrance": true
   },
-  "4247|4346": {
-   "staircase": true,
-   "inferred": true
-  },
   "4250|4350": {
    "staircase": true,
    "inferred": true
   },
   "4251|4350": {
-   "staircase": true,
-   "inferred": true
-  },
-  "4254|4255": {
    "staircase": true,
    "inferred": true
   },
