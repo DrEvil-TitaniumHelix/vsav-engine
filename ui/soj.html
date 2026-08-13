@@ -417,10 +417,21 @@ async function doMelee(name){
   if(r&&r.verdict.legal&&r.result)showResult('MELEE '+name, r.result);
   deselect();
 }
+function fmtDrm(d){ return d?`, drm ${d>0?'+':''}${d}`:''; }
+function fmtRes(res){
+  if(Array.isArray(res))
+    return res.map(x=>`${x.pid}: die ${x.die}${fmtDrm(x.drm)} — ${x.was} → <b>${x.now}</b>`).join('<br>');
+  if(res&&typeof res==='object'){
+    if(res.att!==undefined)
+      return `${res.att} vs ${res.def} (odds ${res.col}) — die ${res.die}${fmtDrm(res.drm)} → <b>${res.result==='-'?'no effect':res.result}</b>`;
+    if(res.af!==undefined)
+      return `${res.af} AF vs ${String(res.row).replace(/_/g,'/')} (col ${res.col}) — die ${res.die}${fmtDrm(res.drm)} → <b>${res.result==='-'?'no effect':res.result}</b>`;
+  }
+  return `<span style="font-family:Consolas">${JSON.stringify(res).slice(0,420)}</span>`;
+}
 function showResult(what, res){
   const A=document.getElementById('actions');
-  A.innerHTML=`<b style="color:#ffd75e">${what}</b> — <span style="font-family:Consolas">${
-    JSON.stringify(res).slice(0,420)}</span>
+  A.innerHTML=`<b style="color:#ffd75e">${what}</b> — ${fmtRes(res)}
     <button class="sidebtn" onclick="document.getElementById('actions').style.display='none'">ok</button>`;
   A.style.display='block';
 }

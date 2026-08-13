@@ -294,8 +294,29 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE** — one item short of the flip: the E2E playthrough pass (with the UI modal
-wiring that carries it). The 5-bastion evidence pass is DONE (2026-08-13): four Bastions
+**PLAYABLE** (2026-08-13, Bite 28) — every row ENFORCED or UNREACHABLE-with-evidence, nothing
+human-umpired. The final item — the E2E browser playthrough — is DONE: a complete 10-turn
+Gallus game played start-to-finish through ui/soj.html against the live gate (hotseat, both
+seats, seed 62794534), 583/583 log entries independently replay-verified by
+`engine/verify_game.py` (every verdict, die and state hash reproduced; 85 illegal proposals
+rejected and provably never touched state). Exercised in the browser: both deployments (116
+units, gold min-force garrisons, SE facing, artillery-Disrupted checkbox [3.4]), full phase
+cycle ×10 turns incl. fire segments + night, escalade place/climb/move-up, testudo
+form/refuse-move/disband, artillery flip [8.4], SE facing-change refusal [10.11], routed/
+panicked Refuge obligations [15.3/17.21], South-Wall-pool gate entries [SR2/M.34 two-dice
+ruling live], gate sortie ×2 [11.14], and FIVE of the six pendings as full-screen modals
+end-to-end with real clicks (loss incl. B-substitution radio, retreat incl. staircase-refusal
++ stack-refusal + forced-continuation, advance incl. decline, esc_up incl. stacking refusal,
+counterattack incl. through-gate resolution). The sixth (errant, 9.31) never armed — its
+trigger (natural 1 + ground artillery vs Elevated + adjacent friendly) is dice-gated and the
+dice never landed in this game; the engine path is VC-validated and the modal renders from
+the same pending pipeline as the five proven kinds. Two client defects exposed and fixed in
+the same pass: per-cohort Heavy-Infantry counter images (slot+cohort front face, shared
+Reverse) and the testudo membership view (engine stores hex-implicit membership; the view
+read a nonexistent `members` list, so Move/Disband never rendered). Suite 38/38 green,
+Arnhem baseline fe2a652f byte-identical, all four SoJ validators green.
+
+The 5-bastion evidence pass is DONE (2026-08-13): four Bastions
 (G45/G47/H48/J37) + one Fort (I50) were mis-typed `north_wall` by the session-1 classifier,
 re-read from their printed control-map rings + tower/fort structures (ring-fraction census
 cross-validated vs all 22 shipped Bastions / 10 Forts; the four bleed-only marginals
@@ -417,7 +438,7 @@ CLOSED WHOLE by declared rulings: R1 (P0.4, Bite 25a), R2 (M.27 count, Bite 25b)
 staircase exclusion, Bite 25c), R8 (M.34 dice count, Bite 25d — two dice for the count, one
 die for the gate); Rob's confirmations convert the authority tiers when they land (R7 no
 longer blocks Gallus: Elim-vs-Wreck proven outcome-equivalent, campaign identity still with
-Rob). Open before the PLAYABLE flip: the E2E playthrough pass (only remaining item).
+Rob). The E2E playthrough pass (the last open item) closed 2026-08-13 — see the verdict above.
 DATA ITEM RESOLVED (5-bastion evidence pass, 2026-08-13): the session-1 auto-classifier
 mis-typed five North Wall strongpoints as plain `north_wall`. The completeness pass over all
 49 `north_wall` hexes found 9 ring-flagged candidates; the printed control-map rings + tower/
@@ -433,9 +454,10 @@ scope in the unreachable register; road/crest land with B7/B8), **A9 done this c
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`
 register mirroring this matrix), `enforced_tier2` cut to true claims only (advance-after-combat,
 full-LOF, wall-bonus and mandatory-target overclaims removed), `SoJGame.rules_scope()` composes
-the matrix-regime shape with a NOT-PLAYABLE banner (gate.py's tiered base untouched for the
-legacy games until their conversion).
-The scenario ships when this section reads "PLAYABLE: every row ENFORCED or UNREACHABLE" and
-`run_all` + all four validators prove it.
+the matrix-regime shape; since the Bite-28 flip its banner reads PLAYABLE whenever `build_open`
+holds no open defect (gate.py's tiered base untouched for the legacy games until their
+conversion).
+This section reads PLAYABLE and `run_all` (38/38) + all four validators + the 583-entry E2E
+replay prove it.
 
 *Maintained by hand during the build; every closed row must name its validator in the same commit.*
