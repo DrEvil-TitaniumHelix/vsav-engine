@@ -159,7 +159,7 @@ location.replace(tactical ? 'tactical.html' : 'board.html');
 """
 
 
-def menu_page(metas):
+def menu_page(metas, n_rot):
     cards = json.dumps([dict(slug=m["slug"], name=m["name"], tier=m["tier"],
                              tags=m.get("tags") or [],
                              blurb=m.get("blurb") or "",
@@ -185,8 +185,13 @@ def menu_page(metas):
   .card .art { width:100%; height:190px; object-fit:contain; border-radius:8px;
                background:#1a1c20; }
   .card .noart { width:100%; height:190px; border-radius:8px; background:#1a1c20;
-                 display:flex; align-items:center; justify-content:center;
-                 color:#4a4f57; font-size:44px; }
+                 display:flex; align-items:center; justify-content:center; }
+  .card .noart svg { width:150px; height:120px; }
+  .card.placeholder { border-style:dashed; }
+  .card.placeholder button, .card.soon button { background:#2c2f36; color:#b9c2cc;
+                 border:1px solid #4a4f57; }
+  .card.placeholder button:hover { background:#343943; }
+  .card.soon button { cursor:default; }
   .card h2 { margin:0; font-size:19px; color:#fff; }
   .meta { display:flex; gap:8px; flex-wrap:wrap; }
   .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
@@ -228,40 +233,32 @@ def menu_page(metas):
 </div>
 <header>
   <h1>VALOR Engine <span style="color:#8a8f98;font-weight:400">— VASSAL-Adjudicated Legality Of Rules. Full rules, in your browser.</span></h1>
-  <div class="sub">Choose a game. Every game runs at its full earned tier — the complete
-  validated rules engine (the same Python engine, running in your browser) with tier
-  selection, seeded dice and a replayable log. The first time you open a game it asks
-  once for your own copy of its VASSAL module: the file is verified and read locally,
-  never uploaded, and remembered on this device — that's also where the box art below
-  comes from.</div>
+  <div class="sub">Choose a game. Every game runs the complete validated rules
+  engine — the same Python engine, running in your browser — with seeded dice and a
+  replayable log. The first time you open a game it asks once for your own copy of
+  its VASSAL module: the file is verified and read locally, never uploaded, and
+  remembered on this device.</div>
 </header>
 <div id="cards"></div>
 <footer>
-  <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues" target="_blank" rel="noopener" style="color:#9cc4ee">contact the developer / report a bug</a> &nbsp;·&nbsp; engine + rules data only — all game art
-  belongs to its publishers and module authors and comes from your own module &nbsp;·&nbsp;
+  <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <a href="mailto:info@titanium-helix.com" style="color:#9cc4ee">contact the developer</a> &nbsp;·&nbsp; <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues" target="_blank" rel="noopener" style="color:#9cc4ee">report a bug</a> &nbsp;·&nbsp; engine + rules data only — all game art
+  belongs to its publishers and module authors &nbsp;·&nbsp;
   games save in this browser, on this device &nbsp;&middot;&nbsp; anonymous visit counting via Cloudflare (no cookies, no personal data)
 </footer>
 <script src="shared/byo.js"></script>
 <script>
 const GAMES = """ + cards + """;
-const TIER_LABEL = {0:"Free play", 1:"Movement enforced", 2:"Combat enforced", 3:"Full rules + AI"};
-async function coverUrl(g){
-  const m = g.manifest;
-  if (!m.assets || !m.assets.cover) return null;
-  try {
-    const db = await BYO.util.idb();
-    const blobs = {};
-    for (const r of m.requirements){
-      const v = await BYO.util.idbGet(db, r.sha256);
-      if (!v || !v.blob) return null;         // module not dropped yet
-      blobs[r.id] = v.blob;
-    }
-    const c = m.assets.cover;
-    const idx = await BYO.util.zipIndex(blobs[c.req]);
-    const e = idx.get(c.entry);
-    if (!e) return null;
-    return BYO.util.urlFor(await BYO.util.unzipEntry(blobs[c.req], e), c.entry);
-  } catch(err){ console.warn('cover', g.slug, err); return null; }
+const N_ROT = """ + str(n_rot) + """;
+const BOX_ART = `<svg viewBox="0 0 150 120" fill="none" stroke="#4a4f57" stroke-width="2" stroke-linejoin="round">
+  <polygon points="30,40 60,22 120,22 90,40" fill="#2c2f36"/>
+  <polygon points="90,40 120,22 120,80 90,98" fill="#23262c"/>
+  <rect x="30" y="40" width="60" height="58" fill="#31353c"/>
+  <line x1="30" y1="52" x2="90" y2="52" stroke="#3a3f47"/>
+  <line x1="90" y1="52" x2="120" y2="34" stroke="#3a3f47"/>
+  <rect x="42" y="62" width="36" height="24" rx="2" fill="#1a1c20" stroke="#3a6ea5"/>
+</svg>`;
+function coverImg(src){
+  return `<img class="art" src="${src}" onerror="this.outerHTML='<div class=noart>'+BOX_ART+'</div>'">`;
 }
 const cards = document.getElementById('cards');
 for (const g of GAMES){
@@ -270,7 +267,7 @@ for (const g of GAMES){
   const tags = (g.tags || []).map(t =>
     `<span class="tag ${t.kind}">${t.label}</span>`).join('');
   card.innerHTML =
-    `<div class="noart">🎲</div>
+    `${coverImg('covers/' + g.slug + '.jpg')}
      <h2>${g.name}</h2>
      <div class="meta">${tags}</div>
      <div class="blurb">${g.blurb}</div>
@@ -278,12 +275,46 @@ for (const g of GAMES){
      <button>Play</button>`;
   card.onclick = () => location.href = 'g/' + g.slug + '/';
   cards.appendChild(card);
-  coverUrl(g).then(u => {
-    if (!u) return;
-    const img = document.createElement('img');
-    img.className = 'art'; img.src = u; img.alt = '';
-    card.querySelector('.noart').replaceWith(img);
-  });
+}
+const soon = document.createElement('div');
+soon.className = 'card soon';
+soon.innerHTML =
+  `${coverImg('covers/siege-of-jerusalem.jpg')}
+   <h2>The Siege of Jerusalem</h2>
+   <div class="meta"><span class="tag soon">Coming soon</span></div>
+   <div class="blurb">70 AD — Titus against the walls of Jerusalem. Assault the
+   city or hold it: rams, towers, artillery and morale, every action checked by
+   the rules engine.</div>
+   <div class="needs">in final testing</div>
+   <button>Coming soon</button>`;
+cards.appendChild(soon);
+const ph = document.createElement('div');
+ph.className = 'card placeholder';
+ph.innerHTML =
+  `${coverImg('covers/rotator/01.jpg')}
+   <h2>Your module here</h2>
+   <div class="meta"><span class="tag feature">Request a game</span></div>
+   <div class="blurb">Want to play your game here, full rules in the browser?
+   Contact the developer to get your module encoded —
+   <b>info@titanium-helix.com</b> — or start with the module screener to see
+   if it qualifies.</div>
+   <div class="needs">any VASSAL module from the library</div>
+   <button>Contact the developer</button>`;
+ph.onclick = () => location.href = 'mailto:info@titanium-helix.com?subject=' +
+  encodeURIComponent('Encode my game — VALOR Engine');
+cards.appendChild(ph);
+const rot = ph.querySelector('.art');
+if (rot && N_ROT > 0){
+  rot.style.transition = 'opacity .7s';
+  let ri = 0;
+  setInterval(() => {
+    rot.style.opacity = 0;
+    setTimeout(() => {
+      ri = ri % N_ROT + 1;
+      rot.src = 'covers/rotator/' + String(ri).padStart(2, '0') + '.jpg';
+      rot.onload = () => { rot.style.opacity = 1; };
+    }, 700);
+  }, 3500);
 }
 const mb = document.getElementById('menubtn'), md = document.getElementById('menudrop');
 mb.onclick = e => { e.stopPropagation();
@@ -352,8 +383,18 @@ def main():
         print(f"{slug}: client={'tactical+board' if tactical else 'board'}, "
               f"earned tier {meta['tier']['earned']}, {n_req} module req(s)")
 
+    covers = os.path.join(ROOT, "web", "covers")
+    n_rot = 0
+    if os.path.isdir(os.path.join(covers, "rotator")):
+        shutil.copytree(covers, os.path.join(OUT, "covers"))
+        n_rot = len([f for f in os.listdir(os.path.join(covers, "rotator"))
+                     if f.endswith(".jpg")])
+        print(f"covers: {len(os.listdir(covers)) - 1} game + {n_rot} rotator")
+    else:
+        print("covers: web/covers missing (run tools/build_covers.py) — "
+              "cards fall back to the generic box graphic")
     open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(
-        menu_page(metas))
+        menu_page(metas, n_rot))
 
     # ---- module screener (menu -> "Module screener") ------------------------
     # index.json is generated by tools/build_screen_index.py from the local
