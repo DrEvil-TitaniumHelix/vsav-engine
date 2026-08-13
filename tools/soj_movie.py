@@ -7,7 +7,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "engine"))
 import gamespec
 import replay
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG = os.path.join(ROOT, "live", "game_siege-of-jerusalem-ah.log.jsonl")
@@ -37,7 +37,11 @@ def snapshot(tg):
         img = u["slot"] + ("_Reverse.gif" if rev else
                            ("_" + u["cohort"] if u.get("cohort") else "") + ".gif")
         x, y = tg.px[u["hex"]]
-        units.append(dict(pid=u["pid"], img=img, x=x, y=y,
+        ph = s["phase"]
+        done = (ph.endswith("_fire") and u["pid"] in s["fired"]) or (
+            ph.endswith("_move") and bool(u.get("m0"))
+            and u["pid"] not in (s.get("lastm") or []))
+        units.append(dict(pid=u["pid"], img=img, x=x, y=y, done=done,
                           up=bool(u.get("up")), side=u["side"], hex=u["hex"]))
     for m in s["markers"]:
         img = ("Wreck_" + "_".join(w.capitalize() for w in m["type"].split("_"))
@@ -223,8 +227,21 @@ def render(tg, frames):
     print(f"crop=({int(x0)},{int(y0)})-({int(x1)},{int(y1)}) scale={S:.3f} out={W}x{H}")
 
     cache, missing = {}, set()
-    def cimg(name):
-        if name not in cache:
+    def cimg(name, done=False):
+        key = (name, done)
+        if key not in cache:
+            if done:
+                base_im = cimg(name)
+                if base_im is None:
+                    cache[key] = None
+                else:
+                    r, g, b, a = base_im.split()
+                    d = Image.merge("RGB", (r, g, b))
+                    d = ImageEnhance.Color(d).enhance(0.4)
+                    d = ImageEnhance.Brightness(d).enhance(0.7)
+                    d.putalpha(a)
+                    cache[key] = d
+                return cache[key]
             p = os.path.join(IMGD, name)
             if not os.path.exists(p):
                 alt = name.rsplit("_", 1)[0] + ".gif"
@@ -232,12 +249,12 @@ def render(tg, frames):
                     p = os.path.join(IMGD, alt)
                 else:
                     missing.add(name)
-                    cache[name] = None
+                    cache[key] = None
                     return None
             im = Image.open(p).convert("RGBA")
-            cache[name] = im.resize((max(2, int(im.width * S)),
-                                     max(2, int(im.height * S))), Image.LANCZOS)
-        return cache[name]
+            cache[key] = im.resize((max(2, int(im.width * S)),
+                                    max(2, int(im.height * S))), Image.LANCZOS)
+        return cache[key]
 
     try:
         fcap = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 30)
@@ -294,7 +311,7 @@ def render(tg, frames):
             us.sort(key=lambda u: (u["up"], u["pid"] in actors))
             off = max(3, int(7 * S))
             for j, u in enumerate(us):
-                ci = cimg(u["img"])
+                ci = cimg(u["img"], u.get("done", False))
                 if not ci:
                     continue
                 fx, fy = tx(u["x"], u["y"])
