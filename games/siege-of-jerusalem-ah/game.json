@@ -295,8 +295,8 @@
     "kind": "ambiguous_wording",
     "rules": ["Gallus scenario card, special rule 2"],
     "defect": "The reinforcement rule says the Judaean player 'rolls the dice' (plural) for how many Giora units enter, then 'rolls the die again' (singular) for the entry gate - whether the count roll is one die or two is not defined anywhere in the rules or either official Q&A document.",
-    "resolution": "Encoded as TWO dice for the count (the game's standard is two d6 [2. COMPONENTS: 'two six-sided dice'; Repair and Elevated Hex Damage rolls are explicitly 'two dice']) and one die for the gate, following the card's own singular/plural distinction. Flagged for module-author/expert review.",
-    "authority": "Declared interpretation from the card's wording; expert review pending (no official ruling found).",
+    "resolution": "TWO dice for the count (the game's standard is two d6 [2. COMPONENTS: 'two six-sided dice'; Repair and Elevated Hex Damage rolls are explicitly 'two dice']) and one die for the gate, following the card's own singular/plural distinction. The gate roll's odd/even split is dice-count-invariant, so only the count ever hung on the ambiguity.",
+    "authority": "Declared ruling (2026-08-13), pending module-author/expert review (no official ruling found).",
     "enforced": true
    },
    {
