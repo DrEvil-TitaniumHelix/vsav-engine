@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>VALOR Engine</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#16181c; font-family:Segoe UI,sans-serif; }
+  #topbar { position:fixed; top:0; left:0; right:0; background:#22262c; color:#ddd;
+            padding:4px 14px; z-index:50; font-size:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,.5); min-width:1000px; }
+  .tbrow { display:flex; align-items:center; flex-wrap:nowrap; gap:0 12px; height:37px; }
+  #topbar b { color:#fff; }
+  .chip { padding:3px 10px; border-radius:12px; background:#31363e; font-size:13px; }
+  .chip.hot { background:#7a4b17; color:#ffd9a0; }
+  .chip.rom { background:#54341f; color:#f0c9a8; }
+  .chip.jud { background:#3b4d2e; color:#cfe6b8; }
+  .chip.night { background:#2a2a4a; color:#b8c0f0; }
+  .sidebtn { padding:5px 12px; border-radius:5px; border:1px solid #555; background:#2c2f36;
+             color:#ccc; cursor:pointer; font-size:13px; }
+  .sidebtn.on { background:#3a6ea5; color:#fff; border-color:#6aa0d8; }
+  .sidebtn.warn { background:#7a2f22; color:#ffd6cc; border-color:#a05040; }
+  .sidebtn:disabled { opacity:.4; cursor:default; }
+  #viewport { position:absolute; top:82px; left:250px; right:320px; bottom:0; overflow:hidden; cursor:grab; }
+  #world { position:absolute; transform-origin:0 0; }
+  #world.glide { transition: transform .35s ease; }
+  #world img.map { display:block; user-select:none; -webkit-user-drag:none; }
+  svg#overlay { position:absolute; top:0; left:0; pointer-events:none; }
+  .counter { position:absolute; cursor:pointer; user-select:none; -webkit-user-drag:none; border-radius:4px; }
+  .counter.done { filter:grayscale(.6) brightness(.7); }
+  .counter.sel { outline:4px solid #ffd75e; outline-offset:2px; z-index:30!important;
+                 box-shadow:0 0 0 6px rgba(255,215,94,.35), 0 0 20px 7px rgba(255,215,94,.8); }
+  .counter.selatk { outline:4px solid #ff5040; outline-offset:2px; z-index:29!important;
+                    box-shadow:0 0 0 6px rgba(255,80,64,.35), 0 0 20px 7px rgba(255,80,64,.8); }
+  .marker { position:absolute; pointer-events:none; opacity:.95; }
+  .statechip { position:absolute; z-index:33; pointer-events:none; font-size:20px; font-weight:bold;
+               text-shadow:0 0 5px #000,0 0 3px #000; }
+  #tray { position:fixed; top:82px; left:0; width:250px; bottom:0; background:#1d2025;
+          color:#cfd3da; border-right:1px solid #333; overflow-y:auto; font-size:13px; }
+  #tray .hdr { padding:7px 10px; color:#8a8f98; font-size:11.5px; border-bottom:1px solid #333;
+               position:sticky; top:0; background:#1d2025; z-index:2; }
+  #tray .trow { display:flex; align-items:center; gap:8px; padding:4px 8px; cursor:pointer;
+                border-bottom:1px solid #24272c; }
+  #tray .trow:hover { background:#272b31; }
+  #tray .trow.sel { background:#3a4a2c; outline:1px solid #9fc27f; }
+  #tray .trow img { width:34px; height:34px; }
+  #tray .trow .n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #tray .trow .ct { color:#ffd75e; font-weight:600; }
+  #sidepanel { position:fixed; top:82px; right:0; width:320px; bottom:0; background:#1d2025;
+               color:#cfd3da; display:flex; flex-direction:column; border-left:1px solid #333; }
+  #scen { padding:7px 12px; font-size:12px; color:#8a8f98; border-bottom:1px solid #333; }
+  #selinfo { padding:8px 12px; border-bottom:1px solid #333; font-size:12.5px; max-height:46vh; overflow-y:auto; }
+  #selinfo .abtn { margin:3px 4px 3px 0; }
+  #loghdr { padding:5px 12px; font-size:11.5px; color:#8a8f98; border-bottom:1px solid #333;
+            display:flex; justify-content:space-between; }
+  #log { flex:1; overflow-y:auto; font-size:11.5px; padding:6px 8px; font-family:Consolas,monospace; }
+  .le { padding:3px 6px; border-radius:4px; margin-bottom:3px; white-space:pre-wrap; word-break:break-word; }
+  .le.legal { background:#202620; color:#b9d3ac; }
+  .le.illegal { background:#2d1d1c; color:#e8a49b; border-left:3px solid #b0483a; }
+  .le.event { background:#1d2430; color:#a9c4e8; }
+  #zoomctl { position:fixed; right:334px; bottom:14px; z-index:48; display:flex; flex-direction:column; gap:6px; }
+  #zoomctl button { width:40px; height:40px; border-radius:8px; border:1px solid #555;
+                    background:#23262cee; color:#ddd; font-size:20px; cursor:pointer;
+                    box-shadow:0 3px 10px rgba(0,0,0,.5); }
+  #zoomctl button:hover { background:#3a6ea5; color:#fff; }
+  #actions { position:fixed; display:none; z-index:60; left:264px; bottom:14px; background:#23262c;
+             border:1px solid #556; border-radius:8px; padding:10px 12px; color:#ddd; font-size:13px;
+             box-shadow:0 6px 24px rgba(0,0,0,.6); max-width:560px; }
+  /* MODAL: a gate pending takes the screen (Bruce 2026-08-10: the modal is the
+     signal that you must get past this step). Map-input steps collapse it to a
+     routing bar so the map stays clickable, but the game is still blocked. */
+  #modalback { position:fixed; inset:0; z-index:80; display:none;
+               background:rgba(8,10,14,.72); }
+  #modal { position:fixed; z-index:81; display:none; left:50%; top:50%;
+           transform:translate(-50%,-50%); width:620px; max-width:88vw; max-height:82vh;
+           overflow:auto; background:#23262c; color:#dde3ea; border:2px solid #c9762c;
+           border-radius:12px; padding:16px 20px; font-size:13.5px;
+           box-shadow:0 10px 50px rgba(0,0,0,.85); }
+  #modal h2 { margin:0 0 4px; font-size:17px; color:#ffd9a0; }
+  #modal .cite { color:#8a8f98; font-size:11.5px; margin-bottom:10px; }
+  #modal .urow { display:flex; align-items:center; gap:8px; padding:4px 6px; margin:2px 0;
+                 border-radius:6px; background:#2c2f36; }
+  #modal .urow img { width:32px; height:32px; }
+  #modal .urow.pick { cursor:pointer; }
+  #modal .urow.pick:hover { background:#3a3f48; }
+  #modal .urow.assigned { outline:1px solid #9fc27f; background:#2c3a2c; }
+  #modal .letterchip { display:inline-block; width:26px; height:26px; line-height:26px; text-align:center;
+                       background:#7a2f22; color:#ffd6cc; border-radius:6px; font-weight:bold; margin:0 3px; }
+  #modal .letterchip.done { background:#2c5c2c; color:#c8e8c0; }
+  #modal .letterchip.cur { outline:2px solid #ffd75e; }
+  #routbar { position:fixed; z-index:81; display:none; left:50%; top:96px; transform:translateX(-50%);
+             background:#23262c; color:#dde3ea; border:2px solid #c9762c; border-radius:10px;
+             padding:9px 16px; font-size:13.5px; box-shadow:0 6px 30px rgba(0,0,0,.8); max-width:76%; }
+  #toast { position:fixed; left:50%; transform:translateX(-50%); bottom:60px; display:none;
+           background:#5a2323; border:1px solid #c33; color:#ffd8d0; padding:10px 18px;
+           border-radius:8px; z-index:90; font-size:14px; max-width:70%;
+           box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #tablespanel { display:none; position:fixed; top:90px; right:8px; width:640px; max-width:60vw;
+                 max-height:82vh; overflow:auto; background:#1d2025f5; color:#cfd3da;
+                 font-size:13px; border:1px solid #3a3f47; border-radius:8px;
+                 padding:10px 14px; z-index:62; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  #tablespanel h3 { margin:10px 0 3px; font-size:14px; color:#fff; }
+  #tablespanel .cite { color:#8a8f98; font-size:11.5px; margin-bottom:6px; }
+  #tablespanel table { border-collapse:collapse; margin:4px 0 6px; font-variant-numeric:tabular-nums; }
+  #tablespanel th, #tablespanel td { border:1px solid #3a3f47; padding:3px 7px; text-align:center; }
+  #tablespanel th { background:#2c2f36; color:#c8d2dc; font-weight:600; }
+  #tablespanel td:first-child, #tablespanel th:first-child { text-align:left; white-space:nowrap; }
+  #tablespanel .legend code { color:#ffd75e; font-weight:600; margin-right:6px; }
+  #tablespanel .notes { color:#9aa3ad; font-size:12px; margin:2px 0 4px; padding-left:16px; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div class="tbrow">
+    <b class="fixw" id="gamename" style="max-width:250px">…</b>
+    <span class="chip fixw" id="turnchip" style="width:120px; text-align:center">…</span>
+    <span class="chip fixw" id="vpchip" style="width:150px; text-align:center" title="Roman victory: control ten Built-up hexes at the end of any Judaean Melee Phase [special rule 3 / 18.3]">…</span>
+    <span class="chip night fixw holdspace" id="nightchip" style="width:70px; text-align:center">NIGHT</span>
+    <button class="sidebtn holdspace fixw" id="tierbtn" style="margin-left:auto; width:120px"></button>
+    <button class="sidebtn" id="rulesbtn">📜 Rules</button>
+    <button class="sidebtn" id="tablesbtn">📊 Tables</button>
+    <button class="sidebtn" id="guidebtn">📖 Guide</button>
+    <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
+    <button class="sidebtn holdspace fixw" id="undobtn" style="width:110px">↶ Undo</button>
+    <button class="sidebtn warn" id="resetbtn">Reset game</button>
+  </div>
+  <div class="tbrow">
+    <span class="chip hot fixw" id="phasechip" style="width:340px">…</span>
+    <span class="chip fixw" id="seatchip" style="width:190px; text-align:center">…</span>
+    <button class="sidebtn fixw" id="endphasebtn" style="width:150px">End phase</button>
+    <button class="sidebtn holdspace fixw" id="deploydonebtn" style="width:170px">✓ Deployment done</button>
+    <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
+      <button class="sidebtn" id="prevunit" title="previous unit (B)">◀ unit</button>
+      <button class="sidebtn" id="nextunit" title="next unit (N)">unit ▶</button>
+    </span>
+  </div>
+</div>
+<div id="tray"></div>
+<div id="viewport"><div id="world">
+  <img class="map"><svg id="overlay"></svg>
+</div></div>
+<div id="sidepanel">
+  <div id="scen">…</div>
+  <div id="selinfo"><i class="dim" style="color:#8a8f98">Nothing selected.</i></div>
+  <div id="loghdr"><span>GAME LOG — every proposal, legal or not</span><span id="lognote"></span></div>
+  <div id="log"></div>
+</div>
+<div id="zoomctl">
+  <button id="zin" title="zoom in">+</button>
+  <button id="zout" title="zoom out">−</button>
+  <button id="zfit" title="fit the battlefield">⛶</button>
+</div>
+<div id="actions"></div>
+<div id="modalback"></div>
+<div id="modal"></div>
+<div id="routbar"></div>
+<div id="toast"></div>
+<div id="tablespanel"></div>
+
+<script src="frame.js?v=20260813s"></script>
+<script>
+const W = document.getElementById('world'), VP = document.getElementById('viewport');
+const OV = document.getElementById('overlay');
+let GAME=null, FLOW=null, UNITS=[], MARKERS=[], BOARD=null, UNDO=null;
+let MAPW=0, MAPH=0, CPX=60, HX=48, HXC=24, HYH=41;
+let scale=0.22, panX=0, panY=0;
+let sel=[];                 // selected own unit ids (multi for fire/melee)
+let moveCtx=null;           // {pid, dests, crew, tst} after /api/soj/dests
+let deploySel=null;         // pid picked from the tray
+let deployFace=null;        // {pid, hex} waiting for a facing click (SE deploy)
+let faceCtx=null;           // pid waiting for a change_facing click
+let climb=false;            // submit moves with up:true
+let artDisrupted=false;     // Roman artillery deploys Disrupted [3.4]
+let pathBuild=null;         // {kind:'retreat'|'beyond', pid, path:[names]}
+let modalState=null;        // per-pending client inputs, keyed by signature
+let dragging=null, panDrag=null, busy=false;
+
+const PHASE_TXT = {
+  deploy_jud:'DEPLOYMENT — Judaean player sets up first (card)',
+  deploy_rom:'DEPLOYMENT — Roman player sets up (card)',
+  rom_rally:'ROMAN RALLY PHASE [17.1]', rom_fire:'ROMAN FIRE PHASE [4.12]',
+  rom_move:'ROMAN MOVEMENT PHASE [8.1]', rom_melee:'ROMAN MELEE PHASE [11]',
+  jud_rally:'JUDAEAN RALLY PHASE [17.1]', jud_fire:'JUDAEAN FIRE PHASE [4.22]',
+  jud_move:'JUDAEAN MOVEMENT PHASE [8.1]', jud_melee:'JUDAEAN MELEE PHASE [11]'};
+const STATE_ICON = {disrupted:['D','#ffd75e'], routed:['R','#ff9a5e'], panicked:['P','#ff5040']};
+
+function apply(){ FRAME.apply(); }
+function toast(msg){ const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none',7000); }
+function sideLabel(id){ const s=GAME.sides.find(s=>s.id===id); return s?s.label:id; }
+function actingSide(){ return FLOW.pending ? FLOW.pending.by : FLOW.side_to_move; }
+function hexXY(name){ const h=BOARD.hexes[name]; return h?{x:h[0],y:h[1],t:h[2]}:null; }
+function unitsAt(name){ return UNITS.filter(u=>u.onmap&&u.hex===name); }
+function unit(id){ return UNITS.find(u=>u.id===id); }
+function nearestHex(m){ let best=null,bd=(GAME.grid.dx*0.62)**2;
+  for(const n in BOARD.hexes){ const h=BOARD.hexes[n];
+    const d=(h[0]-m.x)**2+(h[1]-m.y)**2; if(d<bd){bd=d;best=n;} }
+  return best; }
+
+FRAME.initFrame({
+  viewport: VP, world: W, topbar: document.getElementById('topbar'),
+  zoomMin: 0.06, zoomMax: 1.6,
+  get: () => ({ panX, panY, scale, mapW: MAPW, mapH: MAPH }),
+  set: o => { if(o.panX!==undefined)panX=o.panX; if(o.panY!==undefined)panY=o.panY;
+              if(o.scale!==undefined)scale=o.scale; },
+  fit: () => fitBattle(),
+  select: u => selectUnit(u.id, false),
+  actable: () => actableUnits(),
+  endBtnId: 'endphasebtn',
+  turnDone: () => false,
+  followTop: [{id:'sidepanel',gap:0},{id:'tray',gap:0},{id:'tablespanel',gap:8},
+              {id:'rulespanel',gap:8},{id:'tierpanel',gap:8},{id:'guidepanel',gap:8}],
+  guideRight: 320, guideAvoid: ['tray'],
+});
+function fitBattle(){
+  if(!BOARD)return;
+  let x0=1e9,y0=1e9,x1=0,y1=0;
+  for(const n in BOARD.hexes){ const h=BOARD.hexes[n];
+    x0=Math.min(x0,h[0]); y0=Math.min(y0,h[1]); x1=Math.max(x1,h[0]); y1=Math.max(y1,h[1]); }
+  x0-=120; y0-=120; x1+=120; y1+=120;
+  scale=Math.min(VP.clientWidth/(x1-x0), VP.clientHeight/(y1-y0));
+  panX=-x0*scale+(VP.clientWidth-(x1-x0)*scale)/2;
+  panY=-y0*scale+(VP.clientHeight-(y1-y0)*scale)/2;
+  apply();
+}
+VP.addEventListener('pointerdown',e=>{ if(e.target.closest('.counter'))return;
+  panDrag={x:e.clientX-panX,y:e.clientY-panY,moved:false}; VP.setPointerCapture(e.pointerId); });
+VP.addEventListener('pointermove',e=>{ if(dragging)return dragMove(e);
+  if(panDrag){ if(Math.abs(e.clientX-panDrag.x-panX)+Math.abs(e.clientY-panDrag.y-panY)>3)panDrag.moved=true;
+    panX=e.clientX-panDrag.x; panY=e.clientY-panDrag.y; apply(); } });
+VP.addEventListener('pointerup',e=>{ if(dragging)return dragEnd(e);
+  const pd=panDrag; panDrag=null;
+  if(pd&&!pd.moved) mapClick(e); });
+const toMap=e=>{const r=W.getBoundingClientRect();return{x:(e.clientX-r.left)/scale,y:(e.clientY-r.top)/scale};};
+
+function bootGame(g){
+  GAME=g; MAPW=g.map_w; MAPH=g.map_h; CPX=g.counter_px;
+  HX=g.grid.dx/1.5; HXC=HX/2; HYH=g.grid.dy/2;
+  document.getElementById('gamename').textContent=g.name.toUpperCase();
+  document.title=g.name+' — VALOR Engine';
+  document.querySelector('img.map').src=g.map_url;
+}
+
+async function refresh(){
+  const s=await(await fetch('/api/state')).json();
+  const first=!GAME;
+  if(first)bootGame(s.game); else GAME.tier=s.game.tier;
+  UNITS=s.units; MARKERS=s.markers||[]; FLOW=s.flow; UNDO=s.undo;
+  if(first){ BOARD=await(await fetch('/api/soj/board')).json(); fitBattle(); }
+  OV.setAttribute('width',MAPW); OV.setAttribute('height',MAPH);
+  if (FRAME.renderUndo) FRAME.renderUndo(UNDO);
+  FRAME.renderTierBtn(); FRAME.renderRules();
+  document.getElementById('scen').textContent=FLOW.scenario+`  ·  seed ${FLOW.seed}`;
+  render(); renderLog();
+}
+
+async function post(action, side){
+  if(busy)return null;
+  busy=true;
+  let r=null;
+  try{
+    r=await(await fetch('/api/soj/action',{method:'POST',
+      body:JSON.stringify({side:side||actingSide(),action})})).json();
+  } finally { busy=false; }
+  if(r&&r.verdict&&!r.verdict.legal) toast('THE GATE REFUSED: '+r.verdict.reasons.join('; '));
+  else if(r&&r.error&&!r.verdict) toast(r.error);
+  await refresh();
+  return r;
+}
+
+function actableUnits(){
+  if(!FLOW||FLOW.over||FLOW.pending)return [];
+  const p=FLOW.phase, side=FLOW.side_to_move;
+  if(p==='deploy_jud'||p==='deploy_rom')return [];
+  const mine=UNITS.filter(u=>u.onmap&&u.side===side);
+  if(p.endsWith('_move'))
+    return mine.filter(u=>!u.moved&&u.ma-u.mv>0).map(u=>({...u,hexnum:u.y*10000+u.x}));
+  if(p.endsWith('_fire')&&FLOW.seg===side)
+    return mine.filter(u=>!u.fired&&u.state==='fresh'&&(u.missile!==null||u.cls==='siege_engine'))
+               .map(u=>({...u,hexnum:u.y*10000+u.x}));
+  if(p.endsWith('_melee'))
+    return mine.filter(u=>u.state==='fresh').map(u=>({...u,hexnum:u.y*10000+u.x}));
+  return [];
+}
+
+// ---------- selection ----------
+function deselect(){ sel=[]; moveCtx=null; faceCtx=null; climb=false;
+  document.getElementById('actions').style.display='none'; render(); }
+async function selectUnit(id, additive){
+  const u=unit(id); if(!u)return;
+  const p=FLOW.phase, side=FLOW.side_to_move;
+  if(FLOW.pending){ return; }              // the modal owns the screen
+  if(u.side!==side){ targetClick(u.hex); return; }
+  if(p.endsWith('_move')){
+    sel=[id]; faceCtx=null; climb=false;
+    moveCtx={pid:id, dests:null, crew:[], tst:false};
+    const r=await(await fetch('/api/soj/dests?id='+encodeURIComponent(id))).json();
+    if(moveCtx&&moveCtx.pid===id){ moveCtx.dests=r.dests; moveCtx.crew=r.crew; }
+    render(); renderSelInfo(); return;
+  }
+  if(p.endsWith('_fire')||p.endsWith('_melee')){
+    if(additive||p.endsWith('_fire')||p.endsWith('_melee')){
+      const i=sel.indexOf(id);
+      if(i>=0)sel.splice(i,1); else sel.push(id);
+    } else sel=[id];
+    moveCtx=null; render(); renderSelInfo(); return;
+  }
+  sel=[id]; render(); renderSelInfo();
+}
+
+// ---------- map clicks ----------
+function mapClick(e){
+  if(!BOARD||!FLOW)return;
+  const m=toMap(e), name=nearestHex(m);
+  if(!name)return;
+  if(pathBuild){ pathAppend(name); return; }
+  if(FLOW.pending)return;
+  if(deployFace){ postDeploy(deployFace.pid, deployFace.hex, name); return; }
+  if(faceCtx){ post({type:'change_facing', pid:faceCtx, face:name}); faceCtx=null; return; }
+  const p=FLOW.phase;
+  if((p==='deploy_jud'||p==='deploy_rom')&&deploySel){
+    const u=unit(deploySel);
+    if(u&&u.cls==='siege_engine'){ deployFace={pid:deploySel, hex:name}; renderGuide(); return; }
+    postDeploy(deploySel, name, null); return;
+  }
+  if(moveCtx&&moveCtx.dests){
+    const d=moveCtx.dests.find(d=>d.hex===name);
+    if(d){ submitMove(d); return; }
+    const u=unit(moveCtx.pid);
+    if(climb&&u&&u.onmap){ post({type:'move', pid:moveCtx.pid, path:[u.hex,name], up:true}); deselect(); return; }
+  }
+  if((p.endsWith('_fire')||p.endsWith('_melee'))&&sel.length){ targetClick(name); return; }
+}
+function postDeploy(pid, hex, face){
+  const u=unit(pid);
+  const a={type:'deploy', pid, hex};
+  if(face)a.facing=face;
+  if(artDisrupted&&u&&u.cls==='artillery'&&u.side==='Rom')a.status='disrupted';
+  deployFace=null;
+  post(a).then(r=>{ if(r&&r.verdict.legal){ deploySel=null; } });
+}
+function submitMove(d){
+  const a={type:'move', pid:moveCtx.pid, path:d.path};
+  if(moveCtx.crew&&moveCtx.crew.length)a.crew=moveCtx.crew;
+  if(moveCtx.tst)a.testudo=true;
+  post(a); deselect();
+}
+function targetClick(name){
+  const p=FLOW.phase;
+  if(!sel.length||FLOW.pending)return;
+  if(p.endsWith('_fire')) showFirePanel(name);
+  else if(p.endsWith('_melee')) showMeleePanel(name);
+}
+
+// ---------- drag = the shared movement gesture ----------
+function dragStart(ev,u){
+  const el=document.querySelector(`.counter[data-id="${CSS.escape(u.id)}"]`);
+  if(!el)return;
+  dragging={u,el}; el.classList.add('dragging'); ev.stopPropagation();
+}
+function dragMove(e){ const m=toMap(e);
+  dragging.el.style.left=m.x+'px'; dragging.el.style.top=m.y+'px'; }
+function dragEnd(e){
+  const m=toMap(e); const u=dragging.u;
+  dragging.el.classList.remove('dragging'); dragging=null;
+  if(!moveCtx||moveCtx.pid!==u.id||!moveCtx.dests){ render(); return; }
+  let best=null,bd=(GAME.grid.dx*0.7)**2;
+  moveCtx.dests.forEach(d=>{ const dd=(d.x-m.x)**2+(d.y-m.y)**2; if(dd<bd){bd=dd;best=d;} });
+  if(best)submitMove(best); else render();
+}
+
+// ---------- fire / melee panels ----------
+function showFirePanel(name){
+  const side=FLOW.side_to_move;
+  const tgt=unitsAt(name).filter(u=>u.side!==side);
+  const A=document.getElementById('actions');
+  const firers=sel.map(unit).filter(Boolean);
+  const seList=firers.filter(u=>u.cls==='siege_engine');
+  const classes=[...new Set(tgt.map(u=>u.cls))];
+  const hasTower=tgt.some(u=>u.up)&&tgt.some(u=>!u.up);
+  let h=`<b>FIRE at ${name}</b> — ${firers.length} firer(s): ${firers.map(u=>u.id).join(', ')}<br>`;
+  if(hasTower) h+=`Tower hex — level: <select id="firelvl">
+      <option value="">whole hex</option><option value="above">riders (above)</option>
+      <option value="below">pushers (below)</option></select> [9.11]<br>`;
+  if(classes.length>1) h+=`Primary target class: <select id="fireprim">
+      <option value="">(engine default)</option>${classes.map(c=>`<option>${c}</option>`).join('')}
+      </select> [13.2]<br>`;
+  h+=`<button class="sidebtn" onclick="doFire('${name}')">🏹 Fire</button>`;
+  if(seList.length) h+=` <button class="sidebtn" onclick="doBreach('${name}')">🔨 Breach attack (${seList.map(u=>u.id).join(',')})</button>`;
+  h+=` <button class="sidebtn" onclick="deselect()">Cancel</button>`;
+  A.innerHTML=h; A.style.display='block';
+}
+async function doFire(name){
+  const a={type:'fire', target:name, firers:sel.filter(id=>unit(id).cls!=='siege_engine')};
+  const lvl=document.getElementById('firelvl'); if(lvl&&lvl.value)a.level=lvl.value;
+  const pr=document.getElementById('fireprim'); if(pr&&pr.value)a.primary_class=pr.value;
+  const r=await post(a);
+  if(r&&r.verdict.legal&&r.result)showResult('FIRE '+name, r.result);
+  deselect();
+}
+async function doBreach(name){
+  const a={type:'breach_attack', target:name,
+           attackers:sel.filter(id=>unit(id).cls==='siege_engine')};
+  const r=await post(a);
+  if(r&&r.verdict.legal&&r.result)showResult('BREACH '+name, r.result);
+  deselect();
+}
+function showMeleePanel(name){
+  const A=document.getElementById('actions');
+  A.innerHTML=`<b>MELEE at ${name}</b> — attackers: ${sel.join(', ')}
+    <button class="sidebtn" onclick="doMelee('${name}')">⚔ Attack</button>
+    <button class="sidebtn" onclick="deselect()">Cancel</button>`;
+  A.style.display='block';
+}
+async function doMelee(name){
+  const r=await post({type:'melee', target:name, attackers:sel.slice()});
+  if(r&&r.verdict.legal&&r.result)showResult('MELEE '+name, r.result);
+  deselect();
+}
+function showResult(what, res){
+  const A=document.getElementById('actions');
+  A.innerHTML=`<b style="color:#ffd75e">${what}</b> — <span style="font-family:Consolas">${
+    JSON.stringify(res).slice(0,420)}</span>
+    <button class="sidebtn" onclick="document.getElementById('actions').style.display='none'">ok</button>`;
+  A.style.display='block';
+}
+
+// ---------- selected-unit action buttons ----------
+function renderSelInfo(){
+  const S=document.getElementById('selinfo');
+  if(!sel.length){ S.innerHTML='<i style="color:#8a8f98">Nothing selected.</i>'; return; }
+  const p=FLOW.phase, side=FLOW.side_to_move;
+  let h='';
+  sel.map(unit).filter(Boolean).forEach(u=>{
+    h+=`<div style="display:flex; gap:8px; align-items:center; margin:3px 0">
+      <img src="${GAME.counters_url+encodeURIComponent(u.img)}" style="width:34px;height:34px">
+      <div><b>${u.name}</b> (${u.id}) — ${u.state}${u.up?' · ABOVE':''}<br>
+      <span style="color:#8a8f98">${u.hex||('off-map'+(u.entry_gate?' · at gate '+u.entry_gate:''))} · MA ${u.ma}${u.mv?` (used ${u.mv})`:''}${
+        u.missile!==null&&u.missile!==undefined?` · missile ${JSON.stringify(u.missile).slice(0,24)}`:''} · melee ${u.melee}</span></div></div>`;
+  });
+  if(sel.length===1&&p.endsWith('_move')&&!FLOW.pending){
+    const u=unit(sel[0]);
+    if(u&&u.side===side&&u.onmap){
+      h+=`<div style="margin-top:6px">`;
+      h+=`<button class="sidebtn abtn" onclick="toggleClimb()" id="climbbtn" ${climb?'style="background:#3a6ea5;color:#fff"':''}>🪜 Climb/Board: ${climb?'ON — click the destination':'off'}</button>`;
+      if(u.side==='Rom'){
+        h+=`<button class="sidebtn abtn" onclick="post({type:'escalade',pid:'${u.id}',op:'place'}).then(()=>deselect())">Place Escalade (4 MF)</button>`;
+        if(u.esc_base)h+=`<button class="sidebtn abtn" onclick="post({type:'escalade',pid:'${u.id}',op:'remove'}).then(()=>deselect())">Remove Escalade (4 MF)</button>`;
+        const mates=unitsAt(u.hex).filter(x=>x.side===u.side);
+        if(mates.length>=2&&!u.testudo)
+          h+=`<button class="sidebtn abtn" onclick="formTestudo('${u.hex}')">Form Testudo — whole hex (6 MF ea)</button>`;
+        if(u.testudo){
+          h+=`<button class="sidebtn abtn" onclick="moveTestudo('${u.id}')">Move Testudo</button>`;
+          h+=`<button class="sidebtn abtn" onclick="post({type:'testudo',op:'disband',hex:'${u.hex}'}).then(()=>deselect())">Disband Testudo (6 MF ea)</button>`;
+        }
+      }
+      if(u.cls==='artillery')
+        h+=`<button class="sidebtn abtn" onclick="post({type:'flip',pid:'${u.id}'}).then(()=>deselect())">Flip to move [8.4]</button>`;
+      if(u.cls==='siege_engine')
+        h+=`<button class="sidebtn abtn" onclick="faceCtx='${u.id}';renderGuide()">Set Facing arrow — then click an adjacent hex</button>`;
+      h+=`<button class="sidebtn abtn" onclick="exitMap('${u.id}')">Exit mapsheet [8.14]</button>`;
+      h+=`</div>`;
+    }
+  }
+  if(sel.length&&(p.endsWith('_fire')||p.endsWith('_melee')))
+    h+=`<div style="color:#8a8f98; margin-top:4px">Click more of your units to add them, then click the target hex.</div>`;
+  S.innerHTML=h;
+}
+function toggleClimb(){ climb=!climb; renderSelInfo(); renderGuide(); }
+function formTestudo(hex){
+  const pids=unitsAt(hex).filter(x=>x.side===FLOW.side_to_move).map(x=>x.id);
+  post({type:'testudo', op:'form', pids}).then(()=>deselect());
+}
+async function moveTestudo(pid){
+  sel=[pid]; moveCtx={pid, dests:null, crew:[], tst:true};
+  const r=await(await fetch('/api/soj/dests?id='+encodeURIComponent(pid)+'&tst=1')).json();
+  if(moveCtx&&moveCtx.pid===pid){ moveCtx.dests=r.dests; moveCtx.crew=r.crew; }
+  render();
+}
+function exitMap(pid){
+  const u=unit(pid);
+  post({type:'exit', pid, path:[u.hex]}); deselect();
+}
+
+// ---------- tray (deployment + reinforcements + off-map) ----------
+function renderTray(){
+  const T=document.getElementById('tray');
+  const p=FLOW.phase;
+  let h='';
+  const deploying=(p==='deploy_jud'||p==='deploy_rom');
+  const side=FLOW.side_to_move;
+  if(deploying){
+    const un=UNITS.filter(u=>!u.onmap&&u.side===side&&u.state!=='eliminated');
+    h+=`<div class="hdr">UNPLACED — ${sideLabel(side)} (${un.length}). Click a unit, then a highlighted hex.</div>`;
+    if(side==='Rom'&&un.some(u=>u.cls==='artillery'))
+      h+=`<div style="padding:5px 10px"><label style="font-size:12px"><input type="checkbox" ${artDisrupted?'checked':''}
+        onchange="artDisrupted=this.checked"> deploy Artillery <b>Disrupted (movable)</b> [3.4]</label></div>`;
+    const groups={};
+    un.forEach(u=>{ (groups[u.slot]=groups[u.slot]||[]).push(u); });
+    for(const slot in groups){
+      const g=groups[slot], u=g[0];
+      const cur=deploySel&&g.some(x=>x.id===deploySel);
+      h+=`<div class="trow ${cur?'sel':''}" onclick="deploySel='${g[0].id}';renderTray();renderGuide();render()">
+        <img src="${GAME.counters_url+encodeURIComponent(u.img)}">
+        <span class="n">${u.name}</span><span class="ct">×${g.length}</span></div>`;
+    }
+  }
+  const atGate=UNITS.filter(u=>!u.onmap&&u.entry_gate);
+  if(atGate.length){
+    h+=`<div class="hdr">REINFORCEMENTS AT GATE — move them in [SR2]</div>`;
+    atGate.forEach(u=>{
+      h+=`<div class="trow" onclick="selectUnit('${u.id}',false)">
+        <img src="${GAME.counters_url+encodeURIComponent(u.img)}">
+        <span class="n">${u.name} (${u.id})</span><span class="ct">${u.entry_gate}</span></div>`;
+    });
+  }
+  if(FLOW.pool)h+=`<div class="hdr">SOUTH WALL POOL — ${FLOW.pool} unit(s), arrive from turn 4 [SR2]</div>`;
+  const gone=UNITS.filter(u=>u.state==='eliminated'||u.state==='exited');
+  if(gone.length){
+    h+=`<div class="hdr">ELIMINATED / EXITED (${gone.length})</div>`;
+    gone.slice(0,40).forEach(u=>{
+      h+=`<div class="trow" style="opacity:.55; cursor:default">
+        <img src="${GAME.counters_url+encodeURIComponent(u.img)}">
+        <span class="n">${u.name} (${u.id})</span><span class="ct">${u.state}</span></div>`;
+    });
+  }
+  T.innerHTML=h;
+}
+
+// ---------- render ----------
+const hexCorners=(x,y)=>[[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH],[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH]];
+const hexPts=(x,y)=>hexCorners(x,y).map(p=>p.join(',')).join(' ');
+function poly(x,y,stroke,fill,w){ const pg=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  pg.setAttribute('points',hexPts(x,y)); pg.setAttribute('fill',fill||'none');
+  pg.setAttribute('stroke',stroke); pg.setAttribute('stroke-width',w||4); OV.appendChild(pg); return pg; }
+
+function render(){
+  document.querySelectorAll('.counter,.marker,.statechip').forEach(n=>n.remove());
+  OV.innerHTML='';
+  if(!FLOW||!BOARD)return;
+  renderChips(); renderTray(); renderGuide(); renderModal(); renderSelInfo();
+  drawZones(); drawDests(); drawPath();
+  MARKERS.forEach((m,i)=>{
+    const el=document.createElement('img');
+    el.className='marker';
+    el.src=GAME.counters_url+encodeURIComponent(m.img);
+    const sz=CPX*0.9;
+    el.style.width=sz+'px'; el.style.height=sz+'px';
+    el.style.left=(m.x-sz/2+6)+'px'; el.style.top=(m.y-sz/2+6)+'px';
+    el.style.zIndex=5;
+    el.title=m.kind+(m.dmg?` (${m.dmg} damage)`:'');
+    W.appendChild(el);
+  });
+  const byhex={};
+  UNITS.filter(u=>u.onmap).forEach(u=>{ (byhex[u.hex]=byhex[u.hex]||[]).push(u); });
+  for(const hname in byhex){
+    const st=byhex[hname];
+    st.sort((a,b)=>(a.up?1:0)-(b.up?1:0));
+    st.forEach((u,i)=>{
+      const el=document.createElement('img');
+      const done=(FLOW.phase.endsWith('_fire')&&u.fired)||(FLOW.phase.endsWith('_move')&&u.moved);
+      el.className='counter'+(done?' done':'')
+        +(sel.includes(u.id)?(FLOW.phase.endsWith('_melee')||FLOW.phase.endsWith('_fire')?' selatk':' sel'):'');
+      el.src=GAME.counters_url+encodeURIComponent(u.img);
+      el.style.width=CPX+'px'; el.style.height=CPX+'px';
+      el.style.margin=`-${CPX/2}px 0 0 -${CPX/2}px`;
+      el.style.left=(u.x+i*12)+'px'; el.style.top=(u.y-i*12-(u.up?10:0))+'px';
+      el.style.zIndex=10+i+(u.up?8:0);
+      el.dataset.id=u.id;
+      el.title=`${u.name} (${u.id}) — ${u.hex} · ${u.state}${u.up?' · ABOVE':''}`
+        +` · MA ${u.ma}${u.mv?` (used ${u.mv})`:''} · melee ${u.melee}`
+        +(u.fired?' · FIRED':'')+(u.moved?' · MOVED':'')
+        +(u.testudo?' · TESTUDO '+u.testudo:'')+(u.esc_base?' · ESCALADE BASE':'');
+      el.addEventListener('pointerdown',ev=>{
+        ev.stopPropagation();
+        if(sel.includes(u.id)&&moveCtx&&moveCtx.pid===u.id&&moveCtx.dests){ dragStart(ev,u); return; }
+        selectUnit(u.id,true);
+      });
+      W.appendChild(el);
+      const ic=STATE_ICON[u.state];
+      if(ic){ const d=document.createElement('div'); d.className='statechip';
+        d.style.color=ic[1]; d.textContent=ic[0];
+        d.style.left=(u.x+i*12+CPX*0.28)+'px'; d.style.top=(u.y-i*12-CPX*0.55)+'px';
+        W.appendChild(d); }
+    });
+  }
+  FRAME.onRender();
+}
+function drawZones(){
+  const p=FLOW.phase;
+  if((p==='deploy_jud'||p==='deploy_rom')&&deploySel){
+    const zone=p==='deploy_jud'?BOARD.zones.jud:BOARD.zones.rom;
+    zone.forEach(n=>{ const h=hexXY(n); if(h)poly(h.x,h.y,'#7ce07c','rgba(120,220,120,0.13)',3); });
+    if(p==='deploy_jud')BOARD.zones.min_force.forEach(n=>{ const h=hexXY(n);
+      if(h&&!unitsAt(n).length)poly(h.x,h.y,'#ffd75e','rgba(255,215,94,0.25)',6); });
+  }
+  if(deployFace){
+    const h=hexXY(deployFace.hex);
+    if(h)poly(h.x,h.y,'#ffd75e','rgba(255,215,94,0.3)',8);
+  }
+  (FLOW.fired_hexes||[]).forEach(n=>{ const h=hexXY(n); if(h)poly(h.x,h.y,'#b0483a','none',5).setAttribute('stroke-dasharray','14 10'); });
+  for(const n in (FLOW.breach||{})){
+    const h=hexXY(n), b=FLOW.breach[n];
+    if(h)poly(h.x,h.y,b.open?'#ff6a5e':'#e0a34e','none',7);
+  }
+}
+function drawDests(){
+  if(!moveCtx||!moveCtx.dests)return;
+  moveCtx.dests.forEach(d=>{
+    poly(d.x,d.y,'#7ce07c','rgba(120,220,120,0.16)',4);
+    const tx=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x',d.x); tx.setAttribute('y',d.y+30); tx.setAttribute('text-anchor','middle');
+    tx.setAttribute('font-size','24'); tx.setAttribute('fill','#194d19'); tx.setAttribute('font-weight','bold');
+    tx.textContent=d.cost; OV.appendChild(tx);
+  });
+}
+function drawPath(){
+  if(!pathBuild||pathBuild.path.length<1)return;
+  let prev=null;
+  pathBuild.path.forEach(n=>{
+    const h=hexXY(n); if(!h)return;
+    poly(h.x,h.y,'#5ec8e0','rgba(94,200,224,0.2)',5);
+    if(prev){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',prev.x); ln.setAttribute('y1',prev.y);
+      ln.setAttribute('x2',h.x); ln.setAttribute('y2',h.y);
+      ln.setAttribute('stroke','#5ec8e0'); ln.setAttribute('stroke-width',7);
+      ln.setAttribute('stroke-dasharray','18 12'); OV.appendChild(ln); }
+    prev=h;
+  });
+}
+function renderChips(){
+  document.getElementById('turnchip').textContent=
+    FLOW.turn===0?'SETUP':`${FLOW.turn_label} / ${FLOW.turns}`;
+  document.getElementById('vpchip').textContent=
+    `Built-up: Rome ${FLOW.builtup_rom} of ${FLOW.builtup_target}`;
+  FRAME.show('nightchip', FLOW.night);
+  const P=document.getElementById('phasechip');
+  let ptxt=PHASE_TXT[FLOW.phase]||FLOW.phase;
+  if(FLOW.seg)ptxt+=` — ${sideLabel(FLOW.seg).toUpperCase()} SEGMENT ${FLOW.seg!==(FLOW.phase.startsWith('rom')?'Rom':'Jud')?'(non-phasing fires first)':''}`;
+  P.textContent=ptxt; P.title=ptxt;
+  const seat=document.getElementById('seatchip');
+  const act=actingSide();
+  seat.textContent=FLOW.over?'GAME OVER':`${sideLabel(act).toUpperCase()} decides`;
+  seat.className='chip fixw '+(act==='Rom'?'rom':'jud');
+  const dep=(FLOW.phase==='deploy_jud'||FLOW.phase==='deploy_rom');
+  FRAME.show('deploydonebtn', dep);
+  document.getElementById('endphasebtn').disabled=dep||FLOW.over||!!FLOW.pending;
+}
+
+// ---------- guidance (engine rule: every state says what to do) ----------
+function renderGuide(){
+  if(FLOW.over){
+    FRAME.setGuide(`<b>${sideLabel(FLOW.winner)} WINS</b> — ${
+      FLOW.winner==='Rom'?'ten Built-up hexes controlled [SR3/18.3]':'the assault is repulsed through turn '+FLOW.turns}. <b>Reset game</b> starts over.`, true);
+    FRAME.soleNext('resetbtn'); return;
+  }
+  if(FLOW.pending){
+    FRAME.setGuide(`<b>DECISION REQUIRED</b> — the <b>${sideLabel(FLOW.pending.by)}</b> player must resolve the <b>${FLOW.pending.kind}</b> in the modal. Nothing else can happen until it is done.`);
+    FRAME.soleNext(null); return;
+  }
+  const p=FLOW.phase, side=FLOW.side_to_move;
+  if(p==='deploy_jud'||p==='deploy_rom'){
+    const un=FLOW.unplaced[side==='Jud'?'Jud':'Rom'].length;
+    if(deployFace){ FRAME.setGuide(`<b>Set the Facing arrow</b> — click the hex adjacent to ${deployFace.hex} the Siege Engine faces [2.45].`); FRAME.soleNext(null); return; }
+    if(un===0){
+      const mf=FLOW.min_force_empty.length;
+      FRAME.setGuide(side==='Jud'&&mf
+        ? `All units placed but <b>${mf} strongpoint(s) still empty</b> (gold hexes): ${FLOW.min_force_empty.slice(0,6).join(', ')}${mf>6?'…':''} [card SR1]. Move units there by redeploying, or press ✓ to see the gate's refusal.`
+        : `<b>All ${sideLabel(side)} units placed</b> — press <b>✓ Deployment done</b>.`);
+      FRAME.soleNext('deploydonebtn'); return;
+    }
+    FRAME.setGuide(`<b>${sideLabel(side)} deployment</b> — ${un} unit(s) left: click a unit in the LEFT tray, then a highlighted hex. ${side==='Jud'?'Gold hexes are the mandatory strongpoint garrisons [SR1].':'Anywhere outside Jerusalem, ≥5 hexes from Elevated (card).'}`);
+    FRAME.soleNext(null); return;
+  }
+  if(p.endsWith('_rally')){
+    FRAME.setGuide(`<b>${sideLabel(side)} Rally Phase</b> [17.1] — rallies are automatic when you press <b>End phase</b> (HQ first, then board order; artillery asks first).`);
+    FRAME.soleNext('endphasebtn'); return;
+  }
+  if(p.endsWith('_fire')){
+    FRAME.setGuide(`<b>${sideLabel(FLOW.seg)} fire segment</b> — non-phasing side fires first [4.12/4.22]. Click your firers (multi-select), then the target hex. Rams/Towers: Breach attack button. Done? <b>End phase</b> passes the segment.`);
+    FRAME.soleNext(null); return;
+  }
+  if(p.endsWith('_move')){
+    if(faceCtx){ FRAME.setGuide(`<b>Set Facing</b> — click the adjacent hex the Siege Engine turns to face [10.11].`); FRAME.soleNext(null); return; }
+    FRAME.setGuide(`<b>${sideLabel(side)} movement</b> — ${FRAME.MOVE_HINT}${climb?' · <b>CLIMB mode: click the Elevated/Tower hex to scale</b> [6.5/8.61]':''}. Side panel offers Escalade / Testudo / Facing / Flip / Exit for the selected unit.`);
+    FRAME.soleNext(null); return;
+  }
+  if(p.endsWith('_melee')){
+    FRAME.setGuide(`<b>${sideLabel(side)} Melee Phase</b> — click your Fresh attackers (multi-select), then the adjacent enemy hex [11.1]. Done? <b>End phase</b>.`);
+    FRAME.soleNext(null); return;
+  }
+  FRAME.setGuide(''); FRAME.soleNext(null);
+}
+
+// ---------- MODALS: every gate pending takes the screen ----------
+function pendSig(){ const p=FLOW.pending; return p?`${FLOW.n}|${p.kind}`:null; }
+function closeModal(){ document.getElementById('modal').style.display='none';
+  document.getElementById('modalback').style.display='none';
+  document.getElementById('routbar').style.display='none'; }
+function renderModal(){
+  const M=document.getElementById('modal'), B=document.getElementById('modalback');
+  const R=document.getElementById('routbar');
+  const p=FLOW.pending;
+  if(!p){ modalState=null; pathBuild=null; closeModal(); return; }
+  const sig=pendSig();
+  if(!modalState||modalState.sig!==sig){
+    modalState={sig, picks:[], sub:null, adv:[], beyond:{}, paths:{}, elim:[], moves:{}, ca:[]};
+    pathBuild=null;
+  }
+  if(pathBuild){
+    M.style.display='none'; B.style.display='none';
+    R.style.display='block';
+    R.innerHTML=`<b style="color:#ffd9a0">ROUTING ${pathBuild.pid}</b> — click each hex of the ${
+        pathBuild.kind==='retreat'?'retreat':'bonus advance'} in order. Path: ${
+        pathBuild.path.join(' → ')||'(click the first hex)'}
+      <button class="sidebtn" onclick="pathDone()">✓ Done</button>
+      <button class="sidebtn" onclick="pathBuild.path=[];render()">Reset</button>
+      <button class="sidebtn" onclick="pathBuild=null;render()">Cancel</button>`;
+    return;
+  }
+  R.style.display='none';
+  B.style.display='block'; M.style.display='block';
+  const fns={loss:modalLoss, retreat:modalRetreat, errant:modalErrant,
+             advance:modalAdvance, esc_up:modalEscUp, counterattack:modalCounter};
+  M.innerHTML=(fns[p.kind]||modalUnknown)(p);
+  M.querySelectorAll('[data-act]').forEach(el=>el.onclick=modalActions[el.dataset.act]);
+}
+function urow(u, extra, cls){
+  return `<div class="urow ${cls||''}" ${extra||''}>
+    <img src="${GAME.counters_url+encodeURIComponent(u.img)}">
+    <div style="flex:1"><b>${u.name}</b> (${u.id}) — ${u.state}${u.up?' · ABOVE':''}</div></div>`;
+}
+function modalUnknown(p){ return `<h2>${p.kind}</h2><div class="cite">Unrecognized pending — resolve via the log/engine.</div>`; }
+
+function modalLoss(p){
+  const need=(p.letters||[]).filter(c=>c!=='B');
+  const inhex=unitsAt(p.hex).filter(u=>u.side===p.by);
+  const ms=modalState;
+  let h=`<h2>Combat result at ${p.hex}: ${p.letters.join('')}</h2>
+    <div class="cite">${sideLabel(p.by)} allocates losses [13.2/14.x] — source: ${p.source}${
+      p.lvl?` · level: ${p.lvl}`:''}${(p.auto||[]).length?` · auto: ${p.auto.join(', ')}`:''}${
+      p.primary&&p.primary.length?` · primary target: ${p.primary.join(', ')} takes the most severe result [13.2 Q&A]`:''}</div>`;
+  h+=`<div style="margin:6px 0">Results to allocate: `;
+  need.forEach((c,i)=>{ h+=`<span class="letterchip ${i<ms.picks.length?'done':i===ms.picks.length?'cur':''}">${c}</span>`; });
+  if(!need.length)h+=`<i>none — only the B (retreat) remains</i>`;
+  h+=`</div>`;
+  inhex.forEach(u=>{
+    const idx=ms.picks.findIndex(pk=>pk===u.id);
+    h+=urow(u, `onclick="lossPick('${u.id}')"`, 'pick'+(idx>=0?' assigned':''));
+  });
+  if(p.letters.includes('B')&&p.source==='melee'){
+    h+=`<div style="margin-top:8px">B result [14.2]: <label><input type="radio" name="sub" ${ms.sub===null?'checked':''}
+      onclick="modalState.sub=null;render()"> all retreat</label> · substitute a D on one unit instead: `;
+    inhex.forEach(u=>{ h+=`<label style="margin-right:8px"><input type="radio" name="sub" ${ms.sub===u.id?'checked':''}
+      onclick="modalState.sub='${u.id}';render()"> ${u.id}</label>`; });
+    h+=`</div>`;
+  }
+  h+=`<div style="margin-top:10px">
+    <button class="sidebtn" data-act="lossSubmit" ${ms.picks.length===need.length?'':'disabled'}>Submit allocation</button>
+    <button class="sidebtn" data-act="lossReset">Reset</button></div>`;
+  return h;
+}
+function lossPick(pid){
+  const p=FLOW.pending, need=(p.letters||[]).filter(c=>c!=='B');
+  if(modalState.picks.length<need.length)modalState.picks.push(pid);
+  render();
+}
+
+function modalRetreat(p){
+  const ms=modalState;
+  let h=`<h2>Retreat from ${p.hex}</h2>
+    <div class="cite">${sideLabel(p.by)} routes each unit toward Refuge [14.2/15.1/15.3]${
+      p.optional?' — OPTIONAL: units may stand [14.31]':''}${p.xe?` · excess E: ${p.xe}`:''}</div>`;
+  (p.pids||[]).forEach(pid=>{
+    const u=unit(pid); if(!u)return;
+    const done=ms.paths[pid]?`✓ ${ms.paths[pid].join('→')}`:ms.elim.includes(pid)?'✗ ELIMINATED':'';
+    h+=urow(u,'','')+`<div style="margin:-2px 0 6px 40px">
+      <button class="sidebtn" onclick="startPath('retreat','${pid}')">Route on map</button>
+      <button class="sidebtn" onclick="toggleElim('${pid}')">${ms.elim.includes(pid)?'Un-eliminate':'No survivable retreat — eliminate [15.1]'}</button>
+      <span style="color:#9fc27f">${done}</span></div>`;
+  });
+  const named=Object.keys(ms.paths).length+ms.elim.length;
+  const ok=p.optional?true:named===(p.pids||[]).length;
+  h+=`<div style="margin-top:10px">
+    <button class="sidebtn" data-act="retreatSubmit" ${ok?'':'disabled'}>Submit retreat</button>
+    ${p.optional?'<button class="sidebtn" data-act="retreatDecline">All stand [14.31]</button>':''}</div>`;
+  return h;
+}
+function startPath(kind,pid){
+  const u=unit(pid);
+  pathBuild={kind, pid, path:kind==='retreat'?[u.hex]:[]};
+  render();
+}
+function toggleElim(pid){
+  const i=modalState.elim.indexOf(pid);
+  if(i>=0)modalState.elim.splice(i,1); else { modalState.elim.push(pid); delete modalState.paths[pid]; }
+  render();
+}
+function pathAppend(name){
+  if(!pathBuild)return;
+  pathBuild.path.push(name); render();
+}
+function pathDone(){
+  if(!pathBuild)return;
+  if(pathBuild.kind==='retreat')modalState.paths[pathBuild.pid]=pathBuild.path.slice();
+  else modalState.beyond[pathBuild.pid]=pathBuild.path.slice();
+  const i=modalState.elim.indexOf(pathBuild.pid); if(i>=0)modalState.elim.splice(i,1);
+  pathBuild=null; render();
+}
+
+function modalErrant(p){
+  let h=`<h2>Errant fire at ${p.hex}!</h2>
+    <div class="cite">Natural 1 — the ${sideLabel(p.by)} player disrupts one adjacent friendly unit [9.31/Q&A]</div>`;
+  (p.cands||[]).forEach(pid=>{ const u=unit(pid); if(u)h+=urow(u,`onclick="errantPick('${pid}')"`,'pick'); });
+  return h;
+}
+function errantPick(pid){ post({type:'resolve_errant', pid}, FLOW.pending.by); }
+
+function modalAdvance(p){
+  const ms=modalState;
+  let h=`<h2>Advance into ${p.hex}?</h2>
+    <div class="cite">${sideLabel(p.by)} may advance victorious attackers [11.9]${
+      p.xe?` — excess E allows up to ${p.xe} hex(es) beyond [11.86]`:''}</div>`;
+  (p.pids||[]).forEach(pid=>{
+    const u=unit(pid); if(!u)return;
+    const on=ms.adv.includes(pid);
+    h+=urow(u,`onclick="advToggle('${pid}')"`,'pick'+(on?' assigned':''));
+    if(on&&p.xe)h+=`<div style="margin:-2px 0 6px 40px">
+      <button class="sidebtn" onclick="startPath('beyond','${pid}')">+ bonus advance beyond</button>
+      <span style="color:#9fc27f">${(ms.beyond[pid]||[]).join('→')}</span></div>`;
+  });
+  h+=`<div style="margin-top:10px">
+    <button class="sidebtn" data-act="advSubmit">Advance</button>
+    <button class="sidebtn" data-act="advDecline">Decline</button></div>`;
+  return h;
+}
+function advToggle(pid){
+  const i=modalState.adv.indexOf(pid);
+  if(i>=0){ modalState.adv.splice(i,1); delete modalState.beyond[pid]; }
+  else modalState.adv.push(pid);
+  render();
+}
+
+function modalEscUp(p){
+  const ms=modalState;
+  let h=`<h2>Escalade move-up</h2>
+    <div class="cite">End of the Roman Melee Phase: units atop Escalades/Towers may move onto adjacent vacant Elevated hexes [11.6/11.2]</div>`;
+  for(const pid in (p.opts||{})){
+    const u=unit(pid); if(!u)continue;
+    h+=urow(u,'','')+`<div style="margin:-2px 0 6px 40px">→ <select onchange="modalState.moves['${pid}']=this.value;">
+      <option value="">stay</option>${p.opts[pid].map(n=>`<option ${ms.moves[pid]===n?'selected':''}>${n}</option>`).join('')}
+      </select></div>`;
+  }
+  h+=`<div style="margin-top:10px"><button class="sidebtn" data-act="escUpSubmit">Confirm</button></div>`;
+  return h;
+}
+
+function modalCounter(p){
+  const ms=modalState;
+  let h=`<h2>Sortie counterattack at ${p.gate}</h2>
+    <div class="cite">${sideLabel(p.by)} may counterattack the force at ${p.hex||p.from||''} through the gate entrance [11.14]</div>`;
+  (p.cands||[]).forEach(pid=>{
+    const u=unit(pid); if(!u)return;
+    const on=ms.ca.includes(pid);
+    h+=urow(u,`onclick="caToggle('${pid}')"`,'pick'+(on?' assigned':''));
+  });
+  h+=`<div style="margin-top:10px">
+    <button class="sidebtn" data-act="caSubmit" ${ms.ca.length?'':'disabled'}>⚔ Counterattack</button>
+    <button class="sidebtn" data-act="caDecline">Decline</button></div>`;
+  return h;
+}
+function caToggle(pid){
+  const i=modalState.ca.indexOf(pid);
+  if(i>=0)modalState.ca.splice(i,1); else modalState.ca.push(pid);
+  render();
+}
+
+const modalActions={
+  lossSubmit(){ const a={type:'resolve_loss', picks:modalState.picks.map(pid=>({pid}))};
+    if(modalState.sub)a.substitute_d=modalState.sub;
+    post(a, FLOW.pending.by); },
+  lossReset(){ modalState.picks=[]; modalState.sub=null; render(); },
+  retreatSubmit(){ post({type:'resolve_retreat', paths:modalState.paths,
+    eliminate:modalState.elim}, FLOW.pending.by); },
+  retreatDecline(){ post({type:'resolve_retreat', paths:{}, eliminate:[]}, FLOW.pending.by); },
+  advSubmit(){ const a={type:'resolve_advance', pids:modalState.adv.slice()};
+    if(Object.keys(modalState.beyond).length)a.beyond=modalState.beyond;
+    post(a, FLOW.pending.by); },
+  advDecline(){ post({type:'resolve_advance', pids:[]}, FLOW.pending.by); },
+  escUpSubmit(){ const mv={}; for(const k in modalState.moves)if(modalState.moves[k])mv[k]=modalState.moves[k];
+    post({type:'resolve_esc_up', moves:mv}, FLOW.pending.by); },
+  caSubmit(){ post({type:'resolve_counterattack', attackers:modalState.ca.slice()}, FLOW.pending.by); },
+  caDecline(){ post({type:'resolve_counterattack', decline:true}, FLOW.pending.by); },
+};
+
+// ---------- end phase (rally-artillery prompt rides the same button) ----------
+async function endPhase(){
+  const p=FLOW.phase, side=FLOW.side_to_move;
+  if(p.endsWith('_rally')){
+    const art=UNITS.filter(u=>u.onmap&&u.side===side&&['artillery','cauldron'].includes(u.cls)
+                              &&['disrupted','routed','panicked'].includes(u.state));
+    if(art.length){
+      const A=document.getElementById('actions');
+      A.innerHTML=`<b>Artillery rally is optional [17.1]</b> — attempt for:<br>`+
+        art.map(u=>`<label style="margin-right:10px"><input type="checkbox" class="rallyart" value="${u.id}" checked> ${u.id} (${u.state})</label>`).join('')+
+        `<br><button class="sidebtn" onclick="endPhaseArt()">Roll rallies + end phase</button>
+         <button class="sidebtn" onclick="document.getElementById('actions').style.display='none'">Cancel</button>`;
+      A.style.display='block'; return;
+    }
+  }
+  const r=await post({type:'end_phase'}, side);
+  if(r&&r.result&&r.result.rally)showResult('RALLY', r.result.rally);
+}
+async function endPhaseArt(){
+  const ids=[...document.querySelectorAll('.rallyart:checked')].map(e=>e.value);
+  document.getElementById('actions').style.display='none';
+  const r=await post({type:'end_phase', artillery:ids}, FLOW.side_to_move);
+  if(r&&r.result&&r.result.rally)showResult('RALLY', r.result.rally);
+}
+
+// ---------- log ----------
+async function renderLog(){
+  const r=await(await fetch('/api/soj/log?n=60')).json();
+  const L=document.getElementById('log');
+  L.innerHTML=r.entries.map(e=>{
+    if(e.event==='init')return `<div class="le event">n${e.n} INIT ${e.scenario} seed=${e.seed}</div>`;
+    const v=e.verdict||{}; const cls=v.legal?'legal':'illegal';
+    let txt=`n${e.n} T${e.turn} ${e.phase} ${e.side}: ${e.action.type}`;
+    if(e.action.pid)txt+=` ${e.action.pid}`;
+    if(e.action.hex)txt+=` @${e.action.hex}`;
+    if(e.action.target)txt+=` →${e.action.target}`;
+    if(e.action.path)txt+=` →${e.action.path[e.action.path.length-1]}`;
+    if(!v.legal)txt+=`\n   REJECTED: ${v.reasons.join('; ')}`;
+    else if(v.reasons&&v.reasons.length)txt+=` — ${v.reasons[0]}`;
+    return `<div class="le ${cls}">${txt}</div>`;
+  }).join('');
+  L.scrollTop=L.scrollHeight;
+  document.getElementById('lognote').textContent=`${r.entries.length} shown`;
+}
+
+// ---------- chrome ----------
+FRAME.initUndo({ refresh, toast });
+FRAME.initPanels({
+  game: () => GAME,
+  flow: () => FLOW,
+  toast,
+  clientItems: () => [
+    `<li><b>Deployment</b> — click a unit in the left tray, then a highlighted hex.
+     Gold hexes = the card's mandatory strongpoint garrisons.</li>`,
+    `<li><b>Fire / Melee</b> — click your units (multi-select), then the target hex.
+     The non-phasing side fires first in every Fire Phase [4.12/4.22].</li>`,
+    `<li><b>Modals</b> — when the gate needs a decision (losses, retreats, errant
+     fire, advances, escalade move-ups, sorties) a modal takes the screen: the
+     game is blocked until you answer it.</li>`,
+    `<li><b>Hotseat</b> — both seats play at this screen; the turn chip names
+     whose decision the game is waiting on. No AI seat exists for this game.</li>`,
+  ],
+});
+document.getElementById('endphasebtn').onclick=endPhase;
+document.getElementById('deploydonebtn').onclick=()=>post({type:'deploy_done'}, FLOW.side_to_move);
+document.getElementById('resetbtn').onclick=async()=>{
+  if(!confirm('Start a fresh game? The current log is replaced.'))return;
+  await fetch('/api/reset',{method:'POST',body:'{}'});
+  deploySel=null; deselect(); await refresh(); fitBattle();
+};
+FRAME.layoutBars();
+setInterval(()=>{ if(!dragging&&!pathBuild&&!deployFace&&!busy)refresh(); },3000);
+refresh();
+</script>
+</body>
+</html>
