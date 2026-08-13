@@ -3912,3 +3912,115 @@ class SoJGame(GateGame):
             if q["pid"] == pid:
                 return q["gate"]
         return None
+
+    def on_map(self, u):
+        return u.get("hex") is not None
+
+    def _nm(self, h):
+        return self.hex_name.get(h, h)
+
+    def ui_hexes(self):
+        return {self.hex_name[h]: [round(self.px[h][0]), round(self.px[h][1]),
+                                   self.hex_t0[h]]
+                for h in self.playable}
+
+    def ui_zones(self):
+        return {"jud": sorted(self.hex_name[h] for h in self.jud_zone
+                              if h in self.playable),
+                "rom": sorted(self.hex_name[h] for h in self.rom_zone),
+                "min_force": [self.hex_name[h] for h in self.min_force],
+                "rom_prohibited": sorted(self.hex_name[h]
+                                         for h in self.rom_prohibited),
+                "refuge_gates": list(self.refuge_gates)}
+
+    def _ui_pending(self):
+        p = self.s.get("pending")
+        if not p:
+            return None
+        out = {}
+        for k, v in p.items():
+            if k in ("hex", "gate") and v in self.hex_name:
+                out[k] = self.hex_name[v]
+            else:
+                out[k] = v
+        return out
+
+    def flow(self):
+        s = self.s
+        empty_mf = [self.hex_name[h] for h in self.min_force
+                    if not self._occupants(h)]
+        unplaced = {sd: sorted(u["pid"] for u in s["units"].values()
+                               if u["side"] == sd and u["hex"] is None
+                               and u["state"] not in ("eliminated", "exited"))
+                    for sd in ("Jud", "Rom")}
+        vp = self.scenario.get("vp", {})
+        return {"mode": "soj", "scenario": self.scenario["name"],
+                "turn": s["turn"], "turns": self.turns,
+                "turn_label": self.turn_label(max(1, s["turn"])),
+                "phase": s["phase"], "seg": s.get("seg"),
+                "side_to_move": self.side_to_move(),
+                "over": s["over"], "winner": s["winner"],
+                "night": self.is_night(),
+                "pending": self._ui_pending(),
+                "deploy_done": s["deploy_done"],
+                "unplaced": unplaced,
+                "min_force_empty": empty_mf,
+                "builtup_rom": self._roman_builtup_count(),
+                "builtup_target": (vp.get("roman_win") or {})
+                .get("builtup_controlled"),
+                "fired_hexes": [self._nm(h) for h in s["fired_hexes"]],
+                "entry_queue": [{"pid": q["pid"], "gate": self._nm(q["gate"])}
+                                for q in s["entry_queue"]],
+                "pool": len(s["pool"]),
+                "breach": {self._nm(h): {"dmg": d,
+                                         "def": self._breach_def(h),
+                                         "open": self.hex_t(h) == "breach"}
+                           for h, d in s["breach"].items()},
+                "seed": s["seed"], "n": s["n"],
+                "rules_scope": self.rules_scope()}
+
+    def legal_dests(self, pid, tst=False):
+        u = self.s["units"].get(str(pid))
+        if not u:
+            return {"dests": [], "crew": []}
+        side = u["side"]
+        start = u["hex"] if u["hex"] is not None else self.enterable_from(pid)
+        if start is None:
+            return {"dests": [], "crew": []}
+        crew = None
+        if self.utype(u)["cls"] == "siege_engine":
+            crew = [p for p in (u.get("crew0") or [])
+                    if (x := self.s["units"].get(p)) and self._fresh(x)
+                    and x["hex"] == u["hex"] and not x.get("up")
+                    and not x.get("pushed")][:2]
+        budget = self._ma(u) - u.get("mv", 0.0) + 8.0
+        best = {}
+        seen = {start: 0.0}
+        frontier = [(0.0, [start])]
+        calls = 0
+        while frontier and calls < 3000:
+            frontier.sort(key=lambda t: t[0])
+            est, path = frontier.pop(0)
+            for n in self._nb(path[-1]):
+                if n in path or n not in self.playable:
+                    continue
+                c, _why = self._entry_cost(u, path[-1], n, side)
+                if c is None:
+                    continue
+                e2 = est + c
+                if e2 > budget or seen.get(n, 1e9) <= e2 + 1e-9:
+                    continue
+                seen[n] = e2
+                p2 = path + [n]
+                calls += 1
+                v = self._move_verdict(side, u, p2, crew=crew, tst=tst)
+                if v["legal"] and (n not in best
+                                   or v["spent"] < best[n][0] - 1e-9):
+                    best[n] = (v["spent"], p2)
+                frontier.append((e2, p2))
+        return {"dests": [{"hex": self.hex_name[h], "cost": round(sp, 1),
+                           "path": [self.hex_name[x] for x in p],
+                           "x": round(self.px[h][0]),
+                           "y": round(self.px[h][1])}
+                          for h, (sp, p) in sorted(best.items())],
+                "crew": crew or []}

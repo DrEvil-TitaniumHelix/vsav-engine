@@ -23,6 +23,7 @@
   "victory": "Assault of Gallus: the Romans win by controlling ten Built-up hexes at the end of any Judaean Melee Phase (control = last occupant [18.3]); the Judaeans win by preventing that through the end of turn 10. The engine tracks hex control and the Built-up count live."
  },
  "assets": {
+  "map": "../../../VassalIngest/soj/extracted/images/SoJ_map.jpg",
   "counters_dir": "../../../VassalIngest/soj/extracted/images"
  },
  "ui": {"counter_px": 60},

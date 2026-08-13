@@ -52,6 +52,7 @@ import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod  # noqa: E402
 import westwall as ww_mod  # noqa: E402
 import napoleonic as nap_mod  # noqa: E402
+import soj as soj_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
 import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
@@ -96,6 +97,8 @@ GAME_OBJ = None   # gamespec.Game
 GAME_SLUG = None  # basename of the loaded game dir (menu key)
 TG = None         # gamestate.TacticalGame when the game spec names a scenario
 SG = None         # strategic.StrategicGame when the scenario is mode=strategic
+SJ = None         # soj.SoJGame when the scenario is mode=soj (own client,
+                  # no board mirror: free deployment has no setup .vsav)
 WORK = None       # working .vsav path
 SCEN_PATH = None  # scenario file (None = the game has no gate to offer)
 SCEN_MODE = None  # "strategic" | "tactical" | None
@@ -134,8 +137,8 @@ def build_gate():
     """(Re)build the legality gate for the ACTIVE tier — tier selection is an
     engine-level function: tier 0 = no gate (V3-parity free play, the user is
     the umpire), tier 1 = movement/arrivals gate, tier 2+ = full gate."""
-    global TG, SG
-    TG = SG = None
+    global TG, SG, SJ
+    TG = SG = SJ = None
     if not SCEN_PATH or TIER == 0:
         return
     if SCEN_MODE == "strategic":
@@ -147,6 +150,8 @@ def build_gate():
         SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "napoleonic":
         SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+    elif SCEN_MODE == "soj":
+        SJ = soj_mod.SoJGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     else:
         TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 
@@ -166,6 +171,18 @@ def save_facing():
 def png_size(path):
     with open(path, "rb") as f:
         head = f.read(24)
+        if head[:2] == b"\xff\xd8":          # JPEG: walk to the SOF marker
+            f.seek(2)
+            while True:
+                m = f.read(2)
+                if len(m) < 2 or m[0] != 0xFF:
+                    raise ValueError(f"no JPEG SOF marker in {path}")
+                if m[1] in (0xC0, 0xC1, 0xC2, 0xC3):
+                    f.read(3)
+                    h, w = struct.unpack(">HH", f.read(4))
+                    return w, h
+                ln, = struct.unpack(">H", f.read(2))
+                f.seek(ln - 2, 1)
     if head[:6] in (b"GIF87a", b"GIF89a"):
         return struct.unpack("<HH", head[6:10])
     return struct.unpack(">II", head[16:24])
@@ -173,6 +190,9 @@ def png_size(path):
 
 def fresh_board():
     if not os.path.exists(WORK):
+        if not GAME_OBJ.setup_save:
+            raise ValueError("this game has no free-play board - every action "
+                             "goes through the rules gate")
         shutil.copy(GAME_OBJ.setup_save, WORK)
         done.clear()
     return board_mod.Board(WORK, GAME_OBJ)
@@ -294,7 +314,7 @@ def mark_undo(n_before, label):
 
 
 def undo_status():
-    gate = SG or TG
+    gate = SG or SJ or TG
     if not gate:
         return None
     st = undo_mod.status(LIVE, GAME_SLUG, gate.s["n"])
@@ -309,7 +329,7 @@ def api_undo(body=None):
     The cut tail is archived, never destroyed. Seeded dice ride the replay:
     repeating the same action after an undo gives the same result."""
     global AI_STEP
-    gate = SG or TG
+    gate = SG or SJ or TG
     if not gate:
         return dict(error="undo needs the rules gate (tier 1+)")
     blocked = undo_blocked()
@@ -333,7 +353,7 @@ def api_undo(body=None):
     done.clear()
     sync_mirror()
     out = dict(ok=True, undone=label, undo=undo_status(),
-               flow=SG.flow() if SG else flow_view())
+               flow=SG.flow() if SG else SJ.flow() if SJ else flow_view())
     return out
 
 
@@ -397,7 +417,7 @@ def game_descriptor():
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
         grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
                   x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity),
-        sides=[dict(id=s, label=((TG or SG).scenario["game"].get("side_labels", {}) if (TG or SG) else {}).get(
+        sides=[dict(id=s, label=((TG or SG or SJ).scenario["game"].get("side_labels", {}) if (TG or SG or SJ) else {}).get(
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
@@ -424,9 +444,12 @@ RELEASE_GAMES = ["tobruk", "blue-and-gray-chickamauga", "westwall-arnhem",
 def game_client(scen_mode, has_scen):
     """Which front-end HTML plays this game: strategic + free-play games use the
     generic index.html; the tactical family (own scenario, AP-fire) uses
-    tactical.html. Mirrors the '/' routing that ships today."""
+    tactical.html; SoJ (phase-modal siege family) uses soj.html. Mirrors the
+    '/' routing that ships today."""
     if scen_mode in SG_FAMILY:
         return "index.html"
+    if scen_mode == "soj":
+        return "soj.html"
     if has_scen:
         return "tactical.html"
     return "index.html"
@@ -466,7 +489,8 @@ def game_dir(slug):
 # Friendly system names for the menu tags (engine families).
 MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter",
             "bluegray": "Strategic hex & counter", "westwall": "Strategic hex & counter",
-            "napoleonic": "Napoleonic command", "free": "Free play"}
+            "napoleonic": "Napoleonic command", "soj": "Siege assault",
+            "free": "Free play"}
 TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
             3: "Full rules"}
 # Champion (trained, graduated) AIs are WIRED: the interactive AI seat and
@@ -519,6 +543,9 @@ def game_meta(slug):
         if scen_mode in SG_FAMILY:
             earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
+        elif scen_mode == "soj":
+            earned = 2 if spec.get("combat") else 1
+            choices = list(range(1, earned + 1))
         else:
             earned, choices = 3, [0, 3]
     mode = scen_mode or ("tactical" if has_scen else "free")
@@ -638,6 +665,65 @@ def game_tables():
             title="Combat Results Table (differential, terrain-integrated)",
             cite=crt.get("cite"), columns=[""] + ["c%d" % (i + 1) for i in range(width)],
             rows=rows, legend=legend, notes=notes))
+
+    # SoJ family: melee/missile/breach/rally blocks, rendered cell-for-cell
+    # from the validated game-card transcription (validate_combat.py).
+    if SCEN_MODE == "soj" and combat and combat.get("melee"):
+        def sdrm(v):
+            return f"{v:+d}" if isinstance(v, int) else str(v)
+        me = combat["melee"]
+        tables.append(dict(
+            title="Melee Table [11/14]",
+            cite=combat.get("_source"),
+            columns=["mod. die \\ odds"] + list(me["odds_columns"]),
+            rows=[[k] + list(v) for k, v in me["rows"].items()],
+            legend=[],
+            notes=[me.get("results_cite", "")]
+            + [f"drm {sdrm(d['v'])}: {d['when']} {d.get('cite', '')}"
+               for d in me.get("drm", [])]
+            + [f"×{m['x']:g}: {m['when']} {m.get('cite', '')}"
+               for m in me.get("strength_mods", [])]))
+        mi = combat["missile"]
+        tables.append(dict(
+            title="Missile Table — target rows (AF ≥ threshold → Attack Multiple)",
+            cite=mi.get("rows_note"),
+            columns=["target \\ AM"] + [str(i + 1) for i in range(8)],
+            rows=[[k] + [str(x) if x is not None else "—" for x in v]
+                  for k, v in mi["target_rows"].items()],
+            legend=[], notes=[]))
+        tables.append(dict(
+            title="Missile Table — results (modified die × Attack Multiple)",
+            cite=mi.get("errant_on_natural_1"),
+            columns=["mod. die \\ AM"] + [str(i + 1) for i in range(8)],
+            rows=[[k] + list(v) for k, v in mi["result_rows"].items()],
+            legend=[],
+            notes=[f"drm {sdrm(d['v'])}: {d['when']} {d.get('cite', '')}"
+                   for d in mi.get("drm", [])]
+            + [mi.get("wall_attack_bonus", "")]))
+        br = combat["breach"]
+        dice = range(1, 7)
+        tables.append(dict(
+            title="Breach Table — damage points [12.1]",
+            cite=br.get("table_note"),
+            columns=["die \\ BF"] + [c + ("+" if c == "4" else "")
+                                     for c in br["table"]],
+            rows=[[str(d)] + [str(br["table"][c][d - 1]) for c in br["table"]]
+                  for d in dice],
+            legend=[],
+            notes=["Breach Defenses: "
+                   + ", ".join(f"{k} {v}" for k, v in br["defenses"].items()),
+                   br.get("gate_entrance_doubles", ""),
+                   br.get("combine", "")]))
+        ra = combat.get("rally") or {}
+        if ra:
+            tables.append(dict(
+                title="Rally [17.1]",
+                cite=ra.get("drm_cite"),
+                columns=["procedure"],
+                rows=[[ra.get("procedure", "")]],
+                legend=[],
+                notes=[f"drm {sdrm(d['v'])}: {d['when']}"
+                       for d in ra.get("drm", [])]))
 
     # Napoleonic family (Austerlitz and kin): the game.json combat_tables
     # block — fire, artillery range, morale, fatigue, melee. Rendered
@@ -775,7 +861,114 @@ def game_tables():
     return tables
 
 
+def soj_marker_img(m):
+    if m["kind"] == "wreck":
+        return "Wreck_" + "_".join(w.capitalize()
+                                   for w in m["type"].split("_")) + ".gif"
+    return m["type"].capitalize() + "_Eliminated.gif"
+
+
+def soj_units_view():
+    s = SJ.s
+    esc_bases = {e["base"] for e in s["esc"]}
+    tst_of = {}
+    for t in s["testudo"]:
+        for mp in (t.get("members") or []):
+            tst_of[mp] = t
+    out = []
+    for u in s["units"].values():
+        rev = u["state"] != "fresh" or (
+            SJ.utype(u)["cls"] == "siege_engine" and not SJ._se_crewed(u))
+        v = dict(id=u["pid"], slot=u["slot"], side=u["side"], type=u["type"],
+                 name=u.get("name") or u["slot"].replace("_", " "),
+                 cls=SJ.utype(u)["cls"], faction=u.get("faction"),
+                 cohort=u.get("cohort"), state=u["state"],
+                 up=bool(u.get("up")),
+                 img=u["slot"] + ("_Reverse.gif" if rev else ".gif"),
+                 ma=SJ._ma(u), mv=round(u.get("mv", 0.0), 1),
+                 fired=u["pid"] in s["fired"],
+                 moved=bool(u.get("m0"))
+                 and u["pid"] not in (s.get("lastm") or []),
+                 facing=u.get("facing"),
+                 melee=SJ._melee_val(u),
+                 missile=SJ.utype(u).get("missile"),
+                 rally=SJ.utype(u).get("rally"),
+                 esc_base=u["pid"] in esc_bases,
+                 testudo=(tst_of[u["pid"]].get("legion")
+                          if u["pid"] in tst_of
+                          and not tst_of[u["pid"]].get("broken") else None))
+        if u["hex"] is not None:
+            k = u["hex"]
+            v.update(onmap=True, hex=SJ.hex_name[k],
+                     x=round(SJ.px[k][0]), y=round(SJ.px[k][1]),
+                     terrain=SJ.hex_t(k))
+        else:
+            v.update(onmap=False, hex=None,
+                     entry_gate=SJ._nm(SJ.enterable_from(u["pid"]))
+                     if u["state"] not in ("eliminated", "exited") else None)
+        out.append(v)
+    return out
+
+
+def soj_markers_view():
+    s = SJ.s
+    out = []
+    for m in s["markers"]:
+        k = m["hex"]
+        out.append(dict(kind=m["kind"], img=soj_marker_img(m),
+                        hex=SJ.hex_name[k], side=m["side"], pid=m["pid"],
+                        x=round(SJ.px[k][0]), y=round(SJ.px[k][1])))
+    for e in s["esc"]:
+        k = e["hex"]
+        out.append(dict(kind="escalade", img="Escalade.gif",
+                        hex=SJ.hex_name[k], base=e["base"],
+                        used=len(e.get("used") or []),
+                        x=round(SJ.px[k][0]), y=round(SJ.px[k][1])))
+    for t in s["testudo"]:
+        k = t.get("hex")
+        if k is None:
+            continue
+        out.append(dict(kind="testudo", broken=bool(t.get("broken")),
+                        img=t.get("legion", "XII") + "_Testudo"
+                        + ("_Reverse" if t.get("broken") else "") + ".gif",
+                        hex=SJ.hex_name[k],
+                        x=round(SJ.px[k][0]), y=round(SJ.px[k][1])))
+    for h, d in s["breach"].items():
+        if d <= 0:
+            continue
+        k = h
+        img = ("Damage_Breach.gif" if SJ.hex_t(k) == "breach"
+               else f"Damage_{min(int(d), 14)}.gif")
+        out.append(dict(kind="breach", img=img, hex=SJ.hex_name[k], dmg=d,
+                        x=round(SJ.px[k][0]), y=round(SJ.px[k][1])))
+    return out
+
+
+def api_soj_action(body):
+    side, action = body["side"], body["action"]
+    n0 = SJ.s["n"]
+    r = SJ.submit(side, action)
+    if r["verdict"]["legal"]:
+        mark_undo(n0, (action.get("type") or "action").replace("_", " "))
+    r["flow"] = SJ.flow()
+    if not r["verdict"]["legal"]:
+        r["error"] = "; ".join(r["verdict"]["reasons"])
+    return r
+
+
+def api_soj_log(qs):
+    n = int(qs.get("n", ["60"])[0])
+    if not os.path.exists(SJ.log_path):
+        return dict(entries=[])
+    lines = open(SJ.log_path, encoding="utf-8").read().splitlines()
+    return dict(entries=[json.loads(x) for x in lines[-n:]])
+
+
 def api_state():
+    if SJ:
+        return dict(units=soj_units_view(), markers=soj_markers_view(),
+                    game=game_descriptor(), flow=SJ.flow(),
+                    notes=SJ.scenario["name"], undo=undo_status())
     b = fresh_board()
     units = [unit_view(u) for u in b.units()]
     out = dict(units=units, game=game_descriptor(),
@@ -864,6 +1057,9 @@ def api_legal_free(qs):
 def api_legal(qs):
     if SG:
         return api_legal_sg(qs)
+    if SJ:
+        return dict(ma=0, dests=[],
+                    reasons=["SoJ moves are path-based - /api/soj/dests"])
     if not TG:
         return api_legal_free(qs)
     g = GAME_OBJ
@@ -1076,6 +1272,8 @@ def api_sg_action(body):
 def api_move(body):
     if SG:
         return api_move_sg(body)
+    if SJ:
+        return dict(error="SoJ actions go through /api/soj/action")
     b = fresh_board()
     pid, dest, whole = body["id"], body["dest"], body.get("whole")
     me = next(u for u in b.units() if u["id"] == pid)
@@ -1453,9 +1651,12 @@ def api_reset(body=None):
     done.clear()
     if SG:
         SG.new_game()
+    if SJ:
+        SJ.new_game(SJ._fresh_seed(None))
     if TG:
         TG.new_game()
-    fresh_board()
+    if GAME_OBJ.setup_save:
+        fresh_board()
     return dict(ok=True, tier=TIER)
 
 
@@ -1491,6 +1692,11 @@ def load_game(game_dir, tier=None):
             # 1 = movement gate, 2 = full combat gate, 3 = + AI
             TIER_EARNED = sg_earned_tier(SCEN_MODE, GAME_OBJ.spec)
             TIER_CHOICES = list(range(TIER_EARNED + 1))
+        elif SCEN_MODE == "soj":
+            # no tier-0 free play: free deployment means no setup .vsav to
+            # serve, so the gate is the only way to play; no AI seat exists
+            TIER_EARNED = 2 if GAME_OBJ.spec.get("combat") else 1
+            TIER_CHOICES = list(range(1, TIER_EARNED + 1))
         else:
             # tactical family: validated combat rules + policy AI both ship
             TIER_EARNED = 3
@@ -1507,7 +1713,8 @@ def load_game(game_dir, tier=None):
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
         shutil.copy(legacy, WORK)
     load_facing()
-    fresh_board()
+    if GAME_OBJ.setup_save:
+        fresh_board()
     return gkey
 
 
@@ -1530,6 +1737,13 @@ def route_get(path, qs):
         return dict(tables=game_tables())
     if path == "/api/legal":
         return api_legal(qs)
+    if SJ and path == "/api/soj/board":
+        return dict(hexes=SJ.ui_hexes(), zones=SJ.ui_zones())
+    if SJ and path == "/api/soj/dests":
+        return SJ.legal_dests(qs["id"][0],
+                              tst=qs.get("tst", ["0"])[0] == "1")
+    if SJ and path == "/api/soj/log":
+        return api_soj_log(qs)
     if TG and path == "/api/game":
         return flow_view()
     if SG and path == "/api/battle_preview":
@@ -1561,6 +1775,8 @@ def route_get(path, qs):
 
 
 def route_post(path, body):
+    if SJ and path == "/api/soj/action":
+        return api_soj_action(body)
     if TG and path == "/api/action":
         return api_action(body)
     if TG and path == "/api/ai_turn":
@@ -1680,6 +1896,7 @@ class H(http.server.SimpleHTTPRequestHandler):
             # "/menu" = the game picker (the native app opens here); "/" keeps
             # its ship-today behavior of dropping straight into the loaded game.
             self.path = "/menu.html" if url.path == "/menu" else (
+                "/soj.html" if SJ else
                 "/tactical.html" if TG else "/index.html")
         return super().do_GET()
 
@@ -1714,6 +1931,9 @@ if __name__ == "__main__":
     if SG:
         print(f"strategic gate (tier {TIER} of {TIER_EARNED}): "
               f"{SG.scenario['name']} (log {SG.log_path})")
+    elif SJ:
+        print(f"soj gate (tier {TIER} of {TIER_EARNED}, hotseat, no AI): "
+              f"{SJ.scenario['name']} (log {SJ.log_path})")
     elif TG:
         print(f"tactical mode (tier {TIER}): {TG.scenario['name']} "
               f"(log {TG.log_path})")
