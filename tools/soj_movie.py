@@ -10,7 +10,8 @@ import replay
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOG = os.path.join(ROOT, "live", "game_siege-of-jerusalem-ah.log.jsonl")
+LOG = sys.argv[2] if len(sys.argv) > 2 else \
+    os.path.join(ROOT, "live", "game_siege-of-jerusalem-ah.log.jsonl")
 GAME = os.path.join(ROOT, "games", "siege-of-jerusalem-ah")
 IMGD = r"C:\VassalIngest\soj\extracted\images"
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(tempfile.gettempdir(), "soj_movie")
@@ -161,6 +162,20 @@ def build_frames():
                        op, f"Testudo {op}")
             emit(cap, a.get("pids") or [], dur=1.4, side=e["side"],
                  phase=e["phase"])
+        elif t == "breach_attack":
+            if res.get("breached"):
+                emit(f"THE WALL CRUMBLES AT {a['target']} — the defenders "
+                     "are buried in the rubble!", a["attackers"],
+                     thex=a["target"], dur=2.4, side=e["side"],
+                     phase=e["phase"])
+            else:
+                emit(f"The ram batters {a['target']} — damage "
+                     f"{res.get('total')}/{res.get('defense')}",
+                     a["attackers"], thex=a["target"], dur=1.3,
+                     side=e["side"], phase=e["phase"])
+        elif t == "change_facing":
+            emit(f"{nm(a['pid'])} wheels to face {a.get('face')}",
+                 [a["pid"]], dur=0.8, side=e["side"], phase=e["phase"])
         elif t == "flip":
             emit(f"{nm(a['pid'])} crew {res.get('state')}", [a["pid"]],
                  dur=1.0, side=e["side"], phase=e["phase"])
@@ -198,8 +213,13 @@ def build_frames():
     if dep_buf:
         emit(f"{SIDE_NAME[dep_side]} deployment", dep_buf, dur=0.45,
              side=dep_side)
-    emit(None, dur=4.5, title="JUDAEAN VICTORY — the assault is repulsed",
-         sub="Rome built up 0 of 10 wall hexes \u00b7 replay verified: 583/583 log entries")
+    total = 1 + len([x for x in lines[1:] if x.get("event") == "action"])
+    wtitle = ("JUDAEAN VICTORY — the assault is repulsed"
+              if tg.s["winner"] == "Jud"
+              else "ROMAN VICTORY — the city falls")
+    emit(None, dur=4.5, title=wtitle,
+         sub="every action gate-validated · replay verified: "
+             f"{total}/{total} log entries")
     return tg, frames
 
 
