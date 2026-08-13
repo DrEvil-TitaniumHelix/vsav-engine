@@ -231,6 +231,9 @@ def main():
         # ---------------- J. doubtful-staircase exclusion - Bite 25 (R4)
         stair_exclusion_checks(g)
 
+        # ---------------- 5-bastion evidence pass (2026-08-13)
+        north_wall_strongpoint_checks(g)
+
         # ---------------- log replays end-to-end
         r = subprocess.run(
             [sys.executable, os.path.join(ENG, "verify_game.py"),
@@ -1472,6 +1475,49 @@ def offboard_exit_checks(g):
         print("offboard exit: an intact Testudo marches off whole - "
               "members removed, formation dissolved OK [8.14/8.8]")
         print("offboard exit checks: PASS (Bite 24 N12 - M.33 whole)")
+    finally:
+        shutil.rmtree(live, ignore_errors=True)
+
+
+def north_wall_strongpoint_checks(g):
+    """5-bastion evidence pass (2026-08-13): the session-1 terrain
+    auto-classifier typed five North Wall strongpoints as plain
+    'north_wall'. Re-read from the printed control-map rings + tower/fort
+    structures (ring-fraction census cross-validated vs all 22 shipped
+    Bastions / 10 Forts): G45/G47/H48/J37 are Bastions, I50 is a Fort;
+    the four bleed-only marginals G48/H47/I48/NN17 stay plain wall. The
+    fix raises their breach defense (north_wall 6 -> Bastion 10 / Fort 12
+    [12.1/game card]), enrols them in STRONGPOINTS, and (card SR1: each
+    Bastion and Fortress of the North Wall O50..QQ29) adds them to the
+    minimum-force garrison, closing P0.2's under-enforcement."""
+    live = tempfile.mkdtemp(prefix="soj_nws_")
+    try:
+        tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
+                         live, seed=53)
+        BAST = ["G45", "G47", "H48", "J37"]
+        FORT = ["I50"]
+        BLEED = ["G48", "H47", "I48", "NN17"]
+        for n in BAST:
+            h = tg.name_hex[n]
+            assert tg.hex_t0[h] == "bastion", (n, tg.hex_t0[h])
+            assert tg.hex_t(h) in soj.STRONGPOINTS
+            assert tg._breach_def(h) == 10, (n, tg._breach_def(h))
+        for n in FORT:
+            h = tg.name_hex[n]
+            assert tg.hex_t0[h] == "fort", (n, tg.hex_t0[h])
+            assert tg.hex_t(h) in soj.STRONGPOINTS
+            assert tg._breach_def(h) == 12, (n, tg._breach_def(h))
+        for n in BLEED:
+            h = tg.name_hex[n]
+            assert tg.hex_t0[h] == "north_wall", (n, tg.hex_t0[h])
+            assert tg._breach_def(h) == 6, (n, tg._breach_def(h))
+        mf = {tg.hex_name[h] for h in tg.min_force}
+        assert set(BAST + FORT) <= mf, sorted(set(BAST + FORT) - mf)
+        assert not (set(BLEED) & mf), sorted(set(BLEED) & mf)
+        assert len(tg.min_force) == 26, len(tg.min_force)
+        print("north-wall strongpoints: G45/G47/H48/J37=Bastion(def10), "
+              "I50=Fort(def12) re-typed + garrisoned; 4 bleed marginals "
+              "stay plain wall; min-force = 26 [card SR1 / 12.1]")
     finally:
         shutil.rmtree(live, ignore_errors=True)
 

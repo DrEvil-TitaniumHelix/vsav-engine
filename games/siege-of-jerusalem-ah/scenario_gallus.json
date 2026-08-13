@@ -37,9 +37,14 @@
    "O50",
    "M50",
    "L50",
+   "I50",
+   "H48",
+   "G47",
+   "G45",
    "G43",
    "G40",
    "G39",
+   "J37",
    "M36",
    "P33",
    "S30",
@@ -56,7 +61,7 @@
    "QQ25",
    "QQ29"
   ],
-  "min_force_cite": "special rule 1: >= 1 unit in each Bastion and Fortress of the North Wall O50..QQ29 inclusive (Forts count: 'Fortresses and Forts are considered identical' [2.11]); requirement void from the start of turn 4; a hex vacated by combat results need not be reoccupied",
+  "min_force_cite": "special rule 1: >= 1 unit in each Bastion and Fortress of the North Wall O50..QQ29 inclusive (Forts count: 'Fortresses and Forts are considered identical' [2.11]); requirement void from the start of turn 4; a hex vacated by combat results need not be reoccupied NOTE: five North Wall strongpoints were mis-typed 'north_wall' by the session-1 terrain auto-classifier and were absent from this list until corrected 2026-08-13 - G45/G47/H48/J37 (Bastions) and I50 (Fort); their printed control-map rings and tower/fort structures were re-read from the map (ring-fraction census cross-validated against all 22 shipped Bastions and 10 Forts) and their terrain.json class fixed, so P0.2 now enforces the full 26-hex garrison.",
   "roman_prohibited_hexes": [
    "P50",
    "Q49",
@@ -411,7 +416,7 @@
   "build_open": [
    "Every entry here is an OPEN coverage-matrix row - a defect that blocks playability, never a player-umpired corner. Full detail: COVERAGE_MATRIX.md (internal).",
    "Nothing is blocked on module-author answers any more: all four open questions are closed by declared rulings (Garrison Area extents + testudo one-per-legion 2026-08-12; staircase-hexside exclusion 2026-08-12; Giora dice count 2026-08-13 - see the rulings list and source_defects), module-author review converts each authority tier when it lands (Elim-vs-Wreck no longer blocks Gallus: outcome-equivalence proven, R7 stays open for campaign scope)",
-   "Data-defect item queued (post-R-cells): five North Wall hexes typed north_wall carry bastion-strength control-map rings + tower art (G45, G47, H48, I50, J37) - if real Bastions, the card SR1 min-force requirement is under-enforced by five hexes and their ring class/staircase standing changes; needs its own evidence pass before E2E"
+   "5-bastion data item RESOLVED (2026-08-13): the session-1 auto-classifier mis-typed five North Wall strongpoints as plain north_wall; the printed control-map rings + tower/fort structures (ring-fraction census cross-validated vs all 22 shipped Bastions / 10 Forts) resolve them as G45/G47/H48/J37 = Bastions and I50 = Fort (the four bleed-only marginals G48/H47/I48/NN17 stay plain wall); terrain.json retyped and P0.2 min-force grown 21->26 (no staircase touches any of the five, so R4 standing is unaffected). ONE open item remains before the PLAYABLE flip: the E2E playthrough pass with the UI modal wiring that carries it."
   ],
   "rulings": [
    "Official Q&A (The General Question Box + 1/6/1992 AH typescript) is the authority tier above the rulebook text; the two documents AGREE everywhere (decode-prep 6, item by item) - their one discrepancy is a rule-citation mismatch (17.23 vs 17.3) registered in source_defects",

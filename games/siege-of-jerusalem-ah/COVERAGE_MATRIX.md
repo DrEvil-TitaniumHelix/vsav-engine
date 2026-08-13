@@ -37,7 +37,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | row | rule | requirement | status |
 |---|---|---|---|
 | P0.1 | card | Judaeans deploy first, inside New City / on its outer walls | ENFORCED — `_deploy_verdict` jud_zone; VD |
-| P0.2 | card SR1 | ≥1 unit in each North Wall Bastion/Fortress O50..QQ29 (21 hexes) before deploy_done | ENFORCED — `_deploy_done_verdict` min_force; VD |
+| P0.2 | card SR1 | ≥1 unit in each North Wall Bastion/Fortress O50..QQ29 (26 hexes) before deploy_done | ENFORCED — `_deploy_done_verdict` min_force; VD. 5-bastion pass (2026-08-13) added G45/G47/H48/J37 (Bastions) + I50 (Fort), session-1 mis-typing fixed; VM `north_wall_strongpoint_checks` |
 | P0.3 | card | Romans second, outside Jerusalem, ≥5 hexes from any Elevated hex, after observing | ENFORCED — `_roman_zone`; VD |
 | P0.4 | card | Romans never enter Garrison Areas | ENFORCED — **R1 closed by declared ruling (Bruce 2026-08-12, module-author review pending)**: `rom_prohibited` = the 9 battlefield-reachable perimeter hexes of the three 18.4 areas (P50, Q49, MM31, MM32, MM33, NN33, OO33, PP33, QQ32 — derivation in source_defects `gallus-garrison-extent`); one `_entry_cost` door inherited by movement/retreat/advance/climb/CC-trace, advance-into-gate carve-out garrison-guarded, `_esc_up_opts` filtered, 11.1 melee eligibility inherits, fire stays legal; MM30 bastion-typing defect fixed in the same pass (clear, New City — ring census + art + entrance record); VM `garrison_checks` |
 | P0.5 | 6.2/6.4/8.4/8.5 | per-class placement: no cavalry/SE/Roman artillery on Elevated; Cauldrons Elevated-only | ENFORCED — `_deploy_verdict`; VD |
@@ -294,8 +294,12 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE** — two items short of the flip: the 5-bastion evidence pass (queued data item
-below) and the E2E playthrough pass (with the UI modal wiring that carries it). **ALL FOUR
+**NOT PLAYABLE** — one item short of the flip: the E2E playthrough pass (with the UI modal
+wiring that carries it). The 5-bastion evidence pass is DONE (2026-08-13): four Bastions
+(G45/G47/H48/J37) + one Fort (I50) were mis-typed `north_wall` by the session-1 classifier,
+re-read from their printed control-map rings + tower/fort structures (ring-fraction census
+cross-validated vs all 22 shipped Bastions / 10 Forts; the four bleed-only marginals
+G48/H47/I48/NN17 stay plain wall), terrain.json fixed and P0.2 min-force grown 21→26. **ALL FOUR
 R-CELLS ARE CLOSED by declared rulings (Bites 25a–25d, Bruce 2026-08-12/13): P0.4 garrison
 extent, M.27 testudo count, M.4/X.4 staircase exclusion, M.34 dice count — Rob's answers
 convert the authority tiers when they land. THE ENGINE LIST IS FULLY CLOSED: A-list, B-list
@@ -413,11 +417,17 @@ CLOSED WHOLE by declared rulings: R1 (P0.4, Bite 25a), R2 (M.27 count, Bite 25b)
 staircase exclusion, Bite 25c), R8 (M.34 dice count, Bite 25d — two dice for the count, one
 die for the gate); Rob's confirmations convert the authority tiers when they land (R7 no
 longer blocks Gallus: Elim-vs-Wreck proven outcome-equivalent, campaign identity still with
-Rob). Open before the PLAYABLE flip: the queued data item below, then the E2E playthrough
-pass. QUEUED DATA ITEM (found by Bite 25's ring audit, own evidence pass before E2E): five North
-Wall hexes typed `north_wall` carry bastion-strength control-map rings + tower art (G45, G47,
-H48, I50, J37) — if real Bastions, P0.2's 21-hex min-force list is under-enumerated and their
-ring class/staircase standing changes.** The A-list is CLOSED: A1/A2/A8 (ac848ec),
+Rob). Open before the PLAYABLE flip: the E2E playthrough pass (only remaining item).
+DATA ITEM RESOLVED (5-bastion evidence pass, 2026-08-13): the session-1 auto-classifier
+mis-typed five North Wall strongpoints as plain `north_wall`. The completeness pass over all
+49 `north_wall` hexes found 9 ring-flagged candidates; the printed control-map rings + tower/
+fort structures (ring-fraction census cross-validated vs all 22 shipped Bastions / 10 Forts)
+resolve them as G45/G47/H48/J37 = Bastions (blue ring 0.167–0.340) and I50 = Fort (orange 0.264),
+while the four sub-floor marginals G48/H47/I48/NN17 (0.104–0.111) are ring-bleed from adjacent
+genuine Bastions and stay plain wall. No staircase/entrance/crest hexside touches any of the five,
+so R4 stair standing is unaffected. Fix: terrain.json retype (breach defense north_wall 6 →
+Bastion 10 / Fort 12, STRONGPOINTS membership, rock height) + P0.2 min-force 21→26; regression
+`north_wall_strongpoint_checks` (VM); an OUR ingest defect (spec #21), same class as MM30.** The A-list is CLOSED: A1/A2/A8 (ac848ec),
 A5/A6 (cd12f76), A3/A4 (2e227ce), A7 by disposition (edifice/bridge/temple classes = campaign
 scope in the unreachable register; road/crest land with B7/B8), **A9 done this commit** —
 `rules_scope.umpired` retired (all ten entries were B-list build work, now the `build_open`
