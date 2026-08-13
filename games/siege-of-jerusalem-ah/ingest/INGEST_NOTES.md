@@ -48,6 +48,16 @@ East leg (north->south): PP18..PP25 QQ22 QQ23 QQ25(landmark) QQ26 QQ27 QQ28 QQ29
   QQ30 QQ31(= card's east end). Junction strongpoints beyond scenario bounds: P50(fort, west)
   QQ32(fort, east) — card: "Romans may never enter P50 or QQ32" = garrison-area junctions.
 Scenario minimum-force rule covers "each Bastion and Fortress of the North Wall O50..QQ29".
+**CORRECTION 2026-08-13 (5-bastion evidence pass):** the pass-2 auto-classifier + the eye
+precision pass typed five of these strongpoints as plain `north_wall`, dropping them from both
+the strongpoint fabric and the min-force list. Ring-fraction census over all 49 `north_wall`
+hexes (terrain_pass2 blue/orange/red fracs, cross-validated vs all 22 shipped Bastions / 10
+Forts, floor = M50 blue 0.125) + printed control-map rings + tower/fort structures resolve:
+**G45 (0.278), G47 (0.257), H48 (0.340), J37 (0.167) = BASTIONS; I50 (orange 0.264) = FORT** —
+terrain.json retyped, P0.2 min-force 21→26. The four sub-floor marginals **G48/H47/I48 (0.104)
++ NN17 (0.111)** are ring-bleed from adjacent genuine Bastions (their own hex carries no ring in
+the crops) and stay plain wall. No staircase/entrance/crest hexside touches any of the five.
+Regression: VM `north_wall_strongpoint_checks`. Crops rendered to scratchpad via render_hex_crop.
 
 ### Second Wall (inner arc = New City south boundary) — approx trace, VERIFY hex-by-hex
 Q49(bastion, WEST REINFORCEMENT GATE) R49(fort) R48? R47? R46(bastion) R45(bastion) then NE:

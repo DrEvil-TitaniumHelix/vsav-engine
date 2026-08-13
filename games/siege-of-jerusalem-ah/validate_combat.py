@@ -515,23 +515,29 @@ def fire_drm_checks(g):
 
         # ---- E: 9.8 wall bonus - denied over intervening units; gates are
         # never Wall hexes (F.19 ruling)
+        # The printed North Wall arc bends too sharply to offer four colinear
+        # wall hexes (the lone straight stretch, column G, is broken by the
+        # G45/G47 Bastions), and every Fort/Fortress/Bastion in the path
+        # blocks the shot. The 9.8 arithmetic is board-geometry-independent
+        # (throwaway game), so synthesise a straight 4-hex wall run on empty
+        # clear ground and restore it after the scene - the same overlay
+        # trick lof_crest_checks uses.
         wline = None
         for w in sorted(tg.hex_t0):
-            if tg.hex_t(w) not in ("wall", "north_wall"):
+            if tg.hex_t(w) != "clear" or tg._occupants(w):
                 continue
             for dq, dr in AXES:
-                for sign in (1, -1):
-                    W = [axis(w, dq * sign, dr * sign, i) for i in range(4)]
-                    if all(x in tg.hex_t0 and
-                           tg.hex_t(x) in ("wall", "north_wall")
-                           and not tg._occupants(x) for x in W):
-                        wline = W
-                        break
-                if wline:
+                W = [axis(w, dq, dr, i) for i in range(4)]
+                if all(x in tg.hex_t0 and tg.hex_t(x) == "clear"
+                       and not tg._occupants(x) for x in W):
+                    wline = W
                     break
             if wline:
                 break
-        assert wline, "no colinear wall 4-line"
+        assert wline, "no colinear clear 4-line"
+        wall_saved = {x: tg.hex_t0[x] for x in wline}
+        for x in wline:
+            tg.hex_t0[x] = "north_wall"
         w0, w1b, w2, w3 = wline            # blocker NOT adjacent to w0
         jr2 = take("judaean_regular", 1)[0]
         jr2b = next(u for u in U.values()
@@ -562,6 +568,8 @@ def fire_drm_checks(g):
         for u in (jr2, jr2b, vet[1], blk):
             u["hex"] = None
         tg.s["pending"] = None
+        for x, t0 in wall_saved.items():
+            tg.hex_t0[x] = t0
 
         # ---- F: 13.2 the most severe result falls on the Primary Target
         spot = clear_line(1)[0]
