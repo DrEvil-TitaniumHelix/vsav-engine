@@ -148,7 +148,7 @@ Judaean Rally's reserve sub-step never runs in Gallus (card: reserves not used).
 | M.31 | 2.46/8.4 | Judaean Ballista/Onager/Catapult never move in Gallus | UNREACHABLE — units absent from Gallus OOB (also MA 0 both sides + no Interphase; 2.46, counter census) |
 | M.32 | 8.5 | Cauldrons: move Fresh or Disrupted, Elevated-to-Elevated only, artillery-exclusion carve-outs | ENFORCED — `_entry_cost` cauldron branch; VM |
 | M.33 | 8.14 | offboard exit: Romans as-if-Clear (return next AP = never in Gallus); Judaeans never return | ENFORCED WHOLE — **N12** closed (Bite 24): `exit` action = `_move_verdict` on the path + the `OFF` sentinel step (all movement doors bind on the on-map leg; the off-map step costs 1 MF as-if-Clear, refused off non-mapsheet-edge hexes — 106 playable edge hexes, all outside ground, both sides reachable); exited units `state="exited"`, `hex=None`, logged in hashed `s["escaped"]`, no Wreck/Elim marker, no return path (Romans return next AP = none in Gallus; Judaeans never [15.5/18.92]); ZOC arms (free first-step off-map exit [7.321], +3 soft later-leg, hard-in-ZOC exit legal), 8.2 finality ledger, Routed Roman may leave (Refuge = board edge [15.4/15.5]) while Routed/Panicked Judaeans are refused (Refuge = Temple Quarter [15.3]), Cauldron refused [8.5], crewed SE exits as the locked stack (riders included), intact Testudo marches off whole; Judaean transit still wrecks unescorted SEs on the path [11.4]. VM `offboard_exit_checks` (7 scene groups) |
-| M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. Dice-count ambiguity registered → **R8** |
+| M.34 | card SR2 | Giora reinforcement: dice count from turn 4, gate by odd/even die, blocked→other gate, retry each turn | ENFORCED — `_roll_reinforcements` + entry queue; VC. **R8 closed by declared ruling (Bruce 2026-08-13, module-author review pending)**: TWO dice for the count, one die for the gate (source_defects `gallus-reinforcement-dice-count`); the gate roll's odd/even split is dice-count-invariant, so only the count cell ever hung on the ambiguity |
 | M.35 | card | south-gate Refuge exit removes routed/panicked units from play (Bruce-approved bound) | ENFORCED — `escaped`/refuge machinery. A4 DONE: `southern_bound` diagonals anchored on the card's arc ends (cols A–O ≤ printed 50 at O50; QQ–XX ≤ 32 at the QQ31/QQ32 junction) + Elevated fabric playable only where it borders battlefield ground; playable 1925→1341, all 219 Old City art hexes + typed south-junction strongpoints (P51/O53/Q50… cluster, 12 hexes) off-battlefield; VD `bound_and_builtup_checks` |
 | M.36 | 6.5/6.4 | Judaeans never enter Escalade hexes; enter SE hexes only from Ground | ENFORCED — SE-hex half with B10 (`_move_verdict`: entry legal only for Judaeans, only from non-Elevated, only into unescorted-SE hexes, which it wrecks [11.4]; VC `marker_checks`); Escalade half with B12: structurally covered by 8.11/15.1 (a Fresh Roman Base always occupies the hex) + explicit 6.5 armor in `_move_verdict`/`_retreat_step` for unreachable states; VC `escalade_checks` |
 
@@ -294,8 +294,12 @@ handoff's B-list. Classes: 1 = silent incorrectness, 2 = loud incompleteness.
 
 ## §6 PLAYABILITY VERDICT
 
-**NOT PLAYABLE.** Open rows: **R-held ONLY (P0.4/M.27-count/X.4-hexsides/M.34-dice — Rob/Bruce
-arbitration) — THE ENGINE LIST IS FULLY CLOSED: A-list, B-list (B1–B19), and every N-row (N1–N24).
+**NOT PLAYABLE** — two items short of the flip: the 5-bastion evidence pass (queued data item
+below) and the E2E playthrough pass (with the UI modal wiring that carries it). **ALL FOUR
+R-CELLS ARE CLOSED by declared rulings (Bites 25a–25d, Bruce 2026-08-12/13): P0.4 garrison
+extent, M.27 testudo count, M.4/X.4 staircase exclusion, M.34 dice count — Rob's answers
+convert the authority tiers when they land. THE ENGINE LIST IS FULLY CLOSED: A-list, B-list
+(B1–B19), and every N-row (N1–N24).
 Bite 24 (this commit) CLOSED THE LAST ENGINE ROW — N12 (8.14 offboard exit)**: a new `exit`
 action routes the on-map path through `_move_verdict`/`_tst_move_verdict` with an off-map `OFF`
 sentinel step (1 MF as-if-Clear, mapsheet-edge hexes only — 106 in Gallus, all outside ground),
@@ -404,11 +408,13 @@ ladder, modal `advance` pending, `melee_hexes` hex-once lock, CC same-units audi
 auto-lone-D retreat fix on X.28; B9/B10 before that on `marker_checks`). The N-list is
 CLOSED WHOLE (N1 false gap; N3/N4/N10/N19/N21/N23 closed; N14
 closed inside B14; N6/N11/N16/N20 closed by Bite 21; N7/N8/N9/N22/N24 closed by Bite 22;
-N2/N5/N13/N15/N17/N18 closed by Bite 23; N12 closed by Bite 24). Open:
-R2/R4/R8 (R1 closed by Bite 25's declared ruling — P0.4 whole, Rob's confirmation converts the
-authority tier when it lands; R2/R4/R8 queue for the same declared-ruling treatment in-session;
-R7 no longer blocks Gallus: Elim-vs-Wreck proven outcome-equivalent, campaign identity still with
-Rob). QUEUED DATA ITEM (found by Bite 25's ring audit, own evidence pass before E2E): five North
+N2/N5/N13/N15/N17/N18 closed by Bite 23; N12 closed by Bite 24). The R-list is
+CLOSED WHOLE by declared rulings: R1 (P0.4, Bite 25a), R2 (M.27 count, Bite 25b), R4 (M.4/X.4
+staircase exclusion, Bite 25c), R8 (M.34 dice count, Bite 25d — two dice for the count, one
+die for the gate); Rob's confirmations convert the authority tiers when they land (R7 no
+longer blocks Gallus: Elim-vs-Wreck proven outcome-equivalent, campaign identity still with
+Rob). Open before the PLAYABLE flip: the queued data item below, then the E2E playthrough
+pass. QUEUED DATA ITEM (found by Bite 25's ring audit, own evidence pass before E2E): five North
 Wall hexes typed `north_wall` carry bastion-strength control-map rings + tower art (G45, G47,
 H48, I50, J37) — if real Bastions, P0.2's 21-hex min-force list is under-enumerated and their
 ring class/staircase standing changes.** The A-list is CLOSED: A1/A2/A8 (ac848ec),
