@@ -241,14 +241,33 @@ def render(tg, frames):
 
     try:
         fcap = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 30)
+        fmid = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 56)
+        fcor = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 26)
         fhud = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 24)
-        fbig = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 64)
-        fsub = ImageFont.truetype(r"C:\Windows\Fonts\segoeui.ttf", 30)
+        fbig = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 72)
+        fsub = ImageFont.truetype(r"C:\Windows\Fonts\segoeui.ttf", 32)
     except OSError:
-        fcap = fhud = fbig = fsub = ImageFont.load_default()
+        fcap = fmid = fcor = fhud = fbig = fsub = ImageFont.load_default()
 
     def tx(x, y):
         return ((x - x0) * S, (y - y0) * S)
+
+    def wrap(txt, font, dr, maxw):
+        lines, cur = [], ""
+        for w_ in txt.split():
+            t2 = (cur + " " + w_).strip()
+            if dr.textlength(t2, font=font) > maxw and cur:
+                lines.append(cur)
+                cur = w_
+            else:
+                cur = t2
+        lines.append(cur)
+        return lines
+
+    t = 0.0
+    for f in frames:
+        f["t0"] = t
+        t += f["dur"]
 
     for i, f in enumerate(frames):
         im = base.copy().convert("RGBA")
@@ -313,6 +332,41 @@ def render(tg, frames):
                 dr2.text(((W - sw) / 2, H / 2 + 20), f["sub"],
                          font=fsub, fill=(230, 230, 230, 255))
         else:
+            ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+            do = ImageDraw.Draw(ov)
+            if f.get("cap") and f["dur"] >= 1.2:
+                lines = wrap(f["cap"], fmid, do, W * 0.84)
+                lh = 78
+                y = (H - lh * len(lines)) / 2
+                col = SIDE_COL.get(f.get("side"))
+                for ln in lines:
+                    tw = do.textlength(ln, font=fmid)
+                    x = (W - tw) / 2
+                    do.rounded_rectangle([x - 30, y - 6, x + tw + 30, y + 70],
+                                         18, fill=(10, 10, 12, 175))
+                    do.rectangle([x - 30, y - 6, x - 16, y + 70],
+                                 fill=col + (235,))
+                    do.text((x, y), ln, font=fmid, fill=(255, 255, 255, 255))
+                    y += lh
+            cy = 14
+            for g in [g for g in frames[:i] if g.get("cap") and g["dur"] >= 1.2
+                      and 0 < f["t0"] - g["t0"] < 5.0][-3:][::-1]:
+                a = 1 - (f["t0"] - g["t0"]) / 5.0
+                cap = g["cap"]
+                if do.textlength(cap, font=fcor) > W * 0.4:
+                    while do.textlength(cap + "\u2026", font=fcor) > W * 0.4:
+                        cap = cap[:-1]
+                    cap += "\u2026"
+                tw = do.textlength(cap, font=fcor)
+                x = W - tw - 44
+                do.rounded_rectangle([x - 16, cy, x + tw + 16, cy + 42], 10,
+                                     fill=(10, 10, 12, int(165 * a)))
+                do.rectangle([x - 16, cy, x - 8, cy + 42],
+                             fill=SIDE_COL.get(g.get("side")) + (int(220 * a),))
+                do.text((x, cy + 5), cap, font=fcor,
+                        fill=(255, 255, 255, int(255 * a)))
+                cy += 50
+            im.alpha_composite(ov)
             bar = Image.new("RGBA", (W, 62), (10, 10, 12, 185))
             im.alpha_composite(bar, (0, H - 62))
             dr2 = ImageDraw.Draw(im)
