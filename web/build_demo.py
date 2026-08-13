@@ -288,6 +288,18 @@ soon.innerHTML =
    <div class="needs">in final testing</div>
    <button>Coming soon</button>`;
 cards.appendChild(soon);
+const naw = document.createElement('div');
+naw.className = 'card soon';
+naw.innerHTML =
+  `${coverImg('covers/napoleon-at-waterloo.jpg')}
+   <h2>Napoleon at Waterloo</h2>
+   <div class="meta"><span class="tag soon">Coming soon</span><span class="tag feature">Community request</span></div>
+   <div class="blurb">June 18, 1815 — the SPI classic that taught a generation
+   to wargame. 2nd &amp; 3rd edition rules, requested by the community on
+   GitHub.</div>
+   <div class="needs">in the encoding queue</div>
+   <button>Coming soon</button>`;
+cards.appendChild(naw);
 const ph = document.createElement('div');
 ph.className = 'card placeholder';
 ph.innerHTML =
