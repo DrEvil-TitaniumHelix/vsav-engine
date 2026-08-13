@@ -296,6 +296,10 @@ const FRAME = (() => {
            enforced for this game yet; move pieces as you would at a physical table.
            You are the umpire.</div>`;
     } else {
+      if (rs.banner)
+        h += `<div style="margin:6px 0; padding:5px 8px; border-radius:4px; font-weight:600;
+              ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
+                                            : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
       h += `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || G.name}.
             Every proposed action passes through the legality gate and is accepted or
             rejected against these rules. Numbers in parentheses cite the game's own

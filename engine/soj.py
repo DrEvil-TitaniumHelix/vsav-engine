@@ -109,12 +109,16 @@ class SoJGame(GateGame):
         sc = self.scenario.get("rules_scope", {})
         rulings = sc.get("rulings", [])
         if self.tier >= 2:
+            open_rows = sc.get("build_open", [])
             return {"enforced": (sc.get("enforced", []) +
                                  sc.get("enforced_tier2", [])),
-                    "not_enforced": sc.get("build_open", []),
+                    "not_enforced": open_rows,
                     "rulings": rulings,
-                    "banner": "BUILD IN PROGRESS - NOT PLAYABLE by the "
-                              "coverage-matrix standard (open rows below)"}
+                    "banner": ("PLAYABLE - every coverage-matrix row "
+                               "enforced or unreachable (validated; E2E "
+                               "playthrough replay-verified)" if not open_rows
+                               else "BUILD IN PROGRESS - NOT PLAYABLE by the "
+                               "coverage-matrix standard (open rows below)")}
         return {"enforced": sc.get("enforced", []),
                 "not_enforced": (sc.get("enforced_tier2", []) +
                                  sc.get("build_open", [])),

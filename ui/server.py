@@ -871,10 +871,7 @@ def soj_marker_img(m):
 def soj_units_view():
     s = SJ.s
     esc_bases = {e["base"] for e in s["esc"]}
-    tst_of = {}
-    for t in s["testudo"]:
-        for mp in (t.get("members") or []):
-            tst_of[mp] = t
+    tst_of = {t["hex"]: t for t in s["testudo"]}
     out = []
     for u in s["units"].values():
         rev = u["state"] != "fresh" or (
@@ -884,7 +881,9 @@ def soj_units_view():
                  cls=SJ.utype(u)["cls"], faction=u.get("faction"),
                  cohort=u.get("cohort"), state=u["state"],
                  up=bool(u.get("up")),
-                 img=u["slot"] + ("_Reverse.gif" if rev else ".gif"),
+                 img=u["slot"] + ("_Reverse.gif" if rev else
+                                  ("_" + u["cohort"] if u.get("cohort")
+                                   else "") + ".gif"),
                  ma=SJ._ma(u), mv=round(u.get("mv", 0.0), 1),
                  fired=u["pid"] in s["fired"],
                  moved=bool(u.get("m0"))
@@ -894,9 +893,9 @@ def soj_units_view():
                  missile=SJ.utype(u).get("missile"),
                  rally=SJ.utype(u).get("rally"),
                  esc_base=u["pid"] in esc_bases,
-                 testudo=(tst_of[u["pid"]].get("legion")
-                          if u["pid"] in tst_of
-                          and not tst_of[u["pid"]].get("broken") else None))
+                 testudo=(tst_of[u["hex"]].get("legion")
+                          if u["side"] == "Rom" and u["hex"] in tst_of
+                          and not tst_of[u["hex"]].get("broken") else None))
         if u["hex"] is not None:
             k = u["hex"]
             v.update(onmap=True, hex=SJ.hex_name[k],
