@@ -865,7 +865,7 @@ def soj_marker_img(m):
     if m["kind"] == "wreck":
         return "Wreck_" + "_".join(w.capitalize()
                                    for w in m["type"].split("_")) + ".gif"
-    return m["type"].capitalize() + "_Eliminated.gif"
+    return m["type"].split("_")[-1].capitalize() + "_Eliminated.gif"
 
 
 def soj_units_view():
