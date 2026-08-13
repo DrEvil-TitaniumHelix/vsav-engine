@@ -12,6 +12,7 @@ GAME_COVERS = {
     "afrika-korps-classic-ah": "Afrika Korps-01.jpg",
     "austerlitz-gmt": "Austerlitz_ Napoleon_s Greatest Victory-01.jpg",
     "siege-of-jerusalem": "The Siege of Jerusalem-01.jpg",
+    "napoleon-at-waterloo": "Napoleon at Waterloo (2nd & 3rd Ed)-01.jpg",
 }
 
 ROTATOR = [
