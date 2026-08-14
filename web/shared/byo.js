@@ -138,6 +138,10 @@
   };
   BYO.entryUrl = async (reqId, entry) =>
     urlFor(await BYO.extract(reqId, entry), entry);
+  BYO.entries = async function (reqId, prefix) {
+    const z = await zipOf(readyFiles, reqId);
+    return [...z.idx.keys()].filter((n) => n.startsWith(prefix));
+  };
 
   // ---------- legacy mount: marry module art to baked GAME_DATA ------------
   async function legacyMount(files) {

@@ -34,7 +34,7 @@ import server as srv  # noqa: E402  (game_meta/game_dir only — no HTTP)
 
 OUT = os.path.join(ROOT, "dist", "demo")
 VENDOR = os.path.join(ROOT, "web", "vendor", "pyodide")
-GAMES = list(srv.RELEASE_GAMES)
+GAMES = list(srv.RELEASE_GAMES) + ["siege-of-jerusalem-ah"]
 
 # same two counter-src sites build_web.py patches (board client), one in the
 # tactical client — art must come from the user's module via BYO.counter(u)
@@ -54,6 +54,18 @@ def replace_counted(html, old, new, n, what):
 def img_size(path):
     with open(path, "rb") as f:
         head = f.read(26)
+        if head[:2] == b"\xff\xd8":
+            f.seek(2)
+            while True:
+                m = f.read(2)
+                if len(m) < 2 or m[0] != 0xFF:
+                    raise SystemExit(f"no JPEG SOF marker in {path}")
+                if m[1] in (0xC0, 0xC1, 0xC2, 0xC3):
+                    f.read(3)
+                    h, w = struct.unpack(">HH", f.read(4))
+                    return w, h
+                ln, = struct.unpack(">H", f.read(2))
+                f.seek(ln - 2, 1)
     if head[:6] in (b"GIF87a", b"GIF89a"):
         return struct.unpack("<HH", head[6:10])
     if head[:2] == b"BM":
@@ -133,6 +145,13 @@ def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
                                "counter src URL")
         html = replace_counted(html, COUNTER_TPL, "${%s}" % (BYO_EXPR % COUNTER_SRC),
                                1, "counter template URL")
+    elif src_name == "soj.html":
+        for var, n in (("u", 6), ("m", 1)):
+            pat = "GAME.counters_url+encodeURIComponent(%s.img)" % var
+            html = replace_counted(
+                html, pat,
+                "(window.BYO?BYO.counter(%s):%s)" % (var, pat),
+                n, "soj counter src URL (%s)" % var)
     else:
         html = replace_counted(html, COUNTER_SRC_T, BYO_EXPR % COUNTER_SRC_T, 1,
                                "tactical counter src URL")
@@ -155,6 +174,13 @@ style="background:#1a1c20"><script>
 var t = localStorage.getItem('tier:%(slug)s');
 var tactical = %(tactical)s && !(t !== null && +t === 0);
 location.replace(tactical ? 'tactical.html' : 'board.html');
+</script></body></html>
+"""
+
+LOADER_SOJ = """<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>%(name)s</title></head><body
+style="background:#1a1c20"><script>
+location.replace('soj.html');
 </script></body></html>
 """
 
@@ -276,18 +302,6 @@ for (const g of GAMES){
   card.onclick = () => location.href = 'g/' + g.slug + '/';
   cards.appendChild(card);
 }
-const soon = document.createElement('div');
-soon.className = 'card soon';
-soon.innerHTML =
-  `${coverImg('covers/siege-of-jerusalem.jpg')}
-   <h2>The Siege of Jerusalem</h2>
-   <div class="meta"><span class="tag soon">Coming soon</span></div>
-   <div class="blurb">70 AD — Titus against the walls of Jerusalem. Assault the
-   city or hold it: rams, towers, artillery and morale, every action checked by
-   the rules engine.</div>
-   <div class="needs">in final testing</div>
-   <button>Coming soon</button>`;
-cards.appendChild(soon);
 const naw = document.createElement('div');
 naw.className = 'card soon';
 naw.innerHTML =
@@ -375,24 +389,33 @@ def main():
         gd = os.path.join(OUT, "g", slug)
         os.makedirs(gd)
         tactical = meta["client"] == "tactical.html"
+        soj = meta["client"] == "soj.html"
         with open(os.path.join(gd, "manifest.js"), "w", encoding="utf-8") as f:
             f.write("window.BYO_MANIFEST = ")
             json.dump(manifest, f, separators=(",", ":"))
             f.write(";\n")
-        open(os.path.join(gd, "board.html"), "w", encoding="utf-8").write(
-            bake_client("index.html", slug, name, manifest))
-        if tactical:
-            open(os.path.join(gd, "tactical.html"), "w", encoding="utf-8").write(
-                bake_client("tactical.html", slug, name, manifest))
-        open(os.path.join(gd, "index.html"), "w", encoding="utf-8").write(
-            LOADER % dict(slug=slug, name=name,
-                          tactical="true" if tactical else "false"))
+        if soj:
+            open(os.path.join(gd, "soj.html"), "w", encoding="utf-8").write(
+                bake_client("soj.html", slug, name, manifest))
+            open(os.path.join(gd, "index.html"), "w", encoding="utf-8").write(
+                LOADER_SOJ % dict(name=name))
+        else:
+            open(os.path.join(gd, "board.html"), "w", encoding="utf-8").write(
+                bake_client("index.html", slug, name, manifest))
+            if tactical:
+                open(os.path.join(gd, "tactical.html"), "w", encoding="utf-8").write(
+                    bake_client("tactical.html", slug, name, manifest))
+            open(os.path.join(gd, "index.html"), "w", encoding="utf-8").write(
+                LOADER % dict(slug=slug, name=name,
+                              tactical="true" if tactical else "false"))
+            shutil.copy(os.path.join(ROOT, "ui", "salvo.js"),
+                        os.path.join(gd, "salvo.js"))
         shutil.copy(os.path.join(ROOT, "ui", "frame.js"),
                     os.path.join(gd, "frame.js"))
-        shutil.copy(os.path.join(ROOT, "ui", "salvo.js"),
-                    os.path.join(gd, "salvo.js"))
         n_req = len(manifest["requirements"])
-        print(f"{slug}: client={'tactical+board' if tactical else 'board'}, "
+        client_desc = ("soj" if soj else
+                       "tactical+board" if tactical else "board")
+        print(f"{slug}: client={client_desc}, "
               f"earned tier {meta['tier']['earned']}, {n_req} module req(s)")
 
     covers = os.path.join(ROOT, "web", "covers")

@@ -161,8 +161,15 @@
     // one pass over the full roster (setup saves carry every counter incl.
     // reinforcements) — blob URL per distinct image, from the user's module
     const keys = new Set();
-    for (const u of stateObj.units || []) keys.add(u.img || (u.name + ".png"));
     const prefix = M.assets.counters.prefix, req = M.assets.counters.req;
+    if (M.assets.counters.all) {
+      const skip = M.assets.map.entry;
+      for (const n of await BYO.entries(req, prefix)) {
+        if (n === skip || !/\.(gif|png|jpe?g|bmp|svg)$/i.test(n)) continue;
+        keys.add(n.slice(prefix.length));
+      }
+    }
+    for (const u of stateObj.units || []) keys.add(u.img || (u.name + ".png"));
     let missing = 0;
     await Promise.all([...keys].map(async (k) => {
       try {
