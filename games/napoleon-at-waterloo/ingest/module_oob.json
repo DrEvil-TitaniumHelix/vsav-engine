@@ -1,0 +1,4051 @@
+{
+ "authority": "module-derived, corroborating only",
+ "produced_by": "PREP-4 JOB C, games/napoleon-at-waterloo/ingest/naw_module_oob.py",
+ "read_on": "2026-08-14",
+ "edition": "2nd",
+ "never_promotes": "Nothing in this file may overwrite a printed-source reading. The printed 1971 SPI folio (NapoleonatWaterloo.pdf) is primary; this is a third independent witness.",
+ "module": {
+  "path": "C:\\VassalNaW\\modules\\ed2_oliver",
+  "name": "Napoleon at Waterloo 2nd Edition",
+  "version": "2.2",
+  "vassal_version": "3.6.4",
+  "description": "SPI NAW 2nd Edition ",
+  "date_saved_epoch_ms": "1643054903748",
+  "author_from_save_player_line": [
+   "PLAYER\txxxx\tStephen\t<observer>"
+  ],
+  "save_file": "Beginning Setup.vsav",
+  "save_moduledata_version": "2.0",
+  "save_vassal_version": "3.5.3",
+  "boards_in_save": [
+   "Main MapBoardPicker\tMain Map\t0\t0",
+   "CRTBoardPicker\tCRT\t0\t0",
+   "TECBoardPicker\tTEC\t0\t0",
+   "Grouchy VariantBoardPicker\tGrouchy Variant\t0\t0",
+   "GraveyardBoardPicker\tGraveyard\t0\t0",
+   "French Grouchy VariantBoardPicker\tFrench Hand\t0\t0",
+   "Allied Grouchy VariantBoardPicker\tAllied Hand\t0\t0"
+  ]
+ },
+ "authority_tiers": {
+  "images/NAW_*.png (counter art)": {
+   "tier": "REDRAW",
+   "reason": "194x194 digital redraws, not scans of the punched 1971 counters: flat fills, rounded corners with a red bleed border, modern sans-serif digits and vector-clean NATO symbols, set against the visibly hand-printed thin-line pictures on the map sheet. Usable only as a corroborating witness, and only because its factor pairs, unit types and designations agree with the printed map pictures at 44 of 44 at-start hexes. The national colours it uses (French blue / British red / Prussian pale green) do match the printed scheme stated in the 2nd Ed rules."
+  },
+  "images/NapWatvariant_*.png (Grouchy variant counter art)": {
+   "tier": "REDRAW, and out-of-edition \u2014 must not be used for the 2nd Edition at all",
+   "reason": "the Grouchy Variant does not exist in the 2nd Edition (PREP-2 defect M3). These counters belong to a 3rd Edition subsystem. They are additionally labelled 'Var' where printed 3rd Ed [9.1] specifies '5v', which independently corroborates PREP-2 defect M2 from the counter art rather than from the variant sheet's text."
+  },
+  "buildFile.xml PieceSlot names and prototypes": {
+   "tier": "module-authored transcription (self-consistent; fidelity established only by agreement with printed art)",
+   "reason": "the factor pair is typed into the piece name by the module author and repeated as a prototype tag FRn/ALn carrying the combat strength only. It is a transcription of the counter art, not the art itself. Its evidential value is that the two module-internal copies cross-check: all 53 units agree name-vs-prototype."
+  },
+  "Beginning Setup.vsav": {
+   "tier": "module-authored transcription of the printed at-start pictures",
+   "reason": "Oliver placed every at-start counter by hand onto his map restoration. It is an independent human read of the same printed pictures PREP-3 read, so it corroborates or contradicts, but it never outranks the printed map."
+  },
+  "images/Nap at Waterloo map 20mm hexes.jpg": {
+   "tier": "faithful-reproduction (PREP-2 module_art_verified_good)",
+   "reason": "already certified in PREP-2 as a faithful restoration of the printed 2nd Ed map; it is the coordinate frame this job maps into."
+  }
+ },
+ "hex_mapping": {
+  "problem": "the module declares NO hex numbering of any kind, matching the printed 2nd Ed map (discrepancy D11). There are zero GridNumbering elements in buildFile.xml, so a module hex has no name \u2014 only a pixel position on the board image.",
+  "module_coordinates_are": "board-image pixels on 'Nap at Waterloo map 20mm hexes.jpg' (6623x5648), board placed at BoardPicker grid 0,0 so piece x,y are raw image pixels; plus the lattice index (col,row) of the module's own declared HexGrid.",
+  "module_declared_hexgrid": {
+   "x0": 235.0,
+   "y0": 4.0,
+   "dx": 204.5999999999998,
+   "dy": 238.4000000000001,
+   "sideways": false
+  },
+  "module_zone_polygon": [
+   [
+    690,
+    360
+   ],
+   [
+    6322,
+    339
+   ],
+   [
+    6329,
+    5634
+   ],
+   [
+    687,
+    5607
+   ]
+  ],
+  "our_grid_px_oliver": {
+   "x0": 833.95,
+   "y0": 487.0,
+   "dx": 205.54999999999995,
+   "dy": 237.99999999999994,
+   "even_down": false
+  },
+  "method": [
+   "1. decode Beginning Setup.vsav and take each piece's BasicPiece state (map;x;y).",
+   "2. route A: snap x,y to the module's own declared HexGrid lattice (x0=235 y0=4 dx=204.6 dy=238.4, odd column index offset +dy/2) giving (col_idx,row_idx).",
+   "3. route B: snap the same x,y to PREP-3's independently fitted grid for the SAME image (ed2oliver_canon: x0=833.95 y0=487.0 dx=205.55 dy=238.0 even_down=false) giving our CCRR.",
+   "4. the two lattices are the same lattice with a different origin: route A col_idx 3 = our column 01 and row_idx 1 = our row 01, i.e. our_col = col_idx - 2, our_row = row_idx - 1. Both routes are computed for every unit and must agree."
+  ],
+  "parity_check": "the module's HexGrid offsets ODD column indices downward by dy/2; our CCRR offsets ODD columns downward. After the -2 column shift odd maps to odd, so the parity agrees and no half-hex stagger is introduced. This was the stated risk and it is closed by the residuals below, which would explode to ~dy/2 = 119 px under a parity error.",
+  "independent_anchor": "the module's Battlefield zone polygon spans x 687..6329, y 339..5634. Our CCRR column 01 centre sits at x=833.95 and column 27 at x=6178.2; with a circumradius of dx/1.5 = 137 px the field spans x 697..6315 \u2014 inside the module's own declared battlefield to within 14 px at both ends, on 27 columns. A one-column error would show as a 205 px overhang.",
+  "residual_px_max": {
+   "ccrr_dx": 11.4,
+   "ccrr_dy": 4.0,
+   "module_snap_dx": 1.0,
+   "module_snap_dy": 1.0
+  },
+  "routes_agree": true,
+  "confidence": "HIGH. Two independently derived lattices for the same image agree on every unit; snap residuals are sub-pixel to a few px against a 205x238 px hex; the field extent matches the module's own zone polygon; and the resulting hex set is compared below against PREP-3 without any tuning (the grid parameters were fixed in PREP-3 for terrain, before this job existed)."
+ },
+ "counts": {
+  "roster_piece_slots": 84,
+  "pieces_in_save": 90,
+  "at_start_on_field": 44,
+  "off_field_staged_prussians": 9,
+  "grouchy_variant_units": 20,
+  "grouchy_variant_number_chits": 12,
+  "markers": 5,
+  "at_start_by_side": {
+   "french": 26,
+   "allied": 18
+  }
+ },
+ "at_start": [
+  {
+   "piece_id": "44",
+   "module_name": "British 3DB Inf (4-4)",
+   "designation": "British 3DB Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_1_17.png",
+   "module_map": "Main Map",
+   "module_px": [
+    1462,
+    2626
+   ],
+   "module_hexgrid_index": [
+    6,
+    11
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    11.4,
+    -3.0
+   ],
+   "ccrr": "0410",
+   "ccrr_from_module_index": "0410",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "48",
+   "module_name": "British 4th Inf (6-4)",
+   "designation": "British 4th Inf",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_13.png",
+   "module_map": "Main Map",
+   "module_px": [
+    1871,
+    2388
+   ],
+   "module_hexgrid_index": [
+    8,
+    10
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    9.3,
+    -3.0
+   ],
+   "ccrr": "0609",
+   "ccrr_from_module_index": "0609",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "51",
+   "module_name": "British Cav (3-5)",
+   "designation": "British Cav",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_2_16.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2280,
+    2864
+   ],
+   "module_hexgrid_index": [
+    10,
+    12
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    7.2,
+    -3.0
+   ],
+   "ccrr": "0811",
+   "ccrr_from_module_index": "0811",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "38",
+   "module_name": "British Bru Inf (2-4)",
+   "designation": "British Bru Inf",
+   "combat_strength": 2,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_1_11.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2485,
+    2030
+   ],
+   "module_hexgrid_index": [
+    11,
+    8
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    6.65,
+    -4.0
+   ],
+   "ccrr": "0907",
+   "ccrr_from_module_index": "0907",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "41",
+   "module_name": "British 2nd Inf (6-4)",
+   "designation": "British 2nd Inf",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_1_14.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2485,
+    2745
+   ],
+   "module_hexgrid_index": [
+    11,
+    11
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    6.65,
+    -3.0
+   ],
+   "ccrr": "0910",
+   "ccrr_from_module_index": "0910",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "53",
+   "module_name": "British Infantry (1-4)",
+   "designation": "British Infantry",
+   "combat_strength": 1,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_10.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2690,
+    3580
+   ],
+   "module_hexgrid_index": [
+    12,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    6.1,
+    -1.0
+   ],
+   "ccrr": "1014",
+   "ccrr_from_module_index": "1014",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "54",
+   "module_name": "British 1Gd Inf (7-4)",
+   "designation": "British 1Gd Inf",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_5_10.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2894,
+    2745
+   ],
+   "module_hexgrid_index": [
+    13,
+    11
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    4.55,
+    -3.0
+   ],
+   "ccrr": "1110",
+   "ccrr_from_module_index": "1110",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL7",
+   "prototype_strength": 7,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "40",
+   "module_name": "British 1Gd Cav (4-5)",
+   "designation": "British 1Gd Cav",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_1_13.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3099,
+    2388
+   ],
+   "module_hexgrid_index": [
+    14,
+    10
+   ],
+   "module_snap_residual_px": [
+    -0.4,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    4.0,
+    -3.0
+   ],
+   "ccrr": "1209",
+   "ccrr_from_module_index": "1209",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "52",
+   "module_name": "British II Art (2-3)",
+   "designation": "British II Art",
+   "combat_strength": 2,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_2_17.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3099,
+    2626
+   ],
+   "module_hexgrid_index": [
+    14,
+    11
+   ],
+   "module_snap_residual_px": [
+    -0.4,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    4.0,
+    -3.0
+   ],
+   "ccrr": "1210",
+   "ccrr_from_module_index": "1210",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "45",
+   "module_name": "British DB Cav (1-5)",
+   "designation": "British DB Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_2_10.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3303,
+    2030
+   ],
+   "module_hexgrid_index": [
+    15,
+    8
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    2.45,
+    -4.0
+   ],
+   "ccrr": "1307",
+   "ccrr_from_module_index": "1307",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "47",
+   "module_name": "British 3rd Inf (6-4)",
+   "designation": "British 3rd Inf",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3303,
+    2507
+   ],
+   "module_hexgrid_index": [
+    15,
+    10
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    2.45,
+    -3.0
+   ],
+   "ccrr": "1309",
+   "ccrr_from_module_index": "1309",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "37",
+   "module_name": "British R Art (3-3)",
+   "designation": "British R Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_1_10.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3508,
+    2626
+   ],
+   "module_hexgrid_index": [
+    16,
+    11
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    1.9,
+    -3.0
+   ],
+   "ccrr": "1410",
+   "ccrr_from_module_index": "1410",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "42",
+   "module_name": "British Cavalry (4-5)",
+   "designation": "British Cavalry",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_1_15.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    2030
+   ],
+   "module_hexgrid_index": [
+    17,
+    8
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -4.0
+   ],
+   "ccrr": "1507",
+   "ccrr_from_module_index": "1507",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "43",
+   "module_name": "British I Art (3-3)",
+   "designation": "British I Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_1_16.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    2507
+   ],
+   "module_hexgrid_index": [
+    17,
+    10
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -3.0
+   ],
+   "ccrr": "1509",
+   "ccrr_from_module_index": "1509",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "49",
+   "module_name": "British 6th Inf (6-4)",
+   "designation": "British 6th Inf",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_14.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3917,
+    2388
+   ],
+   "module_hexgrid_index": [
+    18,
+    10
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    -0.2,
+    -3.0
+   ],
+   "ccrr": "1609",
+   "ccrr_from_module_index": "1609",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "46",
+   "module_name": "British 2DB Inf (5-4)",
+   "designation": "British 2DB Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_11.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4122,
+    2268
+   ],
+   "module_hexgrid_index": [
+    19,
+    9
+   ],
+   "module_snap_residual_px": [
+    -0.4,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    -0.75,
+    -4.0
+   ],
+   "ccrr": "1708",
+   "ccrr_from_module_index": "1708",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "39",
+   "module_name": "British Cavalry (3-5)",
+   "designation": "British Cavalry",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_1_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4326,
+    1911
+   ],
+   "module_hexgrid_index": [
+    20,
+    8
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    -2.3,
+    -4.0
+   ],
+   "ccrr": "1807",
+   "ccrr_from_module_index": "1807",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "50",
+   "module_name": "British 5th Inf (7-4)",
+   "designation": "British 5th Inf",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_15.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4326,
+    2149
+   ],
+   "module_hexgrid_index": [
+    20,
+    9
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    -2.3,
+    -4.0
+   ],
+   "ccrr": "1808",
+   "ccrr_from_module_index": "1808",
+   "side": "Allied",
+   "contingent": "British",
+   "prototype_tag": "AL7",
+   "prototype_strength": 7,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "29",
+   "module_name": "French 2nd Cav (2-5)",
+   "designation": "French 2nd Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_5_2.png",
+   "module_map": "Main Map",
+   "module_px": [
+    1871,
+    3580
+   ],
+   "module_hexgrid_index": [
+    8,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    9.3,
+    -1.0
+   ],
+   "ccrr": "0614",
+   "ccrr_from_module_index": "0614",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "31",
+   "module_name": "French 6th Inf (7-4)",
+   "designation": "French 6th Inf",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_5_4.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2485,
+    3699
+   ],
+   "module_hexgrid_index": [
+    11,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    6.65,
+    -1.0
+   ],
+   "ccrr": "0914",
+   "ccrr_from_module_index": "0914",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR7",
+   "prototype_strength": 7,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "23",
+   "module_name": "French I Art (3-3)",
+   "designation": "French I Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_4_2.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2690,
+    3818
+   ],
+   "module_hexgrid_index": [
+    12,
+    16
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    6.1,
+    -1.0
+   ],
+   "ccrr": "1015",
+   "ccrr_from_module_index": "1015",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "7",
+   "module_name": "French 12th Cav (2-5)",
+   "designation": "French 12th Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_1_4.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2690,
+    4056
+   ],
+   "module_hexgrid_index": [
+    12,
+    17
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    6.1,
+    -1.0
+   ],
+   "ccrr": "1016",
+   "ccrr_from_module_index": "1016",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "19",
+   "module_name": "French 9th Inf (5-4)",
+   "designation": "French 9th Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_6.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2894,
+    3699
+   ],
+   "module_hexgrid_index": [
+    13,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    4.55,
+    -1.0
+   ],
+   "ccrr": "1114",
+   "ccrr_from_module_index": "1114",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "12",
+   "module_name": "French 11th Cav (2-5)",
+   "designation": "French 11th Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_2_1.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2894,
+    3937
+   ],
+   "module_hexgrid_index": [
+    13,
+    16
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    4.55,
+    -1.0
+   ],
+   "ccrr": "1115",
+   "ccrr_from_module_index": "1115",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "10",
+   "module_name": "French Gd Hvy Cav (4-5)",
+   "designation": "French Gd Hvy Cav",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_1_7.png",
+   "module_map": "Main Map",
+   "module_px": [
+    2894,
+    4175
+   ],
+   "module_hexgrid_index": [
+    13,
+    17
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -1.0
+   ],
+   "ccrr_residual_px": [
+    4.55,
+    -1.0
+   ],
+   "ccrr": "1116",
+   "ccrr_from_module_index": "1116",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "6",
+   "module_name": "French 5th Inf (4-4)",
+   "designation": "French 5th Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_1_3.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3508,
+    3580
+   ],
+   "module_hexgrid_index": [
+    16,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    1.9,
+    -1.0
+   ],
+   "ccrr": "1414",
+   "ccrr_from_module_index": "1414",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "14",
+   "module_name": "French 19th Inf (4-4)",
+   "designation": "French 19th Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_2.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3508,
+    3818
+   ],
+   "module_hexgrid_index": [
+    16,
+    16
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    1.9,
+    -1.0
+   ],
+   "ccrr": "1415",
+   "ccrr_from_module_index": "1415",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "30",
+   "module_name": "French 20th Inf (2-4)",
+   "designation": "French 20th Inf",
+   "combat_strength": 2,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_5_3.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3508,
+    4056
+   ],
+   "module_hexgrid_index": [
+    16,
+    17
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    1.9,
+    -1.0
+   ],
+   "ccrr": "1416",
+   "ccrr_from_module_index": "1416",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "15",
+   "module_name": "French Chs Gd (6-4)",
+   "designation": "French Chs Gd",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_3.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3508,
+    4295
+   ],
+   "module_hexgrid_index": [
+    16,
+    18
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    1.9,
+    0.0
+   ],
+   "ccrr": "1417",
+   "ccrr_from_module_index": "1417",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "3",
+   "module_name": "French Gd Art (5-3)",
+   "designation": "French Gd Art",
+   "combat_strength": 5,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_1_2.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    2983
+   ],
+   "module_hexgrid_index": [
+    17,
+    12
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -1.0
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -3.0
+   ],
+   "ccrr": "1511",
+   "ccrr_from_module_index": "1511",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "20",
+   "module_name": "French 3rd Cav (1-5)",
+   "designation": "French 3rd Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_2_7.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    3699
+   ],
+   "module_hexgrid_index": [
+    17,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -1.0
+   ],
+   "ccrr": "1514",
+   "ccrr_from_module_index": "1514",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "9",
+   "module_name": "French VI Art (2-3)",
+   "designation": "French VI Art",
+   "combat_strength": 2,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_1_6.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    3937
+   ],
+   "module_hexgrid_index": [
+    17,
+    16
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -1.0
+   ],
+   "ccrr": "1515",
+   "ccrr_from_module_index": "1515",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "8",
+   "module_name": "French Yg Gd (5-4)",
+   "designation": "French Yg Gd",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_1_5.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    4175
+   ],
+   "module_hexgrid_index": [
+    17,
+    17
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -1.0
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    -1.0
+   ],
+   "ccrr": "1516",
+   "ccrr_from_module_index": "1516",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "17",
+   "module_name": "French Grn Gd (7-4)",
+   "designation": "French Grn Gd",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_4.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3713,
+    4414
+   ],
+   "module_hexgrid_index": [
+    17,
+    18
+   ],
+   "module_snap_residual_px": [
+    -0.2,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    1.35,
+    0.0
+   ],
+   "ccrr": "1517",
+   "ccrr_from_module_index": "1517",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR7",
+   "prototype_strength": 7,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "32",
+   "module_name": "French II Art (3-3)",
+   "designation": "French II Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_5_5.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3917,
+    2864
+   ],
+   "module_hexgrid_index": [
+    18,
+    12
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    -0.2,
+    -3.0
+   ],
+   "ccrr": "1611",
+   "ccrr_from_module_index": "1611",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "28",
+   "module_name": "French 1st Inf (4-4)",
+   "designation": "French 1st Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_5_1.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3917,
+    3341
+   ],
+   "module_hexgrid_index": [
+    18,
+    14
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.6
+   ],
+   "ccrr_residual_px": [
+    -0.2,
+    -2.0
+   ],
+   "ccrr": "1613",
+   "ccrr_from_module_index": "1613",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "25",
+   "module_name": "French 5th Cav (1-5)",
+   "designation": "French 5th Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_4_4.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3917,
+    3818
+   ],
+   "module_hexgrid_index": [
+    18,
+    16
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    -0.2,
+    -1.0
+   ],
+   "ccrr": "1615",
+   "ccrr_from_module_index": "1615",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "22",
+   "module_name": "French 2nd Inf (5-4)",
+   "designation": "French 2nd Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_1.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4122,
+    3222
+   ],
+   "module_hexgrid_index": [
+    19,
+    13
+   ],
+   "module_snap_residual_px": [
+    -0.4,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    -0.75,
+    -2.0
+   ],
+   "ccrr": "1712",
+   "ccrr_from_module_index": "1712",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "26",
+   "module_name": "French 3rd Inf (4-4)",
+   "designation": "French 3rd Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_5.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4326,
+    3103
+   ],
+   "module_hexgrid_index": [
+    20,
+    13
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    -2.3,
+    -2.0
+   ],
+   "ccrr": "1812",
+   "ccrr_from_module_index": "1812",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "18",
+   "module_name": "French 13th Cav (1-5)",
+   "designation": "French 13th Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_2_5.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4326,
+    3580
+   ],
+   "module_hexgrid_index": [
+    20,
+    15
+   ],
+   "module_snap_residual_px": [
+    -1.0,
+    -0.0
+   ],
+   "ccrr_residual_px": [
+    -2.3,
+    -1.0
+   ],
+   "ccrr": "1814",
+   "ccrr_from_module_index": "1814",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "21",
+   "module_name": "French 4th Inf (4-4)",
+   "designation": "French 4th Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_2_8.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4531,
+    3222
+   ],
+   "module_hexgrid_index": [
+    21,
+    13
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.4
+   ],
+   "ccrr_residual_px": [
+    -2.85,
+    -2.0
+   ],
+   "ccrr": "1912",
+   "ccrr_from_module_index": "1912",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "27",
+   "module_name": "French 14th Cav (1-5)",
+   "designation": "French 14th Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_4_6.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4531,
+    3460
+   ],
+   "module_hexgrid_index": [
+    21,
+    14
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.8
+   ],
+   "ccrr_residual_px": [
+    -2.85,
+    -2.0
+   ],
+   "ccrr": "1913",
+   "ccrr_from_module_index": "1913",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "11",
+   "module_name": "French Gd Lite Cav (3-6)",
+   "designation": "French Gd Lite Cav",
+   "combat_strength": 3,
+   "movement_allowance": 6,
+   "type": "cavalry",
+   "image": "NAW_1_8.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4531,
+    3699
+   ],
+   "module_hexgrid_index": [
+    21,
+    15
+   ],
+   "module_snap_residual_px": [
+    -0.6,
+    -0.2
+   ],
+   "ccrr_residual_px": [
+    -2.85,
+    -1.0
+   ],
+   "ccrr": "1914",
+   "ccrr_from_module_index": "1914",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "24",
+   "module_name": "French 1st Cav (2-5)",
+   "designation": "French 1st Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_4_3.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4940,
+    2983
+   ],
+   "module_hexgrid_index": [
+    23,
+    12
+   ],
+   "module_snap_residual_px": [
+    -0.8,
+    -1.0
+   ],
+   "ccrr_residual_px": [
+    -4.95,
+    -3.0
+   ],
+   "ccrr": "2111",
+   "ccrr_from_module_index": "2111",
+   "side": "French",
+   "contingent": "French",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  }
+ ],
+ "off_field_staged": [
+  {
+   "piece_id": "60",
+   "module_name": "Prussian II Inf (5-4)",
+   "designation": "Prussian II Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_15.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6485,
+    1760
+   ],
+   "module_hexgrid_index": [
+    31,
+    7
+   ],
+   "module_snap_residual_px": [
+    -92.6,
+    -32.0
+   ],
+   "ccrr_residual_px": [
+    101.2,
+    83.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "56",
+   "module_name": "Prussian IV Inf (4-4)",
+   "designation": "Prussian IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6492,
+    1974
+   ],
+   "module_hexgrid_index": [
+    31,
+    8
+   ],
+   "module_snap_residual_px": [
+    -85.6,
+    -56.4
+   ],
+   "ccrr_residual_px": [
+    -97.35,
+    -60.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "57",
+   "module_name": "Prussian IV Inf (4-4)",
+   "designation": "Prussian IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6492,
+    2185
+   ],
+   "module_hexgrid_index": [
+    31,
+    9
+   ],
+   "module_snap_residual_px": [
+    -85.6,
+    -83.8
+   ],
+   "ccrr_residual_px": [
+    -97.35,
+    -87.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "58",
+   "module_name": "Prussian IV Inf (4-4)",
+   "designation": "Prussian IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6492,
+    2399
+   ],
+   "module_hexgrid_index": [
+    31,
+    10
+   ],
+   "module_snap_residual_px": [
+    -85.6,
+    -108.2
+   ],
+   "ccrr_residual_px": [
+    -97.35,
+    -111.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "59",
+   "module_name": "Prussian IV Inf (4-4)",
+   "designation": "Prussian IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NAW_4_12.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6489,
+    2607
+   ],
+   "module_hexgrid_index": [
+    31,
+    10
+   ],
+   "module_snap_residual_px": [
+    -88.6,
+    99.8
+   ],
+   "ccrr_residual_px": [
+    -100.35,
+    97.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "62",
+   "module_name": "Prussian II Cav (3-5)",
+   "designation": "Prussian II Cav",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_5_14.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6489,
+    2817
+   ],
+   "module_hexgrid_index": [
+    31,
+    11
+   ],
+   "module_snap_residual_px": [
+    -88.6,
+    71.4
+   ],
+   "ccrr_residual_px": [
+    -100.35,
+    69.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "65",
+   "module_name": "Prussian IV Cav (3-5)",
+   "designation": "Prussian IV Cav",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NAW_5_15.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6485,
+    3028
+   ],
+   "module_hexgrid_index": [
+    31,
+    12
+   ],
+   "module_snap_residual_px": [
+    -92.6,
+    44.0
+   ],
+   "ccrr_residual_px": [
+    101.2,
+    -77.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "61",
+   "module_name": "Prussian II Art (4-3)",
+   "designation": "Prussian II Art",
+   "combat_strength": 4,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_4_14.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6496,
+    3242
+   ],
+   "module_hexgrid_index": [
+    31,
+    13
+   ],
+   "module_snap_residual_px": [
+    -81.6,
+    19.6
+   ],
+   "ccrr_residual_px": [
+    -93.35,
+    18.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "55",
+   "module_name": "Prussian IV Art (3-3)",
+   "designation": "Prussian IV Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NAW_4_11.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6492,
+    3453
+   ],
+   "module_hexgrid_index": [
+    31,
+    14
+   ],
+   "module_snap_residual_px": [
+    -85.6,
+    -7.8
+   ],
+   "ccrr_residual_px": [
+    -97.35,
+    -9.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null,
+   "side": "Allied",
+   "contingent": "Prussians",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  }
+ ],
+ "markers": [
+  {
+   "piece_id": "68",
+   "module_name": "French DM",
+   "designation": "French DM",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NAW_5_6.png",
+   "module_map": "Main Map",
+   "module_px": [
+    214,
+    4735
+   ],
+   "module_hexgrid_index": [
+    0,
+    20
+   ],
+   "module_snap_residual_px": [
+    -21.0,
+    -37.0
+   ],
+   "ccrr_residual_px": [
+    -3.3,
+    -36.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null
+  },
+  {
+   "piece_id": "69",
+   "module_name": "Allied DM",
+   "designation": "Allied DM",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NAW_5_11.png",
+   "module_map": "Main Map",
+   "module_px": [
+    196,
+    4957
+   ],
+   "module_hexgrid_index": [
+    0,
+    21
+   ],
+   "module_snap_residual_px": [
+    -39.0,
+    -53.4
+   ],
+   "ccrr_residual_px": [
+    -21.3,
+    -52.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null
+  },
+  {
+   "piece_id": "110",
+   "module_name": "Allied Losses",
+   "designation": "Allied Losses",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "Allied VPs.png",
+   "module_map": "Main Map",
+   "module_px": [
+    3078,
+    253
+   ],
+   "module_hexgrid_index": [
+    14,
+    1
+   ],
+   "module_snap_residual_px": [
+    -21.4,
+    10.6
+   ],
+   "ccrr_residual_px": [
+    -17.0,
+    4.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null
+  },
+  {
+   "piece_id": "67",
+   "module_name": "Game Turn",
+   "designation": "Game Turn",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "Game Turn.png",
+   "module_map": "Main Map",
+   "module_px": [
+    6489,
+    1110
+   ],
+   "module_hexgrid_index": [
+    31,
+    4
+   ],
+   "module_snap_residual_px": [
+    -88.6,
+    33.2
+   ],
+   "ccrr_residual_px": [
+    -100.35,
+    28.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null
+  },
+  {
+   "piece_id": "109",
+   "module_name": "French Losses",
+   "designation": "French Losses",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "French VPs.png",
+   "module_map": "Main Map",
+   "module_px": [
+    4049,
+    253
+   ],
+   "module_hexgrid_index": [
+    19,
+    1
+   ],
+   "module_snap_residual_px": [
+    -73.4,
+    -108.6
+   ],
+   "ccrr_residual_px": [
+    -73.75,
+    -115.0
+   ],
+   "ccrr": null,
+   "ccrr_from_module_index": null
+  }
+ ],
+ "other_maps": [
+  {
+   "piece_id": "105",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_2_8.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "104",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_2_7.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "103",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_2_6.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "102",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_1_8.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "101",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_1_7.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "100",
+   "module_name": "Allied Grouchy Variant #",
+   "designation": "Allied Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_1_6.png",
+   "module_map": "Allied Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "98",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_4_8.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "97",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_5_7.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "94",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_1_2.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "93",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_1_1.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "96",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_2_2.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "95",
+   "module_name": "French Grouchy Variant #",
+   "designation": "French Grouchy Variant #",
+   "combat_strength": null,
+   "movement_allowance": null,
+   "type": "unknown",
+   "image": "NapWatvariant_2_1.png",
+   "module_map": "French Grouchy Variant",
+   "module_px": [
+    130,
+    114
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": null,
+   "prototype_tag": null,
+   "prototype_strength": null,
+   "strength_agrees_with_prototype": null
+  },
+  {
+   "piece_id": "79",
+   "module_name": "French IC Cav (1-5)",
+   "designation": "French IC Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_5_3.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    922,
+    1182
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "83",
+   "module_name": "French IIC Cav (2-5)",
+   "designation": "French IIC Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_5_1.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    728,
+    651
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "78",
+   "module_name": "French IIC Cav (2-5)",
+   "designation": "French IIC Cav",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_5_1.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    925,
+    974
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "81",
+   "module_name": "French III Art (3-3)",
+   "designation": "French III Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NapWatvariant_5_5.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    1131,
+    1182
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "72",
+   "module_name": "French III Inf (5-4)",
+   "designation": "French III Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_2.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    314,
+    974
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "73",
+   "module_name": "French III Inf (5-4)",
+   "designation": "French III Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_2.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    522,
+    974
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "71",
+   "module_name": "French III Inf (6-4)",
+   "designation": "French III Inf",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_1.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    114,
+    968
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR6",
+   "prototype_strength": 6,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "82",
+   "module_name": "French IV Art (3-3)",
+   "designation": "French IV Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NapWatvariant_5_6.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    931,
+    654
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "80",
+   "module_name": "French IV Cav (1-5)",
+   "designation": "French IV Cav",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_5_4.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    1131,
+    974
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR1",
+   "prototype_strength": 1,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "76",
+   "module_name": "French IV Inf (4-4)",
+   "designation": "French IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_5.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    522,
+    654
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "75",
+   "module_name": "French IV Inf (4-4)",
+   "designation": "French IV Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_5.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    317,
+    651
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "74",
+   "module_name": "French IV Inf (5-4)",
+   "designation": "French IV Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_4.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    114,
+    654
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "77",
+   "module_name": "French VI Inf (2-4)",
+   "designation": "French VI Inf",
+   "combat_strength": 2,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_4_7.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    722,
+    977
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "French",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "FR2",
+   "prototype_strength": 2,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "91",
+   "module_name": "Prussian I Art (3-3)",
+   "designation": "Prussian I Art",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "type": "artillery",
+   "image": "NapWatvariant_7_7.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    734,
+    1977
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "90",
+   "module_name": "Prussian I Cav (3-5)",
+   "designation": "Prussian I Cav",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_7_6.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    522,
+    1977
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "88",
+   "module_name": "Prussian I Inf (4-4)",
+   "designation": "Prussian I Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_7_4.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    322,
+    1977
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "86",
+   "module_name": "Prussian I Inf (5-4)",
+   "designation": "Prussian I Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_7_2.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    117,
+    1977
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "87",
+   "module_name": "Prussian II Inf (4-4)",
+   "designation": "Prussian II Inf",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_7_3.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    317,
+    2388
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL4",
+   "prototype_strength": 4,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "85",
+   "module_name": "Prussian II Inf (5-4)",
+   "designation": "Prussian II Inf",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "type": "infantry",
+   "image": "NapWatvariant_7_1.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    111,
+    2394
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL5",
+   "prototype_strength": 5,
+   "strength_agrees_with_prototype": true
+  },
+  {
+   "piece_id": "89",
+   "module_name": "Prussian III Cav (3-5)",
+   "designation": "Prussian III Cav",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "type": "cavalry",
+   "image": "NapWatvariant_7_5.png",
+   "module_map": "Grouchy Variant",
+   "module_px": [
+    522,
+    2388
+   ],
+   "module_hex": null,
+   "ccrr": null,
+   "side": "Allied",
+   "contingent": "Grouchy Variant",
+   "prototype_tag": "AL3",
+   "prototype_strength": 3,
+   "strength_agrees_with_prototype": true
+  }
+ ],
+ "roster": [
+  {
+   "gpid": "116",
+   "list": "Combat Arrows",
+   "entry_name": "Combat W",
+   "piece_name": "Combat W",
+   "image": "Combat W.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "115",
+   "list": "Combat Arrows",
+   "entry_name": "Combat SW",
+   "piece_name": "Combat SW",
+   "image": "Combat SW.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "114",
+   "list": "Combat Arrows",
+   "entry_name": "Combat S",
+   "piece_name": "Combat S",
+   "image": "Combat S.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "113",
+   "list": "Combat Arrows",
+   "entry_name": "Combat E",
+   "piece_name": "Combat E",
+   "image": "Combat E.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "112",
+   "list": "Combat Arrows",
+   "entry_name": "Combat NE",
+   "piece_name": "Combat NE",
+   "image": "Combat NE.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "111",
+   "list": "Combat Arrows",
+   "entry_name": "Combat N",
+   "piece_name": "Combat N",
+   "image": "Combat N.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "110",
+   "list": "Grouchy Variant",
+   "entry_name": "Allied Losses",
+   "piece_name": "Allied Losses",
+   "image": "Allied VPs.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "109",
+   "list": "Grouchy Variant",
+   "entry_name": "French Losses",
+   "piece_name": "French Losses",
+   "image": "French VPs.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "91",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian I Art (3-3)",
+   "piece_name": "Prussian I Art (3-3)",
+   "image": "NapWatvariant_7_7.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "90",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian I Cav (3-5)",
+   "piece_name": "Prussian I Cav (3-5)",
+   "image": "NapWatvariant_7_6.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "89",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian III Cav (3-5)",
+   "piece_name": "Prussian III Cav (3-5)",
+   "image": "NapWatvariant_7_5.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "88",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian I Inf (4-4)",
+   "piece_name": "Prussian I Inf (4-4)",
+   "image": "NapWatvariant_7_4.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "87",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian II Inf (4-4)",
+   "piece_name": "Prussian II Inf (4-4)",
+   "image": "NapWatvariant_7_3.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "86",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian I Inf (5-4)",
+   "piece_name": "Prussian I Inf (5-4)",
+   "image": "NapWatvariant_7_2.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 5,
+   "prototype_tag": "AL5"
+  },
+  {
+   "gpid": "85",
+   "list": "Grouchy Variant",
+   "entry_name": "Prussian II Inf (5-4)",
+   "piece_name": "Prussian II Inf (5-4)",
+   "image": "NapWatvariant_7_1.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 5,
+   "prototype_tag": "AL5"
+  },
+  {
+   "gpid": "82",
+   "list": "Grouchy Variant",
+   "entry_name": "French IV Art (3-3)",
+   "piece_name": "French IV Art (3-3)",
+   "image": "NapWatvariant_5_6.png",
+   "prototype_side": "French",
+   "prototype_strength": 3,
+   "prototype_tag": "FR3"
+  },
+  {
+   "gpid": "81",
+   "list": "Grouchy Variant",
+   "entry_name": "French III Art (3-3)",
+   "piece_name": "French III Art (3-3)",
+   "image": "NapWatvariant_5_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 3,
+   "prototype_tag": "FR3"
+  },
+  {
+   "gpid": "80",
+   "list": "Grouchy Variant",
+   "entry_name": "French IV Cav (1-5)",
+   "piece_name": "French IV Cav (1-5)",
+   "image": "NapWatvariant_5_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "79",
+   "list": "Grouchy Variant",
+   "entry_name": "French IC Cav (1-5)",
+   "piece_name": "French IC Cav (1-5)",
+   "image": "NapWatvariant_5_3.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "78",
+   "list": "Grouchy Variant",
+   "entry_name": "French IIC Cav (2-5)",
+   "piece_name": "French IIC Cav (2-5)",
+   "image": "NapWatvariant_5_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "83",
+   "list": "Grouchy Variant",
+   "entry_name": "French IIC Cav (2-5)",
+   "piece_name": "French IIC Cav (2-5)",
+   "image": "NapWatvariant_5_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "77",
+   "list": "Grouchy Variant",
+   "entry_name": "French VI Inf (2-4)",
+   "piece_name": "French VI Inf (2-4)",
+   "image": "NapWatvariant_4_7.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "76",
+   "list": "Grouchy Variant",
+   "entry_name": "French IV Inf (4-4)",
+   "piece_name": "French IV Inf (4-4)",
+   "image": "NapWatvariant_4_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "75",
+   "list": "Grouchy Variant",
+   "entry_name": "French IV Inf (4-4)",
+   "piece_name": "French IV Inf (4-4)",
+   "image": "NapWatvariant_4_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "74",
+   "list": "Grouchy Variant",
+   "entry_name": "French IV Inf (5-4)",
+   "piece_name": "French IV Inf (5-4)",
+   "image": "NapWatvariant_4_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "73",
+   "list": "Grouchy Variant",
+   "entry_name": "French III Inf (5-4)",
+   "piece_name": "French III Inf (5-4)",
+   "image": "NapWatvariant_4_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "72",
+   "list": "Grouchy Variant",
+   "entry_name": "French III Inf (5-4)",
+   "piece_name": "French III Inf (5-4)",
+   "image": "NapWatvariant_4_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "71",
+   "list": "Grouchy Variant",
+   "entry_name": "French III Inf (6-4)",
+   "piece_name": "French III Inf (6-4)",
+   "image": "NapWatvariant_4_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 6,
+   "prototype_tag": "FR6"
+  },
+  {
+   "gpid": "69",
+   "list": "Prussians",
+   "entry_name": "Allied DM",
+   "piece_name": null,
+   "image": null,
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "68",
+   "list": "Prussians",
+   "entry_name": "French DM",
+   "piece_name": null,
+   "image": null,
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "67",
+   "list": "Prussians",
+   "entry_name": "Game Turn",
+   "piece_name": "Game Turn",
+   "image": "Game Turn.png",
+   "prototype_side": null,
+   "prototype_strength": null,
+   "prototype_tag": null
+  },
+  {
+   "gpid": "65",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Cav (3-5)",
+   "piece_name": "Prussian IV Cav (3-5)",
+   "image": "NAW_5_15.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "62",
+   "list": "Prussians",
+   "entry_name": "Prussian II Cav (3-5)",
+   "piece_name": "Prussian II Cav (3-5)",
+   "image": "NAW_5_14.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "61",
+   "list": "Prussians",
+   "entry_name": "Prussian II Art (4-3)",
+   "piece_name": "Prussian II Art (4-3)",
+   "image": "NAW_4_14.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "60",
+   "list": "Prussians",
+   "entry_name": "Prussian II Inf (5-4)",
+   "piece_name": "Prussian II Inf (5-4)",
+   "image": "NAW_4_15.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 5,
+   "prototype_tag": "AL5"
+  },
+  {
+   "gpid": "59",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Inf (4-4)",
+   "piece_name": "Prussian IV Inf (4-4)",
+   "image": "NAW_4_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "58",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Inf (4-4)",
+   "piece_name": "Prussian IV Inf (4-4)",
+   "image": "NAW_4_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "57",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Inf (4-4)",
+   "piece_name": "Prussian IV Inf (4-4)",
+   "image": "NAW_4_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "56",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Inf (4-4)",
+   "piece_name": "Prussian IV Inf (4-4)",
+   "image": "NAW_4_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "55",
+   "list": "Prussians",
+   "entry_name": "Prussian IV Art (3-3)",
+   "piece_name": "Prussian IV Art (3-3)",
+   "image": "NAW_4_11.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "54",
+   "list": "British",
+   "entry_name": "British 1Gd Inf (7-4)",
+   "piece_name": "British 1Gd Inf (7-4)",
+   "image": "NAW_5_10.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 7,
+   "prototype_tag": "AL7"
+  },
+  {
+   "gpid": "53",
+   "list": "British",
+   "entry_name": "British Infantry (1-4)",
+   "piece_name": "British Infantry (1-4)",
+   "image": "NAW_4_10.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 1,
+   "prototype_tag": "AL1"
+  },
+  {
+   "gpid": "52",
+   "list": "British",
+   "entry_name": "British II Art (2-3)",
+   "piece_name": "British II Art (2-3)",
+   "image": "NAW_2_17.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 2,
+   "prototype_tag": "AL2"
+  },
+  {
+   "gpid": "51",
+   "list": "British",
+   "entry_name": "British Cav (3-5)",
+   "piece_name": "British Cav (3-5)",
+   "image": "NAW_2_16.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "50",
+   "list": "British",
+   "entry_name": "British 5th Inf (7-4)",
+   "piece_name": "British 5th Inf (7-4)",
+   "image": "NAW_2_15.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 7,
+   "prototype_tag": "AL7"
+  },
+  {
+   "gpid": "49",
+   "list": "British",
+   "entry_name": "British 6th Inf (6-4)",
+   "piece_name": "British 6th Inf (6-4)",
+   "image": "NAW_2_14.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 6,
+   "prototype_tag": "AL6"
+  },
+  {
+   "gpid": "48",
+   "list": "British",
+   "entry_name": "British 4th Inf (6-4)",
+   "piece_name": "British 4th Inf (6-4)",
+   "image": "NAW_2_13.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 6,
+   "prototype_tag": "AL6"
+  },
+  {
+   "gpid": "47",
+   "list": "British",
+   "entry_name": "British 3rd Inf (6-4)",
+   "piece_name": "British 3rd Inf (6-4)",
+   "image": "NAW_2_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 6,
+   "prototype_tag": "AL6"
+  },
+  {
+   "gpid": "46",
+   "list": "British",
+   "entry_name": "British 2DB Inf (5-4)",
+   "piece_name": "British 2DB Inf (5-4)",
+   "image": "NAW_2_11.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 5,
+   "prototype_tag": "AL5"
+  },
+  {
+   "gpid": "45",
+   "list": "British",
+   "entry_name": "British DB Cav (1-5)",
+   "piece_name": "British DB Cav (1-5)",
+   "image": "NAW_2_10.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 1,
+   "prototype_tag": "AL1"
+  },
+  {
+   "gpid": "44",
+   "list": "British",
+   "entry_name": "British 3DB Inf (4-4)",
+   "piece_name": "British 3DB Inf (4-4)",
+   "image": "NAW_1_17.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "43",
+   "list": "British",
+   "entry_name": "British I Art (3-3)",
+   "piece_name": "British I Art (3-3)",
+   "image": "NAW_1_16.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "42",
+   "list": "British",
+   "entry_name": "British Cavalry (4-5)",
+   "piece_name": "British Cavalry (4-5)",
+   "image": "NAW_1_15.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "41",
+   "list": "British",
+   "entry_name": "British 2nd Inf (6-4)",
+   "piece_name": "British 2nd Inf (6-4)",
+   "image": "NAW_1_14.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 6,
+   "prototype_tag": "AL6"
+  },
+  {
+   "gpid": "40",
+   "list": "British",
+   "entry_name": "British 1Gd Cav (4-5)",
+   "piece_name": "British 1Gd Cav (4-5)",
+   "image": "NAW_1_13.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 4,
+   "prototype_tag": "AL4"
+  },
+  {
+   "gpid": "39",
+   "list": "British",
+   "entry_name": "British Cavalry (3-5)",
+   "piece_name": "British Cavalry (3-5)",
+   "image": "NAW_1_12.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "38",
+   "list": "British",
+   "entry_name": "British Bru Inf (2-4)",
+   "piece_name": "British Bru Inf (2-4)",
+   "image": "NAW_1_11.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 2,
+   "prototype_tag": "AL2"
+  },
+  {
+   "gpid": "37",
+   "list": "British",
+   "entry_name": "British R Art (3-3)",
+   "piece_name": "British R Art (3-3)",
+   "image": "NAW_1_10.png",
+   "prototype_side": "Allied",
+   "prototype_strength": 3,
+   "prototype_tag": "AL3"
+  },
+  {
+   "gpid": "32",
+   "list": "French",
+   "entry_name": "French II Art (3-3)",
+   "piece_name": "French II Art (3-3)",
+   "image": "NAW_5_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 3,
+   "prototype_tag": "FR3"
+  },
+  {
+   "gpid": "31",
+   "list": "French",
+   "entry_name": "French 6th Inf (7-4)",
+   "piece_name": "French 6th Inf (7-4)",
+   "image": "NAW_5_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 7,
+   "prototype_tag": "FR7"
+  },
+  {
+   "gpid": "30",
+   "list": "French",
+   "entry_name": "French 20th Inf (2-4)",
+   "piece_name": "French 20th Inf (2-4)",
+   "image": "NAW_5_3.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "29",
+   "list": "French",
+   "entry_name": "French 2nd Cav (2-5)",
+   "piece_name": "French 2nd Cav (2-5)",
+   "image": "NAW_5_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "28",
+   "list": "French",
+   "entry_name": "French 1st Inf (4-4)",
+   "piece_name": "French 1st Inf (4-4)",
+   "image": "NAW_5_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "27",
+   "list": "French",
+   "entry_name": "French 14th Cav (1-5)",
+   "piece_name": "French 14th Cav (1-5)",
+   "image": "NAW_4_6.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "26",
+   "list": "French",
+   "entry_name": "French 3rd Inf (4-4)",
+   "piece_name": "French 3rd Inf (4-4)",
+   "image": "NAW_4_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "25",
+   "list": "French",
+   "entry_name": "French 5th Cav (1-5)",
+   "piece_name": "French 5th Cav (1-5)",
+   "image": "NAW_4_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "24",
+   "list": "French",
+   "entry_name": "French 1st Cav (2-5)",
+   "piece_name": "French 1st Cav (2-5)",
+   "image": "NAW_4_3.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "23",
+   "list": "French",
+   "entry_name": "French I Art (3-3)",
+   "piece_name": "French I Art (3-3)",
+   "image": "NAW_4_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 3,
+   "prototype_tag": "FR3"
+  },
+  {
+   "gpid": "22",
+   "list": "French",
+   "entry_name": "French 2nd Inf (5-4)",
+   "piece_name": "French 2nd Inf (5-4)",
+   "image": "NAW_4_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "21",
+   "list": "French",
+   "entry_name": "French 4th Inf (4-4)",
+   "piece_name": "French 4th Inf (4-4)",
+   "image": "NAW_2_8.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "20",
+   "list": "French",
+   "entry_name": "French 3rd Cav (1-5)",
+   "piece_name": "French 3rd Cav (1-5)",
+   "image": "NAW_2_7.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "19",
+   "list": "French",
+   "entry_name": "French 9th Inf (5-4)",
+   "piece_name": "French 9th Inf (5-4)",
+   "image": "NAW_2_6.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "18",
+   "list": "French",
+   "entry_name": "French 13th Cav (1-5)",
+   "piece_name": "French 13th Cav (1-5)",
+   "image": "NAW_2_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 1,
+   "prototype_tag": "FR1"
+  },
+  {
+   "gpid": "17",
+   "list": "French",
+   "entry_name": "French Grn Gd (7-4)",
+   "piece_name": "French Grn Gd (7-4)",
+   "image": "NAW_2_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 7,
+   "prototype_tag": "FR7"
+  },
+  {
+   "gpid": "15",
+   "list": "French",
+   "entry_name": "French Chs Gd (6-4)",
+   "piece_name": "French Chs Gd (6-4)",
+   "image": "NAW_2_3.png",
+   "prototype_side": "French",
+   "prototype_strength": 6,
+   "prototype_tag": "FR6"
+  },
+  {
+   "gpid": "14",
+   "list": "French",
+   "entry_name": "French 19th Inf (4-4)",
+   "piece_name": "French 19th Inf (4-4)",
+   "image": "NAW_2_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "12",
+   "list": "French",
+   "entry_name": "French 11th Cav (2-5)",
+   "piece_name": "French 11th Cav (2-5)",
+   "image": "NAW_2_1.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "11",
+   "list": "French",
+   "entry_name": "French Gd Lite Cav (3-6)",
+   "piece_name": "French Gd Lite Cav (3-6)",
+   "image": "NAW_1_8.png",
+   "prototype_side": "French",
+   "prototype_strength": 3,
+   "prototype_tag": "FR3"
+  },
+  {
+   "gpid": "10",
+   "list": "French",
+   "entry_name": "French Gd Hvy Cav (4-5)",
+   "piece_name": "French Gd Hvy Cav (4-5)",
+   "image": "NAW_1_7.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "9",
+   "list": "French",
+   "entry_name": "French VI Art (2-3)",
+   "piece_name": "French VI Art (2-3)",
+   "image": "NAW_1_6.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "8",
+   "list": "French",
+   "entry_name": "French Yg Gd (5-4)",
+   "piece_name": "French Yg Gd (5-4)",
+   "image": "NAW_1_5.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  },
+  {
+   "gpid": "7",
+   "list": "French",
+   "entry_name": "French 12th Cav (2-5)",
+   "piece_name": "French 12th Cav (2-5)",
+   "image": "NAW_1_4.png",
+   "prototype_side": "French",
+   "prototype_strength": 2,
+   "prototype_tag": "FR2"
+  },
+  {
+   "gpid": "6",
+   "list": "French",
+   "entry_name": "French 5th Inf (4-4)",
+   "piece_name": "French 5th Inf (4-4)",
+   "image": "NAW_1_3.png",
+   "prototype_side": "French",
+   "prototype_strength": 4,
+   "prototype_tag": "FR4"
+  },
+  {
+   "gpid": "3",
+   "list": "French",
+   "entry_name": "French Gd Art (5-3)",
+   "piece_name": "French Gd Art (5-3)",
+   "image": "NAW_1_2.png",
+   "prototype_side": "French",
+   "prototype_strength": 5,
+   "prototype_tag": "FR5"
+  }
+ ],
+ "comparison_vs_prep3": {
+  "prep3_source": "map_grid.json editions.2nd.at_start_pictures.hexes (PROVISIONAL, printed map, one witness)",
+  "agree": [
+   {
+    "hex": "0410",
+    "module_unit": "British 3DB Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "allied",
+    "prep3_factors": "4-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0609",
+    "module_unit": "British 4th Inf (6-4)",
+    "module_factors": "6-4",
+    "module_side": "allied",
+    "prep3_factors": "6-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0614",
+    "module_unit": "French 2nd Cav (2-5)",
+    "module_factors": "2-5",
+    "module_side": "french",
+    "prep3_factors": "2-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0811",
+    "module_unit": "British Cav (3-5)",
+    "module_factors": "3-5",
+    "module_side": "allied",
+    "prep3_factors": "3-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0907",
+    "module_unit": "British Bru Inf (2-4)",
+    "module_factors": "2-4",
+    "module_side": "allied",
+    "prep3_factors": "2-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0910",
+    "module_unit": "British 2nd Inf (6-4)",
+    "module_factors": "6-4",
+    "module_side": "allied",
+    "prep3_factors": "6-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "0914",
+    "module_unit": "French 6th Inf (7-4)",
+    "module_factors": "7-4",
+    "module_side": "french",
+    "prep3_factors": "7-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1014",
+    "module_unit": "British Infantry (1-4)",
+    "module_factors": "1-4",
+    "module_side": "allied",
+    "prep3_factors": "1-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1015",
+    "module_unit": "French I Art (3-3)",
+    "module_factors": "3-3",
+    "module_side": "french",
+    "prep3_factors": "3-3",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1016",
+    "module_unit": "French 12th Cav (2-5)",
+    "module_factors": "2-5",
+    "module_side": "french",
+    "prep3_factors": "2-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1114",
+    "module_unit": "French 9th Inf (5-4)",
+    "module_factors": "5-4",
+    "module_side": "french",
+    "prep3_factors": "5-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1115",
+    "module_unit": "French 11th Cav (2-5)",
+    "module_factors": "2-5",
+    "module_side": "french",
+    "prep3_factors": "2-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1116",
+    "module_unit": "French Gd Hvy Cav (4-5)",
+    "module_factors": "4-5",
+    "module_side": "french",
+    "prep3_factors": "4-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1209",
+    "module_unit": "British 1Gd Cav (4-5)",
+    "module_factors": "4-5",
+    "module_side": "allied",
+    "prep3_factors": "4-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1307",
+    "module_unit": "British DB Cav (1-5)",
+    "module_factors": "1-5",
+    "module_side": "allied",
+    "prep3_factors": "1-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1309",
+    "module_unit": "British 3rd Inf (6-4)",
+    "module_factors": "6-4",
+    "module_side": "allied",
+    "prep3_factors": "6-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1414",
+    "module_unit": "French 5th Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "french",
+    "prep3_factors": "4-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1415",
+    "module_unit": "French 19th Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "french",
+    "prep3_factors": "4-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1416",
+    "module_unit": "French 20th Inf (2-4)",
+    "module_factors": "2-4",
+    "module_side": "french",
+    "prep3_factors": "2-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1417",
+    "module_unit": "French Chs Gd (6-4)",
+    "module_factors": "6-4",
+    "module_side": "french",
+    "prep3_factors": "6-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1507",
+    "module_unit": "British Cavalry (4-5)",
+    "module_factors": "4-5",
+    "module_side": "allied",
+    "prep3_factors": "4-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1509",
+    "module_unit": "British I Art (3-3)",
+    "module_factors": "3-3",
+    "module_side": "allied",
+    "prep3_factors": "3-3",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1511",
+    "module_unit": "French Gd Art (5-3)",
+    "module_factors": "5-3",
+    "module_side": "french",
+    "prep3_factors": "5-3",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1514",
+    "module_unit": "French 3rd Cav (1-5)",
+    "module_factors": "1-5",
+    "module_side": "french",
+    "prep3_factors": "1-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1515",
+    "module_unit": "French VI Art (2-3)",
+    "module_factors": "2-3",
+    "module_side": "french",
+    "prep3_factors": "2-3",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1516",
+    "module_unit": "French Yg Gd (5-4)",
+    "module_factors": "5-4",
+    "module_side": "french",
+    "prep3_factors": "5-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1517",
+    "module_unit": "French Grn Gd (7-4)",
+    "module_factors": "7-4",
+    "module_side": "french",
+    "prep3_factors": "7-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1609",
+    "module_unit": "British 6th Inf (6-4)",
+    "module_factors": "6-4",
+    "module_side": "allied",
+    "prep3_factors": "6-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1611",
+    "module_unit": "French II Art (3-3)",
+    "module_factors": "3-3",
+    "module_side": "french",
+    "prep3_factors": "3-3",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1613",
+    "module_unit": "French 1st Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "french",
+    "prep3_factors": "4-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1615",
+    "module_unit": "French 5th Cav (1-5)",
+    "module_factors": "1-5",
+    "module_side": "french",
+    "prep3_factors": "1-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1708",
+    "module_unit": "British 2DB Inf (5-4)",
+    "module_factors": "5-4",
+    "module_side": "allied",
+    "prep3_factors": "5-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1712",
+    "module_unit": "French 2nd Inf (5-4)",
+    "module_factors": "5-4",
+    "module_side": "french",
+    "prep3_factors": "5-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1807",
+    "module_unit": "British Cavalry (3-5)",
+    "module_factors": "3-5",
+    "module_side": "allied",
+    "prep3_factors": "3-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1808",
+    "module_unit": "British 5th Inf (7-4)",
+    "module_factors": "7-4",
+    "module_side": "allied",
+    "prep3_factors": "7-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1812",
+    "module_unit": "French 3rd Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "french",
+    "prep3_factors": "4-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1814",
+    "module_unit": "French 13th Cav (1-5)",
+    "module_factors": "1-5",
+    "module_side": "french",
+    "prep3_factors": "1-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1912",
+    "module_unit": "French 4th Inf (4-4)",
+    "module_factors": "4-4",
+    "module_side": "french",
+    "prep3_factors": "4-4",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1913",
+    "module_unit": "French 14th Cav (1-5)",
+    "module_factors": "1-5",
+    "module_side": "french",
+    "prep3_factors": "1-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1914",
+    "module_unit": "French Gd Lite Cav (3-6)",
+    "module_factors": "3-6",
+    "module_side": "french",
+    "prep3_factors": "3-6",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "2111",
+    "module_unit": "French 1st Cav (2-5)",
+    "module_factors": "2-5",
+    "module_side": "french",
+    "prep3_factors": "2-5",
+    "prep3_side": "french",
+    "stacked_in_module": 1
+   }
+  ],
+  "disagree": [
+   {
+    "hex": "1110",
+    "module_unit": "British 1Gd Inf (7-4)",
+    "module_factors": "7-4",
+    "module_side": "allied",
+    "prep3_factors": "1-4",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1210",
+    "module_unit": "British II Art (2-3)",
+    "module_factors": "2-3",
+    "module_side": "allied",
+    "prep3_factors": "7-3",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   },
+   {
+    "hex": "1410",
+    "module_unit": "British R Art (3-3)",
+    "module_factors": "3-3",
+    "module_side": "allied",
+    "prep3_factors": "3-5",
+    "prep3_side": "allied",
+    "stacked_in_module": 1
+   }
+  ],
+  "only_in_module": [],
+  "only_in_prep3": [],
+  "tally": {
+   "agree": 41,
+   "disagree": 3,
+   "only_in_module": 0,
+   "only_in_prep3": 0
+  },
+  "hex_set_verdict": "the two witnesses place units on exactly the same 44 hexes, 18 Allied and 26 French, one unit per hex, with zero hexes unique to either side. This is the corroboration PREP-4 was called to establish, and it also proves the hex mapping: a one-column or one-row error would have produced 44 hexes unique to each witness and zero overlap."
+ },
+ "disputed_hexes": [
+  {
+   "hex": "1110",
+   "module": "British 1Gd Inf (7-4)",
+   "prep3": "1-4",
+   "third_read": "7-4, division symbol XX over a crossed box, designation '1 Gd'",
+   "read_on": "the printed folio p.5 at 0.62-hex crop, rotated 180 (Allied pictures are printed upside-down for the north player), and independently on the Oliver map restoration",
+   "verdict": "MODULE CORRECT, PREP-3 MISREAD. The leading digit is an unmistakable 7 with a full horizontal bar; the 1 in 1 Gd sits above it in the designation block, which is the likely source of the confusion.",
+   "classification": "OUR bug \u2014 a misreading in PREP-3's own PROVISIONAL at_start_pictures list. Not a module defect and not a defect in the printed game.",
+   "crop": "c_ed2_disputed_hexes.png row 1"
+  },
+  {
+   "hex": "1210",
+   "module": "British II Art (2-3)",
+   "prep3": "7-3",
+   "third_read": "2-3, artillery symbol (dot in a box), designation 'II'",
+   "read_on": "same",
+   "verdict": "MODULE CORRECT, PREP-3 MISREAD. The leading digit is a 2 with a flat foot serif; the II designation to the right of the artillery box is the likely source of the confusion.",
+   "classification": "OUR bug \u2014 PREP-3 misreading.",
+   "crop": "c_ed2_disputed_hexes.png row 2"
+  },
+  {
+   "hex": "1410",
+   "module": "British R Art (3-3)",
+   "prep3": "3-5",
+   "third_read": "3-3, artillery symbol (dot in a box), designation 'R'",
+   "read_on": "same",
+   "verdict": "MODULE CORRECT, PREP-3 MISREAD. The second digit is a 3, not a 5; the hex is crossed by the Mont St Jean road and a building block, which degrades the picture.",
+   "classification": "OUR bug \u2014 PREP-3 misreading.",
+   "crop": "c_ed2_disputed_hexes.png row 3"
+  }
+ ],
+ "reinforcements": {
+  "printed_time_record_2nd_ed": [
+   "5-4",
+   "4-4",
+   "4-4",
+   "4-4",
+   "4-4",
+   "3-5",
+   "3-5",
+   "4-3",
+   "3-3"
+  ],
+  "module_prussian_contingent": [
+   "3-3",
+   "3-5",
+   "3-5",
+   "4-3",
+   "4-4",
+   "4-4",
+   "4-4",
+   "4-4",
+   "5-4"
+  ],
+  "match": true,
+  "note": "the module parks all nine Prussians on the Main Map east of its own Battlefield zone (x 6485-6496, outside the hex field) as a manual staging area. Nothing in the module schedules or gates their turn-2 entry."
+ },
+ "strength_totals": {
+  "french_at_start": 89,
+  "allied_at_start": 73,
+  "prussian_reinforcements": 34,
+  "note": "module-derived arithmetic; relevant to the printed 40-point victory and demoralization thresholds but not itself a printed reading."
+ },
+ "findings": [
+  {
+   "id": "P4C-1",
+   "kind": "CORROBORATION",
+   "text": "The module's at-start placement and the printed 2nd Ed map agree on all 44 hexes and, once the three PREP-3 misreads above are corrected, on all 44 factor pairs, all 44 sides and all 44 unit types. The module additionally supplies unit designations (1 Gd, R, II, 3DB, Chs Gd, Grn Gd, Yg Gd, Gd Hvy, Gd Lite, ...) and these were checked hex by hex against the printed pictures on the two contact sheets c_ed2_atstart_allied.png and c_ed2_atstart_french.png: 44 of 44 agree, with the single omission noted in P4C-7."
+  },
+  {
+   "id": "P4C-2",
+   "kind": "OUR BUG",
+   "text": "Three of PREP-3's 44 at_start_pictures readings are wrong: 1110 is 7-4 not 1-4, 1210 is 2-3 not 7-3, 1410 is 3-3 not 3-5. All three were re-read off the primary folio for this job. map_grid.json is PREP-3's artifact and has NOT been edited by this job; the correction is reported for the parent to apply. Under the correction the 18 Allied at-start factor pairs become an exact multiset match for the module's 18 British counters, which they are not before it."
+  },
+  {
+   "id": "P4C-3",
+   "kind": "MODULE DEFECT (corroborates PREP-2 M3, at piece level)",
+   "text": "The module labelled 'Napoleon at Waterloo 2nd Edition' ships a complete Grouchy Variant subsystem: a separate 'Grouchy Variant' board holding 20 variant units, two hand maps ('French Grouchy Variant', 'Allied Grouchy Variant'), and two six-card decks of numbered chits. The Grouchy Variant is a 3rd Edition rule ([9.0]) and does not exist in the 2nd Edition at all. Findings only; nothing goes to the author without Bruce's per-item go."
+  },
+  {
+   "id": "P4C-4",
+   "kind": "MODULE DEFECT (corroborates PREP-2 M2, from art rather than text)",
+   "text": "The variant counter art itself is labelled 'Var'. Printed 3rd Ed [9.1] specifies the marking '5v'. This is the same substitution PREP-2 found on the Grouchy Variant sheet, now confirmed on the counters."
+  },
+  {
+   "id": "P4C-5",
+   "kind": "OBSERVATION",
+   "text": "buildFile.xml contains zero GridNumbering elements. The module therefore has no hex identities of any kind, exactly as the printed 2nd Ed map has none (PREP-1 D11). Every hex reference in this file is OURS, computed from pixel positions; there is no module hex name to disagree with."
+  },
+  {
+   "id": "P4C-6",
+   "kind": "OBSERVATION",
+   "text": "The module enforces nothing about reinforcement timing. All nine Prussians sit on the Main Map outside the Battlefield zone from the beginning of the save, movable at any time. This is a coverage-matrix input, not a defect in a piece-pusher."
+  },
+  {
+   "id": "P4C-7",
+   "kind": "MODULE COSMETIC (minor, findings only)",
+   "text": "The redrawn counters drop information the printed map pictures carry: no size-echelon marker at all (the printed pictures show XX on most units and X on the Hougoumont garrison at 1014 and on British 1Gd Cav at 1209), and no designation on the 1014 unit, where the printed picture reads 'H'. Nothing play-relevant follows \u2014 the 2nd Ed rules state that unit designations are historical only \u2014 but it means the counter art is not a complete substitute for the printed pictures."
+  },
+  {
+   "id": "P4C-8",
+   "kind": "CORROBORATION",
+   "text": "The nine Prussian reinforcement counters in the module are 5-4, 4-4, 4-4, 4-4, 4-4, 3-5, 3-5, 4-3, 3-3 \u2014 an exact match, as a multiset and in the printed order, for the nine units printed at the 2 pm entry slot of the 2nd Edition Time Record (PREP-1 section 3). Third independent witness for E26."
+  },
+  {
+   "id": "P4C-9",
+   "kind": "CLOSURE (settles JOB A's open Allied discrepancy)",
+   "text": "PREP-4 JOB A read the primary counter photograph (folio p.4) and left an unresolved Allied disagreement: six factor values whose multiplicities differ between the photograph and PREP-3's map readings (1-4, 2-3, 3-3, 3-5, 7-3, 7-4), photograph sum 73 vs map sum 72. JOB A's Allied multiset is identical, value for value, to the 18 British counters this job read out of the module \u2014 and the three hexes this job found in disagreement (1110, 1210, 1410) are exactly the three values in question. Re-reading those three hexes on the printed folio map shows 7-4, 2-3 and 3-3, i.e. the printed map and the printed counters AGREE and PREP-3 misread them. This is therefore NOT a source-defect candidate in the printed game: it is our own reading error, and JOB A's unresolved item can be closed. Evidence: c_ed2_disputed_hexes.png. This file's extraction was completed before counters_photo.json was consulted, so the two witnesses are independent."
+  }
+ ]
+}
