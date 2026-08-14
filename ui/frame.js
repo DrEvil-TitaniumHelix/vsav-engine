@@ -73,6 +73,13 @@ const FRAME = (() => {
       #guidepanel li { margin:3px 0; }
       #rulespanel, #tierpanel { color:#dde3ea; }
       #rulespanel .dim, #tierpanel .dim, #guidepanel .dim { color:#9aa3ad; }
+      #rulespanel details { margin:2px 0; }
+      #rulespanel summary { cursor:pointer; font-weight:600; padding:4px 0; }
+      #rulespanel summary:hover { filter:brightness(1.18); }
+      #rulespanel .rsbody { margin:2px 0 8px 14px; }
+      #rulespanel mark { background:#7a5c1e; color:#ffe9b0;
+                         border-radius:2px; padding:0 1px; }
+      #rulespanel mark.cur { background:#e0a34e; color:#1a1d22; }
       @keyframes soleglow {
         0%,100% { box-shadow:0 0 0 0 rgba(255,80,64,.0); }
         50%     { box-shadow:0 0 12px 3px rgba(255,80,64,.7); } }`;
@@ -336,22 +343,67 @@ const FRAME = (() => {
       else location.href = '/';
     });
   }
-  // ---------- rules panel (from the scenario's declared rules_scope) ----------
+  let rulesQ = '', rulesBuilt = '', rulesBodies = [], rulesHits = [], rulesCur = 0;
+  function rulesMark(el, q) {
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), ts = [];
+    while (w.nextNode()) ts.push(w.currentNode);
+    let n = 0;
+    ts.forEach(t => {
+      const s = t.nodeValue, ls = s.toLowerCase();
+      let i = ls.indexOf(q);
+      if (i < 0) return;
+      const f = document.createDocumentFragment();
+      let p = 0;
+      while (i >= 0) {
+        f.appendChild(document.createTextNode(s.slice(p, i)));
+        const m = document.createElement('mark');
+        m.textContent = s.slice(i, i + q.length);
+        f.appendChild(m);
+        n++; p = i + q.length; i = ls.indexOf(q, p);
+      }
+      f.appendChild(document.createTextNode(s.slice(p)));
+      t.parentNode.replaceChild(f, t);
+    });
+    return n;
+  }
   function renderRules() {
     const P = $id('rulespanel');
     if (!P || P.style.display !== 'block') return;
     const G = PH.game(), FLOW = PH.flow();
     const rs = FLOW && FLOW.rules_scope;
     const T = G && G.tier, M = modeInfo(T);
-    let h = `<b>Rules enforced by the engine</b>`;
-    if (M) h += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
+    const ghdr = t => `<div style="margin:12px 0 2px; padding-top:8px;
+      border-top:1px solid #3a3f47; color:#8b93a0; font-size:11px;
+      letter-spacing:.12em; text-transform:uppercase">${t}</div>`;
+    let top = `<b>Rules</b>`;
+    top += `<div style="position:sticky; top:-12px; margin:6px -4px 0;
+            padding:6px 4px; background:#23262c; z-index:5; display:flex;
+            gap:6px; align-items:center">
+            <input id="rsq" type="search" placeholder="Search these rules…"
+             autocomplete="off" style="flex:1; min-width:0; background:#1a1d22;
+             color:#dfe5ec; border:1px solid #3a3f47; border-radius:6px;
+             padding:5px 8px; font-size:13px; outline:none">
+            <span id="rsn" class="dim" style="white-space:nowrap; font-size:12px"></span>
+            <button id="rsp" title="Previous match (Shift+Enter)" style="background:#2c2f36;
+             color:#b9c2cc; border:1px solid #3a3f47; border-radius:6px;
+             padding:3px 9px; cursor:pointer">‹</button>
+            <button id="rsx" title="Next match (Enter)" style="background:#2c2f36;
+             color:#b9c2cc; border:1px solid #3a3f47; border-radius:6px;
+             padding:3px 9px; cursor:pointer">›</button></div>`;
+    const GR = `The game's rules`, PL = `This platform`;
+    top += ghdr(GR);
+    if (M) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
                  mode — ${M.active === 'sandbox' ? 'nothing is enforced'
                                                  : `the ${UMPIRE} checks every action`}
                  ${M.active === 'full' && T.active < T.earned ? ` <span class="dim">
                  (running below the game's validated level — restart from the Mode
                  button to enable everything)</span>` : ''}</div>`;
-    if (!rs) {
-      h += (T && T.earned > 0)
+    if (rs && rs.banner)
+      top += `<div style="margin:6px 0; padding:5px 8px; border-radius:4px; font-weight:600;
+              ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
+                                            : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
+    if (!rs)
+      top += (T && T.earned > 0)
         ? `<div class="dim" style="margin-top:6px">You selected Sandbox — free play by
            choice. NOTHING is enforced: move any piece anywhere, including the printed
            tracks, exactly as in VASSAL. You are the umpire. The validated full-rules
@@ -359,142 +411,137 @@ const FRAME = (() => {
         : `<div class="dim" style="margin-top:6px">Sandbox — free play. No rules are
            enforced for this game yet; move pieces as you would at a physical table.
            You are the umpire.</div>`;
-    } else {
-      if (rs.banner)
-        h += `<div style="margin:6px 0; padding:5px 8px; border-radius:4px; font-weight:600;
-              ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
-                                            : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
-      h += `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || G.name}.
-            Every proposed action goes to the ${UMPIRE} — the rules engine — which
-            accepts or refuses it against these rules. Numbers in parentheses cite
-            the game's own rulebook sections.</div>`;
-      h += `<div style="color:#9fc27f;font-weight:600">Enforced</div><ul>`;
-      (rs.enforced || []).forEach(r => h += `<li>${r}</li>`);
-      h += `</ul>`;
-      if (rs.not_enforced && rs.not_enforced.length) {
-        h += `<div style="color:#e0a34e;font-weight:600">Not yet enforced — umpire these yourself</div><ul>`;
-        rs.not_enforced.forEach(r => h += `<li>${r}</li>`);
-        h += `</ul>`;
-      }
-      if (rs.rulings && rs.rulings.length) {
-        h += `<div style="color:#8fb8d8;font-weight:600">Engine rulings & scope notes</div><ul>`;
-        rs.rulings.forEach(r => h += `<li>${r}</li>`);
-        h += `</ul>`;
-      }
+    const secs = [];
+    const sec = (grp, color, title, n, body) => secs.push({grp, color, title, n, body});
+    if (rs) {
+      const enf = rs.enforced || [];
+      sec(GR, '#9fc27f', 'Enforced', enf.length,
+        `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || G.name}.
+         Every proposed action goes to the ${UMPIRE} — the rules engine — which
+         accepts or refuses it against these rules. Numbers in parentheses cite
+         the game's own rulebook sections.</div>
+         <ul>${enf.map(r => `<li>${r}</li>`).join('')}</ul>`);
+      if (rs.not_enforced && rs.not_enforced.length)
+        sec(GR, '#e0a34e', 'Not yet enforced — umpire these yourself',
+          rs.not_enforced.length,
+          `<ul>${rs.not_enforced.map(r => `<li>${r}</li>`).join('')}</ul>`);
+      if (rs.rulings && rs.rulings.length)
+        sec(GR, '#8fb8d8', 'Engine rulings & scope notes', rs.rulings.length,
+          `<ul>${rs.rulings.map(r => `<li>${r}</li>`).join('')}</ul>`);
     }
-    // ---- basic client functions (engine-level; adapts to gate/tier/features)
+    const SD = G && G.source_defects;
+    if (SD && SD.list && SD.list.length)
+      sec(GR, '#c99ae0', 'Defects found in the printed game', SD.list.length,
+        `<div class="dim" style="margin:4px 0 6px">Encoding a game is a formal check of its own
+         rulebook. These are defects of the ORIGINAL published game (editing errors,
+         contradictions, undefined cases), each with the resolution this engine enforces and
+         the authority for that resolution.</div><ul>` +
+        SD.list.map(d =>
+          `<li><b>${d.defect}</b> <span class="dim">[${d.kind}; rules ${d.rules.join(', ')}]</span><br>
+           <span style="color:#9fc27f">Resolved:</span> ${d.resolution}<br>
+           <span class="dim">Authority: ${d.authority}</span></li>`).join('') + `</ul>`);
     const gated = !!FLOW, hasArr = gated && !!FLOW.arrivals,
           hasCbt = gated && !!FLOW.combat;
-    h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Using this client</div><ul>`;
-    h += `<li><b>Sides</b> — pick who you're playing with the buttons top-left; switch
-          any time for hot-seat play.</li>`;
-    h += `<li><b>Counters</b> — hover for a unit's stats card; click to select (the card
-          pins bottom-left). Clicking a stack offers each unit or the whole stack.</li>`;
-    h += gated
+    const ci = [];
+    ci.push(`<li><b>Sides</b> — pick who you're playing with the buttons top-left; switch
+          any time for hot-seat play.</li>`);
+    ci.push(`<li><b>Counters</b> — hover for a unit's stats card; click to select (the card
+          pins bottom-left). Clicking a stack offers each unit or the whole stack.</li>`);
+    ci.push(gated
       ? `<li><b>Moving</b> — ${MOVE_HINT}. Green hexes are the legal
          destinations the ${UMPIRE} computed (numbers = movement points spent);
          anything else snaps back. Illegal proposals are refused with the rule
          citation, centre-screen.</li>`
       : `<li><b>Moving</b> — drag the selected counter anywhere on the board, printed
-         tracks included, exactly as in VASSAL. Nothing is checked in free play.</li>`;
-    h += `<li><b>Pass</b> — marks the selected unit done without moving.</li>`;
+         tracks included, exactly as in VASSAL. Nothing is checked in free play.</li>`);
+    ci.push(`<li><b>Pass</b> — marks the selected unit done without moving.</li>`);
     if (gated)
-      h += `<li><b>↶ Undo</b> — takes back your most recent decision (up to 5 in a
+      ci.push(`<li><b>↶ Undo</b> — takes back your most recent decision (up to 5 in a
             row), unwinding the AI's replies after it. The engine replays the
             shortened game log and re-verifies every verdict, die and state hash on
             the way; repeating an action after an undo reuses the same seeded dice —
             no reroll fishing. Not available in mailed or LLM matches, where accepted
-            moves stand.</li>`;
+            moves stand.</li>`);
     if (G.facing)
-      h += `<li><b>Facing</b> — right-click a counter to rotate it.</li>`;
+      ci.push(`<li><b>Facing</b> — right-click a counter to rotate it.</li>`);
     if (hasArr)
-      h += `<li><b>Arrivals & sea panel</b> (top-left) — supply rolls and landings,
+      ci.push(`<li><b>Arrivals & sea panel</b> (top-left) — supply rolls and landings,
             reinforcement placement, embark/debark, replacements: every button submits
-            through the gate.</li>`;
+            through the gate.</li>`);
     if (hasCbt)
-      h += `<li><b>Combat panel</b> (top-right, combat phase) — click your units and
+      ci.push(`<li><b>Combat panel</b> (top-right, combat phase) — click your units and
             enemy units to build a battle, watch the live odds preview, then resolve:
             the engine rolls its own seeded die on the validated CRT and walks you
-            through retreats, exchanges and advances.</li>`;
-    (PH.clientItems ? PH.clientItems(gated) : []).forEach(li => h += li);
+            through retreats, exchanges and advances.</li>`);
+    (PH.clientItems ? PH.clientItems(gated) : []).forEach(li => ci.push(li));
     if (gated)
-      h += `<li><b>End player turn</b> — asks the ${UMPIRE} to close your turn; it
-            refuses (with citations) while obligations are open.</li>`;
+      ci.push(`<li><b>End player turn</b> — asks the ${UMPIRE} to close your turn; it
+            refuses (with citations) while obligations are open.</li>`);
     if (M && M.modes.length > 1)
-      h += `<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
-            (the validated gate). Switching starts a new game.</li>`;
-    h += `<li><b>Reset game</b> — restarts the scenario from its setup.</li>`;
-    h += `<li><b>VASSAL interop</b> — the live save (live\\game_*.vsav) is a real
-          VASSAL save you can open in the desktop app at any time.</li>`;
-    h += `</ul>`;
+      ci.push(`<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
+            (the validated gate). Switching starts a new game.</li>`);
+    ci.push(`<li><b>Reset game</b> — restarts the scenario from its setup.</li>`);
+    ci.push(`<li><b>VASSAL interop</b> — the live save (live\\game_*.vsav) is a real
+          VASSAL save you can open in the desktop app at any time.</li>`);
+    sec(PL, '#d8c98f', 'Using this client', ci.length, `<ul>${ci.join('')}</ul>`);
     const CR = G && G.credits;
     if (CR) {
-      h += `<div style="color:#8fb8d8;font-weight:600;margin-top:8px">Credits</div><ul>`;
+      let cb = `<ul>`;
       if (CR.game) {
         const gm = CR.game;
-        h += `<li><b>${gm.title}</b> — ${gm.publisher}, ${gm.year}.<br>
+        cb += `<li><b>${gm.title}</b> — ${gm.publisher}, ${gm.year}.<br>
               ${gm.design}${gm.development ? '; ' + gm.development : ''}${gm.art ? '; ' + gm.art : ''}
               <span class="dim">(${gm.source})</span></li>`;
       }
       if (CR.module) {
         const md = CR.module;
-        h += `<li><b>${md.title}</b> — ${md.implementation}.<br>
+        cb += `<li><b>${md.title}</b> — ${md.implementation}.<br>
               With: ${md.contributors}.<br>
               <span class="dim">${md.library} (${md.source})</span></li>`;
       }
-      if (CR.note) h += `<li class="dim">${CR.note}</li>`;
-      h += `</ul>`;
+      if (CR.note) cb += `<li class="dim">${CR.note}</li>`;
+      sec(PL, '#8fb8d8', 'Credits', null, cb + `</ul>`);
     }
-    const SD = G && G.source_defects;
-    if (SD && SD.list && SD.list.length) {
-      h += `<div style="color:#c99ae0;font-weight:600">Defects found in the printed game — and how the engine resolves them</div>
-            <div class="dim" style="margin:4px 0 6px">Encoding a game is a formal check of its own
-            rulebook. These are defects of the ORIGINAL published game (editing errors,
-            contradictions, undefined cases), each with the resolution this engine enforces and
-            the authority for that resolution.</div><ul>`;
-      SD.list.forEach(d => {
-        h += `<li><b>${d.defect}</b> <span class="dim">[${d.kind}; rules ${d.rules.join(', ')}]</span><br>
-              <span style="color:#9fc27f">Resolved:</span> ${d.resolution}<br>
-              <span class="dim">Authority: ${d.authority}</span></li>`;
-      });
-      h += `</ul>`;
-    }
-    // official rules the PUBLISHER hosts publicly (links, nothing rehosted)
     const RD = G && G.rules_docs;
     if (RD) {
       const links = Object.entries(RD).filter(([k, v]) =>
         typeof v === 'string' && v.startsWith('http'));
-      if (links.length) {
-        h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Official
-              rules — free from the publisher</div><ul>`;
-        links.forEach(([k, v]) => {
-          h += `<li><a href="${v}" target="_blank" rel="noopener"
-                 style="color:#9cc4ee">${k.replace(/_/g, ' ')}</a></li>`;
-        });
-        h += `</ul>`;
-      }
+      if (links.length)
+        sec(PL, '#d8c98f', 'Official rules — free from the publisher', links.length,
+          `<ul>` + links.map(([k, v]) =>
+            `<li><a href="${v}" target="_blank" rel="noopener"
+             style="color:#9cc4ee">${k.replace(/_/g, ' ')}</a></li>`).join('') + `</ul>`);
     }
-    // original docs packed inside the USER'S OWN module (BYO builds only):
-    // shown from their file, read locally, never shipped by us
     const DOCS = (window.BYO_MANIFEST && window.BYO && BYO.extract)
       ? (window.BYO_MANIFEST.docs || []) : [];
-    if (DOCS.length) {
-      h += `<div style="color:#d8c98f;font-weight:600;margin-top:8px">Rulebook &
-            charts — from your module</div>
-            <div class="dim" style="margin:4px 0 6px">These open the original
-            documents packed inside YOUR module file, read locally in your
-            browser — this site does not ship them.</div>`;
-      DOCS.forEach((d, i) => {
-        h += `<button class="sidebtn" data-doc="${i}"
-               style="margin:2px 6px 2px 0">${d.label}</button>`;
-      });
-    }
-    h += `<div class="dim" style="margin-top:10px">Rules here are restated in our
-          own words for engine enforcement — game mechanics are not copyrightable,
-          but the game's printed text and art are, and remain the publisher's.
-          Support the original game.</div>`;
-    P.innerHTML = h;
-    P.querySelectorAll('[data-doc]').forEach(btn => btn.onclick = async () => {
+    if (DOCS.length)
+      sec(PL, '#d8c98f', 'Rulebook & charts — from your module', DOCS.length,
+        `<div class="dim" style="margin:4px 0 6px">These open the original
+         documents packed inside YOUR module file, read locally in your
+         browser — this site does not ship them.</div>` +
+        DOCS.map((d, i) => `<button class="sidebtn" data-doc="${i}"
+           style="margin:2px 6px 2px 0">${d.label}</button>`).join(''));
+    sec(PL, '#9aa3ad', 'Copyright', null,
+      `<div class="dim">Rules here are restated in our
+       own words for engine enforcement — game mechanics are not copyrightable,
+       but the game's printed text and art are, and remain the publisher's.
+       Support the original game.</div>`);
+    let grp = GR, bodyH = '';
+    secs.forEach(s => {
+      if (s.grp !== grp) { bodyH += ghdr(s.grp); grp = s.grp; }
+      bodyH += `<details class="rsec"><summary style="color:${s.color}">${s.title}${
+        s.n != null ? ` <span style="font-weight:400;color:#8b93a0">(${s.n})</span>` : ''
+      }</summary><div class="rsbody">${s.body}</div></details>`;
+    });
+    const built = top + bodyH;
+    if (built === rulesBuilt && P.firstChild) return;
+    rulesBuilt = built;
+    P.innerHTML = built;
+    rulesBodies = [];
+    P.querySelectorAll('.rsbody').forEach(b => rulesBodies.push(b.innerHTML));
+    P.onclick = async ev => {
+      const btn = ev.target.closest('[data-doc]');
+      if (!btn) return;
       const d = DOCS[+btn.dataset.doc];
       const label = btn.textContent;
       btn.disabled = true; btn.textContent = 'Opening…';
@@ -513,7 +560,36 @@ const FRAME = (() => {
         }
       } catch (e) { (PH.toast || alert)('Could not open: ' + (e.message || e)); }
       btn.disabled = false; btn.textContent = label;
-    });
+    };
+    const box = P.querySelector('#rsq'), rsn = P.querySelector('#rsn');
+    const setCur = (i, scroll) => {
+      if (!rulesHits.length) return;
+      rulesCur = ((i % rulesHits.length) + rulesHits.length) % rulesHits.length;
+      rulesHits.forEach((m, j) => m.classList.toggle('cur', j === rulesCur));
+      rsn.textContent = `${rulesCur + 1} of ${rulesHits.length}`;
+      if (scroll !== false) rulesHits[rulesCur].scrollIntoView({block: 'center'});
+    };
+    const applySearch = scroll => {
+      rulesQ = box.value.trim();
+      const q = rulesQ.toLowerCase(), live = q.length >= 2;
+      P.querySelectorAll('.rsec').forEach((d, i) => {
+        const b = d.querySelector('.rsbody');
+        b.innerHTML = rulesBodies[i];
+        d.open = live && rulesMark(b, q) > 0;
+      });
+      rulesHits = Array.from(P.querySelectorAll('.rsbody mark'));
+      rsn.textContent = live && !rulesHits.length ? 'no matches' : '';
+      if (live && rulesHits.length) setCur(0, scroll);
+    };
+    box.oninput = () => applySearch(true);
+    box.onkeydown = ev => {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      setCur(rulesCur + (ev.shiftKey ? -1 : 1), true);
+    };
+    P.querySelector('#rsp').onclick = () => setCur(rulesCur - 1, true);
+    P.querySelector('#rsx').onclick = () => setCur(rulesCur + 1, true);
+    if (rulesQ) { box.value = rulesQ; applySearch(false); }
   }
   // ---------- tables panel (transcribed CRT / to-hit — the data the gate uses) ----------
   async function renderTables() {
