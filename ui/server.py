@@ -331,7 +331,7 @@ def api_undo(body=None):
     global AI_STEP
     gate = SG or SJ or TG
     if not gate:
-        return dict(error="undo needs the rules gate (tier 1+)")
+        return dict(error="undo needs the rules gate (not available in sandbox)")
     blocked = undo_blocked()
     if blocked:
         return dict(error="undo is not available in a match: " + blocked)
@@ -1528,9 +1528,8 @@ def api_salvo_start(body):
         if body.get("seed") is not None:
             SG.new_game(int(body["seed"]))
     elif TIER != TIER_EARNED:
-        return dict(error=f"SALVO plays at the earned tier ({TIER_EARNED}); "
-                          "this game is running at tier "
-                          f"{TIER} - start fresh or switch tier first")
+        return dict(error="SALVO plays at full rules; this game is running "
+                          "below that - start fresh or switch mode first")
     AI_STEP = None
     # s["n"] counts log LINES (init included); action numbering starts at
     # the next line, so "everything the LLM has seen" = s["n"] - 1

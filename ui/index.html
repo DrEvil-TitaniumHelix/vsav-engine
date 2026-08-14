@@ -369,8 +369,8 @@ function renderGuide() {
   if (!FLOW) {
     const t = GAME && GAME.tier ? GAME.tier.active : 0;
     FRAME.setGuide(t > 0
-      ? 'Drag a counter to move it — the gate checks each move. No turn sequence is enforced at this tier.'
-      : 'Free play (Tier 0) — no rules gate: drag any counter anywhere. You are the umpire.');
+      ? 'Drag a counter to move it — the gate checks each move. No turn sequence is enforced here.'
+      : 'Sandbox — no rules gate: drag any counter anywhere. You are the umpire.');
     FRAME.soleNext(null);
     return;
   }
@@ -1789,7 +1789,7 @@ function matchesIntro() {
   h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
         <b>1 · You vs the built-in AI</b><div class="dim" style="margin-top:2px">${tier3
           ? 'Close this panel, pick your side in the top bar, and press <b>▶ Play</b> when it is the other side’s turn.'
-          : 'This game has no AI opponent at its current tier.'}</div></div>`;
+          : 'This game has no AI opponent yet.'}</div></div>`;
   h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
         <b>2 · Your LLM takes a seat</b> <span class="dim">(SALVO)</span>
         <div class="dim" style="margin-top:2px">Hook up your own AI — Claude Code, Codex, any
@@ -1828,7 +1828,7 @@ function matchesIntro() {
     h += `<button class="sidebtn" style="margin:6px 6px 0 0" onclick='pbmStart("${s.id}")'>${s.label}</button>`;
   });
   h += `</div><div class="dim" style="margin-top:4px">Starting a match restarts the game at
-        the full enforcement tier.</div>
+        full rules.</div>
         <div style="margin-top:10px;border-top:1px solid #3a3f47;padding-top:8px">
         <b>Or join a match</b> — received a turn file by email?<br>
         <button class="sidebtn" id="pbmimport" style="margin-top:6px"

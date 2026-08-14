@@ -233,41 +233,55 @@ const FRAME = (() => {
     });
     return opened;
   }
+  const MODE_NAME = { sandbox: 'Sandbox', full: 'Full rules' };
+  const MODE_DESC = {
+    sandbox: `free play. Nothing is enforced: move any piece anywhere,
+              exactly as in VASSAL. You are the umpire.`,
+    full: `every action passes through the legality gate — legal moves shown,
+           illegal moves impossible, combat resolved on the validated tables.` };
+  function modeInfo(T) {
+    if (!T) return null;
+    const modes = [];
+    if (T.choices.includes(0)) modes.push('sandbox');
+    if (T.earned > 0) modes.push('full');
+    return { modes, active: T.active === 0 ? 'sandbox' : 'full',
+             tier: { sandbox: 0, full: T.earned },
+             mismatch: T.active !== (T.active === 0 ? 0 : T.earned) };
+  }
   function renderTierBtn() {
     const B = $id('tierbtn');
     if (!B) return;
-    const g = PH && PH.game(), T = g && g.tier;
-    if (!T || T.choices.length < 2) { show(B, false); return; }
+    const g = PH && PH.game(), M = modeInfo(g && g.tier);
+    if (!M || (M.modes.length < 2 && !M.mismatch)) { show(B, false); return; }
     show(B, true);
-    B.textContent = `Tier ${T.active} of ${T.earned} ▾`;
+    B.textContent = `${MODE_NAME[M.active]} ▾`;
     B.classList.toggle('on', $id('tierpanel').style.display === 'block');
   }
   function renderTierPanel() {
-    const P = $id('tierpanel'), T = PH.game().tier;
-    let h = `<b>Engine enforcement tier</b>
-             <div class="dim" style="margin:4px 0 8px">This game has earned
-             <b>Tier ${T.earned}</b>. You may run it at any tier up to that badge —
-             lower tiers switch validated rule systems OFF and hand them to you,
-             the umpire. Changing tier starts a NEW game.</div>`;
-    T.choices.forEach(c => {
-      const active = c === T.active, armed = tierArm === c;
-      h += `<div class="tierrow" data-t="${c}" style="padding:6px 8px; margin:3px 0;
+    const P = $id('tierpanel'), M = modeInfo(PH.game().tier);
+    let h = `<b>Game mode</b>
+             <div class="dim" style="margin:4px 0 8px">Switching mode starts a
+             NEW game.</div>`;
+    const T = PH.game().tier;
+    M.modes.forEach(m => {
+      const active = M.tier[m] === T.active, armed = tierArm === m;
+      h += `<div class="tierrow" data-t="${m}" style="padding:6px 8px; margin:3px 0;
               border-radius:6px; cursor:${active ? 'default' : 'pointer'};
               border:1px solid ${active ? '#3a6ea5' : armed ? '#e0a34e' : '#3a3f47'};
               background:${active ? '#2b3f55' : '#2c2f36'}">
-              ${T.labels[c] || ('Tier ' + c)}
+              <b>${MODE_NAME[m]}</b> — ${MODE_DESC[m]}
               ${active ? ' <span style="color:#9fc27f">— ACTIVE</span>'
-                       : armed ? ' <span style="color:#e0a34e">— click again to restart at this tier</span>' : ''}
+                       : armed ? ' <span style="color:#e0a34e">— click again to restart in this mode</span>' : ''}
             </div>`;
     });
     P.innerHTML = h;
     P.querySelectorAll('.tierrow').forEach(el => el.onclick = async () => {
-      const c = +el.dataset.t;
-      if (c === PH.game().tier.active) return;
-      if (tierArm !== c) { tierArm = c; renderTierPanel(); return; }
+      const m = el.dataset.t;
+      if (M.tier[m] === PH.game().tier.active) return;
+      if (tierArm !== m) { tierArm = m; renderTierPanel(); return; }
       tierArm = null;
       const r = await (await fetch('/api/reset', {method: 'POST',
-        body: JSON.stringify({tier: c})})).json();
+        body: JSON.stringify({tier: M.tier[m]})})).json();
       if (r.error) { (PH.toast || alert)(r.error); return; }
       // "/" reroutes to the client the new tier plays in (tactical <-> board);
       // the serverless demo installs its own hook (reload + session tier)
@@ -281,18 +295,21 @@ const FRAME = (() => {
     if (!P || P.style.display !== 'block') return;
     const G = PH.game(), FLOW = PH.flow();
     const rs = FLOW && FLOW.rules_scope;
-    const T = G && G.tier;
+    const T = G && G.tier, M = modeInfo(T);
     let h = `<b>Rules enforced by the engine</b>`;
-    if (T) h += `<div style="margin:4px 0 2px; color:#8fb8d8">${T.labels[T.active]}
-                 ${T.earned > T.active ? ` <span class="dim">(earned: Tier ${T.earned} —
-                 switch with the Tier button)</span>` : ''}</div>`;
+    if (M) h += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
+                 mode — ${M.active === 'sandbox' ? 'nothing is enforced'
+                                                 : 'the legality gate is on'}
+                 ${M.active === 'full' && T.active < T.earned ? ` <span class="dim">
+                 (running below the game's validated level — restart from the Mode
+                 button to enable everything)</span>` : ''}</div>`;
     if (!rs) {
       h += (T && T.earned > 0)
-        ? `<div class="dim" style="margin-top:6px">You selected Tier 0 — free play by
+        ? `<div class="dim" style="margin-top:6px">You selected Sandbox — free play by
            choice. NOTHING is enforced: move any piece anywhere, including the printed
-           tracks, exactly as in VASSAL. You are the umpire. The validated Tier
-           ${T.earned} gate is available from the Tier button (starts a new game).</div>`
-        : `<div class="dim" style="margin-top:6px">Tier 0 — free play. No rules are
+           tracks, exactly as in VASSAL. You are the umpire. The validated full-rules
+           gate is available from the Mode button (starts a new game).</div>`
+        : `<div class="dim" style="margin-top:6px">Sandbox — free play. No rules are
            enforced for this game yet; move pieces as you would at a physical table.
            You are the umpire.</div>`;
     } else {
@@ -355,10 +372,9 @@ const FRAME = (() => {
     if (gated)
       h += `<li><b>End player turn</b> — asks the gate to close your turn; it refuses
             (with citations) while obligations are open.</li>`;
-    if (T && T.choices.length > 1)
-      h += `<li><b>Tier</b> — run the game at any enforcement level up to its earned
-            badge, from Tier 0 free play to the full gate. Changing tier starts a new
-            game.</li>`;
+    if (M && M.modes.length > 1)
+      h += `<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
+            (the validated gate). Switching starts a new game.</li>`;
     h += `<li><b>Reset game</b> — restarts the scenario from its setup.</li>`;
     h += `<li><b>VASSAL interop</b> — the live save (live\\game_*.vsav) is a real
           VASSAL save you can open in the desktop app at any time.</li>`;
@@ -463,7 +479,7 @@ const FRAME = (() => {
              same data the engine resolves combat on, not scanned images.</div>`;
     if (!tables.length)
       h += `<div class="dim" style="margin-top:6px">This game has no encoded combat tables
-            (Tier 0/1, or none applicable).</div>`;
+            (sandbox, or none applicable).</div>`;
     for (const t of tables) {
       h += `<h3>${escp(t.title)}</h3>`;
       if (t.cite) h += `<div class="cite">${escp(t.cite)}</div>`;
@@ -522,9 +538,9 @@ const FRAME = (() => {
        you are.</p>`,
     free:
       `<h2>How a turn works</h2>
-       <p>Free play — the engine enforces nothing at this tier. Move any piece
+       <p>Sandbox — the engine enforces nothing in this mode. Move any piece
        anywhere, exactly as at a physical table or in VASSAL; you are the
-       umpire. The validated rules gate is available from the Tier button.</p>`,
+       umpire. The validated rules gate is available from the Mode button.</p>`,
   };
   function guideSections() {
     const G = PH.game(), FLOW = PH.flow();
@@ -539,8 +555,10 @@ const FRAME = (() => {
        <p>Sides: ${G.sides.map((s) => s.label).join(' vs ')}. Pick yours top-left;
        switch any time for hot-seat play${tierOn ? ' — every action still goes' +
        ' through the same rules gate' : ''}.</p>
-       ${G.tier ? `<p>${G.tier.labels[G.tier.active]}${G.tier.choices.length > 1
-          ? ' — other tiers are on the Tier button.' : '.'}</p>` : ''}`]);
+       ${G.tier ? `<p>${tierOn ? 'Full rules — every action goes through the legality gate'
+          : 'Sandbox — free play, you are the umpire'}${
+          modeInfo(G.tier).modes.length > 1
+          ? ' — switch on the Mode button.' : '.'}</p>` : ''}`]);
     S.push(['How a turn works', TURN_GUIDE[tierOn ? mode : 'free']]);
     if (gd.victory)
       S.push(['How to win', `<h2>How to win</h2><p>${gd.victory}</p>`]);
@@ -561,8 +579,10 @@ const FRAME = (() => {
        ${tierOn ? `<li><b>↶ Undo</b> takes back your last decision (up to 5
        in a row) — the AI's replies after it are unwound too. Dice are seeded,
        so redoing the same action gives the same result.</li>` : ''}
-       <li><b>Reset game</b> restarts the scenario; the <b>Tier</b> button
-       replays it at a different enforcement level.</li></ul>`]);
+       <li><b>Reset game</b> restarts the scenario${
+       G.tier && modeInfo(G.tier).modes.length > 1
+       ? '; the <b>Mode</b> button switches between sandbox and full rules' : ''}.
+       </li></ul>`]);
     return S;
   }
   let guideSec = 0;
