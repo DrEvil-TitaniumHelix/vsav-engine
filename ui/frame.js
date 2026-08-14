@@ -303,7 +303,7 @@ const FRAME = (() => {
     show(B, true);
     B.disabled = locked;
     B.style.opacity = locked ? '.65' : '';
-    B.textContent = locked ? `${MODE_NAME[M.active]} 🔒` : `${MODE_NAME[M.active]} ▾`;
+    B.textContent = locked ? `Mode: ${MODE_NAME[M.active]} 🔒` : `Mode: ${MODE_NAME[M.active]} ▾`;
     B.title = locked
       ? (M.active === 'full'
          ? `This game is full rules only — the ${UMPIRE} checks every action`
