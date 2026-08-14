@@ -196,6 +196,44 @@ const FRAME = (() => {
     // guidance state machine) is now the "you're done, end the turn" signal
   }
 
+  const UMPIRE = 'Umpire';
+  let refuseT = null;
+  function refusal(reasons, opts) {
+    opts = opts || {};
+    const rs = (reasons && reasons.length) ? reasons : ['(no reason given)'];
+    let ov = document.getElementById('umpirecard');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'umpirecard';
+      ov.style.cssText = `display:none; position:fixed; top:50%; left:50%;
+        transform:translate(-50%,-50%); width:min(560px,92vw); z-index:300;
+        background:#26221f; border:2px solid #c0564a; border-radius:12px;
+        padding:16px 20px; font-size:14px; line-height:1.5; color:#e6dfd8;
+        box-shadow:0 10px 40px rgba(0,0,0,.75); cursor:pointer`;
+      document.body.appendChild(ov);
+    }
+    const ctx = opts.context !== undefined ? opts.context
+      : (guideEl && guideEl.firstChild.innerHTML
+         ? `<b>Where the game stands:</b> ${guideEl.firstChild.innerHTML}` : '');
+    ov.innerHTML =
+      `<div style="font-size:17px; font-weight:700; color:#e88a7a">⚖ ${UMPIRE}
+       — action refused</div>` +
+      (opts.hint ? `<div style="margin:10px 0 2px; font-size:15px; color:#f0e6b8">
+       <b>What to do:</b> ${opts.hint}</div>` : '') +
+      `<div style="margin-top:10px; color:#9aa3ad; font-size:12px">The ruling —
+       numbers in brackets cite the game's own rulebook:</div>
+       <ul style="margin:4px 0 0 18px; padding:0">
+       ${rs.map(r => `<li>${escp(r)}</li>`).join('')}</ul>` +
+      (ctx ? `<div style="margin-top:10px; padding-top:8px;
+       border-top:1px solid #4a423c; color:#b9c2cc">${ctx}</div>` : '') +
+      `<div style="margin-top:12px; color:#9aa3ad; font-size:11px">Nothing on
+       the board changed. Click to dismiss.</div>`;
+    ov.style.display = 'block';
+    clearTimeout(refuseT);
+    refuseT = setTimeout(() => { ov.style.display = 'none'; }, 15000);
+    ov.onclick = () => { clearTimeout(refuseT); ov.style.display = 'none'; };
+  }
+
   // ---------- shared top-right panels: Tier / Rules / Tables ----------
   // One implementation for every screen (Bruce 2026-07-17: "all of these
   // interfaces need tier selection … essentially unified"). A client calls
@@ -237,8 +275,9 @@ const FRAME = (() => {
   const MODE_DESC = {
     sandbox: `free play. Nothing is enforced: move any piece anywhere,
               exactly as in VASSAL. You are the umpire.`,
-    full: `every action passes through the legality gate — legal moves shown,
-           illegal moves impossible, combat resolved on the validated tables.` };
+    full: `every action is checked by the ${UMPIRE} (the rules engine) — legal
+           moves shown, illegal moves impossible, combat resolved on the
+           validated tables.` };
   function modeInfo(T) {
     if (!T) return null;
     const modes = [];
@@ -252,9 +291,17 @@ const FRAME = (() => {
     const B = $id('tierbtn');
     if (!B) return;
     const g = PH && PH.game(), M = modeInfo(g && g.tier);
-    if (!M || (M.modes.length < 2 && !M.mismatch)) { show(B, false); return; }
+    if (!M) { show(B, false); return; }
+    const locked = M.modes.length < 2 && !M.mismatch;
     show(B, true);
-    B.textContent = `${MODE_NAME[M.active]} ▾`;
+    B.disabled = locked;
+    B.style.opacity = locked ? '.65' : '';
+    B.textContent = locked ? `${MODE_NAME[M.active]} 🔒` : `${MODE_NAME[M.active]} ▾`;
+    B.title = locked
+      ? (M.active === 'full'
+         ? `This game is full rules only — the ${UMPIRE} checks every action`
+         : 'This game is sandbox only — no enforced rules encoded yet')
+      : 'Game mode — Sandbox or Full rules';
     B.classList.toggle('on', $id('tierpanel').style.display === 'block');
   }
   function renderTierPanel() {
@@ -299,7 +346,7 @@ const FRAME = (() => {
     let h = `<b>Rules enforced by the engine</b>`;
     if (M) h += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
                  mode — ${M.active === 'sandbox' ? 'nothing is enforced'
-                                                 : 'the legality gate is on'}
+                                                 : `the ${UMPIRE} checks every action`}
                  ${M.active === 'full' && T.active < T.earned ? ` <span class="dim">
                  (running below the game's validated level — restart from the Mode
                  button to enable everything)</span>` : ''}</div>`;
@@ -318,9 +365,9 @@ const FRAME = (() => {
               ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
                                             : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
       h += `<div class="dim" style="margin:4px 0 8px">${FLOW.scenario || G.name}.
-            Every proposed action passes through the legality gate and is accepted or
-            rejected against these rules. Numbers in parentheses cite the game's own
-            rulebook sections.</div>`;
+            Every proposed action goes to the ${UMPIRE} — the rules engine — which
+            accepts or refuses it against these rules. Numbers in parentheses cite
+            the game's own rulebook sections.</div>`;
       h += `<div style="color:#9fc27f;font-weight:600">Enforced</div><ul>`;
       (rs.enforced || []).forEach(r => h += `<li>${r}</li>`);
       h += `</ul>`;
@@ -345,8 +392,9 @@ const FRAME = (() => {
           pins bottom-left). Clicking a stack offers each unit or the whole stack.</li>`;
     h += gated
       ? `<li><b>Moving</b> — ${MOVE_HINT}. Green hexes are the legal
-         destinations the gate computed (numbers = movement points spent); anything
-         else snaps back. Illegal proposals are rejected with the rule citation.</li>`
+         destinations the ${UMPIRE} computed (numbers = movement points spent);
+         anything else snaps back. Illegal proposals are refused with the rule
+         citation, centre-screen.</li>`
       : `<li><b>Moving</b> — drag the selected counter anywhere on the board, printed
          tracks included, exactly as in VASSAL. Nothing is checked in free play.</li>`;
     h += `<li><b>Pass</b> — marks the selected unit done without moving.</li>`;
@@ -370,8 +418,8 @@ const FRAME = (() => {
             through retreats, exchanges and advances.</li>`;
     (PH.clientItems ? PH.clientItems(gated) : []).forEach(li => h += li);
     if (gated)
-      h += `<li><b>End player turn</b> — asks the gate to close your turn; it refuses
-            (with citations) while obligations are open.</li>`;
+      h += `<li><b>End player turn</b> — asks the ${UMPIRE} to close your turn; it
+            refuses (with citations) while obligations are open.</li>`;
     if (M && M.modes.length > 1)
       h += `<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
             (the validated gate). Switching starts a new game.</li>`;
@@ -555,7 +603,7 @@ const FRAME = (() => {
        <p>Sides: ${G.sides.map((s) => s.label).join(' vs ')}. Pick yours top-left;
        switch any time for hot-seat play${tierOn ? ' — every action still goes' +
        ' through the same rules gate' : ''}.</p>
-       ${G.tier ? `<p>${tierOn ? 'Full rules — every action goes through the legality gate'
+       ${G.tier ? `<p>${tierOn ? `Full rules — the ${UMPIRE} checks every action`
           : 'Sandbox — free play, you are the umpire'}${
           modeInfo(G.tier).modes.length > 1
           ? ' — switch on the Mode button.' : '.'}</p>` : ''}`]);
@@ -729,5 +777,6 @@ const FRAME = (() => {
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
            show, setGuide, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
-           initPanels, soloPanel, renderTierBtn, renderRules, renderTables };
+           initPanels, soloPanel, renderTierBtn, renderRules, renderTables,
+           refusal, UMPIRE };
 })();

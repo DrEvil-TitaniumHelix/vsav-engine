@@ -262,10 +262,31 @@ async function post(action, side){
     r=await(await fetch('/api/soj/action',{method:'POST',
       body:JSON.stringify({side:side||actingSide(),action})})).json();
   } finally { busy=false; }
-  if(r&&r.verdict&&!r.verdict.legal) toast('THE GATE REFUSED: '+r.verdict.reasons.join('; '));
+  if(r&&r.verdict&&!r.verdict.legal) refuse(r.verdict.reasons);
   else if(r&&r.error&&!r.verdict) toast(r.error);
   await refresh();
   return r;
+}
+
+function refuse(reasons){
+  if(!FRAME.refusal){ toast('REFUSED: '+reasons.join('; ')); return; }
+  const txt=reasons.join('; ');
+  let hint=null, ctx;
+  let m=txt.match(/(\d+) (Judaean|Roman) units not deployed/);
+  if(m){
+    hint=`Place all ${m[1]} remaining ${m[2]} units — click each unit in the LEFT tray, then click a highlighted hex — and press ✓ Deployment done again.`;
+    const up=FLOW&&FLOW.unplaced&&FLOW.unplaced[m[2]==='Judaean'?'Jud':'Rom'];
+    if(up&&up.length)ctx=`Still in the tray: ${up.slice(0,12).join(', ')}${up.length>12?' …':''}`;
+  } else if(/strongpoint/.test(txt)){
+    hint='Garrison every gold strongpoint hex before ending deployment — click a placed unit, then click the empty gold hex to redeploy it there.';
+    const mfe=FLOW&&FLOW.min_force_empty;
+    if(mfe&&mfe.length)ctx=`Empty strongpoints: ${mfe.join(', ')} [card SR1]`;
+  } else if(/Judaean deployment first/.test(txt)){
+    hint='The Judaean player deploys first — switch to the Judaean seat (top-left) and place their units.';
+  } else if(/Roman deployment phase/.test(txt)){
+    hint='Judaean deployment is finished — switch to the Roman seat (top-left) and place the Roman units.';
+  }
+  FRAME.refusal(reasons, ctx!==undefined?{hint,context:ctx}:{hint});
 }
 
 function actableUnits(){
@@ -676,7 +697,7 @@ function renderGuide(){
     if(un===0){
       const mf=FLOW.min_force_empty.length;
       FRAME.setGuide(side==='Jud'&&mf
-        ? `All units placed but <b>${mf} strongpoint(s) still empty</b> (gold hexes): ${FLOW.min_force_empty.slice(0,6).join(', ')}${mf>6?'…':''} [card SR1]. Move units there by redeploying, or press ✓ to see the gate's refusal.`
+        ? `All units placed but <b>${mf} strongpoint(s) still empty</b> (gold hexes): ${FLOW.min_force_empty.slice(0,6).join(', ')}${mf>6?'…':''} [card SR1]. Move units there by redeploying, or press ✓ and the Umpire will spell out what is missing.`
         : `<b>All ${sideLabel(side)} units placed</b> — press <b>✓ Deployment done</b>.`);
       FRAME.soleNext('deploydonebtn'); return;
     }
@@ -960,7 +981,7 @@ FRAME.initPanels({
      Gold hexes = the card's mandatory strongpoint garrisons.</li>`,
     `<li><b>Fire / Melee</b> — click your units (multi-select), then the target hex.
      The non-phasing side fires first in every Fire Phase [4.12/4.22].</li>`,
-    `<li><b>Modals</b> — when the gate needs a decision (losses, retreats, errant
+    `<li><b>Modals</b> — when the Umpire needs a decision (losses, retreats, errant
      fire, advances, escalade move-ups, sorties) a modal takes the screen: the
      game is blocked until you answer it.</li>`,
     `<li><b>Hotseat</b> — both seats play at this screen; the turn chip names
