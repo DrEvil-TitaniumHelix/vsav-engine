@@ -1,0 +1,1019 @@
+{
+ "produced_by": "PREP-5 collation, games/napoleon-at-waterloo/ingest/naw_oob_merge.py",
+ "read_on": "2026-08-14",
+ "edition": "SPI Napoleon at Waterloo, SECOND EDITION, copyright 1971",
+ "authority": "DERIVED CONSOLIDATION. Merges three independently-read witnesses into the single roster an encoder consumes. It re-reads nothing; every field carries the bite that established it. Where witnesses disagreed, the disagreement was settled in PREP-4 against the primary folio and recorded in map_grid.json corrections_prep4 - not averaged here.",
+ "witnesses": {
+  "printed_map": "folio p.5 at-start unit pictures (PREP-3, corrected PREP-4)",
+  "printed_counters": "folio p.4 punched counter-set photograph (PREP-4 job A)",
+  "module": "Oliver ed2 buildFile.xml + Beginning Setup.vsav (PREP-4 job C, corroborating tier only, never promoted over print)"
+ },
+ "at_start_units": [
+  {
+   "hex": "0410",
+   "side": "Allied",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 3DB Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "0609",
+   "side": "Allied",
+   "factors": "6-4",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 4th Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "6-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "0614",
+   "side": "French",
+   "factors": "2-5",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 2nd Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "0811",
+   "side": "Allied",
+   "factors": "3-5",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "British Cav",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "0907",
+   "side": "Allied",
+   "factors": "2-4",
+   "combat_strength": 2,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British Bru Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "0910",
+   "side": "Allied",
+   "factors": "6-4",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 2nd Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "6-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "0914",
+   "side": "French",
+   "factors": "7-4",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 6th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "7-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1014",
+   "side": "Allied",
+   "factors": "1-4",
+   "combat_strength": 1,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British Infantry",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1015",
+   "side": "French",
+   "factors": "3-3",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "French I Art",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1016",
+   "side": "French",
+   "factors": "2-5",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 12th Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1110",
+   "side": "Allied",
+   "factors": "7-4",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 1Gd Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "7-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1114",
+   "side": "French",
+   "factors": "5-4",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 9th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "5-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1115",
+   "side": "French",
+   "factors": "2-5",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 11th Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1116",
+   "side": "French",
+   "factors": "4-5",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French Gd Hvy Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1209",
+   "side": "Allied",
+   "factors": "4-5",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "British 1Gd Cav",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1210",
+   "side": "Allied",
+   "factors": "2-3",
+   "combat_strength": 2,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "British II Art",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1307",
+   "side": "Allied",
+   "factors": "1-5",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "British DB Cav",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1309",
+   "side": "Allied",
+   "factors": "6-4",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 3rd Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "6-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1410",
+   "side": "Allied",
+   "factors": "3-3",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "British R Art",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1414",
+   "side": "French",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 5th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1415",
+   "side": "French",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 19th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1416",
+   "side": "French",
+   "factors": "2-4",
+   "combat_strength": 2,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 20th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1417",
+   "side": "French",
+   "factors": "6-4",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French Chs Gd",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "6-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1507",
+   "side": "Allied",
+   "factors": "4-5",
+   "combat_strength": 4,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "British Cavalry",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1509",
+   "side": "Allied",
+   "factors": "3-3",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "British I Art",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1511",
+   "side": "French",
+   "factors": "5-3",
+   "combat_strength": 5,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "French Gd Art",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "5-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1514",
+   "side": "French",
+   "factors": "1-5",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 3rd Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1515",
+   "side": "French",
+   "factors": "2-3",
+   "combat_strength": 2,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "French VI Art",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1516",
+   "side": "French",
+   "factors": "5-4",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French Yg Gd",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "5-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1517",
+   "side": "French",
+   "factors": "7-4",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French Grn Gd",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "7-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1609",
+   "side": "Allied",
+   "factors": "6-4",
+   "combat_strength": 6,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 6th Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "6-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1611",
+   "side": "French",
+   "factors": "3-3",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "designation": "French II Art",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-3",
+   "module_agrees": true
+  },
+  {
+   "hex": "1613",
+   "side": "French",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 1st Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1615",
+   "side": "French",
+   "factors": "1-5",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 5th Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1708",
+   "side": "Allied",
+   "factors": "5-4",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 2DB Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "5-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1712",
+   "side": "French",
+   "factors": "5-4",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 2nd Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "5-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1807",
+   "side": "Allied",
+   "factors": "3-5",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "British Cavalry",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1808",
+   "side": "Allied",
+   "factors": "7-4",
+   "combat_strength": 7,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "British 5th Inf",
+   "contingent": "British",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "7-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1812",
+   "side": "French",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 3rd Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1814",
+   "side": "French",
+   "factors": "1-5",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 13th Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1912",
+   "side": "French",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "designation": "French 4th Inf",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "4-4",
+   "module_agrees": true
+  },
+  {
+   "hex": "1913",
+   "side": "French",
+   "factors": "1-5",
+   "combat_strength": 1,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 14th Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "1-5",
+   "module_agrees": true
+  },
+  {
+   "hex": "1914",
+   "side": "French",
+   "factors": "3-6",
+   "combat_strength": 3,
+   "movement_allowance": 6,
+   "unit_type": "cavalry",
+   "designation": "French Gd Lite Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "3-6",
+   "module_agrees": true
+  },
+  {
+   "hex": "2111",
+   "side": "French",
+   "factors": "2-5",
+   "combat_strength": 2,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "designation": "French 1st Cav",
+   "contingent": "French",
+   "provenance": {
+    "hex": "printed 2nd Ed map, unit pictures (PREP-3), corroborated hex-for-hex by the module at-start save (PREP-4 job C): 44/44",
+    "side": "printing orientation + the printed Front Line (PREP-3), 44/44 agreement",
+    "factors": "printed map (PREP-3, three cells corrected in PREP-4) AND the printed counter photograph (PREP-4 job A) AND the module (PREP-4 job C)",
+    "unit_type": "printed counter photograph NATO symbol (PREP-4 job A); the printed map pictures do not encode type in map_grid.json",
+    "designation": "module buildFile, checked hex by hex against the printed pictures on the PREP-4 contact sheets: 44/44 agree"
+   },
+   "module_factors": "2-5",
+   "module_agrees": true
+  }
+ ],
+ "reinforcements": [
+  {
+   "seq": 1,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "5-4",
+   "combat_strength": 5,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 2,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 3,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 4,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 5,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "4-4",
+   "combat_strength": 4,
+   "movement_allowance": 4,
+   "unit_type": "infantry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 6,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "3-5",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 7,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "3-5",
+   "combat_strength": 3,
+   "movement_allowance": 5,
+   "unit_type": "cavalry",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 8,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "4-3",
+   "combat_strength": 4,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  },
+  {
+   "seq": 9,
+   "side": "Allied",
+   "contingent": "Prussian",
+   "factors": "3-3",
+   "combat_strength": 3,
+   "movement_allowance": 3,
+   "unit_type": "artillery",
+   "arrival_turn": 2,
+   "arrival_slot": "2 pm",
+   "entry_edge": "East edge, anywhere along it, at as many different points as desired",
+   "entry_cost": "placing a unit on the map costs one Movement Point",
+   "delay_legal": false,
+   "may_leave_map": false,
+   "losses_count_as": "Allied"
+  }
+ ],
+ "module_factor_disagreements": [],
+ "totals": {
+  "at_start_units": 44,
+  "combat_strength_by_side": {
+   "Allied": 73,
+   "French": 89
+  },
+  "type_counts": {
+   "Allied artillery": 3,
+   "Allied cavalry": 5,
+   "Allied infantry": 10,
+   "French artillery": 4,
+   "French cavalry": 10,
+   "French infantry": 12
+  },
+  "reinforcement_units": 9,
+  "reinforcement_combat_strength": 34
+ },
+ "victory_context": "40 Combat Strength Points destroyed is the threshold. Against these totals that is 40 of 89 French, and 40 of 107 Allied-plus-Prussian.",
+ "components_note": "The punched set contains exactly ONE marker (the turn marker). There is no demoralization marker and no exited-units marker; the Demoralization Scale's own printed instruction is to use the first destroyed enemy unit as the marker.",
+ "open_items": [
+  "unit_type for the nine Prussians is taken from the counter photograph by factor value; where two Prussian counters share a factor pair the type is listed as the set of possibilities rather than guessed",
+  "the counter reverse faces were never photographed (PREP-4 section 10)"
+ ]
+}
