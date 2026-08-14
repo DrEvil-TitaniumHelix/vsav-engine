@@ -1,0 +1,643 @@
+{
+ "produced_by": "PREP-5 collation, games/napoleon-at-waterloo/ingest/naw_example_check.py",
+ "read_on": "2026-08-14",
+ "what_this_is": "Replays every printed worked example (folio p.2) against the machine-readable CRT and the odds rules, under BOTH readings of the D4 contradiction. The printed examples are the 1971 game's own statement of how its arithmetic resolves, so they are the validation corpus the encoding must satisfy - the same bar Siege of Jerusalem's combat tables had to clear before enforcement was allowed to ship.",
+ "odds_rule": "ratio rounded off IN FAVOUR OF THE DEFENDER, then clamped to 1:5 .. 6:1",
+ "d4_question": "The Terrain Effects Chart prints 'Towns & Woods/Roads' as one row granting the defender double strength; the page-1 rules text says only 'Towns'. If a printed example doubles a defender in a Woods/Road hex, the chart wins on the game's own evidence and no arbitration is needed.",
+ "summary": {
+  "towns_only": {
+   "matched": 27,
+   "of": 27
+  },
+  "chart_as_printed": {
+   "matched": 27,
+   "of": 27
+  }
+ },
+ "woods_road_examples_found": 0,
+ "examples_that_discriminate_d4": 0,
+ "d4_verdict": "UNDECIDED - no printed example places a defender in a Woods/Road hex, so the examples cannot settle it; the authority call is Bruce's",
+ "results": [
+  {
+   "index": 0,
+   "id": "EX-01",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 3,
+   "defense_strength_printed_units": 1,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 1,
+   "id": "EX-02",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 3,
+   "defense_strength_printed_units": 1,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 2,
+   "id": "EX-03",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 6,
+   "defense_strength_printed_units": 6,
+   "defender_terrain": "clear",
+   "attacker_terrain": "town",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 6,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 6,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 3,
+   "id": "EX-04",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 6,
+   "defense_strength_printed_units": 6,
+   "defender_terrain": "town",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:2",
+   "towns_only": {
+    "effective_defense": 12,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 12,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 4,
+   "id": "EX-05",
+   "attackers": 5,
+   "defenders": 1,
+   "attack_strength": 8,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 5,
+   "id": "EX-06",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 9,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 6,
+   "id": "EX-07",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 7,
+   "id": "EX-08",
+   "attackers": 1,
+   "defenders": 2,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 2,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 2,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 2,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 8,
+   "id": "EX-09",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 1,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "4:1",
+   "towns_only": {
+    "effective_defense": 1,
+    "computed_odds": "4:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 1,
+    "computed_odds": "4:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 9,
+   "id": "EX-10",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 6,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 10,
+   "id": "EX-11",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 9,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 11,
+   "id": "EX-12",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 13,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 12,
+   "id": "EX-13",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 2,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:2",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 13,
+   "id": "EX-14",
+   "attackers": 2,
+   "defenders": 2,
+   "attack_strength": 13,
+   "defense_strength_printed_units": 6,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 6,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 6,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 14,
+   "id": "EX-15",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 8,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 15,
+   "id": "EX-16",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 1,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:4",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:4",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:4",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 16,
+   "id": "EX-17",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 3,
+   "defense_strength_printed_units": 1,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 1,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 17,
+   "id": "EX-18",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 1,
+   "defense_strength_printed_units": 2,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:2",
+   "towns_only": {
+    "effective_defense": 2,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 2,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 18,
+   "id": "EX-19",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 9,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "3:1",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "3:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 19,
+   "id": "EX-20",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 6,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 20,
+   "id": "EX-21",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 2,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:2",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:2",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 21,
+   "id": "EX-22",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 3,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 3,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 3,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 22,
+   "id": "EX-23",
+   "attackers": 1,
+   "defenders": 1,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 23,
+   "id": "EX-24",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 4,
+   "defense_strength_printed_units": 1,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "4:1",
+   "towns_only": {
+    "effective_defense": 1,
+    "computed_odds": "4:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 1,
+    "computed_odds": "4:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 24,
+   "id": "EX-25",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 3,
+   "defense_strength_printed_units": 2,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 2,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 2,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 25,
+   "id": "EX-26",
+   "attackers": 1,
+   "defenders": 2,
+   "attack_strength": 7,
+   "defense_strength_printed_units": 7,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "1:1",
+   "towns_only": {
+    "effective_defense": 7,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 7,
+    "computed_odds": "1:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  },
+  {
+   "index": 26,
+   "id": "EX-27",
+   "attackers": 2,
+   "defenders": 1,
+   "attack_strength": 8,
+   "defense_strength_printed_units": 4,
+   "defender_terrain": "clear",
+   "attacker_terrain": "clear",
+   "printed_odds": "2:1",
+   "towns_only": {
+    "effective_defense": 4,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "chart_as_printed": {
+    "effective_defense": 4,
+    "computed_odds": "2:1",
+    "matches_printed": true
+   },
+   "status": "checked",
+   "discriminates_d4": false
+  }
+ ]
+}

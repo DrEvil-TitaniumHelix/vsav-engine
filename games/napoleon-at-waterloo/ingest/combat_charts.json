@@ -1,0 +1,427 @@
+{
+  "bite": "PREP-5 JOB C",
+  "subject": "Napoleon at Waterloo, 2nd Edition (1971) - the three printed charts that govern how a combat result is APPLIED",
+  "read_on": "2026-08-14",
+  "authority": {
+    "primary": "C:\\VassalLibrary\\launchbox\\Manuals\\VASSAL\\Napoleon at Waterloo (2nd Ed)\\NapoleonatWaterloo.pdf",
+    "primary_identity": "Scan of the printed SPI folio. 'Second Edition Copyright 1971, Simulations Publications Inc.' printed on the map sheet itself (page 5, lower right, beside the Napoleon at Waterloo logo) - read by eye on c_right_lower_check.png",
+    "corroboration_permitted": "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NapatWat TEC.jpg (Oliver ed2 module scan) - behaved as a faithful witness in PREP-2, used here for the TEC only",
+    "never_cite": [
+      "(2nd & 3rd Ed)/rules.pdf - Christian Holm Christensen 2024 fan revamp",
+      "(2nd & 3rd Ed)/org.pdf",
+      "Sabin, Simple Rules Tweaks (2020 and 2023)",
+      "davejm TEC.png - redraw contaminated with Sabin 2020 house rules"
+    ],
+    "disagreement_policy": "folio is primary; any disagreement is reported, never averaged"
+  },
+  "source": {
+    "file": "NapoleonatWaterloo.pdf",
+    "charts_page": 5,
+    "charts_page_native_px": [6952, 5171],
+    "rules_text_page": 1,
+    "rules_text_page_native_px": [6968, 3519],
+    "render_method": "engine/../ingest/naw_ocr.py full_page() extracts the single embedded page image at its NATIVE scan resolution; no rasterisation dpi is applied to either page. All crops below are fractional boxes of that native image, rotated as noted.",
+    "regenerator": "games/napoleon-at-waterloo/ingest/naw_combat_charts.py render",
+    "crop_pack": "C:\\VassalNaW\\prep_packs\\NAW_PREP5\\"
+  },
+
+  "sheet_inventory": {
+    "method": "visual inventory of c_sheet_overview.png plus naw_locate.find(maxw=4200) for the title words TERRAIN / EFFECTS / RETREAT / EXPLANATION at all four rotations",
+    "note": "The map sheet carries TWO player aids, one along each long edge. The British/Prussian aid (printed at 90 deg) and the French aid (printed at 270 deg) are NOT mirror images of each other - they carry different chart sets.",
+    "british_prussian_aid_rot90": [
+      "COMBAT RESOLUTION TABLE (instructional paragraphs)",
+      "EXPLANATION OF RESULTS",
+      "RETREAT AND ADVANCE AS A RESULT OF COMBAT (incl. DISRUPTION, OPTIONAL ADVANCE)",
+      "Combat Resolution Table (the grid)",
+      "EXITED FRENCH UNITS box"
+    ],
+    "french_aid_rot270": [
+      "TERRAIN EFFECTS CHART",
+      "EXPLANATION OF RESULTS",
+      "Combat Resolution Table (the grid)",
+      "DEMORALIZATION SCALE",
+      "Napoleon at Waterloo logo + 'Second Edition Copyright 1971, Simulations Publications Inc.'"
+    ],
+    "copy_counts_observed": {
+      "Terrain Effects Chart": 1,
+      "Explanation of Results": 2,
+      "Retreat and Advance as a Result of Combat": 1,
+      "Combat Resolution Table (grid)": 2
+    },
+    "locate_evidence": {
+      "TERRAIN": "one hit, frac (0.813,0.189), rot 180/270, conf 96",
+      "EFFECTS": "one hit, frac (0.813,0.158), rot 180/270, conf 96",
+      "RETREAT (title caps)": "one hit, frac (0.109,0.179), rot 0/90, conf 96",
+      "EXPLANATION": "two hits, frac (0.089,0.030) rot 90 and frac (0.806,0.412) rot 270, conf 96/95"
+    },
+    "proving_crops": ["c_sheet_overview.png", "c_left_tec_check.png", "c_right_lower_check.png"]
+  },
+
+  "charts": {
+
+    "terrain_effects_chart": {
+      "printed_title": "TERRAIN EFFECTS CHART",
+      "copies_on_sheet": 1,
+      "located_on": "French Player half, printed at 270 deg, title origin frac (0.813, 0.158)-(0.813, 0.189)",
+      "column_headers": ["Type of Terrain", "Effect on Movement", "Effect on Combat"],
+      "column_header_confidence": "certain",
+      "column_header_read_method": "by-eye on c_tec_right_full.png (1732x1391, opened as an image); OCR-confirmed on c_tec_head.png",
+      "rows": [
+        {
+          "n": 1,
+          "type_of_terrain": "Clear Terrain &\nClear Terrain/Roads",
+          "symbols_printed": "two hexes: an empty hex, and a hex crossed by a solid road band",
+          "effect_on_movement": "Costs units one Movement Point per hex.",
+          "effect_on_combat": "No effect.",
+          "confidence": "certain",
+          "read_method": "by-eye on c_tec_right_full.png and c_tec_row_clear.png (2x, opened as images); OCR-confirmed (row label and both cells returned verbatim)",
+          "proving_crop": "c_tec_row_clear.png"
+        },
+        {
+          "n": 2,
+          "type_of_terrain": "Towns &  Woods/Roads",
+          "type_of_terrain_note": "printed as one row label on a single line, with a visibly wider space after the ampersand",
+          "symbols_printed": "two hexes: a town hex containing four solid black rectangles, and a woods-stipple hex crossed by a solid road band",
+          "effect_on_movement": "Costs units one Movement Point per hex.",
+          "effect_on_combat": "Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain.",
+          "effect_on_combat_typography": "the word 'Defending' is printed in italic; 'DOUBLES' in full caps",
+          "confidence": "certain",
+          "read_method": "by-eye on c_tec_right_full.png and c_tec_row_towns.png (2x, opened as images); OCR-confirmed ('Towns & Woods/Roads', 'Defending unit DOUBLES', 'normal value when units', 'attack from such terrain'); independently corroborated word-for-word on Oliver's module scan c_oliver_tec.png",
+          "proving_crop": "c_tec_row_towns.png"
+        },
+        {
+          "n": 3,
+          "type_of_terrain": "Woods",
+          "symbols_printed": "one hex filled entirely with the woods stipple",
+          "effect_on_movement": "Entry PROHIBITED.",
+          "effect_on_combat": "Artillery may not fire over an intervening woods hex.",
+          "confidence": "certain",
+          "read_method": "by-eye on c_tec_right_full.png and c_tec_row_woods.png (2x, opened as images); OCR-confirmed",
+          "proving_crop": "c_tec_row_woods.png"
+        }
+      ],
+      "footnote": {
+        "text": "A hex is considered to be Woods terrain if all or any part of it contains the symbol of that terrain.",
+        "printed_as": "two centred lines spanning the full chart width, below all three rows: 'A hex is considered to be Woods terrain if all' / 'or any part of it contains the symbol of that terrain.'",
+        "confidence": "certain",
+        "read_method": "by-eye on c_tec_footnote.png (2x, opened as an image); OCR-confirmed verbatim",
+        "proving_crop": "c_tec_footnote.png"
+      },
+      "not_printed_on_this_chart": [
+        "no row for the Front Line, the exit-arrow hexes, or the map edge",
+        "no separate movement cost for roads - the road symbol changes nothing about the printed cost",
+        "no stacking statement",
+        "no statement about entering or leaving Woods/Road hexes along the road - that rule is printed only in the page-1 Movement rules"
+      ],
+      "corroboration": {
+        "witness": "c_oliver_tec.png (Oliver ed2 VASSAL module, NapatWat TEC.jpg, 1530x1186)",
+        "result": "AGREES word-for-word with the folio on the title, all three column headers, all three row labels, all six effect cells and the footnote. No divergence found."
+      }
+    },
+
+    "explanation_of_results": {
+      "printed_title": "EXPLANATION OF RESULTS",
+      "copies_on_sheet": 2,
+      "copies_are_identical": false,
+      "copies_differ_in": "typography and number agreement only; the rules content of the two copies is the same",
+      "copy_french": {
+        "located_on": "French Player half, printed at 270 deg, title origin frac (0.806, 0.412)",
+        "confidence": "certain",
+        "read_method": "by-eye on c_expl_right_full.png (1112x1530, opened as an image); OCR-confirmed verbatim over the whole block",
+        "proving_crop": "c_expl_right_full.png",
+        "entries": [
+          {
+            "code": "AE",
+            "verbatim": "AE= Attacker Eliminated: The attacking unit(s) is eliminated (destroyed) and is immediately removed from the map.",
+            "zoom_proof": "c_zoom_ae_right.png (3x)"
+          },
+          {
+            "code": "Ar",
+            "verbatim": "Ar= Attacker Retreats: The attacking unit(s) is immediately moved back one hex."
+          },
+          {
+            "code": "EX",
+            "verbatim": "EX= Exchange: The defending unit(s) is eliminated and the attacking unit(s) suffer a loss AT LEAST equal (in terms of Strength Points) to that of the Defender. Only those attacking units directly involved in that particular attack may be used to make up this equal exchange of Strength Point losses. This will sometimes mean that the Attacker will be forced to lose more Combat Strength Points than the Defender. Both side's losses are immediately removed from the map. A surviving attacking unit may then exercise the option to advance into the hex formerly occupied by the Defender.",
+            "printed_typo": "'Both side's losses' - apostrophe before the s. The British/Prussian copy of the same sentence prints 'Both sides' losses'.",
+            "zoom_proof": "c_zoom_ex_right.png (3x)"
+          },
+          {
+            "code": "Dr",
+            "verbatim": "Dr= Defender Retreats: The defending unit(s) is immediately moved back one hex."
+          },
+          {
+            "code": "DE",
+            "verbatim": "DE= Defender Eliminated: The defending unit(s) is eliminated (destroyed) and is immediately removed from the map."
+          }
+        ]
+      },
+      "copy_british_prussian": {
+        "located_on": "British/Prussian half, printed at 90 deg, title origin frac (0.089, 0.030), immediately below a COMBAT RESOLUTION TABLE instructional block",
+        "confidence": "certain",
+        "read_method": "by-eye on c_expl_left_col.png and c_retreat_col.png (opened as images); OCR-confirmed verbatim over both crops",
+        "proving_crops": ["c_expl_left_col.png", "c_retreat_col.png"],
+        "preceding_block": {
+          "heading": "COMBAT RESOLUTION TABLE",
+          "verbatim_paragraph_1": "Determine the odds of each given attack as per the rules of combat. The die is rolled once (by the attacking Player) for each separate attack-situation and the results are applied immediately (before going on to resolve any other attacks which the Player may be making in that Combat Phase).",
+          "verbatim_paragraph_2": "Each vertical column on the Combat Resolution Table gives the six possible outcomes of an attack being made at those odds. The numbers on the sides of the table correspond to the numbers on the die. By cross-referencing the die-number with the attacking odds, the attacking Player arrives at the result of a given attack.",
+          "note": "This instructional block is printed ONLY on the British/Prussian half. The French half carries the CRT grid without it."
+        },
+        "entries": [
+          {
+            "code": "AE",
+            "verbatim": "AE \u2013 Attacker Eliminated: The attacking unit(s) is (are) eliminated (destroyed) and is(are) immediately removed from the map.",
+            "zoom_proof": "c_zoom_ae_left.png (3x)"
+          },
+          {
+            "code": "Ar",
+            "verbatim": "Ar \u2013 Attacker Retreats: The attacking unit(s) is(are) immediately moved back one hex."
+          },
+          {
+            "code": "EX",
+            "verbatim": "EX \u2013 Exchange: The defending unit(s) is(are) eliminated and the attacking unit(s) suffer a loss AT LEAST equal (in terms of Strength Points) to that of the Defender. Only those attacking units directly involved in that particular attack may be used to make up this equal exchange of Strength Point losses. This will sometimes mean that the Attacker will be forced to lose more Combat Strength Points than the Defender. Both sides' losses are immediately removed from the map. A surviving attacking unit may then exercise the option to advance into the hex formerly occupied by the Defender.",
+            "zoom_proof": "c_zoom_ex_left.png (3x)"
+          },
+          {
+            "code": "Dr",
+            "verbatim": "Dr \u2013 Defender Retreats: The defending unit(s) is(are) immediately moved back one hex."
+          },
+          {
+            "code": "DE",
+            "verbatim": "DE \u2013 Defender Eliminated: The defending unit(s) is(are) eliminated (destroyed) and is (are) immediately removed from the map."
+          }
+        ]
+      },
+      "code_set_2nd_ed": ["AE", "Ar", "EX", "Dr", "DE"],
+      "prep2_e04_check": "CONFIRMED. The printed 2nd Ed codes are AE / Ar / EX / Dr / DE. Nothing read here contradicts edition_diff.json E04 (rename of 3rd Ed Ae / Ar / Ee / Dr / De, not a rules change).",
+      "not_printed_on_this_chart": [
+        "no bombarding-artillery carve-out on AE, Ar or EX - the artillery immunity is printed only in the page-1 ARTILLERY rules",
+        "no statement of WHO chooses the retreat direction - that is printed in the Retreat and Advance block",
+        "no odds-rounding rule - that is printed in the page-1 Combat rules"
+      ]
+    },
+
+    "retreat_and_advance_as_a_result_of_combat": {
+      "printed_title": "RETREAT AND ADVANCE\nAS A RESULT OF COMBAT",
+      "copies_on_sheet": 1,
+      "located_on": "British/Prussian half only, printed at 90 deg, title origin frac (0.109, 0.179)-(0.109, 0.245)",
+      "confidence": "certain",
+      "read_method": "by-eye on c_retreat_col.png, c_col3_disruption_optadv.png and c_col4_advances.png (all opened as images), plus 3x/2.5x zooms c_zoom_victorious.png, c_zoom_retreat_bars.png, c_zoom_advparticipate.png; OCR-confirmed verbatim across all three column crops with no divergence from the eye",
+      "proving_crops": ["c_retreat_col.png", "c_col3_disruption_optadv.png", "c_col4_advances.png"],
+      "paragraphs": [
+        {
+          "n": 1,
+          "label": "who chooses",
+          "verbatim": "When units are forced to retreat, the victorious player decides in which direction they will be retreated, within the following restrictions:",
+          "typography": "'victorious' is printed in italic",
+          "zoom_proof": "c_zoom_victorious.png (3x)"
+        },
+        {
+          "n": 2,
+          "label": "restrictions / no legal retreat",
+          "verbatim": "Units may not retreat into Enemy Zones of Control, off the map, into non-Road Woods, or into Enemy-occupied hexes. If no path of retreat is open to the retreating unit (aside from the forbidden hexes described above) then the retreating unit is ELIMINATED and immediately removed from the map.",
+          "zoom_proof": "c_zoom_retreat_bars.png (3x)"
+        },
+        {
+          "n": 3,
+          "label": "DISRUPTION",
+          "verbatim": "DISRUPTION: If the only \"safe\" hex available to the retreating unit is one which is already occupied by another, uninvolved Friendly unit, then the uninvolved unit is \"disrupted\" (pushed out of its hex) by the retreating unit. The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit. The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods. If this would be the only path of retreat available, then the uninvolved unit is NOT disrupted: It stays in its original position and the unit which was forced to retreat as a result of combat is ELIMINATED instead. Disrupted units can themselves disrupt other Friendly units in a sort of \"chain-reaction\" of disruption, if that is the only safe path of retreat open to them. Disrupted artillery units may NOT fire in the Combat Phase in which they were disrupted.",
+          "prep1_action": "This paragraph closes the bridging clause that PREP-1 flagged as unresolved at its crop resolution (RULEBOOK_VERIFIED.md section 3, DISRUPTION). The connective PREP-1 could not resolve reads: 'The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit. The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods. If this would be the only path of retreat available, then the uninvolved unit is NOT disrupted:'",
+          "printed_across": "the paragraph opens at the foot of the second column and continues at the head of the third"
+        },
+        {
+          "n": 4,
+          "label": "OPTIONAL ADVANCE",
+          "verbatim": "OPTIONAL ADVANCE: Whenever a hex is vacated as a result of combat, the victorious unit responsible for the Enemy elimination or retreat may advance into the vacated hex. This may be done even if the victorious unit is still in an Enemy Zone of Control and/or if the vacated hex is in an Enemy Zone of Control. The option to advance must be exercised immediately. A unit is never forced to advance. A unit may never advance more than one hex as a result of combat. Advances are not counted as regular Movement and therefore expend no Movement Points.",
+          "typography": "'forced' is printed in italic"
+        },
+        {
+          "n": 5,
+          "label": "advance consequences",
+          "verbatim": "Advances are useful in cutting off the line of retreat of Enemy units whose combat has yet to be resolved. Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved.",
+          "zoom_proof": "c_zoom_advparticipate.png (2.5x)",
+          "note": "This paragraph is the last of the block; the CRT grid is printed immediately below it."
+        }
+      ],
+      "answers_to_the_brief": {
+        "who_chooses": "The VICTORIOUS PLAYER, for both Ar and Dr - the paragraph is headed 'When units are forced to retreat' and is not restricted to defenders. On a disruption the victorious Player also moves the displaced friendly unit.",
+        "how_far": "One hex. Stated in the Explanation of Results ('immediately moved back one hex' for both Ar and Dr); the Retreat and Advance block itself never restates a distance.",
+        "constraints": "Four printed bars, all in paragraph 2: (a) not into an Enemy Zone of Control, (b) not off the map, (c) not into non-Road Woods, (d) not into an Enemy-occupied hex.",
+        "stacking": "Not stated as a bar. A friendly-occupied hex is handled by DISRUPTION, which displaces the occupant rather than forbidding the retreat.",
+        "no_legal_retreat": "The retreating unit is ELIMINATED and immediately removed from the map. If the only safe hex holds an uninvolved friendly unit that itself has nowhere to go, the uninvolved unit is NOT disrupted and the ORIGINAL retreating unit is eliminated instead.",
+        "disruption_chain": "Disrupted units may themselves disrupt further friendly units in a 'chain-reaction', if that is the only safe path of retreat open to them.",
+        "disruption_penalty": "Disrupted artillery units may NOT fire in the Combat Phase in which they were disrupted.",
+        "advance_permitted": "Optional, never compulsory ('A unit is never forced to advance'). Available whenever a hex is vacated as a result of combat, to the victorious unit responsible for the elimination or retreat.",
+        "advance_timing": "The option must be exercised immediately.",
+        "advance_distance": "Never more than one hex.",
+        "advance_and_zoc": "Permitted even if the advancing unit is still in an Enemy Zone of Control and/or the vacated hex is in an Enemy Zone of Control.",
+        "advance_cost": "Advances are not counted as regular Movement and expend no Movement Points.",
+        "advance_consequence": "An advancing unit may not participate in another attack or defense in the Combat Phase in which it advanced, even if the advance places it next to Enemy units whose battles are yet to be resolved."
+      },
+      "prep2_e21_check": "CONFIRMED VERBATIM, at 3x zoom, by eye and by OCR. edition_diff.json E21 ('ed2: THE VICTORIOUS PLAYER decides in which direction the loser retreats') is exactly what the folio prints. No contradiction.",
+      "prep2_e22_check": "CONFIRMED VERBATIM. edition_diff.json E22's ed2 side ('not into enemy ZOC, off the map, non-Road Woods, or enemy-occupied hexes; otherwise eliminated') matches the printed paragraph 2 bar-for-bar. No contradiction.",
+      "not_printed_in_this_block": [
+        "no rule that a retreat must move the unit AWAY from the attacker - direction is otherwise free to the victor",
+        "no bombarding-artillery carve-out on retreat or advance - those are printed only in the page-1 ARTILLERY rules",
+        "no mention of the map exit arrows or of French units forced off the map"
+      ]
+    }
+  },
+
+  "d4_discrepancy": {
+    "id": "D4",
+    "status": "the chart side is now settled; the AUTHORITY CALL IS NOT MINE TO MAKE",
+    "statement": "Within the 2nd Edition alone, the printed rules text and the printed Terrain Effects Chart disagree about which terrain doubles a defender.",
+    "quotation_rules_text": {
+      "verbatim": "(J.) Units defending in Towns DOUBLE their strength (on defense). Example: A unit with a basic strength of FOUR Combat Points would defend (in a Town-hex) as if it had a strength of EIGHT Combat Points.",
+      "where": "NapoleonatWaterloo.pdf page 1, COMBAT section, case (J.), column 6 of 8",
+      "confidence": "certain",
+      "read_method": "by-eye on c_p1_rules_towns_double.png (1880x1408, 2x, opened as an image); OCR-confirmed",
+      "proving_crop": "c_p1_rules_towns_double.png",
+      "scope": "Towns only. Woods/Road hexes are never mentioned in this case, and no other page-1 case grants a defensive bonus.",
+      "quotation_fidelity_note": "The folio prints the case marker as '(J.)' with a period inside the parentheses, and follows the rule with an Example sentence. RULEBOOK_VERIFIED.md D4 quotes it as '(J)' and drops the Example."
+    },
+    "quotation_printed_tec": {
+      "verbatim_row_label": "Towns &  Woods/Roads",
+      "verbatim_combat_cell": "Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain.",
+      "where": "NapoleonatWaterloo.pdf page 5, TERRAIN EFFECTS CHART, row 2 of 3, French Player half, printed at 270 deg",
+      "confidence": "certain",
+      "read_method": "by-eye on c_tec_right_full.png and c_tec_row_towns.png (opened as images); OCR-confirmed; independently corroborated on Oliver's module scan",
+      "proving_crops": ["c_tec_row_towns.png", "c_tec_right_full.png", "c_oliver_tec.png"],
+      "scope": "Towns AND Woods/Road hexes, as a single row sharing one Effect-on-Combat cell. The chart prints two symbol hexes for this row - a town hex and a woods hex crossed by a road - and one combat effect covering both."
+    },
+    "what_this_bite_settles": "What the CHART itself prints. It reads 'Towns &  Woods/Roads' as a single row and applies the defender-doubles effect to that whole row, exactly as PREP-1 reported. The chart is not misread, not a redraw artefact, and not a module error: the folio and Oliver's independent scan agree word for word.",
+    "what_this_bite_does_not_settle": "Which printed component wins. PREP-1 recorded that this is Bruce's call, and nothing read in this bite changes that. Both components are printed parts of the same 1971 edition; neither carries an errata marker or a precedence statement.",
+    "extra_evidence_for_the_call": {
+      "chart_is_the_more_specific_statement": "The TEC row explicitly distinguishes defence from attack ('Combat Strength remains at normal value when units attack from such terrain'). The page-1 case says only '(on defense)'.",
+      "chart_is_the_point_of_use_reference": "The TEC is printed on the map sheet at the player's elbow; the rules text is on a separate folio sheet.",
+      "rules_text_carries_a_worked_example": "Case (J.) is the only one of the two that shows an arithmetic example, and that example uses a Town-hex.",
+      "cross_check_available": "The printed Examples of Attacks on page 2 include a 'Doubled due to Town-hex' case (per RULEBOOK_VERIFIED.md section 2). Whether any page-2 example doubles a defender in a Woods/Road hex would be decisive evidence, and a parallel agent is reading page 2 this bite. I did not consult it."
+    },
+    "classification_candidate": "ORIGINAL PUBLISHED GAME defect - internal contradiction between two printed components of the same edition (spec #21). Not our bug, not a module bug."
+  },
+
+  "contradictions_with_our_records": [
+    {
+      "id": "X1",
+      "against": "RULEBOOK_VERIFIED.md section 2, page-5 row",
+      "our_record_says": "Map sheet: ... two Combat Resolution Tables (one per player) - Terrain Effects Chart (x2) - Explanation of Results (x2) - Retreat and Advance as a Result of Combat (x2) ...",
+      "what_i_read": "Terrain Effects Chart appears ONCE (French Player half only). Retreat and Advance as a Result of Combat appears ONCE (British/Prussian half only). Only Explanation of Results and the CRT grid are printed twice.",
+      "evidence": "naw_locate at maxw=4200 returns exactly one hit for TERRAIN, one for EFFECTS and one for the title-caps RETREAT, against two hits for EXPLANATION; visual inventory of c_sheet_overview.png, c_left_tec_check.png and c_right_lower_check.png agrees.",
+      "resolved": false,
+      "note": "Reported, not resolved. It does not change any rule text, but it means the two player aids are asymmetric and an engine or UI that assumes a mirrored pair of aids is wrong."
+    },
+    {
+      "id": "X2",
+      "against": "RULEBOOK_VERIFIED.md section 3, 'Optional advance' paragraph",
+      "our_record_says": "The option must be exercised immediately, is never compulsory, is limited to one hex, and costs no Movement Points.",
+      "what_i_read": "The printed block continues past that point with a further obligation our record omits entirely: 'Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved.'",
+      "evidence": "c_col4_advances.png, c_zoom_advparticipate.png (2.5x); OCR-confirmed verbatim",
+      "resolved": false,
+      "note": "Substantive omission, not a wording nit. This is an unchecked-obligation candidate: it constrains both the advancing player and the opponent's combat in the same phase."
+    },
+    {
+      "id": "X3",
+      "against": "RULEBOOK_VERIFIED.md section 3, 'Explanation of Results' paragraph",
+      "our_record_says": "EX = Exchange - the defender is eliminated and the attacker suffers a loss at least equal in Strength Points, made up only from units directly involved in that attack.",
+      "what_i_read": "Both printed copies close the EX entry with a clause our record drops: 'A surviving attacking unit may then exercise the option to advance into the hex formerly occupied by the Defender.'",
+      "evidence": "c_expl_right_full.png and c_retreat_col.png; OCR-confirmed verbatim on both copies",
+      "resolved": false,
+      "note": "Advance-after-EX is affirmatively permitted by the 2nd Ed chart. Our record was silent on it. Note also that edition_diff.json E20 (advance by bombarding artillery) turns on which results permit an advance."
+    },
+    {
+      "id": "X4",
+      "against": "RULEBOOK_VERIFIED.md section 5, D4",
+      "our_record_says": "Rules case (J): 'Units defending in Towns DOUBLE their strength (on defense).'",
+      "what_i_read": "The folio prints the marker as '(J.)' - period inside the parentheses - and the case continues with an Example sentence that our record drops.",
+      "evidence": "c_p1_rules_towns_double.png (2x)",
+      "resolved": false,
+      "note": "Same class as PREP-4's 'extends'/'expends' finding: our doc silently normalises the folio. Quote the folio."
+    },
+    {
+      "id": "X5",
+      "against": "RULEBOOK_VERIFIED.md section 3, which presents ONE Explanation of Results",
+      "our_record_says": "a single normalised transcription of the result codes",
+      "what_i_read": "The two printed copies are typographically DIFFERENT settings of the same rules. The French copy separates code from gloss with '=' and uses singular agreement ('unit(s) is eliminated'); the British/Prussian copy uses an en dash and plural-optional agreement ('unit(s) is (are) eliminated'). The French copy prints 'Both side's losses'; the British/Prussian copy prints 'Both sides' losses'.",
+      "evidence": "c_zoom_ae_left.png / c_zoom_ae_right.png (3x) and c_zoom_ex_left.png / c_zoom_ex_right.png (3x), all opened as images; OCR reproduces the same difference on both crops",
+      "resolved": false,
+      "note": "No rules content differs. Recorded because 'the two printed copies agree cell for cell' is true of the CRT but NOT of the Explanation of Results, and because 'Both side's' is a printed typo in one copy only."
+    }
+  ],
+
+  "observations_flagged_not_resolved": [
+    {
+      "id": "O1",
+      "text": "The retreat bars name 'non-Road Woods', but DISRUPTION bars pushing the displaced friendly unit into 'woods' unqualified. Whether a disrupted unit may be pushed into a Woods/Road hex is not settled by the chart.",
+      "proving_crops": ["c_zoom_retreat_bars.png", "c_col3_disruption_optadv.png"]
+    },
+    {
+      "id": "O2",
+      "text": "'the victorious player decides in which direction they will be retreated' governs Ar as well as Dr, because the paragraph is headed 'When units are forced to retreat' and is not scoped to defenders. On an Ar the victorious player is therefore the DEFENDER, choosing the attacker's retreat direction. The chart never says this in so many words."
+    },
+    {
+      "id": "O3",
+      "text": "DISRUPTION forbids pushing the displaced unit into Enemy units, Zones of Control or woods, but does NOT repeat the 'off the map' bar that applies to a retreat. Silent case."
+    },
+    {
+      "id": "O4",
+      "text": "Nothing in the printed block requires a retreat to move the unit AWAY from the attacker. Given the four bars, the victorious player may direct a retreat sideways or forward."
+    },
+    {
+      "id": "O5",
+      "text": "'Advancing units may not participate in another attack or defense in the Combat Phase in which they advance' interacts with the page-1 mandatory-attack rule ('all friendly units adjacent to enemy units MUST participate in an attack'). The folio does not reconcile the two, and the interaction differs depending on whether the advance followed a Dr/DE/EX (phasing player advances) or an Ar (non-phasing player advances)."
+    },
+    {
+      "id": "O6",
+      "text": "The TEC prints no cost for entering or leaving a Woods/Road hex along the road, and no cost for the road itself. Every enterable terrain on the chart costs exactly one Movement Point per hex. The along-the-road entry/exit requirement is printed only in the page-1 Movement rules, so an engine that builds its movement predicate from the TEC alone will be wrong."
+    }
+  ],
+
+  "unreadable": [],
+  "unreadable_note": "Nothing in the three target charts was left unread at the resolutions used. Every row, entry and paragraph above was opened as an image at native or magnified scale before being transcribed, and every one was independently reproduced by Tesseract 5. OCR and eye did not diverge anywhere in this bite.",
+
+  "crops": {
+    "c_sheet_overview.png": "whole page 5 at 0.216 scale - sheet inventory",
+    "c_tec_right_full.png": "Terrain Effects Chart, whole chart, rot 270",
+    "c_tec_head.png": "TEC title + column headers strip",
+    "c_tec_row_clear.png": "TEC row 1, 2x",
+    "c_tec_row_towns.png": "TEC row 2, 2x - the D4 row",
+    "c_tec_row_woods.png": "TEC row 3, 2x",
+    "c_tec_footnote.png": "TEC footnote strip, 2x",
+    "c_tec_towns_combat.png": "TEC row 2 Effect-on-Combat cell, 3x",
+    "c_tec_towns_label.png": "TEC row 2 Type-of-Terrain cell, 3x",
+    "c_zoom_tec_types.png": "TEC title + Type of Terrain column, 2x",
+    "c_zoom_tec_towns.png": "TEC rows 2-3 detail, 2x",
+    "c_oliver_tec.png": "Oliver ed2 module TEC scan - corroboration witness",
+    "c_expl_right_full.png": "Explanation of Results, French copy, whole block, rot 270",
+    "c_expl_right_top.png": "French copy, upper half",
+    "c_expl_right_bot.png": "French copy, lower half",
+    "c_expl_left_col.png": "British/Prussian aid column 1: CRT instructions + Explanation of Results through EX",
+    "c_expl_left_a.png": "British/Prussian aid column 1, upper",
+    "c_expl_left_b.png": "British/Prussian aid column 1, lower",
+    "c_left_strip.png": "British/Prussian aid, columns 1-4 overview, rot 90",
+    "c_retreat_col.png": "British/Prussian aid column 2: EX tail, Dr, DE, RETREAT AND ADVANCE paragraphs 1-2, DISRUPTION opening",
+    "c_retreat_body.png": "retreat paragraphs, tighter",
+    "c_disruption.png": "DISRUPTION opening lines",
+    "c_col3_disruption_optadv.png": "British/Prussian aid column 3: DISRUPTION continuation + OPTIONAL ADVANCE",
+    "c_col3_top.png": "column 3, upper",
+    "c_col3_bot.png": "column 3, lower",
+    "c_col4_advances.png": "British/Prussian aid column 4: 'Advances are useful...' paragraph + CRT head",
+    "c_left_tec_check.png": "British/Prussian aid lower half - proves no TEC on this side",
+    "c_right_lower_check.png": "French aid lower half - proves no Retreat-and-Advance block on this side; carries the Second Edition copyright line",
+    "c_zoom_ae_left.png": "3x - 'AE \u2013 Attacker Eliminated' punctuation, British/Prussian copy",
+    "c_zoom_ae_right.png": "3x - 'AE= Attacker Eliminated' punctuation, French copy",
+    "c_zoom_ex_left.png": "3x - 'Both sides' losses', British/Prussian copy",
+    "c_zoom_ex_right.png": "3x - 'Both side's losses', French copy",
+    "c_zoom_victorious.png": "3x - 'the victorious player decides in which direction they will be retreated'",
+    "c_zoom_retreat_bars.png": "3x - the four retreat restrictions",
+    "c_zoom_advparticipate.png": "2.5x - 'Advancing units may not participate in another attack or defense'",
+    "c_p1_rules_towns_double.png": "2x - page 1 case (J.), the rules-text side of D4",
+    "c_p1_col6_context.png": "page 1 column 6 context around case (J.)"
+  },
+
+  "not_touched_this_bite": [
+    "Combat Resolution Table cell values - read three times in PREP-1/PREP-2, identical in all 60 cells across both editions (edition_diff.json E03). Not re-transcribed.",
+    "Time Record, Demoralization Scale, Exited French Units box - fully read in PREP-4 (timerecord_oob.json).",
+    "The printed worked examples on page 2 - a parallel agent is reading those this bite. Not consulted, by design."
+  ]
+}

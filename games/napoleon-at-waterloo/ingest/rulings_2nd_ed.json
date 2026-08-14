@@ -1,0 +1,87 @@
+{
+ "produced_by": "PREP-5/6 collation",
+ "read_on": "2026-08-14",
+ "edition": "SPI Napoleon at Waterloo, SECOND EDITION, copyright 1971",
+ "what_this_is": "DECLARED RULINGS. Where the printed 1971 game contradicts itself or leaves a case undefined, the encoding cannot proceed on a coin-flip and must not silently pick one reading. Each row records the competing printed evidence verbatim, the resolution the gate will enforce, and the AUTHORITY for that resolution - per spec #21, whose ladder is: official errata > tournament/publisher clarification > proven outcome-equivalence > declared umpired. These rows are the input for game.json source_defects; they are not the register itself.",
+ "rulings": [
+  {
+   "id": "NAW2-D4",
+   "status": "RULED",
+   "classification": "DEFECT IN THE ORIGINAL PUBLISHED GAME - self-contradiction between two primary printed components of the same 1971 folio",
+   "subsystem": "combat / terrain effects",
+   "question": "Does a defender in a Woods/Road hex double its Combat Strength, as the Terrain Effects Chart prints, or only a defender in a Town, as the rules text prints?",
+   "evidence": {
+    "terrain_effects_chart_verbatim": "Towns &  Woods/Roads - Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain.",
+    "chart_note": "printed as ONE row with a single shared Effect-on-Combat cell and two symbol hexes (town; woods-with-road). Folio and Oliver's independent scan agree exactly, so this is neither a misread nor a redraw artefact.",
+    "rules_text_verbatim": "(J.) Units defending in Towns DOUBLE their strength (on defense)",
+    "rules_text_note": "page 1 never mentions Woods/Roads in this connection, and follows with a Town-hex arithmetic example.",
+    "worked_examples": "SILENT. All 27 printed examples on page 2 were transcribed and machine-replayed; NOT ONE places a defender in a Woods/Road hex. The game never demonstrates its own contradiction, so the examples cannot settle it.",
+    "third_edition": "NO HELP. The printed 3rd Ed rules state no defence doubling anywhere (PREP-2 E14) and we hold no printed 3rd Ed TEC; the only one in our possession is a contaminated redraw."
+   },
+   "resolution": "FOLLOW THE CHART. A defender in a Town hex OR a Woods/Road hex doubles its Combat Strength. Attacking FROM either terrain confers nothing - that half is stated identically by both sources and is proven by printed examples EX-03/EX-04.",
+   "authority": "DECLARED RULING - Bruce, 2026-08-14. Both sources are primary and printed in the same folio, so no documentary ladder separates them; the call is a judgement between equals.",
+   "reasoning": [
+    "the chart is the purpose-built terrain document and the artefact players consult at the table, where the rules-text sentence reads as a summary rather than an enumeration",
+    "woods being defensively strong is the coherent design reading",
+    "Woods entry is otherwise PROHIBITED, so a Woods/Road hex is the only woods a defender can occupy at all"
+   ],
+   "blast_radius": "5 hexes of 594. hexgraph_2nd_ed.json terrain kind 'woods_road' - the smallest terrain class on the map. A wrong call here is a real but narrowly bounded incorrectness.",
+   "encoding_note": "Fable: the doubling predicate keys on the DEFENDER's hex kind in {town, woods_road}. It must NOT key on the attacker's hex; EX-03 proves an attacker in a Town is not doubled.",
+   "citation": "folio p.5 Terrain Effects Chart (French half) vs folio p.1 COMBAT case (J.)"
+  },
+  {
+   "id": "NAW2-SD-1",
+   "status": "REGISTERED",
+   "classification": "DEFECT IN THE ORIGINAL PUBLISHED GAME - printed typo",
+   "subsystem": "reinforcement",
+   "question": "none - no rules effect",
+   "evidence": {
+    "printed_verbatim": "The act of placing a Prussian unit on the map extends one Movement Point.",
+    "same_page_correct_form": "The Act of exiting from the edge of the map expends one Movement Point.",
+    "note": "read at 6x, unambiguous. The meaning is not in doubt; 'expends' is plainly intended."
+   },
+   "resolution": "Enforce as 'expends' - placing a Prussian on the map costs one Movement Point.",
+   "authority": "PROVEN OUTCOME-EQUIVALENCE - the same page prints the correct construction for the mirror-image action two columns later, and no reading of 'extends' yields a coherent alternative rule.",
+   "our_own_lesson": "RULEBOOK_VERIFIED.md had SILENTLY NORMALISED this to 'expends'. Corrected 2026-08-14 with a footnote recording the original text. A normalisation that reads as a transcription, inside a document whose purpose is verbatim authority, is the class of error worth naming.",
+   "citation": "folio p.1 Prussian entry case (B.)"
+  },
+  {
+   "id": "NAW2-SD-2",
+   "status": "REGISTERED",
+   "classification": "DEFECT IN THE ORIGINAL PUBLISHED GAME - production/layout defect with a real play consequence",
+   "subsystem": "components",
+   "question": "none - the rules are unambiguous; the SHEET is not symmetric",
+   "evidence": {
+    "finding": "The two halves of the map sheet are NOT mirrors. The British/Prussian half carries RETREAT AND ADVANCE AS A RESULT OF COMBAT (including DISRUPTION and the optional advance) and no Terrain Effects Chart. The French half carries the Terrain Effects Chart and stops after the result codes.",
+    "duplicated_genuinely": "Explanation of Results and the Combat Resolution Table grid are printed twice.",
+    "consequence": "A French player consulting only his own half of the sheet is never shown the retreat restrictions, the disruption rule, or the advance option.",
+    "our_record_was_wrong": "RULEBOOK_VERIFIED.md section 2 claimed TEC x2 and Retreat-and-Advance x2. Both are x1. Found independently by TWO agents reading different pages."
+   },
+   "resolution": "No rules effect - the engine enforces the printed rules regardless of which half they are printed on. Registered because it is a genuine defect in the published component and because it explains why a human player may believe a rule does not exist.",
+   "authority": "OBSERVED, two independent readings of the printed sheet.",
+   "citation": "folio p.5, both halves"
+  },
+  {
+   "id": "NAW2-SD-3",
+   "status": "OPEN - needs a ruling before the retreat code is written",
+   "classification": "UNDEFINED CASE / possible editing slip in the ORIGINAL PUBLISHED GAME",
+   "subsystem": "combat / retreat / disruption",
+   "question": "May a DISRUPTED (displaced) unit be pushed into a Woods/Road hex? The retreat bar says 'non-Road Woods'; the disruption bar two paragraphs later says bare 'woods'.",
+   "evidence": {
+    "retreat_bar_verbatim": "may not retreat into enemy ZOC, off the map, into non-Road Woods, or into enemy-occupied hexes",
+    "disruption_bar_verbatim": "The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods.",
+    "asymmetry": "the disruption bar also OMITS 'off the map', which the retreat bar includes - so it is either deliberately narrower on one axis and wider on another, or loosely drafted."
+   },
+   "resolution": null,
+   "options": [
+    "read 'woods' in the disruption clause as the same 'non-Road Woods' the retreat clause defines, treating the shorthand as elision",
+    "read it literally - disruption is strictly barred from ALL woods including Woods/Road, a harsher constraint than retreat"
+   ],
+   "blast_radius": "5 Woods/Road hexes, and only in the displacement branch. Interacts with NAW2-D4: under Bruce's D4 ruling a Woods/Road hex is defensively favourable, which sharpens the question of whether a unit may be shoved into one.",
+   "authority": "PENDING - Bruce",
+   "citation": "folio p.5 RETREAT AND ADVANCE AS A RESULT OF COMBAT, paragraphs 2 and 4"
+  }
+ ],
+ "open_count": 1,
+ "handed_forward": "PREP-7 carries NAW2-SD-3 into the coverage matrix as an open cell. Everything else here is settled and encodable."
+}
