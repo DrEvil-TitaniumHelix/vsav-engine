@@ -1,0 +1,2116 @@
+{
+  "produced_by": "games/napoleon-at-waterloo/ingest/naw_asset_tier.py",
+  "bite": "PREP-6",
+  "what_this_measures": "PRODUCTION METHOD ONLY: whether the pixels were made by a scanner pointed at printed paper, or by a drawing program. It does not measure CONTENT FIDELITY and must never be read as a tier assignment. An asset can be digitally redrawn and still faithful, and can be a true scan of a document that is worthless as authority.",
+  "signals": [
+    {
+      "name": "flat_frac",
+      "favours": "redraw",
+      "midpoint": 0.35,
+      "slope": 0.09,
+      "weight": 1.5
+    },
+    {
+      "name": "noise_sigma",
+      "favours": "scan",
+      "midpoint": 1.1,
+      "slope": 0.4,
+      "weight": 1.5
+    },
+    {
+      "name": "top8_mass",
+      "favours": "redraw",
+      "midpoint": 0.55,
+      "slope": 0.13,
+      "weight": 1.0
+    },
+    {
+      "name": "palette_log10_per_mpx",
+      "favours": "scan",
+      "midpoint": 4.3,
+      "slope": 0.35,
+      "weight": 1.0
+    },
+    {
+      "name": "pure_black_share",
+      "favours": "redraw",
+      "midpoint": 0.25,
+      "slope": 0.12,
+      "weight": 1.2
+    },
+    {
+      "name": "gray_chroma",
+      "favours": "scan",
+      "midpoint": 6.0,
+      "slope": 2.0,
+      "weight": 1.0
+    },
+    {
+      "name": "edge_band_ratio",
+      "favours": "scan",
+      "midpoint": 3.0,
+      "slope": 0.9,
+      "weight": 1.0
+    },
+    {
+      "name": "axis_concentration",
+      "favours": "redraw",
+      "midpoint": 0.35,
+      "slope": 0.1,
+      "weight": 0.6
+    }
+  ],
+  "reported_but_unweighted": [
+    "bg_texture",
+    "jpeg_block_ratio",
+    "pure_white_share",
+    "alpha_present",
+    "alpha_soft_frac",
+    "skew_deg",
+    "megapixels",
+    "patches"
+  ],
+  "thresholds": {
+    "redraw_like": ">=0.66",
+    "borderline": "0.34-0.66",
+    "scan_like": "<=0.34"
+  },
+  "window_px": 512,
+  "patches_per_asset": 10,
+  "patch_selection": "highest-ink windows, deterministic, native resolution, no rescaling",
+  "assets": {
+    "ed2_folio_p1_rules": {
+      "noise_sigma": 0.7824845612049103,
+      "flat_frac": 0.05014228820800781,
+      "palette_log10_per_mpx": 4.641054111408819,
+      "top8_mass": 0.18278121948242188,
+      "pure_black_share": 0.0005552328376311034,
+      "pure_white_share": 0.0,
+      "gray_chroma": 34.37068748474121,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.9228902199517103,
+      "axis_concentration": 0.11203801916190051,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.1809453044134397,
+      "megapixels": 24.52,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        6968,
+        3519
+      ],
+      "patch_origins": [
+        [
+          4608,
+          1024
+        ],
+        [
+          4608,
+          1536
+        ],
+        [
+          4608,
+          512
+        ],
+        [
+          4608,
+          2560
+        ],
+        [
+          3584,
+          1024
+        ],
+        [
+          6144,
+          1536
+        ],
+        [
+          6144,
+          2560
+        ],
+        [
+          3584,
+          2048
+        ],
+        [
+          3584,
+          2560
+        ],
+        [
+          4608,
+          0
+        ]
+      ],
+      "redraw_score": 0.285,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.034,
+        "noise_sigma": 0.689,
+        "top8_mass": 0.056,
+        "palette_log10_per_mpx": 0.274,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.91,
+        "axis_concentration": 0.085
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed 2nd Ed rules sheet, PREP-1 tier PRIMARY",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "ed2scan",
+        1
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2_folio_p1_rules.png"
+    },
+    "ed2_folio_p2_examples": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.5387115478515625,
+      "palette_log10_per_mpx": 4.27448118201119,
+      "top8_mass": 0.6052608489990234,
+      "pure_black_share": 0.016420140268478794,
+      "pure_white_share": 0.47887540852140087,
+      "gray_chroma": 11.92023754119873,
+      "bg_texture": 10.984403133392334,
+      "edge_band_ratio": 1.3483241566973714,
+      "axis_concentration": 0.24103990172364992,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.164120768645044,
+      "megapixels": 8.41,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        3300,
+        2550
+      ],
+      "patch_origins": [
+        [
+          2048,
+          1024
+        ],
+        [
+          2560,
+          1024
+        ],
+        [
+          2048,
+          512
+        ],
+        [
+          512,
+          1536
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          0,
+          1536
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          2560,
+          512
+        ],
+        [
+          2560,
+          1536
+        ],
+        [
+          512,
+          1024
+        ]
+      ],
+      "redraw_score": 0.577,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.891,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.605,
+        "palette_log10_per_mpx": 0.518,
+        "pure_black_share": 0.125,
+        "gray_chroma": 0.049,
+        "edge_band_ratio": 0.862,
+        "axis_concentration": 0.252
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed 2nd Ed Examples of Attacks, PREP-1 tier PRIMARY",
+      "agrees_with_eye": false,
+      "source": [
+        "pdf",
+        "ed2scan",
+        2
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2_folio_p2_examples.png"
+    },
+    "ed2_folio_p4_counterphoto": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.4788341522216797,
+      "palette_log10_per_mpx": 5.152181170518145,
+      "top8_mass": 0.5088157653808594,
+      "pure_black_share": 0.0,
+      "pure_white_share": 0.9260314061759294,
+      "gray_chroma": 14.192118167877197,
+      "bg_texture": 2.6588224172592163,
+      "edge_band_ratio": 2.815433399877448,
+      "axis_concentration": 0.18594959331988187,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.8194202310001488,
+      "megapixels": 14.96,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        4400,
+        3400
+      ],
+      "patch_origins": [
+        [
+          0,
+          512
+        ],
+        [
+          512,
+          1024
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          1024,
+          0
+        ],
+        [
+          1536,
+          512
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          2048,
+          1024
+        ],
+        [
+          0,
+          1024
+        ]
+      ],
+      "redraw_score": 0.445,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.807,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.421,
+        "palette_log10_per_mpx": 0.081,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.016,
+        "edge_band_ratio": 0.551,
+        "axis_concentration": 0.162
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "photograph of punched 2nd Ed counters, PREP-4 witness A",
+      "agrees_with_eye": false,
+      "source": [
+        "pdf",
+        "ed2scan",
+        4
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2_folio_p4_counterphoto.png"
+    },
+    "ed2_folio_p5_mapsheet": {
+      "noise_sigma": 0.4941999912261963,
+      "flat_frac": 0.05750083923339844,
+      "palette_log10_per_mpx": 4.560788406337217,
+      "top8_mass": 0.3251476287841797,
+      "pure_black_share": 0.0010081927843468307,
+      "pure_white_share": 0.0,
+      "gray_chroma": 32.717092514038086,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 1.9205067928405923,
+      "axis_concentration": 0.10822662862972944,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.3808834205794835,
+      "megapixels": 35.95,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        6952,
+        5171
+      ],
+      "patch_origins": [
+        [
+          6144,
+          3072
+        ],
+        [
+          6144,
+          1024
+        ],
+        [
+          6144,
+          3584
+        ],
+        [
+          2048,
+          2560
+        ],
+        [
+          3584,
+          3072
+        ],
+        [
+          3072,
+          1024
+        ],
+        [
+          2560,
+          4096
+        ],
+        [
+          512,
+          1024
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1024,
+          1024
+        ]
+      ],
+      "redraw_score": 0.308,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.037,
+        "noise_sigma": 0.82,
+        "top8_mass": 0.151,
+        "palette_log10_per_mpx": 0.322,
+        "pure_black_share": 0.112,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.768,
+        "axis_concentration": 0.082
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed 2nd Ed map sheet + charts, PREP-1 tier PRIMARY",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "ed2scan",
+        5
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2_folio_p5_mapsheet.png"
+    },
+    "ed2_expansion_p1": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.5805587768554688,
+      "palette_log10_per_mpx": 2.989700043360188,
+      "top8_mass": 0.8872356414794922,
+      "pure_black_share": 0.17378700821094098,
+      "pure_white_share": 0.9382027427219879,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.9945015609264374,
+      "edge_band_ratio": 0.49956080240829975,
+      "axis_concentration": 0.21363224124619076,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.9911393345565922,
+      "megapixels": 8.41,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2550,
+        3300
+      ],
+      "patch_origins": [
+        [
+          1536,
+          0
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          1024,
+          0
+        ],
+        [
+          1024,
+          1536
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          1536,
+          2048
+        ]
+      ],
+      "redraw_score": 0.812,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.928,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.93,
+        "palette_log10_per_mpx": 0.977,
+        "pure_black_share": 0.346,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.941,
+        "axis_concentration": 0.204
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "SPI Advanced Game Expansion Kit 1971, out-of-edition primary; PREP-6 inspected t_ed2_expansion_p1: period type with ink irregularity, descreened and thresholded to near-bitonal",
+      "agrees_with_eye": false,
+      "source": [
+        "pdf",
+        "ed2exp",
+        1
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2_expansion_p1.png"
+    },
+    "ed3_booklet_p7": {
+      "noise_sigma": 0.24709999561309814,
+      "flat_frac": 0.1907958984375,
+      "palette_log10_per_mpx": 5.180326457150722,
+      "top8_mass": 0.19549560546875,
+      "pure_black_share": 0.0,
+      "pure_white_share": 0.0004250363192946768,
+      "gray_chroma": 12.38402271270752,
+      "bg_texture": 2.0789554119110107,
+      "edge_band_ratio": 4.27154329122655,
+      "axis_concentration": 0.2535885293783319,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.3187289741316905,
+      "megapixels": 8.41,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2546,
+        3303
+      ],
+      "patch_origins": [
+        [
+          512,
+          2048
+        ],
+        [
+          512,
+          1536
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          0,
+          1536
+        ],
+        [
+          0,
+          2048
+        ],
+        [
+          1536,
+          2048
+        ],
+        [
+          1024,
+          1536
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          1536,
+          1536
+        ],
+        [
+          1536,
+          2560
+        ]
+      ],
+      "redraw_score": 0.253,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.146,
+        "noise_sigma": 0.894,
+        "top8_mass": 0.061,
+        "palette_log10_per_mpx": 0.075,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.039,
+        "edge_band_ratio": 0.196,
+        "axis_concentration": 0.276
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed later-edition rules booklet p.9, PREP-1 tier PRIMARY",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "ed3",
+        7
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3_booklet_p7.png"
+    },
+    "ed3_booklet_p9": {
+      "noise_sigma": 0.24709999561309814,
+      "flat_frac": 0.41712379455566406,
+      "palette_log10_per_mpx": 4.991787225856662,
+      "top8_mass": 0.5207996368408203,
+      "pure_black_share": 3.574747980267391e-05,
+      "pure_white_share": 0.0013960419937474136,
+      "gray_chroma": 11.043565273284912,
+      "bg_texture": 1.6487168073654175,
+      "edge_band_ratio": 0.8230901412855245,
+      "axis_concentration": 0.17350267681991288,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.1228190771073243,
+      "megapixels": 8.05,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2463,
+        3267
+      ],
+      "patch_origins": [
+        [
+          0,
+          512
+        ],
+        [
+          1024,
+          1536
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          1536,
+          512
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          0,
+          2560
+        ],
+        [
+          512,
+          1536
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1536,
+          1024
+        ],
+        [
+          1024,
+          1024
+        ]
+      ],
+      "redraw_score": 0.47,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.678,
+        "noise_sigma": 0.894,
+        "top8_mass": 0.444,
+        "palette_log10_per_mpx": 0.122,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.074,
+        "edge_band_ratio": 0.918,
+        "axis_concentration": 0.146
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed later-edition booklet, combat sections",
+      "agrees_with_eye": false,
+      "source": [
+        "pdf",
+        "ed3",
+        9
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3_booklet_p9.png"
+    },
+    "ed3_booklet_p11": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.4799537658691406,
+      "palette_log10_per_mpx": 5.161733365227416,
+      "top8_mass": 0.5496425628662109,
+      "pure_black_share": 0.0032647097817788424,
+      "pure_white_share": 0.000847413441083439,
+      "gray_chroma": 10.388490200042725,
+      "bg_texture": 1.4210892915725708,
+      "edge_band_ratio": 2.161637374076202,
+      "axis_concentration": 0.3814437045418002,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.1930764986251379,
+      "megapixels": 8.06,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2473,
+        3259
+      ],
+      "patch_origins": [
+        [
+          1024,
+          2560
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1536,
+          2048
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          1536,
+          512
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          1536,
+          0
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          512,
+          0
+        ]
+      ],
+      "redraw_score": 0.512,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.809,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.499,
+        "palette_log10_per_mpx": 0.079,
+        "pure_black_share": 0.113,
+        "gray_chroma": 0.1,
+        "edge_band_ratio": 0.717,
+        "axis_concentration": 0.578
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "printed later-edition Examples of Attacks",
+      "agrees_with_eye": false,
+      "source": [
+        "pdf",
+        "ed3",
+        11
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3_booklet_p11.png"
+    },
+    "ed3_webscaffold_p3": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.730926513671875,
+      "palette_log10_per_mpx": 2.988850150921241,
+      "top8_mass": 0.9253425598144531,
+      "pure_black_share": 0.8174018954077147,
+      "pure_white_share": 0.9779815913335437,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.49206986111280093,
+      "axis_concentration": 0.36710542069929514,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.0116014411358014,
+      "megapixels": 8.7,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2480,
+        3509
+      ],
+      "patch_origins": [
+        [
+          512,
+          1024
+        ],
+        [
+          512,
+          2048
+        ],
+        [
+          512,
+          2560
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          512,
+          1536
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1536,
+          2048
+        ]
+      ],
+      "redraw_score": 0.934,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.986,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.947,
+        "palette_log10_per_mpx": 0.977,
+        "pure_black_share": 0.991,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.942,
+        "axis_concentration": 0.543
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "fan web transcription printed to PDF, PREP-1 scaffold-only",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "ed3",
+        3
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3_webscaffold_p3.png"
+    },
+    "ed3_sabin2020_p14": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.8363361358642578,
+      "palette_log10_per_mpx": 3.286895913856966,
+      "top8_mass": 0.9520378112792969,
+      "pure_black_share": 0.8541025415139281,
+      "pure_white_share": 0.981672196736568,
+      "gray_chroma": 1.7022940516471863,
+      "bg_texture": 1.52587890625e-05,
+      "edge_band_ratio": 1.415331658566095,
+      "axis_concentration": 0.34765463797939183,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.0001686711099302,
+      "megapixels": 8.7,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2481,
+        3508
+      ],
+      "patch_origins": [
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1536,
+          512
+        ],
+        [
+          512,
+          2048
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          1536,
+          2048
+        ],
+        [
+          1024,
+          0
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          512,
+          2560
+        ],
+        [
+          0,
+          512
+        ]
+      ],
+      "redraw_score": 0.914,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.996,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.957,
+        "palette_log10_per_mpx": 0.948,
+        "pure_black_share": 0.994,
+        "gray_chroma": 0.896,
+        "edge_band_ratio": 0.853,
+        "axis_concentration": 0.494
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Sabin Simple Rules Tweaks April 2020, third-party",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "ed3",
+        14
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3_sabin2020_p14.png"
+    },
+    "sabin2023_p2": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.819793701171875,
+      "palette_log10_per_mpx": 3.4556517858303026,
+      "top8_mass": 0.9445819854736328,
+      "pure_black_share": 0.8548465373900771,
+      "pure_white_share": 0.9779152415310854,
+      "gray_chroma": 3.021087646484375,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 1.1903095823147332,
+      "axis_concentration": 0.32698910294528305,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.9916152031142764,
+      "megapixels": 8.7,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2481,
+        3508
+      ],
+      "patch_origins": [
+        [
+          1536,
+          512
+        ],
+        [
+          512,
+          2560
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          512,
+          2048
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          0,
+          2560
+        ],
+        [
+          1536,
+          2048
+        ]
+      ],
+      "redraw_score": 0.901,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.995,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.954,
+        "palette_log10_per_mpx": 0.918,
+        "pure_black_share": 0.994,
+        "gray_chroma": 0.816,
+        "edge_band_ratio": 0.882,
+        "axis_concentration": 0.443
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Sabin Improved Rules Tweaks Nov 2023, third-party",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "sabin",
+        2
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_sabin2023_p2.png"
+    },
+    "fan_revamp_rules_p5": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.8125114440917969,
+      "palette_log10_per_mpx": 3.180127929613369,
+      "top8_mass": 0.9345722198486328,
+      "pure_black_share": 0.6675539487801199,
+      "pure_white_share": 0.9823658064251959,
+      "gray_chroma": 0.3341828063130379,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.5689963859693508,
+      "axis_concentration": 0.2943829119882481,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.9796006084474456,
+      "megapixels": 8.7,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2481,
+        3508
+      ],
+      "patch_origins": [
+        [
+          512,
+          1536
+        ],
+        [
+          1536,
+          0
+        ],
+        [
+          1536,
+          1024
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          512,
+          2560
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          1536
+        ],
+        [
+          0,
+          2560
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          0,
+          1536
+        ]
+      ],
+      "redraw_score": 0.918,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.994,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.951,
+        "palette_log10_per_mpx": 0.961,
+        "pure_black_share": 0.97,
+        "gray_chroma": 0.944,
+        "edge_band_ratio": 0.937,
+        "axis_concentration": 0.364
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Christensen 2024 LaTeX revamp, never a citation",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "rules",
+        5
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_fan_revamp_rules_p5.png"
+    },
+    "fan_revamp_org_p1": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.9483146667480469,
+      "palette_log10_per_mpx": 2.988000258482294,
+      "top8_mass": 0.983978271484375,
+      "pure_black_share": 0.8069427119447201,
+      "pure_white_share": 0.9957268535959729,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.4202357593486923,
+      "axis_concentration": 0.5167356820570348,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.971980754941554,
+      "megapixels": 8.7,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2481,
+        3508
+      ],
+      "patch_origins": [
+        [
+          1024,
+          1536
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          1024,
+          0
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          0,
+          1024
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          512,
+          1024
+        ],
+        [
+          512,
+          1536
+        ]
+      ],
+      "redraw_score": 0.959,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.999,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.966,
+        "palette_log10_per_mpx": 0.977,
+        "pure_black_share": 0.99,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.946,
+        "axis_concentration": 0.841
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "2024 revamp OOB charts, never a citation",
+      "agrees_with_eye": true,
+      "source": [
+        "pdf",
+        "org",
+        1
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_fan_revamp_org_p1.png"
+    },
+    "ed2mod_map": {
+      "noise_sigma": 0.4941999912261963,
+      "flat_frac": 0.07537841796875,
+      "palette_log10_per_mpx": 4.901194325827079,
+      "top8_mass": 0.17336463928222656,
+      "pure_black_share": 5.9461908620182246e-05,
+      "pure_white_share": 0.0,
+      "gray_chroma": 26.63447666168213,
+      "bg_texture": 3.5570446252822876,
+      "edge_band_ratio": 1.6037890792610954,
+      "axis_concentration": 0.10748277056167613,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.174156196958331,
+      "megapixels": 37.41,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        6623,
+        5648
+      ],
+      "patch_origins": [
+        [
+          512,
+          4096
+        ],
+        [
+          512,
+          4608
+        ],
+        [
+          512,
+          5120
+        ],
+        [
+          4096,
+          4096
+        ],
+        [
+          1024,
+          4096
+        ],
+        [
+          5632,
+          4608
+        ],
+        [
+          3072,
+          1536
+        ],
+        [
+          2560,
+          3072
+        ],
+        [
+          1024,
+          2048
+        ],
+        [
+          2560,
+          512
+        ]
+      ],
+      "redraw_score": 0.285,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.045,
+        "noise_sigma": 0.82,
+        "top8_mass": 0.052,
+        "palette_log10_per_mpx": 0.152,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.825,
+        "axis_concentration": 0.081
+      },
+      "by_eye_production": "scan_restored",
+      "by_eye_note": "Oliver map restoration, PREP-2 faithful reproduction; PREP-6 inspected t_ed2mod_map: scanned paper tone, soft hex rule, JPEG fringing on the printed title",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\Nap at Waterloo map 20mm hexes.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2mod_map.png"
+    },
+    "ed2mod_crt": {
+      "noise_sigma": 0.7413018345832825,
+      "flat_frac": 0.04170989990234375,
+      "palette_log10_per_mpx": 4.495088513991838,
+      "top8_mass": 0.24463844299316406,
+      "pure_black_share": 0.9619649308383318,
+      "pure_white_share": 0.007599401720450989,
+      "gray_chroma": 31.266984939575195,
+      "bg_texture": 3.3834413290023804,
+      "edge_band_ratio": 1.3593431818163042,
+      "axis_concentration": 0.33065000168445446,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.0498776867656496,
+      "megapixels": 2.49,
+      "patches": 8,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        2369,
+        1049
+      ],
+      "patch_origins": [
+        [
+          1024,
+          0
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          1536,
+          512
+        ],
+        [
+          1536,
+          0
+        ],
+        [
+          1024,
+          512
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.442,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.032,
+        "noise_sigma": 0.71,
+        "top8_mass": 0.087,
+        "palette_log10_per_mpx": 0.364,
+        "pure_black_share": 0.997,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.861,
+        "axis_concentration": 0.452
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "Oliver CRT, PREP-2 faithful reproduction; PREP-6 inspected t_ed2mod_crt: period type, visible halftone screen in the grey bands, cream paper, contrast-boosted",
+      "agrees_with_eye": false,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NapatWatCRT.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2mod_crt.png"
+    },
+    "ed2mod_tec": {
+      "noise_sigma": 0.6589308381080627,
+      "flat_frac": 0.07905197143554688,
+      "palette_log10_per_mpx": 4.266300953133159,
+      "top8_mass": 0.4737415313720703,
+      "pure_black_share": 0.9707660424206055,
+      "pure_white_share": 0.005467748345887374,
+      "gray_chroma": 34.54649353027344,
+      "bg_texture": 3.399382710456848,
+      "edge_band_ratio": 0.2683036467175729,
+      "axis_concentration": 0.5149134187316435,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.1524230362380763,
+      "megapixels": 1.81,
+      "patches": 4,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        1530,
+        1186
+      ],
+      "patch_origins": [
+        [
+          0,
+          512
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          512,
+          512
+        ]
+      ],
+      "redraw_score": 0.538,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.047,
+        "noise_sigma": 0.751,
+        "top8_mass": 0.357,
+        "palette_log10_per_mpx": 0.524,
+        "pure_black_share": 0.998,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.954,
+        "axis_concentration": 0.839
+      },
+      "by_eye_production": "scan",
+      "by_eye_note": "Oliver TEC, PREP-2 faithful reproduction; PREP-6 inspected t_ed2mod_tec: period type, cream paper, a pink printer guide line still present, contrast-boosted",
+      "agrees_with_eye": false,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NapatWat TEC.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed2mod_tec.png"
+    },
+    "mod_grouchy_sheet": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.6770076751708984,
+      "palette_log10_per_mpx": 3.8770778873303016,
+      "top8_mass": 0.9234962463378906,
+      "pure_black_share": 0.6068949569324461,
+      "pure_white_share": 0.9425771851105473,
+      "gray_chroma": 4.4358155727386475,
+      "bg_texture": 0.287109375,
+      "edge_band_ratio": 0.6617941584271397,
+      "axis_concentration": 0.4578317704230286,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.9932139514240103,
+      "megapixels": 3.25,
+      "patches": 8,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        1284,
+        2532
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1024
+        ],
+        [
+          0,
+          512
+        ],
+        [
+          0,
+          1536
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          512,
+          1024
+        ],
+        [
+          512,
+          0
+        ],
+        [
+          512,
+          1536
+        ]
+      ],
+      "redraw_score": 0.886,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.974,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.946,
+        "palette_log10_per_mpx": 0.77,
+        "pure_black_share": 0.951,
+        "gray_chroma": 0.686,
+        "edge_band_ratio": 0.931,
+        "axis_concentration": 0.746
+      },
+      "by_eye_production": "hybrid",
+      "by_eye_note": "PREP-2 M2 retimed edit; PREP-6 inspected t_mod_grouchy_sheet: thresholded scan of printed text with retyped passages in a heavier face and digitally drawn Var counters",
+      "agrees_with_eye": null,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\Grouchy Variant.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_grouchy_sheet.png"
+    },
+    "mod_nameplate": {
+      "noise_sigma": 0.7412999272346497,
+      "flat_frac": 0.0007539871166549197,
+      "palette_log10_per_mpx": 5.222420640355445,
+      "top8_mass": 0.06313002999557442,
+      "pure_black_share": 0.0,
+      "pure_white_share": 0.0,
+      "gray_chroma": 25.534207344055176,
+      "bg_texture": 2.7540048360824585,
+      "edge_band_ratio": 0.7815902430656988,
+      "axis_concentration": 0.13669388560804974,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.0163216498544574,
+      "alpha_soft_frac": 0.010105066465603435,
+      "megapixels": 0.17,
+      "patches": 2,
+      "window_px": 247,
+      "alpha_present": true,
+      "size_px": [
+        700,
+        247
+      ],
+      "patch_origins": [
+        [
+          247,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.262,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.02,
+        "noise_sigma": 0.71,
+        "top8_mass": 0.023,
+        "palette_log10_per_mpx": 0.067,
+        "pure_black_share": 0.111,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.922,
+        "axis_concentration": 0.106
+      },
+      "by_eye_production": "unknown",
+      "by_eye_note": "2nd Ed nameplate, PREP-2 M5, byte-identical in both modules; production method never established",
+      "agrees_with_eye": null,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NAW 2nd Edition nameplate.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_nameplate.png"
+    },
+    "mod_counter_NAW_1_2": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.7755606334360718,
+      "palette_log10_per_mpx": 4.334487085733616,
+      "top8_mass": 0.9313157615049421,
+      "pure_black_share": 0.8190963060686016,
+      "pure_white_share": 0.9072063178677197,
+      "gray_chroma": 19.693878173828125,
+      "bg_texture": 0.661208987236023,
+      "edge_band_ratio": 3.0722811671087533,
+      "axis_concentration": 0.38726790450928383,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.5263059343582734,
+      "megapixels": 0.04,
+      "patches": 1,
+      "window_px": 194,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        194,
+        194
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.721,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.991,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.949,
+        "palette_log10_per_mpx": 0.475,
+        "pure_black_share": 0.991,
+        "gray_chroma": 0.001,
+        "edge_band_ratio": 0.48,
+        "axis_concentration": 0.592
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "counter art, PREP-4 REDRAW; PREP-6 inspected t_counter_NAW_1_2_zoom: flat fill, rounded corners with red bleed, sans digits, vector NATO symbol, FOUR items only, no setup hex",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NAW_1_2.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_counter_NAW_1_2.png"
+    },
+    "mod_counter_NAW_2_3": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.744765649909661,
+      "palette_log10_per_mpx": 4.549552369720078,
+      "top8_mass": 0.9122117121904559,
+      "pure_black_share": 0.7904442581726739,
+      "pure_white_share": 0.8630735615440641,
+      "gray_chroma": 26.076810836791992,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 2.14710547184774,
+      "axis_concentration": 0.3053132434575734,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.2651533109068862,
+      "megapixels": 0.04,
+      "patches": 1,
+      "window_px": 194,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        194,
+        194
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.716,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.988,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.942,
+        "palette_log10_per_mpx": 0.329,
+        "pure_black_share": 0.989,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.721,
+        "axis_concentration": 0.39
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "counter art, PREP-4 REDRAW",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NAW_2_3.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_counter_NAW_2_3.png"
+    },
+    "mod_counter_NAW_5_2": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.7932830268891486,
+      "palette_log10_per_mpx": 4.4107203171903135,
+      "top8_mass": 0.9398182591136146,
+      "pure_black_share": 0.7964150633119552,
+      "pure_white_share": 0.9088623507228158,
+      "gray_chroma": 23.406909942626953,
+      "bg_texture": 0.37740638852119446,
+      "edge_band_ratio": 2.979439252336449,
+      "axis_concentration": 0.3707165109034268,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.8422607894167071,
+      "megapixels": 0.04,
+      "patches": 1,
+      "window_px": 194,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        194,
+        194
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.716,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.993,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.953,
+        "palette_log10_per_mpx": 0.422,
+        "pure_black_share": 0.99,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.506,
+        "axis_concentration": 0.552
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "counter art, PREP-4 REDRAW",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NAW_5_2.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_counter_NAW_5_2.png"
+    },
+    "mod_counter_variant_1_1": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.8324476564990966,
+      "palette_log10_per_mpx": 4.4944344067473025,
+      "top8_mass": 0.9235838027420554,
+      "pure_black_share": 0.8914486528699727,
+      "pure_white_share": 0.8969391708640062,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.34362754225730896,
+      "edge_band_ratio": 0.5891238670694864,
+      "axis_concentration": 0.8379909365558912,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 2.004967569967588,
+      "megapixels": 0.04,
+      "patches": 1,
+      "window_px": 194,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        194,
+        194
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.897,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.995,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.947,
+        "palette_log10_per_mpx": 0.365,
+        "pure_black_share": 0.995,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.936,
+        "axis_concentration": 0.992
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Grouchy variant counter, PREP-4 REDRAW and out-of-edition",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed2_oliver\\images\\NapWatvariant_1_1.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_mod_counter_variant_1_1.png"
+    },
+    "ed3mod_map": {
+      "noise_sigma": 0.41183649003505707,
+      "flat_frac": 0.017271041870117188,
+      "palette_log10_per_mpx": 5.297109024355807,
+      "top8_mass": 0.06571769714355469,
+      "pure_black_share": 0.0020166684410624124,
+      "pure_white_share": 0.00016840684213666228,
+      "gray_chroma": 27.44430446624756,
+      "bg_texture": 2.2053502798080444,
+      "edge_band_ratio": 2.6668789450230275,
+      "axis_concentration": 0.1910560238156039,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.0335011750765557,
+      "megapixels": 32.76,
+      "patches": 10,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        5960,
+        5496
+      ],
+      "patch_origins": [
+        [
+          2048,
+          4096
+        ],
+        [
+          2560,
+          2048
+        ],
+        [
+          4096,
+          4608
+        ],
+        [
+          5120,
+          2048
+        ],
+        [
+          5120,
+          4096
+        ],
+        [
+          1024,
+          2560
+        ],
+        [
+          2048,
+          1024
+        ],
+        [
+          1536,
+          2560
+        ],
+        [
+          3584,
+          1024
+        ],
+        [
+          4608,
+          3072
+        ]
+      ],
+      "redraw_score": 0.252,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.024,
+        "noise_sigma": 0.848,
+        "top8_mass": 0.024,
+        "palette_log10_per_mpx": 0.055,
+        "pure_black_share": 0.112,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.591,
+        "axis_concentration": 0.169
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "davejm map, PREP-3 not promoted to terrain authority; PREP-6 inspected t_ed3mod_map: synthetic parchment fill, modern serif hex numerals, vector hex rule, flat crimson buildings",
+      "agrees_with_eye": false,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\Map to use 3 copy.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_map.png"
+    },
+    "ed3mod_crt": {
+      "noise_sigma": 0.3706546351313591,
+      "flat_frac": 0.10003089904785156,
+      "palette_log10_per_mpx": 4.8442537266911625,
+      "top8_mass": 0.090972900390625,
+      "pure_black_share": 0.33891743869121116,
+      "pure_white_share": 0.0020894810200148563,
+      "gray_chroma": 22.570737838745117,
+      "bg_texture": 6.7953431606292725,
+      "edge_band_ratio": 1.2119833652699192,
+      "axis_concentration": 0.18785006950397648,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 1.1908478922280583,
+      "megapixels": 1.31,
+      "patches": 2,
+      "window_px": 512,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        1470,
+        894
+      ],
+      "patch_origins": [
+        [
+          512,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.383,
+      "measured_verdict": "borderline",
+      "signal_votes": {
+        "flat_frac": 0.059,
+        "noise_sigma": 0.861,
+        "top8_mass": 0.028,
+        "palette_log10_per_mpx": 0.174,
+        "pure_black_share": 0.677,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.879,
+        "axis_concentration": 0.165
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "davejm CRT, PREP-2 redraw but 60/60 correct; PREP-6 inspected t_ed3mod_crt: modern serif on synthetic parchment gradient, ratios retyped as 1:2 where the folio prints 1 to 2",
+      "agrees_with_eye": false,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\CRT.jpg"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_crt.png"
+    },
+    "ed3mod_tec": {
+      "noise_sigma": 0.6589317321777344,
+      "flat_frac": 0.0711823196400058,
+      "palette_log10_per_mpx": 5.190465895312665,
+      "top8_mass": 0.07877594716214255,
+      "pure_black_share": 0.17340464104423495,
+      "pure_white_share": 0.0007352512108303671,
+      "gray_chroma": 25.66881561279297,
+      "bg_texture": 11.188421249389648,
+      "edge_band_ratio": 0.9206955472911851,
+      "axis_concentration": 0.250276409689416,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.9557500226613063,
+      "megapixels": 0.39,
+      "patches": 3,
+      "window_px": 332,
+      "alpha_present": false,
+      "alpha_soft_frac": 0.0,
+      "size_px": [
+        1163,
+        332
+      ],
+      "patch_origins": [
+        [
+          664,
+          0
+        ],
+        [
+          332,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.315,
+      "measured_verdict": "scan-like",
+      "signal_votes": {
+        "flat_frac": 0.043,
+        "noise_sigma": 0.751,
+        "top8_mass": 0.026,
+        "palette_log10_per_mpx": 0.073,
+        "pure_black_share": 0.346,
+        "gray_chroma": 0.0,
+        "edge_band_ratio": 0.91,
+        "axis_concentration": 0.269
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "davejm TEC, PREP-2 M1 contaminated redraw; PREP-6 inspected t_ed3mod_tec: modern serif, drop shadows, synthetic parchment hex fills, vector hex outlines",
+      "agrees_with_eye": false,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\TEC.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_tec.png"
+    },
+    "ed3mod_aid_2020": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.9611650485436893,
+      "palette_log10_per_mpx": 2.275355546253637,
+      "top8_mass": 1.0,
+      "pure_black_share": 1.0,
+      "pure_white_share": 1.0,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.0,
+      "axis_concentration": 1.0,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.0,
+      "alpha_soft_frac": 0.2575172023753417,
+      "megapixels": 0.06,
+      "patches": 5,
+      "window_px": 103,
+      "alpha_present": true,
+      "size_px": [
+        600,
+        103
+      ],
+      "patch_origins": [
+        [
+          0,
+          0
+        ],
+        [
+          103,
+          0
+        ],
+        [
+          206,
+          0
+        ],
+        [
+          309,
+          0
+        ],
+        [
+          412,
+          0
+        ]
+      ],
+      "redraw_score": 0.976,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.999,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.97,
+        "palette_log10_per_mpx": 0.997,
+        "pure_black_share": 0.998,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.966,
+        "axis_concentration": 0.998
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Sabin 2020 play aid shipped in module, third-party",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\2020 Aid.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_aid_2020.png"
+    },
+    "ed3mod_aid_2023": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.978777727478497,
+      "palette_log10_per_mpx": 1.5588942711205087,
+      "top8_mass": 1.0,
+      "pure_black_share": 1.0,
+      "pure_white_share": 1.0,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.0017629987252163065,
+      "axis_concentration": 0.9947110038243511,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.0,
+      "alpha_soft_frac": 0.22841104572204618,
+      "megapixels": 0.13,
+      "patches": 2,
+      "window_px": 235,
+      "alpha_present": true,
+      "size_px": [
+        554,
+        235
+      ],
+      "patch_origins": [
+        [
+          235,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.976,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.999,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.97,
+        "palette_log10_per_mpx": 1.0,
+        "pure_black_share": 0.998,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.965,
+        "axis_concentration": 0.998
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "Sabin 2023 play aid shipped in module, third-party",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\2023 Aid.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_aid_2023.png"
+    },
+    "ed3mod_aid_movement": {
+      "noise_sigma": 0.0,
+      "flat_frac": 0.9684090458242411,
+      "palette_log10_per_mpx": 1.394393315569906,
+      "top8_mass": 1.0,
+      "pure_black_share": 1.0,
+      "pure_white_share": 1.0,
+      "gray_chroma": 0.0,
+      "bg_texture": 0.0,
+      "edge_band_ratio": 0.0034663313565047667,
+      "axis_concentration": 0.9907564497159873,
+      "skew_deg": 0.125,
+      "jpeg_block_ratio": 0.09340659452887935,
+      "alpha_soft_frac": 0.23378297956754612,
+      "megapixels": 0.17,
+      "patches": 2,
+      "window_px": 284,
+      "alpha_present": true,
+      "size_px": [
+        600,
+        284
+      ],
+      "patch_origins": [
+        [
+          284,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "redraw_score": 0.976,
+      "measured_verdict": "redraw-like",
+      "signal_votes": {
+        "flat_frac": 0.999,
+        "noise_sigma": 0.94,
+        "top8_mass": 0.97,
+        "palette_log10_per_mpx": 1.0,
+        "pure_black_share": 0.998,
+        "gray_chroma": 0.953,
+        "edge_band_ratio": 0.965,
+        "axis_concentration": 0.998
+      },
+      "by_eye_production": "digital",
+      "by_eye_note": "module-authored rules aid",
+      "agrees_with_eye": true,
+      "source": [
+        "file",
+        "C:\\VassalNaW\\modules\\ed3_davejm\\images\\Movement.png"
+      ],
+      "panel": "C:\\VassalNaW\\prep_packs\\NAW_PREP6\\t_ed3mod_aid_movement.png"
+    }
+  }
+}

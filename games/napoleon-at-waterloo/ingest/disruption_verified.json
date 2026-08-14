@@ -1,0 +1,239 @@
+{
+  "authority": "2nd Edition PRIMARY only. Cited file: C:\\VassalLibrary\\launchbox\\Manuals\\VASSAL\\Napoleon at Waterloo (2nd Ed)\\NapoleonatWaterloo.pdf. rules.pdf / org.pdf / Sabin / davejm art were NOT opened for this bite. 3rd Ed [6.5] displacement was NOT consulted and must not be read into anything below (PREP-2 E23: opposite constraints on the same situation).",
+  "source": {
+    "pdf": "Napoleon at Waterloo (2nd Ed)/NapoleonatWaterloo.pdf",
+    "printed_credit": "Second Edition Copyright 1971, Simulations Publications Inc.",
+    "page": 5,
+    "page_px": [6952, 5171],
+    "sheet_region": "map sheet, BRITISH/PRUSSIAN PLAYER half, chart block printed at 90 degrees along the left edge",
+    "block_order_as_printed": [
+      "COMBAT RESOLUTION TABLE (explanatory text)",
+      "EXPLANATION OF RESULTS",
+      "RETREAT AND ADVANCE AS A RESULT OF COMBAT",
+      "DISRUPTION",
+      "OPTIONAL ADVANCE",
+      "Advances are useful ... (unheaded continuation)"
+    ]
+  },
+  "read_on": "2026-08-14",
+  "read_method_summary": "Native embedded scan image (6952x5171, no resampling of the source). Every sentence read BY EYE off a 3x or 6x LANCZOS upscale of a rotated native crop, then independently cross-checked with Tesseract 5 --psm 6 on the same crop file. Eye and OCR agree on every word of the DISRUPTION rule; there is no disputed reading in this bite.",
+  "unreadable": [],
+  "tools": {
+    "script": "games/napoleon-at-waterloo/ingest/naw_disruption.py",
+    "regenerate": "python naw_disruption.py            (render + ocr + sweep)",
+    "pack": "C:\\VassalNaW\\prep_packs\\NAW_PREP5\\ (b_ prefix)"
+  },
+
+  "location_finding": {
+    "statement": "DISRUPTION is printed exactly ONCE in the entire 2nd Edition folio, and it is NOT on the rules sheet.",
+    "evidence": [
+      "Page 1 (rules sheet, 6968x3519) was OCRed in full, all 8 detected columns, dumped to b_p1_rules_full_ocr.txt. Occurrences of the substring 'disrupt' = 0. The rules sheet's COMBAT section runs (A)-(J) and goes straight into ARTILLERY; it contains no retreat-restriction list and no disruption text at all.",
+      "Page 2 (Examples of Attacks) read by eye at b_p2_examples.png: odds diagrams and one caption box only, no disruption. OCR at all four rotations: 0 hits.",
+      "Page 3 (Dunnigan letter) and page 4 (counter photo): OCR 0 hits.",
+      "Page 5 swept as a 4x3 tile grid at both 90 and 270 rotations plus a full visual read of the left third (b_p5_sheet_left_third.png), the middle strip (b_p5_middle_strip.png) and the right third (b_p5_sheet_right_third.png). Heading 'DISRUPTION' occurs at one site only, x-tile 0 / y-tile 0, rot 90 = the British/Prussian chart block."
+    ]
+  },
+
+  "prep1_gap": {
+    "status": "CLOSED",
+    "what_prep1_flagged": "RULEBOOK_VERIFIED.md line 188-190: 'One bridging clause in the middle of this paragraph was not fully resolved at the crop resolution used ... the connective between them is flagged for a re-read in PREP-5.'",
+    "why_it_was_hard": "The paragraph breaks across a printed column boundary on the map sheet. The clause is the tail of the first sentence plus two whole sentences that sit at the TOP of the next column; a crop taken to the visible extent of the first column misses them entirely.",
+    "the_missing_span_verbatim": "unit, then the uninvolved unit is \"disrupted\" (pushed out of its hex) by the retreating unit. The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit. The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods.",
+    "crop": "b_p5_disruption_bridge_6x.png (6x, native crop 0.160-0.199 x, 0.318-0.475 y of page 5, rot 90)",
+    "read_method": "by-eye at 6x, OCR-confirmed word for word",
+    "confidence": "certain"
+  },
+
+  "rule_verbatim": {
+    "heading": "DISRUPTION:",
+    "heading_style": "run-in bold heading followed by a colon, inside the RETREAT AND ADVANCE AS A RESULT OF COMBAT block; it is NOT a numbered case and NOT a separate section",
+    "note_on_quotes": "The print uses typographic quotes around safe, disrupted and chain-reaction; reproduced here as straight double quotes.",
+    "sentences": [
+      {
+        "id": "S1",
+        "text": "DISRUPTION: If the only \"safe\" hex available to the retreating unit is one which is already occupied by another, uninvolved Friendly unit, then the uninvolved unit is \"disrupted\" (pushed out of its hex) by the retreating unit.",
+        "spans_column_break": true,
+        "crops": ["b_p5_disruption_open.png", "b_p5_disruption_bridge_6x.png"],
+        "read_method": "by-eye 3x and 6x, OCR-confirmed",
+        "confidence": "certain"
+      },
+      {
+        "id": "S2",
+        "text": "The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit.",
+        "crops": ["b_p5_disruption_bridge_6x.png", "b_p5_disruption_full.png"],
+        "read_method": "by-eye 6x, OCR-confirmed",
+        "confidence": "certain"
+      },
+      {
+        "id": "S3",
+        "text": "The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods.",
+        "crops": ["b_p5_disruption_bridge_6x.png", "b_p5_disruption_full.png"],
+        "read_method": "by-eye 6x, OCR-confirmed",
+        "confidence": "certain",
+        "note": "'woods' is lower-case here and is NOT qualified as 'non-Road Woods', unlike the retreat-restriction sentence two paragraphs above which prints 'into non-Road Woods'. 'off the map' is absent from this list."
+      },
+      {
+        "id": "S4",
+        "text": "If this would be the only path of retreat available, then the uninvolved unit is NOT disrupted: It stays in its original position and the unit which was forced to retreat as a result of combat is ELIMINATED instead.",
+        "crops": ["b_p5_disruption_full.png"],
+        "read_method": "by-eye 3x, OCR-confirmed",
+        "confidence": "certain",
+        "note": "Capital 'It' after the colon is as printed."
+      },
+      {
+        "id": "S5",
+        "text": "Disrupted units can themselves disrupt other Friendly units in a sort of \"chain-reaction\" of disruption, if that is the only safe path of retreat open to them.",
+        "crops": ["b_p5_disruption_full.png"],
+        "read_method": "by-eye 3x, OCR-confirmed",
+        "confidence": "certain"
+      },
+      {
+        "id": "S6",
+        "text": "Disrupted artillery units may NOT fire in the Combat Phase in which they were disrupted.",
+        "crops": ["b_p5_disruption_full.png"],
+        "read_method": "by-eye 3x, OCR-confirmed",
+        "confidence": "certain",
+        "prep1_claim_status": "CONFIRMED verbatim, character for character, including the capitalised NOT."
+      }
+    ],
+    "sentence_count": 6,
+    "paragraph_ends_at": "S6; the next printed text is the run-in heading OPTIONAL ADVANCE:"
+  },
+
+  "mechanics_as_printed": {
+    "how_a_unit_becomes_disrupted": {
+      "answer": "One way only. A unit becomes disrupted when a FRIENDLY unit is forced to retreat by combat and the only 'safe' hex available to that retreating unit is the hex the (uninvolved) unit occupies. The disrupting agent is the retreating unit; the pushing is performed by the victorious Player. Disruption is never voluntary, never a combat result on the CRT, and never applies to an enemy unit.",
+      "cited": ["S1", "S2"]
+    },
+    "how_it_ends": {
+      "answer": "The printed rule states no removal step, no duration, and no end-of-phase or end-of-turn clause. The only durable consequence it names is bounded by its own wording: an artillery unit may not fire 'in the Combat Phase in which they were disrupted'. On the print alone, disruption is therefore a within-Combat-Phase condition with no explicit expiry text.",
+      "cited": ["S6"],
+      "flag": "UNDEFINED IN PRINT. Reported, not resolved."
+    },
+    "what_a_disrupted_unit_may_and_may_not_do": {
+      "is_moved": "Moved back one hex by the victorious Player, as if it were retreating (S2). The print does not say the disrupted unit gets to choose.",
+      "destination_bar": "May not be forced into Enemy units, Zones of Control, or woods (S3).",
+      "artillery": "A disrupted artillery unit may NOT fire in the Combat Phase in which it was disrupted (S6).",
+      "movement": "Nothing printed about the disrupted unit's own Movement Phase.",
+      "combat": "Nothing printed about attacking or defending, other than the artillery firing ban.",
+      "bombardment": "Covered only by S6, and only for the same Combat Phase.",
+      "zoc": "Nothing printed. The disrupted unit's own ZOC is not mentioned; the S3 bar is on the destination hex only.",
+      "stacking": "Not restated here. The rules sheet's one-unit-per-hex rule (p.1 MOVEMENT case F) is worded for the end of a Movement Phase; the disruption rule vacates the hex before the retreating unit enters it, so no stacking arises."
+    },
+    "marker": {
+      "answer": "The printed DISRUPTION rule calls for NO marker of any kind. It never uses the words marker, counter or token, and the state it creates is resolved by physically moving pieces plus a one-phase artillery firing ban.",
+      "consistency_with_prep4": "CONSISTENT. PREP-4 established the punched set contains exactly one marker (the turn marker). No missing-component defect arises from disruption; the engine simply carries a per-Combat-Phase 'disrupted' flag with no printed physical counterpart."
+    },
+    "interaction_with_retreat_and_advance": {
+      "chain_reaction": "A disrupted unit may itself disrupt a further friendly unit, recursively, when that is the only safe path of retreat open to it (S5).",
+      "failure_case": "If the disruption cannot be performed because the only available push would force the disrupted unit into Enemy units / ZOC / woods, the uninvolved unit is NOT disrupted, stays put, and the ORIGINAL retreating unit is ELIMINATED instead (S4). Note the loss falls on the unit that was forced to retreat, not on the uninvolved unit.",
+      "relation_to_plain_retreat": "The immediately preceding paragraph (b_p5_retreat_advance.png) prints: 'Units may not retreat into Enemy Zones of Control, off the map, into non-Road Woods, or into Enemy-occupied hexes. If no path of retreat is open to the retreating unit (aside from the forbidden hexes described above) then the retreating unit is ELIMINATED and immediately removed from the map.' DISRUPTION is the carve-out that makes a Friendly-occupied hex reachable after all.",
+      "advance": "Not linked. OPTIONAL ADVANCE is a separate run-in paragraph that follows and never mentions disruption."
+    }
+  },
+
+  "adjacent_blocks_verbatim": {
+    "retreat_and_advance_as_a_result_of_combat": [
+      "When units are forced to retreat, the victorious player decides in which direction they will be retreated, within the following restrictions:",
+      "Units may not retreat into Enemy Zones of Control, off the map, into non-Road Woods, or into Enemy-occupied hexes. If no path of retreat is open to the retreating unit (aside from the forbidden hexes described above) then the retreating unit is ELIMINATED and immediately removed from the map."
+    ],
+    "retreat_crop": "b_p5_retreat_advance.png",
+    "optional_advance": [
+      "OPTIONAL ADVANCE: Whenever a hex is vacated as a result of combat, the victorious unit responsible for the Enemy elimination or retreat may advance into the vacated hex.",
+      "This may be done even if the victorious unit is still in an Enemy Zone of Control and/or if the vacated hex is in an Enemy Zone of Control.",
+      "The option to advance must be exercised immediately.",
+      "A unit is never forced to advance.",
+      "A unit may never advance more than one hex as a result of combat.",
+      "Advances are not counted as regular Movement and therefore expend no Movement Points.",
+      "Advances are useful in cutting off the line of retreat of Enemy units whose combat has yet to be resolved.",
+      "Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved."
+    ],
+    "optional_advance_crops": ["b_p5_optional_advance.png", "b_p5_advances_useful.png"],
+    "read_method": "by-eye 2.5x/3x, OCR-confirmed",
+    "confidence": "certain"
+  },
+
+  "contradictions_with_our_records": [
+    {
+      "id": "X1",
+      "severity": "high",
+      "record": "RULEBOOK_VERIFIED.md §3 presents DISRUPTION inside the 2nd-Edition mechanics section whose stated source is 'p. 1 (rules columns) and p. 5 (charts)', and the PREP-5 brief restates it as being on 'the 2nd Ed rules sheet (folio p.1)'.",
+      "print": "DISRUPTION does not appear on page 1 at all. It is printed once, on page 5, in the BRITISH/PRUSSIAN half of the map sheet's chart block.",
+      "evidence": "b_p1_rules_full_ocr.txt ('disrupt' count = 0 across all 8 columns); page-5 tile sweep = 1 site; b_p5_allied_chartblock.png",
+      "resolution": "NOT RESOLVED HERE. Flagged for whoever amends RULEBOOK_VERIFIED."
+    },
+    {
+      "id": "X2",
+      "severity": "medium",
+      "record": "RULEBOOK_VERIFIED.md §2 page-5 index lists 'Retreat and Advance as a Result of Combat (x2)' and 'Terrain Effects Chart (x2)'.",
+      "print": "Neither is printed twice. RETREAT AND ADVANCE / DISRUPTION / OPTIONAL ADVANCE appear only on the British/Prussian side. TERRAIN EFFECTS CHART appears only on the French side. The two halves of the sheet are NOT mirror images: each carries the other's missing block.",
+      "also_true": "EXPLANATION OF RESULTS is genuinely x2 (one per side) and the COMBAT RESOLUTION TABLE is genuinely x2.",
+      "evidence": "b_p5_sheet_left_third.png (Allied half, complete), b_p5_sheet_right_third.png (French half, complete: Demoralization Scale, CRT, EXPLANATION OF RESULTS, TERRAIN EFFECTS CHART, and nothing after the DE= entry), b_p5_middle_strip.png (map only); tile sweep heading counts",
+      "consequence_if_ignored": "A French player reading only his own half of the sheet is never shown the retreat restrictions, the disruption rule, or the advance rule, and the rules sheet does not carry them either.",
+      "resolution": "NOT RESOLVED HERE."
+    },
+    {
+      "id": "X3",
+      "severity": "low",
+      "record": "RULEBOOK_VERIFIED.md §3 'Explanation of Results' is given once, implying the two printed copies are identical.",
+      "print": "They are not typographically identical. The British/Prussian copy prints 'AE - Attacker Eliminated' with a dash; the French copy prints 'AE= Attacker Eliminated' with an equals sign, and its wording is reset (e.g. 'is immediately removed' hyphenated as 'is im-mediately'). Semantics as read are the same.",
+      "evidence": "b_p5_allied_chartblock.png vs b_p5_sheet_right_third.png",
+      "resolution": "NOT RESOLVED HERE."
+    },
+    {
+      "id": "X4",
+      "severity": "medium",
+      "record": "RULEBOOK_VERIFIED.md §3 'Optional advance' bullet: 'The option must be exercised immediately, is never compulsory, is limited to one hex, and costs no Movement Points.'",
+      "print": "The block carries one further obligation the record omits: 'Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved.'",
+      "evidence": "b_p5_advances_useful.png",
+      "note": "Gate-relevant: it exempts an advanced unit from the p.1 COMBAT case (B) 'ALL Friendly units adjacent to Enemy units MUST participate in an attack' obligation for that phase, and from being counted as a defender.",
+      "resolution": "NOT RESOLVED HERE."
+    },
+    {
+      "id": "X5",
+      "severity": "low",
+      "record": "RULEBOOK_VERIFIED.md §3 paraphrases the disruption failure case as 'where no path remains, the unit which was forced to retreat ... is ELIMINATED instead.'",
+      "print": "The trigger is narrower than 'no path remains'. Per S3/S4 the elimination fires when the only way to complete the DISPLACEMENT would force the disrupted unit into Enemy units, Zones of Control or woods. In that case the uninvolved unit stays put and the retreating unit dies.",
+      "evidence": "b_p5_disruption_full.png",
+      "resolution": "NOT RESOLVED HERE."
+    }
+  ],
+
+  "undefined_in_print_for_the_gate": [
+    {
+      "id": "U1",
+      "question": "May a disrupted unit be pushed off the map? S3's bar lists 'Enemy units or Zones of Control or woods' and omits 'off the map', which the ordinary retreat restriction two paragraphs earlier does list.",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U2",
+      "question": "Does S3's bare 'woods' mean all Woods hexes, or only the 'non-Road Woods' the retreat restriction names? The same sheet uses the qualified form in the paragraph immediately above, and the p.1 movement rule allows Woods/Road hexes only along the road.",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U3",
+      "question": "'moved back ... as if it were retreating' - back relative to what? The disrupted unit fought no combat, so it has no attacker to be pushed away from. The print names the victorious Player as the chooser but gives no direction rule.",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U4",
+      "question": "Is a chain-reaction disruption (S5) subject to the same S3 bar and the same S4 elimination fallback, and if the chain fails at depth N, which unit is eliminated - the original retreater or the last one in the chain? S4's subject is 'the unit which was forced to retreat as a result of combat', which in a chain has no unique referent.",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U5",
+      "question": "'uninvolved' is never defined. Uninvolved in the combat just resolved, or in any combat this Combat Phase (a unit that has already attacked, or that is a defender in an unresolved battle)?",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U6",
+      "question": "Does the S6 artillery firing ban apply to a disrupted artillery unit that had already fired earlier in the same Combat Phase, and does it also bar it from being counted as an adjacent participant that the p.1 COMBAT case (B) obligation requires?",
+      "status": "undefined in the 2nd Edition print"
+    },
+    {
+      "id": "U7",
+      "question": "Is a disrupted unit's push blocked by a further FRIENDLY-occupied hex when a chain is not desired, or is the chain compulsory whenever it is the only option? S5 says 'can', which reads permissive, while the surrounding rule is otherwise mandatory.",
+      "status": "undefined in the 2nd Edition print"
+    }
+  ]
+}
