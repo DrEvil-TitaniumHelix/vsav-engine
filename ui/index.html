@@ -778,7 +778,7 @@ async function wwDrop(pid, target) {
 async function sgAction(action, side) {
   const r = await (await fetch('/api/sg_action', {method:'POST',
     body: JSON.stringify({action, side})})).json();
-  if (r.error) toast('Gate: ' + r.error);
+  if (r.error) (FRAME.refusal ? FRAME.refusal([r.error]) : toast('Refused: ' + r.error));
   else if (r.result && (r.result.result || r.result.note))
     toast(r.result.result || r.result.note);
   refresh();
@@ -1701,7 +1701,7 @@ async function dragEnd(e) {
   if (!best) { render(); return; }   // illegal drop -> snap back, nothing written
   const r = await (await fetch('/api/move', {method:'POST',
       body:JSON.stringify({id:u.id, dest:best.hexnum, whole:selected.whole})})).json();
-  if (r.error) toast('Gate: ' + r.error);
+  if (r.error) (FRAME.refusal ? FRAME.refusal([r.error]) : toast('Refused: ' + r.error));
   deselect(); refresh();
 }
 
@@ -2049,7 +2049,7 @@ document.getElementById('resetbtn').onclick = async () => {
 };
 document.getElementById('endphasebtn').onclick = async () => {
   const r = await (await fetch('/api/end_phase', {method:'POST', body:'{}'})).json();
-  if (r.error) toast('Gate: ' + r.error);
+  if (r.error) (FRAME.refusal ? FRAME.refusal([r.error]) : toast('Refused: ' + r.error));
   deselect(); refresh();
 };
 // ---------- stepped / animated AI (engine-driven, one action at a time) ----------
@@ -2104,7 +2104,7 @@ async function aiStepOnce() {
   }
   if (r.step) {
     const v = r.step.verdict, bad = v && !v.legal;
-    if (bad) toast('Gate rejected: ' + (v.reasons || []).join('; '));
+    if (bad) toast('The Umpire refused the AI proposal: ' + (v.reasons || []).join('; '));
   }
   if (r.done) { aiNext = null; drawAIIntent(null); await refresh(); }
   return r;

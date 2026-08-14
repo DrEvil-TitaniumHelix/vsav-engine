@@ -617,8 +617,9 @@ async function postAction(action){
   return r;
 }
 function toastReasons(reasons){
+  if(FRAME.refusal){ FRAME.refusal(reasons); return; }
   const A=document.getElementById('actions');
-  A.innerHTML=`<b style="color:#e88">ILLEGAL — the gate refused:</b><br>${reasons.join('<br>')}
+  A.innerHTML=`<b style="color:#e88">ILLEGAL — refused:</b><br>${reasons.join('<br>')}
     <br><button class="sidebtn" onclick="document.getElementById('actions').style.display='none'">ok</button>`;
   A.style.display='block';
 }
