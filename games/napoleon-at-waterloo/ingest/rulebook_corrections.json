@@ -1,0 +1,287 @@
+{
+  "bite": "RULEBOOK_VERIFIED correction pass",
+  "target_document": "literature/napoleon-at-waterloo/RULEBOOK_VERIFIED.md",
+  "read_on": "2026-08-14",
+  "edition_in_scope": "2nd Edition (1971) only. No 3rd Edition section was touched.",
+  "authority": {
+    "primary": "C:\\VassalLibrary\\launchbox\\Manuals\\VASSAL\\Napoleon at Waterloo (2nd Ed)\\NapoleonatWaterloo.pdf",
+    "primary_identity": "Scan of the printed SPI folio, 'Second Edition Copyright 1971, Simulations Publications Inc.' printed on the map sheet (page 5).",
+    "pages_used": {
+      "1": "Rules of Play sheet, 6968x3519 native",
+      "5": "Map sheet with both player aids, 6952x5171 native"
+    },
+    "never_cite": [
+      "(2nd & 3rd Ed)/rules.pdf - Christian Holm Christensen 2024 fan revamp",
+      "(2nd & 3rd Ed)/org.pdf",
+      "Sabin, Simple Rules Tweaks (2020 and 2023)",
+      "the fan web transcription at pp.1-6 of the (3rd Ed) PDF"
+    ]
+  },
+  "method": "Every correction was re-read from the folio scan before being applied. Pages were extracted at native scan resolution (no rasterisation dpi applied, no resampling of the source), cropped as fractional boxes, rotated where the print is rotated, upscaled by LANCZOS where needed, opened as images and read BY EYE, then independently cross-checked with Tesseract 5 --psm 6 over the same crop file. Eye and OCR agreed on every correction applied. Counting claims were verified twice, by naw_locate.py word search at all four rotations and by whole-block visual inventory.",
+  "tools": {
+    "script": "games/napoleon-at-waterloo/ingest/naw_fixpass.py",
+    "locate": "games/napoleon-at-waterloo/ingest/naw_locate.py",
+    "crop_pack": "C:\\VassalNaW\\prep_packs\\NAW_FIX\\"
+  },
+  "severity_legend": {
+    "critical": "an unchecked obligation or a legality-changing trigger; a gate built on the uncorrected text would be wrong",
+    "high": "materially changes what the engine may or must do",
+    "moderate": "authorises or forbids an action the folio does not, without changing a result",
+    "low": "no effect on meaning; matters as a class or as an inventory fact"
+  },
+  "counts": {
+    "reported_to_this_pass": 9,
+    "applied": 7,
+    "additions_applied": 2,
+    "extra_found_and_applied": 1,
+    "rejected_after_verification": 2
+  },
+
+  "corrections": [
+    {
+      "id": "C1",
+      "footnote": "[^c1]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Optional advance'",
+      "rule_ref": "2nd Ed p.5, RETREAT AND ADVANCE AS A RESULT OF COMBAT, final paragraph (British/Prussian aid, printed at 90 deg)",
+      "class": "unchecked obligation - printed rule missing entirely",
+      "was": "(absent) The Optional-advance paragraph ended at 'The option must be exercised immediately, is never compulsory, is limited to one hex, and costs no Movement Points.' No paragraph of the document carried the prohibition.",
+      "now": "Advances are useful in cutting off the line of retreat of Enemy units whose combat has yet to be resolved. Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved.",
+      "folio_verbatim": "Advances are useful in cutting off the line of retreat of Enemy units whose combat has yet to be resolved. Advancing units may not participate in another attack or defense in the Combat Phase in which they advance, even if their advance places them next to Enemy units whose battles are yet to be resolved.",
+      "evidence": {
+        "crops": ["fix_p5_region_c34.png", "fix_p5_col4_r90.png", "fix_p5_advances_useful_2x.png"],
+        "crop_spec": "page 5, frac x 0.000-0.215, y 0.400-0.660, rotate 90; paragraph re-cropped alone at 2x",
+        "read_method": ["eye-native", "eye-2x", "ocr-psm6"],
+        "confidence": "certain"
+      },
+      "severity": "critical",
+      "found_by": ["combat_charts.json X2", "disruption_verified.json X4", "this correction pass (second eye reading)"],
+      "gate_consequence": "Exempts an advanced unit from the p.1 COMBAT case (B.) obligation 'ALL Friendly units adjacent to Enemy units MUST participate in an attack' for that Combat Phase, and from being counted as a defender. Applies to the phasing player after Dr/DE/EX and to the non-phasing player after Ar. The folio does not reconcile the two obligations; that reconciliation is a register question."
+    },
+    {
+      "id": "C2",
+      "footnote": "[^c2]",
+      "section": "RULEBOOK_VERIFIED.md section 2, page-5 row of the 2nd Edition page index",
+      "rule_ref": "2nd Ed p.5 map sheet, both player aids",
+      "class": "inventory error",
+      "was": "Map sheet: ... two Combat Resolution Tables (one per player) - Terrain Effects Chart (x2) - Explanation of Results (x2) - Retreat and Advance as a Result of Combat (x2) ...",
+      "now": "Terrain Effects Chart x1 (French half only); Explanation of Results x2 (not identical settings); Retreat and Advance as a Result of Combat x1 (British/Prussian half only, carrying DISRUPTION and OPTIONAL ADVANCE); Combat Resolution Table grid x2. An asymmetry table was added to the document.",
+      "folio_verbatim": null,
+      "evidence": {
+        "crops": ["fix_p5_french_aid.png", "fix_p5_allied_aid.png", "fix_p5_overview.png"],
+        "locate_run": "naw_locate.py ed2scan 5 TERRAIN EFFECTS RETREAT EXPLANATION DISRUPTION ADVANCE COMBAT - EFFECTS: 1 hit (0.813,0.158 rot270); RETREAT title-caps: 1 hit (0.109,0.179 rot90); EXPLANATION: 2 hits (0.089,0.030 rot90 and 0.807,0.412 rot270)",
+        "french_aid_contents": ["TERRAIN EFFECTS CHART", "EXPLANATION OF RESULTS", "Combat Resolution Table (grid)", "DEMORALIZATION SCALE", "logo + Second Edition Copyright 1971, Simulations Publications Inc."],
+        "british_prussian_aid_contents": ["COMBAT RESOLUTION TABLE (instructional paragraphs)", "EXPLANATION OF RESULTS", "RETREAT AND ADVANCE AS A RESULT OF COMBAT (incl. DISRUPTION, OPTIONAL ADVANCE)", "Combat Resolution Table (grid)", "EXITED FRENCH UNITS box"],
+        "read_method": ["locate-all-rotations", "eye-whole-block"],
+        "confidence": "certain"
+      },
+      "severity": "low",
+      "found_by": ["combat_charts.json X1", "disruption_verified.json X2", "this correction pass"],
+      "gate_consequence": "None directly. A UI or chart-extraction pass that assumes mirrored aids will look for the retreat rules on the French side and not find them. The asymmetry is also evidence for source defect D17."
+    },
+    {
+      "id": "C3",
+      "footnote": "[^c3]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Map / terrain'",
+      "rule_ref": "2nd Ed p.1 col.2, THE MAP, case (B.) [rules_2nd_ed.json MAP-04]",
+      "class": "silent normalisation of a printed typo, inside quotation marks",
+      "was": "A given hex is considered to be a specific type of terrain if all or any part of it contains that terrain feature symbol.",
+      "now": "(B.) A given hex is considered to be a specific type of terrain if all or any part or it contains that terrain feature symbol.",
+      "folio_verbatim": "A given hex is considered to be a specific type of terrain if all or any part or it contains that terrain feature symbol.",
+      "evidence": {
+        "crops": ["fix_p1_map_caseB_zoom.png", "fix_p1_map_caseB_4x.png"],
+        "crop_spec": "page 1, frac x 0.1348-0.2483 (column 2, px 939-1730), y 0.295-0.365, scale 6x",
+        "corroboration": "The folio's own TEC footnote on p.5 prints the same construction correctly: 'A hex is considered to be Woods terrain if all or any part of it contains the symbol of that terrain.' That is what makes the page-1 'or' a typo and not a variant.",
+        "read_method": ["eye-6x", "ocr-psm6-percolumn"],
+        "confidence": "certain"
+      },
+      "severity": "low",
+      "found_by": ["rules_2nd_ed.json disagreement 1", "this correction pass"],
+      "gate_consequence": "None on meaning. Registered as a printed defect (typographical), same class as NAW2-SD-1."
+    },
+    {
+      "id": "C4",
+      "footnote": "[^c4]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Artillery'",
+      "rule_ref": "2nd Ed p.1 col.7, ARTILLERY, case (C) [rules_2nd_ed.json ART-09/ART-11]",
+      "class": "unsourced extension of a permission",
+      "was": "Bombarding artillery is never eliminated or retreated by an adverse result (it may retreat voluntarily, and may voluntarily accept an 'Attacker Retreat').",
+      "now": "Bombarding artillery is never eliminated or retreated by an adverse result - 'they are never destroyed or retreated as a result of their own failed attacks' - but 'Bombarding Artillery units may voluntarily elect to suffer an \"Attacker Retreat\" combat result.'",
+      "folio_verbatim": "When an attack fails, bombarding artillery (i.e., attacking from two hexes distant) suffer no ill effects: they are never destroyed or retreated as a result of their own failed attacks. Artillery units attacking from an adjacent position must suffer all the combat results of their attacks. Bombarding Artillery units may voluntarily elect to suffer an \"Attacker Retreat\" combat result.",
+      "evidence": {
+        "crops": ["fix_p1_col7_mid.png"],
+        "crop_spec": "page 1, frac x 0.7487-0.8707 (column 7, px 5217-6067), y 0.10-0.62; carries artillery cases (A)-(F) whole",
+        "negative_evidence": "the substring 'volunt' occurs exactly once in the per-column OCR of the entire page (fix_p1_percol_ocr.txt, line 560), inside this sentence",
+        "read_method": ["eye-native", "ocr-psm6-percolumn"],
+        "confidence": "certain"
+      },
+      "severity": "moderate",
+      "found_by": ["rules_2nd_ed.json disagreement 4", "this correction pass"],
+      "gate_consequence": "The only voluntary retreat on the sheet is the opt-in to an Ar RESULT. A free voluntary retreat outside a combat result would be movement, forbidden in a Combat Phase by p.1 TURNS OF PLAY case (B.). Note that because the 2nd Ed gives the victorious player the retreat direction, an opted-in Ar hands the direction choice to the defender."
+    },
+    {
+      "id": "C5",
+      "footnote": "[^c5]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'DISRUPTION' (sourcing)",
+      "rule_ref": "2nd Ed p.5, run-in DISRUPTION paragraph inside RETREAT AND ADVANCE, British/Prussian aid",
+      "class": "mis-sourced rule",
+      "was": "DISRUPTION presented in a section whose stated source is 'p. 1 (rules columns) and p. 5 (charts)', with no indication which carries it.",
+      "now": "DISRUPTION is printed exactly once in the entire 2nd Edition folio: on page 5, as a run-in bold heading inside the Retreat and Advance block on the British/Prussian half. It is not on the rules sheet. A 'which page carries what' note was added to the section 3 header.",
+      "folio_verbatim": null,
+      "evidence": {
+        "crops": ["fix_p5_col2_retreat_disr.png", "fix_p5_col3_disruption_optadv.png"],
+        "negative_evidence": "own 2x per-column OCR of all eight columns of page 1 (fix_p1_percol_ocr.txt, 24516 chars): count('disrupt') = 0, count('safe') = 0, count('chain-reaction') = 0",
+        "read_method": ["ocr-psm6-percolumn", "eye-native"],
+        "confidence": "certain"
+      },
+      "severity": "high",
+      "found_by": ["disruption_verified.json X1", "this correction pass"],
+      "gate_consequence": "An encoder working from the rules columns alone ships the 2nd Edition with no disruption rule and no retreat rule and does not notice. Citing to the wrong page also makes the next reader's verification fail for the wrong reason."
+    },
+    {
+      "id": "C6",
+      "footnote": "[^c6]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'DISRUPTION' (failure trigger)",
+      "rule_ref": "2nd Ed p.5, DISRUPTION, sentences 3-4",
+      "class": "paraphrase that widened a printed trigger",
+      "was": "If the only safe hex available to a retreating unit is already occupied by an uninvolved friendly unit, that unit is displaced; where no path remains, 'the unit which was forced to retreat as a result of combat is ELIMINATED instead.'",
+      "now": "The full paragraph is quoted verbatim, and the trigger is stated as printed: the elimination fires when the DISPLACEMENT of the uninvolved unit could only be made into Enemy units, Zones of Control or woods. In that case the uninvolved unit stays put and the original retreating unit dies.",
+      "folio_verbatim": "DISRUPTION: If the only \"safe\" hex available to the retreating unit is one which is already occupied by another, uninvolved Friendly unit, then the uninvolved unit is \"disrupted\" (pushed out of its hex) by the retreating unit. The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit. The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods. If this would be the only path of retreat available, then the uninvolved unit is NOT disrupted: It stays in its original position and the unit which was forced to retreat as a result of combat is ELIMINATED instead. Disrupted units can themselves disrupt other Friendly units in a sort of \"chain-reaction\" of disruption, if that is the only safe path of retreat open to them. Disrupted artillery units may NOT fire in the Combat Phase in which they were disrupted.",
+      "evidence": {
+        "crops": ["fix_p5_col2_retreat_disr.png", "fix_p5_col3_disruption_optadv.png"],
+        "crop_spec": "page 5, frac x 0.000-0.215, y 0.150-0.340 and y 0.320-0.510, rotate 90; the paragraph opens at the foot of one printed column and continues at the head of the next",
+        "read_method": ["eye-native", "ocr-psm6"],
+        "confidence": "certain"
+      },
+      "severity": "critical",
+      "found_by": ["disruption_verified.json X5", "this correction pass"],
+      "gate_consequence": "A unit that survives under the printed rule dies under the paraphrase, and vice versa, in ordinary crowded positions. Also closes the PREP-1 'bridging clause unresolved' flag: the unresolved connective was the 'moved back ... as if it were retreating' / 'may not be forced into' pair, now read at 6x.",
+      "still_undefined_in_print": [
+        "whether the displacement may be pushed off the map - that bar is listed for retreats and omitted from the disruption sentence",
+        "whether the bare 'woods' means all Woods hexes or only the 'non-Road Woods' named two sentences earlier",
+        "'moved back ... as if it were retreating' - back relative to what, since the disrupted unit fought no combat",
+        "which unit dies when a chain-reaction fails at depth N"
+      ]
+    },
+    {
+      "id": "C7",
+      "footnote": "[^c7]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Explanation of Results'",
+      "rule_ref": "2nd Ed p.5, EXPLANATION OF RESULTS, both printed copies",
+      "class": "inventory error plus dropped clause",
+      "was": "A single normalised transcription, given once, implying the two printed copies are identical; the EX gloss stopped at '...made up only from units directly involved in that attack.'",
+      "now": "The two copies are flagged as different settings of the same rules, and the EX entry's closing sentence is restored.",
+      "folio_verbatim": {
+        "french_copy": "AE= Attacker Eliminated: The attacking unit(s) is eliminated (destroyed) and is immediately removed from the map. ... EX= Exchange: ... Both side's losses are immediately removed from the map. A surviving attacking unit may then exercise the option to advance into the hex formerly occupied by the Defender. ... Dr= Defender Retreats ... DE= Defender Eliminated",
+        "british_prussian_copy": "AE - Attacker Eliminated: The attacking unit(s) is (are) eliminated (destroyed) and is(are) immediately removed from the map. ... EX - Exchange: ... Both sides' losses are immediately removed from the map. A surviving attacking unit may then exercise the option to advance into the hex formerly occupied by the Defender. ... Dr - Defender Retreats ... DE - Defender Eliminated",
+        "differences": [
+          "code/gloss separator: French '=' vs British/Prussian en dash",
+          "number agreement: French 'unit(s) is eliminated' vs British/Prussian 'unit(s) is(are) eliminated'",
+          "French copy prints 'Both side's losses' (printed typo, one copy only); British/Prussian prints 'Both sides' losses'"
+        ]
+      },
+      "evidence": {
+        "crops": ["fix_p5_french_expl.png", "fix_p5_col2_retreat_disr.png"],
+        "crop_spec": "French copy: page 5 frac x 0.790-1.000, y 0.300-0.500, rotate 270. British/Prussian copy: frac x 0.000-0.215, y 0.150-0.340, rotate 90.",
+        "read_method": ["eye-native", "ocr-psm6"],
+        "confidence": "certain"
+      },
+      "severity": "high",
+      "found_by": ["combat_charts.json X3 and X5", "disruption_verified.json X3", "this correction pass"],
+      "gate_consequence": "'The two printed copies agree cell for cell' is true of the CRT and false of this chart; it had been carried over silently. The restored clause is substantive: the 2nd Edition affirmatively permits an advance after an EX, which the document was silent on."
+    },
+    {
+      "id": "C8",
+      "footnote": "[^c8]",
+      "section": "RULEBOOK_VERIFIED.md section 3 ('Retreat and advance' sourcing note) and new section 5 discrepancy D17",
+      "rule_ref": "2nd Ed p.1, whole sheet (negative finding); procedure carried by p.5 chart",
+      "class": "addition - omission in the printed game, never recorded by this document",
+      "was": "(absent) The document gave the retreat rules without saying where they are printed, and never recorded that page 1 has none.",
+      "now": "The rules sheet contains no retreat procedure of any kind. Eleven occurrences of 'retreat' on page 1, all references to a retreat happening; none states who chooses direction, how far, which hexes are legal, or what happens when none is. The whole procedure is on the page-5 chart, British/Prussian half only. Recorded in section 3 and as source defect D17.",
+      "folio_verbatim": null,
+      "evidence": {
+        "files": ["fix_p1_percol_ocr.txt"],
+        "counts": {"retreat": 11, "disrupt": 0, "safe": 0},
+        "hit_lines": "308, 368, 369, 382, 472, 479, 509, 556, 561, 579, 658 - each read in context, each a reference to a retreat occurring",
+        "read_method": ["ocr-psm6-percolumn", "eye-native"],
+        "confidence": "certain"
+      },
+      "severity": "high",
+      "found_by": ["rules_2nd_ed.json structural_finding", "this correction pass"],
+      "gate_consequence": "Standing trap for any pipeline that treats 'the rulebook' as page 1. Classified as a defect of the ORIGINAL PUBLISHED GAME (component split / omission), registered as D17."
+    },
+    {
+      "id": "C9",
+      "footnote": "[^c9]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Movement'",
+      "rule_ref": "2nd Ed p.1 col.4, MOVEMENT, case (K.) [rules_2nd_ed.json MOV-19]",
+      "class": "addition - printed rule the document never mentioned",
+      "was": "(absent) Movement case (K.) did not appear in the document at all.",
+      "now": "Once a unit has been moved, and the Player's hand is taken from the piece, it may not be moved any further during that Player-Turn, not may it change its move without the consent of the opposing Player.",
+      "folio_verbatim": "Once a unit has been moved, and the Player's hand is taken from the piece, it may not be moved any further during that Player-Turn, not may it change its move without the consent of the opposing Player.",
+      "evidence": {
+        "crops": ["fix_p1_mov_caseK_zoom.png", "fix_p1_mov_caseK_5x.png"],
+        "crop_spec": "page 1, frac x 0.3776-0.4930 (column 4, px 2631-3435), y 0.865-0.945, scale 5x",
+        "printed_typo": "'not may it change' where the sense requires 'nor' - the third printed typo on this sheet, alongside 'extends' (NAW2-SD-1) and 'or it contains' (C3)",
+        "read_method": ["eye-5x", "ocr-psm6-percolumn"],
+        "confidence": "certain"
+      },
+      "severity": "moderate",
+      "found_by": ["rules_2nd_ed.json omitted_by_rulebook_verified", "this correction pass"],
+      "gate_consequence": "Unenforceable as written - the trigger is physical and the escape is social. But it is the printed rule that governs whether an engine UNDO is legal: an undo is precisely 'changing a move', and this case makes it require the opponent's consent. Engine-policy question for Bruce, not a legality check."
+    },
+    {
+      "id": "C10",
+      "footnote": "[^c10]",
+      "section": "RULEBOOK_VERIFIED.md section 3, 'Optional advance' (sourcing)",
+      "rule_ref": "2nd Ed p.1 col.6 COMBAT case (H.) vs p.5 OPTIONAL ADVANCE block",
+      "class": "mis-sourced claim",
+      "was": "A single merged, unattributed Optional-advance bullet, which a reader would take for rules-column text.",
+      "now": "Per-sentence sourcing. The page-5 block is quoted for the ZOC, immediacy, never-forced, one-hex and no-MP statements; page 1 case (H.) is quoted separately and its narrower scope stated explicitly.",
+      "folio_verbatim": {
+        "page1_case_H": "Whenever, as a direct result of combat, an Enemy unit is thrown back (retreated) or removed from play (eliminated) the victorious unit may advance into the hex formerly occupied by the defeated force. The option to advance is exercised IMMEDIATELY. The advance may be made even if the advancing unit is still in an Enemy unit's Zone of Control. Retreating and advancing due to combat is not considered as part of regular Movement and is not counted as an expenditure of Movement Points.",
+        "page5_optional_advance": "OPTIONAL ADVANCE: Whenever a hex is vacated as a result of combat, the victorious unit responsible for the Enemy elimination or retreat may advance into the vacated hex. This may be done even if the victorious unit is still in an Enemy Zone of Control and/or if the vacated hex is in an Enemy Zone of Control. The option to advance must be exercised immediately. A unit is never forced to advance. A unit may never advance more than one hex as a result of combat. Advances are not counted as regular Movement and therefore expend no Movement Points."
+      },
+      "evidence": {
+        "crops": ["fix_p1_col6_bot.png", "fix_p5_col3_disruption_optadv.png", "fix_p5_region_c34.png"],
+        "read_method": ["eye-native", "ocr-psm6-percolumn"],
+        "confidence": "certain"
+      },
+      "severity": "moderate",
+      "found_by": ["this correction pass (arising from the two rejected reports below)"],
+      "gate_consequence": "On this title, 'not printed on the rules sheet' and 'not printed' are different claims. The second requires page 5 to be checked first."
+    }
+  ],
+
+  "rejected_after_verification": [
+    {
+      "id": "R1",
+      "reported_as": "CBT-15 - the document says the advance is legal 'even if that unit is still in an enemy ZOC and/or the vacated hex is in one'; the folio grants only the first half, the second clause appears nowhere on page 1.",
+      "reported_by": ["rules_2nd_ed.json disagreement 2"],
+      "verdict": "NOT APPLIED - the report is correct about page 1 and wrong about the folio.",
+      "what_i_read": "Page 1 case (H.) does grant only the first half, exactly as reported. But the page-5 OPTIONAL ADVANCE block prints: 'This may be done even if the victorious unit is still in an Enemy Zone of Control and/or if the vacated hex is in an Enemy Zone of Control.' Section 3 of the document draws on p.1 AND p.5, so the sentence is sourced and correct.",
+      "evidence": {"crops": ["fix_p1_col6_bot.png", "fix_p5_col3_disruption_optadv.png"], "read_method": ["eye-native", "ocr-psm6"], "confidence": "certain"},
+      "action_taken": "Sourcing added instead (C10). Applying the correction would have deleted a true printed rule from a verbatim-authority document."
+    },
+    {
+      "id": "R2",
+      "reported_as": "CBT-14 - 'limited to one hex' and 'never compulsory' are sound inferences, not printed text, presented unmarked.",
+      "reported_by": ["rules_2nd_ed.json disagreement 3"],
+      "verdict": "NOT APPLIED - the report is correct about page 1 and wrong about the folio.",
+      "what_i_read": "Both are printed as flat sentences in the page-5 OPTIONAL ADVANCE block: 'A unit is never forced to advance. A unit may never advance more than one hex as a result of combat.' They are not inferences.",
+      "evidence": {"crops": ["fix_p5_col3_disruption_optadv.png"], "read_method": ["eye-native", "ocr-psm6"], "confidence": "certain"},
+      "action_taken": "Sourcing added instead (C10)."
+    }
+  ],
+
+  "unconfirmed": [],
+
+  "printed_defects_touched_by_this_pass": [
+    {"id": "NAW2-SD-1", "where": "p.1 SETTING UP case (B.)", "printed": "extends one Movement Point", "expected": "expends", "status": "already registered; footnote [^ext] stands"},
+    {"id": "candidate", "where": "p.1 THE MAP case (B.)", "printed": "all or any part or it contains", "expected": "of", "status": "confirmed by this pass at 6x; C3"},
+    {"id": "candidate", "where": "p.1 MOVEMENT case (K.)", "printed": "not may it change its move", "expected": "nor", "status": "confirmed by this pass at 5x; C9"},
+    {"id": "candidate", "where": "p.5 EXPLANATION OF RESULTS, French copy only", "printed": "Both side's losses", "expected": "Both sides'", "status": "confirmed by this pass; C7"},
+    {"id": "D17", "where": "p.1 whole sheet + p.5 aid asymmetry", "printed": "(no retreat procedure anywhere on the rules sheet; TEC on one aid only, retreat rules on the other)", "expected": "a complete rules sheet, or symmetric aids", "status": "new source-defect entry added to RULEBOOK_VERIFIED section 5; C2 + C8"}
+  ],
+
+  "scope_note": "3rd Edition sections of RULEBOOK_VERIFIED.md were not touched. No engine, UI, game.json, scenario, terrain or validator file was modified by this pass."
+}

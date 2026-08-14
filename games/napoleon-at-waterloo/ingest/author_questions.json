@@ -1,0 +1,373 @@
+{
+ "produced_by": "PREP-7 JOB B",
+ "read_on": "2026-08-14",
+ "what_this_is": "The module-author question register for SPI Napoleon at Waterloo. HALF ONE = questions only a human can answer. HALF TWO = differences we can demonstrate. Companion document: literature/napoleon-at-waterloo/AUTHOR_QUESTIONS.md (local, gitignored).",
+ "sending_rule": "NOTHING HERE HAS BEEN SENT. Nothing goes to any author, listing, forum or issue tracker without Bruce's EXPLICIT PER-ITEM GO. This file is an internal register, not a draft message.",
+ "headline": "The 2nd Edition encoding is not waiting on any human. 11 of 14 items block nothing; the 3 that touch the 3rd Edition were already blocked by the absence of a printed 3rd Edition map sheet and Terrain Effects Chart, and the most promising route to those is a public download (Q1), not a question.",
+ "counts": {
+  "questions": 7,
+  "reports": 7,
+  "withdrawn_this_bite": 3,
+  "blocking_2nd_edition": 0,
+  "blocking_3rd_edition": 3,
+  "we_are_more_likely_wrong_than_the_author": 3
+ },
+ "parties": [
+  {
+   "id": "oliver",
+   "name": "Stephen Oliver",
+   "library_handle": "Stephen_Oliver",
+   "owns": "Napoleon at Waterloo 2nd Edition v2.2.0",
+   "project_slug": "napoleon_at_waterloo_2nd_ed_stephen_oliver",
+   "project_owners": [
+    "Stephen_Oliver",
+    "cholmcc"
+   ],
+   "listing_credit": "implementation by Stephen Oliver (2021)",
+   "routing_note": "The 2.2.0 file was uploaded by iam2509 on 2022-01-24 and cholmcc is a co-owner. If Stephen is inactive, those two are the live maintainers.",
+   "items": [
+    "Q2",
+    "Q6",
+    "R-2",
+    "R-3",
+    "R-7"
+   ]
+  },
+  {
+   "id": "davejm",
+   "name": "DaveJM",
+   "library_handle": "DaveJM",
+   "owns": "Napoleon at Waterloo (3rd Ed) v1.1.0",
+   "project_slug": "napoleon_at_waterloo_3rd_ed_davejm",
+   "project_owners": [
+    "DaveJM",
+    "cholmcc",
+    "iam2509"
+   ],
+   "listing_credit": "implementation by DaveJM et al (2024)",
+   "routing_note": "Published both releases himself: 1.0.0 on 2022-04-03, 1.1.0 on 2024-12-31.",
+   "items": [
+    "Q1 (second)",
+    "Q3",
+    "Q7",
+    "R-1",
+    "R-4",
+    "R-5",
+    "R-6"
+   ]
+  },
+  {
+   "id": "cholmcc",
+   "name": "Christian Holm Christensen",
+   "library_handle": "cholmcc",
+   "owns": "his own Napoleon at Waterloo (2nd & 3rd Ed) module v2.0.0 (published 2026-08-11), and the 2024 LaTeX print-and-play revamp whose rules.pdf and org.pdf we hold",
+   "project_slug": "napoleon_at_waterloo_cholmcc",
+   "project_owners": [
+    "cholmcc"
+   ],
+   "routing_note": "Co-owner of ALL THREE NaW projects, the most recently active, and the only party who has written publicly about the differences between the editions. Natural first contact and the likely route to printed 3rd Edition material.",
+   "items": [
+    "Q1",
+    "Q4",
+    "Q5"
+   ]
+  },
+  {
+   "id": "sabin",
+   "name": "Philip Sabin",
+   "library_handle": null,
+   "owns": "Simple Rules Tweaks (April 2020) and its November 2023 second edition",
+   "routing_note": "NO question and NO report. His tweaks are published as clearly labelled house rules under his own name; that their text appears on a chart inside a module is a packaging consequence, not anything he did. Listed only so nobody routes an item to him by mistake.",
+   "items": []
+  },
+  {
+   "id": "iam2509",
+   "name": "iam2509",
+   "library_handle": "iam2509",
+   "owns": "co-owner of the 3rd Ed project; uploader of Oliver's 2.2.0 release",
+   "routing_note": "Not a target for any item. Relevant only as a live contact point.",
+   "items": []
+  }
+ ],
+ "evidence_footing": {
+  "principle": "Pin the artefact by hash before telling its author something is wrong with it.",
+  "verified_this_bite": [
+   {
+    "module": "oliver 2.2.0",
+    "published_filename": "Napoleon at Waterloo 2nd Ed Vers 2.2.vmod",
+    "published_size_bytes": 12439999,
+    "published_sha256": "d74511843cc04e7cd81fc2d061517732fad80bddbefb642238ea3ee54778e498",
+    "our_tree": "C:\\VassalNaW\\modules\\ed2_oliver",
+    "result": "157 of 157 files byte-identical with the published release"
+   },
+   {
+    "module": "davejm 1.1.0",
+    "published_filename": "Napoleon at Waterloo SPI V1.1.vmod",
+    "published_size_bytes": 40966822,
+    "published_sha256": "518910f02055c9ba17587395dc0f985f240ad0d0b4a42e42dbbc358c7615d9f1",
+    "our_tree": "C:\\VassalNaW\\modules\\ed3_davejm",
+    "result": "152 of 152 files byte-identical with the published release"
+   }
+  ],
+  "trap_caught": "A file named 'Napoleon at Waterloo V1.1.vmod' inside our davejm extraction is NOT the release: it is an earlier build (VASSAL 3.7.5, saved 2024-08-02) that the release carries inside itself. Reading defects off it would have produced reports about a file nobody ever downloaded. It became R-1."
+ },
+ "questions": [
+  {
+   "id": "Q1",
+   "status": "SELF-ANSWERABLE FIRST, then OPEN",
+   "topic": "Does a scan of the printed 3rd Edition (1979) map sheet and its Terrain Effects Chart exist?",
+   "question": "Do you know of a scan of the printed 1979 map sheet, specifically one where the Terrain Effects Chart is legible? Your module notes describe the 1979 map precisely enough that you have clearly seen one.",
+   "evidence": "Defence doubling (E14) and artillery line-of-sight blocking (E15) are stated NOWHERE in the printed 3rd Edition rules text; [1.0]-[9.5] were read end to end. Both can only live on that edition's Terrain Effects Chart, which [2.2] refers to and does not reproduce. We hold no such chart. The only 3rd Ed TEC in our possession is the contaminated redraw of R-4.",
+   "do_this_before_asking_anyone": {
+    "why": "cholmcc's own library listing publishes two scan archives, both verified to exist this bite (HTTP 200).",
+    "leads": [
+     {
+      "url": "https://www.spigames.net/PDFv7/Free_Nap_Waterloo_1979_Rules_Map.pdf",
+      "described_as": "Rules for Napoleon at Waterloo (1979 version) - rules + map",
+      "size_bytes": 6482844,
+      "last_modified": "2021-07-14"
+     },
+     {
+      "url": "https://www.spigames.net/PDFv7/Nap_Waterloo_1979_Map.pdf",
+      "described_as": "1979 map",
+      "size_bytes": 1579092,
+      "last_modified": "2021-07-14"
+     },
+     {
+      "url": "https://www.spigames.net/PDFv7/Nap at Waterloo Counters.jpg",
+      "described_as": "1979 counters",
+      "size_bytes": 1846034,
+      "last_modified": "2021-07-14"
+     },
+     {
+      "url": "https://nextcloud.simpubs.org/s/PB3Q5eipPCoNLK5",
+      "described_as": "on cholmcc's listing: 'Scans of 1979, including rules, map, counters'",
+      "size_bytes": null,
+      "last_modified": null
+     }
+    ],
+    "related_observation": "The same archive's PDFv2/NapoleonatWaterloo.pdf shares its filename and character with the 2nd Edition folio we have been reading since PREP-1, so our primary 2nd Edition witness and this candidate 3rd Edition witness appear to come from the same source.",
+    "order_of_operations": "Fetch, open, confirm the sheet is a scan or photograph of printed 1979 paper and that a Terrain Effects Chart is legible on it, tier it under the authority ladder - THEN decide whether any human needs asking. No filename makes a file primary."
+   },
+   "unblocks": "the entire 3rd Edition encoding",
+   "recipient": "cholmcc first, DaveJM second",
+   "blocks": "3rd Edition",
+   "if_no_answer": "The 3rd Edition ships as NOT PLAYABLE on the coverage matrix with the missing chart named as the reason. That is a verdict, not a disclaimer. The 2nd Edition ships regardless."
+  },
+  {
+   "id": "Q2",
+   "status": "OPEN",
+   "topic": "Provenance of the CRT and TEC scans in the 2nd Edition module",
+   "question": "Were NapatWatCRT.jpg and NapatWat TEC.jpg scanned from a copy of the printed 1971 folio, and if so which printing?",
+   "credit_first": "They are good. They independently confirmed our folio transcription in all 60 CRT cells, the clamp footnote, and the full TEC wording including the 'Towns & Woods/Roads' grouping. At native resolution they show period type, halftone screen in the grey bands, cream paper, and on the TEC a pink printer guide line still in shot.",
+   "evidence": "Authority ladder disagreement D: both measure and look like T0 PRINTED PRIMARY and are held at T1 solely because provenance is unestablished. A JPEG inside a module zip could be a scan of the folio, of a later reprint, or of a retouched intermediate, and the pixels cannot tell us which.",
+   "unblocks": "nothing we are waiting on; it tidies our authority ladder and would let these two files stand as primary witnesses in their own right",
+   "recipient": "Stephen Oliver, copying iam2509 / cholmcc",
+   "blocks": "neither edition",
+   "if_no_answer": "They stay T1, which costs us nothing: the printed folio is primary and already covers every claim they corroborate."
+  },
+  {
+   "id": "Q3",
+   "status": "OPEN - mostly answered already by the author's own listing",
+   "topic": "3rd Edition counters and the fifth printed item",
+   "already_answered_publicly": "The listing states: 'Thanks to Stephen Oliver who developed Napoleon at Waterloo for VASSAL and allowed me to modify his module to make this print and play version', and enumerates the changes as 'Uses the smaller map' and 'Prussian reinforcements set to arrive on turn 3'. Two declared changes; the counters were not among them. That is a scoping decision, not an oversight.",
+   "question": "Printed 3rd Edition [2.4] specifies five items on a counter, the fifth being the starting hex or Game-Turn of entry; the inherited 2nd Edition art prints four. Was reproducing that fifth item considered and set aside, as a print-and-play simplification or because the module handles setup anyway?",
+   "unblocks": "whether any DaveJM asset could ever be treated as a witness to 3rd Edition components; our current ruling is that none can, and this would only confirm it",
+   "recipient": "DaveJM",
+   "blocks": "neither edition",
+   "if_no_answer": "The current ruling stands unchanged."
+  },
+  {
+   "id": "Q4",
+   "status": "OPEN",
+   "topic": "'The rules are the same' between the 2nd and 3rd Editions",
+   "their_statement_verbatim": "Other than these changes there were no other changed from the 2nd edition (i.e., the rules are the same).",
+   "credit_first": "That sentence sits inside the most careful public writing about this game we have found. It gets the 1st/2nd edition doubling change right, dates the Grouchy variant to Moves 3 (1972, A.A. Nofi), and identifies the 2014 Decision Games release as the 3rd Edition reissued.",
+   "our_reading_disagrees_on": [
+    "retreat direction is chosen by the VICTORIOUS PLAYER in the 2nd Edition and BY THE OWNER in the 3rd [6.4]",
+    "reinforcement entry MAY NOT be deliberately delayed in the 2nd Edition and MAY be delayed for as long as the Player wishes in the 3rd [7.3]",
+    "bombardment is restricted to artillery NOT in an enemy Zone of Control in the 3rd [5.6], where the 2nd Edition's own worked case positively describes the opposite",
+    "the 2nd Edition prints a named DISRUPTION rule with an artillery firing penalty the 3rd does not have, and the 3rd adds a displacement bar the 2nd does not have [6.5]"
+   ],
+   "question": "Which printings was that comparison made against? There is a real possibility of a printing we have not seen - the 2014 Decision Games reissue, for instance - and if so we would like to know it exists.",
+   "unblocks": "confidence in our 3rd Edition rules corpus, and possibly a lead on printed material",
+   "recipient": "cholmcc",
+   "blocks": "neither edition",
+   "if_no_answer": "Our printed readings stand; they are quoted from primary text read end to end. His own module documentation states its content is entirely new authorship, so under our ladder it is not a source for the published game in any case."
+  },
+  {
+   "id": "Q5",
+   "status": "OPEN - a lead, not evidence",
+   "topic": "Is the 1979 map a crop of the 1971 map, or a fresh drawing of the same ground?",
+   "their_statement_verbatim": "One and three hex columns was removed from the west and east edges, respectively, and 5 hex columns from the south edge (the compass direction was also fixed). The graphics of the map was updated...",
+   "why_it_is_striking": "The arithmetic lands exactly on our independently measured fields. We measured the 2nd Edition at 27 columns x 22 rows off two separate artefacts, and the 3rd Edition at 23 columns, 17 rows odd / 16 even, by machine-reading the printed hex number out of all 414 probed cells. 27 - 1 - 3 = 23. 22 - 5 = 17. Neither figure was known to us from his text and neither was tuned.",
+   "why_it_matters": "If the 1979 field is the 1971 field cropped, our existing 2nd Edition terrain (503 clear / 30 town / 56 woods / 5 woods-road, two independent witnesses agreeing hex for hex on all 61 woods hexes) could be cropped to the 3rd Edition field instead of read off a redraw. That removes ONE of the two reasons the 3rd Edition is blocked. It does NOT remove the other: E14/E15 still need that edition's printed chart, so Q1 stands either way.",
+   "the_gap_rule_applies": "A library listing is, on our own ladder, scaffold - citable for nothing, not even its own content. A non-primary asset can corroborate; it can never fill a gap. This tells us where to point a camera. It cannot be the authority for one hex of terrain.",
+   "question": "Was that description taken from comparing the two printed maps side by side, and is the hex geography identical in the overlapping area?",
+   "unblocks": "possibly the terrain half of the 3rd Edition blocker",
+   "recipient": "cholmcc",
+   "blocks": "3rd Edition",
+   "if_no_answer": "3rd Edition terrain remains a redraw's opinion and stays blocked. Q1's printed map, if it arrives, answers this by direct comparison and makes the question moot."
+  },
+  {
+   "id": "Q6",
+   "status": "OPEN",
+   "topic": "The Grouchy sheet's turn numbers - was the one-turn shift a deliberate adaptation?",
+   "evidence": "Grouchy Variant.jpg, shipped byte-identically in both modules, reads 'Game-Turn Four' where printed [9.2]-[9.4] reads Game-Turn Five, and 'Game-Turn Two' where the printed text reads Game-Turn Three. Every turn number is shifted one turn earlier.",
+   "we_were_probably_wrong": "We recorded that as a defect. The Grouchy variant is a 3rd Edition rule, written for an edition whose Prussians arrive on Turn 3. The module it was made for is a 2nd Edition module, whose Prussians arrive on Turn 2. Shifting every turn number exactly one turn earlier is precisely - and only - what porting that variant to the 2nd Edition schedule requires. The fit is exact.",
+   "question": "Was the sheet retimed deliberately to suit the 2nd Edition's turn-2 Prussian arrival?",
+   "unblocks": "nothing of ours - we encode neither the variant nor the 3rd Edition. It converts R-7 from a report we should probably never send into a note explaining a considered decision.",
+   "recipient": "Stephen Oliver (the sheet originates in his module; DaveJM's copy is inherited)",
+   "blocks": "neither edition",
+   "if_no_answer": "Treat the shift as deliberate. That is the reading the evidence supports."
+  },
+  {
+   "id": "Q7",
+   "status": "OPEN - courtesy",
+   "topic": "The 3rd Edition listing carries a caveat we cannot reproduce",
+   "their_note_verbatim": "It seems that this module contains two copies of the Prussian II Corps, Artillery Brigade, and is missing the Prussian IV Corps, Artillery Brigade.",
+   "what_we_found": "Not reproducible in either published release. In 1.1.0 and in 1.0.0 the piece roster carries one 'Prussian IV Art (3-3)' and one 'Prussian II Art (4-3)'; they bind to different images (NAW_4_11.png and NAW_4_14.png); both images were opened and read at 6x - one prints IV with 3-3, the other prints II with 4-3. The base nine Prussian units match the printed Time Record exactly (5-4, 4-4 x4, 3-5 x2, 4-3, 3-3), with the remaining seven Prussian slots accounted for by the Grouchy variant contingent.",
+   "question": "Is that note left over from a build before the fix, and would you like it taken down?",
+   "where_we_could_still_be_wrong": "We checked the palette, the art bindings and the art. We did NOT decode the module's four other saved setups (Set Up.vsav, Set Up MT.vsav, N@W Standard.vsav, Stahndard.vsav). If the duplicate lives in a setup file rather than the palette, the note is correct and we are the ones who look careless. DECODE THOSE FOUR BEFORE THIS IS SENT.",
+   "unblocks": "nothing of ours; pure courtesy, and the kind that makes the next question welcome",
+   "recipient": "DaveJM, or cholmcc if he maintains the listing text",
+   "blocks": "neither edition",
+   "if_no_answer": "Nothing happens."
+  }
+ ],
+ "reports": {
+  "sort_order": "By how badly it would embarrass us to be wrong: R-1 needs no interpretation at all and is checkable by anyone in one command; by R-7 we are reading intent off a JPEG and are probably the ones in error.",
+  "standing_framing": "Every one of these is a DIFFERENCE FROM THE PRINTED COMPONENT, which is not the same thing as a mistake. VASSAL modules are not required to reproduce printed art, and several of these differences are visibly deliberate.",
+  "items": [
+   {
+    "id": "R-1",
+    "supersedes": null,
+    "what": "The published 1.1.0 release contains a complete earlier build of itself.",
+    "evidence": "The release was downloaded from the library and its sha256 matches the published 518910f0... exactly. Listing the archive shows 153 entries: 152 module files plus a nested 'Napoleon at Waterloo V1.1.vmod' of 18,724,001 bytes - a complete earlier build (VASSAL 3.7.5, saved 2024-08-02, different buildFile.xml, different image inventory). Roughly 46% of the 40,966,822-byte download is an embedded older copy of itself.",
+    "severity": "packaging only",
+    "affects": "download size; no effect on play whatsoever",
+    "could_we_be_wrong": "No. File arithmetic on the published artefact, reproducible in one command.",
+    "blocks": "neither edition",
+    "recipient": "DaveJM"
+   },
+   {
+    "id": "R-2",
+    "supersedes": "P4C-7",
+    "what": "The redrawn counters drop the size-echelon symbols and the Hougoumont 'H'.",
+    "evidence": "The printed 1971 counters carry an echelon symbol above the unit box - XX on all but two, with a single X on the Allied 4-5 '1 Gd' and the Allied 1-4 - and the 1014 unit carries an 'H' designation. The redrawn NAW_*.png faces carry neither. Read off the printed counter photograph (folio p.4, 4400x3400 native) at 3x-6x against the module art at the same magnification.",
+    "credit_in_the_same_paragraph": "The redraws agree with the photograph on type, designation and both factors for all 44 at-start units. The module's piece data carries each unit's factors twice and agrees with itself 53 times out of 53, and its setup file places all 44 units in the same 44 hexes our reading of the printed map produced. Where the two disagreed on three hexes, re-reading the printed folio proved the module right and us wrong all three times.",
+    "severity": "appearance",
+    "affects": "nothing in play - echelon has no rules effect in this game, and neither does the 'H'",
+    "could_we_be_wrong": "Very unlikely on the absence itself. Possible the symbols were dropped for legibility at counter size, which would make this a decision rather than an omission.",
+    "blocks": "neither edition",
+    "recipient": "Stephen Oliver"
+   },
+   {
+    "id": "R-3",
+    "supersedes": "M2 (counter-label half) / P4C-4",
+    "what": "The variant counters are labelled 'Var' where printed 3rd Edition [9.1] specifies '5v'.",
+    "evidence": "[9.1] read off the printed booklet scan; the label read off the module art (NapWatvariant_*.png).",
+    "severity": "appearance, in an optional subsystem",
+    "affects": "nothing in play. 'Var' is arguably clearer to a new player than '5v', so this may be a deliberate improvement.",
+    "could_we_be_wrong": "Unlikely on the reading; the printed booklet page is legible.",
+    "blocks": "neither edition",
+    "recipient": "Stephen Oliver (the art originates in his module)"
+   },
+   {
+    "id": "R-4",
+    "supersedes": "M1",
+    "what": "The only Terrain Effects Chart in the 3rd Edition module carries house-rule wording.",
+    "evidence": "TEC.png is a modern redraw, not printed art. Its Building row reads 'Double Defence - Except Cavalry with 2020 Rules', a reference to Philip Sabin's April 2020 tweaks. It also omits the doubling the 2nd Edition's printed chart grants to Woods/Road hexes, and asserts that Woods/Road blocks artillery line of sight.",
+    "honest_framing": "This module ships the Sabin variants ON PURPOSE - its own description reads 'Original and P Sabin 2020 & 2023 Rules' - and ships Sabin play aids as separate labelled components. A chart annotating where the 2020 rules diverge is a coherent thing to include in such a module. The difficulty is that it is the ONLY terrain chart in the module, so a player using the original rules reads it too, and so does anybody trying to learn what the printed 1979 chart says.",
+    "severity": "material for a player (defence doubling and artillery line of sight decide combats); for us, it is why the 3rd Edition is blocked",
+    "affects": "play, and our 3rd Edition encoding",
+    "could_we_be_wrong": "Not about what the chart says - the words '2020 Rules' are printed on it. Possibly about calling it a defect at all, since it may be exactly what was intended. What would actually help a downloader is a second chart, or a listing line saying which rules the chart is drawn for.",
+    "blocks": "3rd Edition",
+    "recipient": "DaveJM"
+   },
+   {
+    "id": "R-5",
+    "supersedes": "M4",
+    "what": "The module's map and its bundled variant sheet disagree on when the Prussians arrive.",
+    "evidence": "The map's own printed Time Record marks Prussian entry at 3 pm (Game-Turn 3), correct for the 3rd Edition and one of the two changes the listing advertises. The bundled Grouchy Variant.jpg describes the normal Prussian contingent arriving on Game-Turn Two.",
+    "almost_certainly_inherited": "That sheet is byte-identical to the copy in the 2nd Edition module it derives from, where Turn 2 is correct (see Q6). It came across with the other 90 shared files and nobody re-shifted it back.",
+    "severity": "fidelity, inside an optional subsystem, on the single most edition-defining constant",
+    "affects": "the Grouchy variant only",
+    "could_we_be_wrong": "Unlikely on the readings; both are legible.",
+    "blocks": "neither edition",
+    "recipient": "DaveJM"
+   },
+   {
+    "id": "R-6",
+    "supersedes": "M5, and the play-facing half of M6",
+    "what": "2nd Edition leftovers inside the 3rd Edition module: 'NAW 2nd Edition nameplate.png', and a Beginning Setup.vsav byte-identical to the 2nd Edition module's file - a setup for a 594-hex field inside a module whose map is 380 hexes.",
+    "why_it_is_sixth_and_not_first": "The derivation is declared, credited and permitted in the module's own listing (see W-2). Leftover files are what derivation looks like, and neither is presented to a player as 3rd Edition content.",
+    "the_one_part_worth_a_look": "If Beginning Setup.vsav is reachable from the module's menus, a player loading it on the smaller map would get a mis-set board. The module ships four other setup files, so it may simply be unused.",
+    "severity": "cosmetic, unless that setup file is reachable",
+    "affects": "possibly one setup file",
+    "could_we_be_wrong": "Plausibly yes - it may be a deliberately kept file, and we have NOT decoded the other four setups to see which one the module opens with. Do that first.",
+    "blocks": "neither edition",
+    "recipient": "DaveJM"
+   },
+   {
+    "id": "R-7",
+    "supersedes": "M2 (turn-number half)",
+    "what": "The Grouchy sheet's turn numbers are each one turn earlier than printed [9.2]-[9.4]: 'Game-Turn Four' for printed Five, 'Game-Turn Two' for printed Three. The substituted words are set in a visibly heavier face than the surrounding type, so the edit is deliberate and was never disguised.",
+    "WE_ARE_MORE_LIKELY_WRONG_THAN_THE_AUTHOR": true,
+    "why": "Our own reasoning in Q6 says this is almost certainly a correct adaptation of a 3rd Edition variant to a 2nd Edition module's turn-2 Prussian schedule. Reported as a defect it would be wrong, faintly insulting, and wrong in the specific way this project has failed before - assuming an author's deliberate decision is an error because we lacked the context for it.",
+    "recommendation": "DO NOT SEND THIS AS A REPORT. Ask Q6 instead. If the answer confirms the adaptation, R-7 is withdrawn and the sheet is simply not a witness to the printed 3rd Edition text - which is our constraint, not their defect.",
+    "severity": "probably not a defect at all",
+    "affects": "nothing",
+    "could_we_be_wrong": "Yes, and we probably are.",
+    "blocks": "neither edition",
+    "recipient": "nobody, unless Q6 comes back unexpectedly"
+   }
+  ]
+ },
+ "withdrawn": [
+  {
+   "id": "W-1",
+   "was": "M3 / P4C-3",
+   "claim": "A 2nd Edition module ships a Grouchy variant board for a subsystem that edition never had.",
+   "why_withdrawn": "The module's own listing advertises it as a feature: 'Grouchy variant counters and \"hands\"', directly under 'Implements the 1971 2nd edition of the game'. A module offering an optional variant alongside the base game is a bonus, not a scope error."
+  },
+  {
+   "id": "W-2",
+   "was": "M5 / M6",
+   "claim": "The 3rd Edition module is 90 byte-identical files of the 2nd Edition module.",
+   "why_withdrawn": "True as a measurement and beside the point as a criticism. The listing says 'Thanks to Stephen Oliver who developed Napoleon at Waterloo for VASSAL and allowed me to modify his module to make this print and play version' and 'This module is based on the module by Stephen Oliver', with a link; Oliver's listing says the same from the other side. Declared, credited, permitted, and linked in both directions.",
+   "what_survives": "Not a defect but a constraint on US: files shared between two modules cannot be two independent witnesses. That is our evidence rule and it is nobody's error. RETAINED as an evidence ruling in the authority ladder."
+  },
+  {
+   "id": "W-3",
+   "was": "P4C-6",
+   "claim": "The module gates nothing about Prussian entry - all nine sit on the map outside the battlefield zone from turn one.",
+   "why_withdrawn": "Never a defect, and should not have been recorded next to defects. VASSAL modules are not obliged to enforce rules and most deliberately do not. It is an input to our coverage matrix and nothing else."
+  }
+ ],
+ "blocking_summary": {
+  "2nd_edition": {
+   "blocked_by": [],
+   "statement": "Not waiting on any human. Its rules, examples, CRT, TEC, counter photograph and map are all printed primary sources already read, with module corroboration on all of it."
+  },
+  "3rd_edition": {
+   "blocked_by": [
+    "Q1",
+    "Q5",
+    "R-4"
+   ],
+   "statement": "Blocked before this bite and still blocked: no printed 3rd Edition map sheet, no printed 3rd Edition Terrain Effects Chart. No author can lift that by answering a question - only the artefacts can. Q1's public archives are the most promising route and cost nobody anything."
+  }
+ },
+ "pre_send_checklist": [
+  "Bruce's explicit go, PER ITEM. Not per batch, not per author.",
+  "Q1's public artefacts fetched and read FIRST. Never spend a volunteer's evening on a question a download answers.",
+  "Q7: decode the four undecoded setup files first. The listing note may be correct.",
+  "R-6: establish which setup the module actually opens with before suggesting a file is stale.",
+  "Q6 answered before R-7 is ever mentioned. Preferably R-7 is never mentioned.",
+  "Every claim pinned to the published sha256, quoted verbatim, with the printed section and page it is measured against.",
+  "Credit before correction, in every message. Oliver's charts confirmed our transcription in 60 cells and his module corrected our own map reading three times. DaveJM's listing documents its derivation more carefully than most commercial products document theirs. Christian's edition history is the best public writing on this game we have found and points at the archives that may unblock us. All three gave this away free.",
+  "'Difference', not 'bug'. A module is not a facsimile and was never claimed to be."
+ ],
+ "why_the_caution": "PREP-4 and PREP-5 found nine errors in our own verified documents and three misread hexes. On this encoding we have been the wrong party more often than these authors have."
+}
