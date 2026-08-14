@@ -1650,7 +1650,7 @@ def api_reset(body=None):
     if SG:
         SG.new_game()
     if SJ:
-        SJ.new_game(SJ._fresh_seed(None))
+        SJ.new_game(SJ._fresh_seed((body or {}).get("seed")))
     if TG:
         TG.new_game()
     if GAME_OBJ.setup_save:

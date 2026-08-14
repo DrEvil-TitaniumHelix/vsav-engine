@@ -1,0 +1,24 @@
+{
+  "requirements": [
+    {
+      "id": "soj_v250",
+      "title": "The Siege of Jerusalem (Avalon Hill, 1989) — VASSAL module",
+      "filename": "SOJ 2_5_0.vmod",
+      "size": 30014120,
+      "sha256": "886620d524b1b96ddfee3c26f128619753c08b89b37cc5ce7c81c49a35325588",
+      "page": "https://vassalengine.org/library/projects/The_Siege_of_Jerusalem",
+      "hint": "Download “SOJ 2_5_0.vmod” (version 2.5.0) from the VASSAL Module Library page above — the v2.5 line matches the printed map's hex names, and that exact file is the version this game was validated against."
+    }
+  ],
+  "assets": {
+    "map": {
+      "req": "soj_v250",
+      "entry": "images/SoJ_map.jpg"
+    },
+    "counters": {
+      "req": "soj_v250",
+      "prefix": "images/",
+      "all": true
+    }
+  }
+}
