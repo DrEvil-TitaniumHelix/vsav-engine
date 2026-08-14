@@ -1,0 +1,235 @@
+{
+  "produced_by": "games/napoleon-at-waterloo/ingest/naw_timerecord.py",
+  "bite": "PREP-4 job B - map-sheet OOB furniture (Time Record, Exited French Units box, Demoralization Scale)",
+  "read_on": "2026-08-14",
+  "edition": "2nd Edition only (1971 SPI folio). 3rd-Edition material out of scope for this file.",
+  "authority": {
+    "primary": "C:\\VassalLibrary\\launchbox\\Manuals\\VASSAL\\Napoleon at Waterloo (2nd Ed)\\NapoleonatWaterloo.pdf",
+    "primary_kind": "scan of the printed 1971 SPI folio; sheet carries 'Second Edition Copyright 1971, Simulations Publications, Inc.' (crop b_second_edition_copyright.png / b_demoral_howto_french.png)",
+    "corroborating_witness": "C:\\VassalNaW\\modules\\ed2_oliver\\images\\Nap at Waterloo map 20mm hexes.jpg",
+    "corroborating_witness_kind": "REDRAW, not a faithful reproduction - colour restoration with the sheet furniture re-laid-out (Time Record moved to the right edge and rotated, Demoralization Scale reflowed from one row of 40 into two rows of 20, woods tinted green). Its CONTENT matched the folio cell for cell on every item read in this bite; its LAYOUT does not. Per the PREP-3 per-asset rule it is a second witness for content only.",
+    "never_cite": [
+      "(2nd & 3rd Ed)/rules.pdf - 2024 Christian Holm Christensen revamp; its reinforcements run off drawn chits, which is in neither printed edition",
+      "(2nd & 3rd Ed)/org.pdf",
+      "any Sabin document",
+      "davejm module art (3rd Ed)"
+    ]
+  },
+  "source": {
+    "file": "Napoleon at Waterloo (2nd Ed)/NapoleonatWaterloo.pdf",
+    "map_page": 5,
+    "map_page_render": "embedded page image extracted at native resolution 6952x5171 px (no rasterisation, no dpi resample)",
+    "rules_page": 1,
+    "rules_page_render": "embedded page image extracted at native resolution 6968x3519 px"
+  },
+  "method_note": "Every row below marked read=by-eye was adjudicated by opening the named crop as an image and reading it directly. Rows marked read=OCR came from pytesseract (Tesseract 5) and were then confirmed by-eye off the named crop unless stated otherwise. No digit in this file was inferred, completed or averaged.",
+
+  "time_record": {
+    "title_printed": "TIME RECORD:",
+    "caption_printed": "Place the time-record marker to indicate the current Game-Turn.",
+    "slot_count": 10,
+    "slots": [
+      {"turn": 1, "printed": "1 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_L_head_1pm_2pm.png"},
+      {"turn": 2, "printed": "2 pm", "extra_printed": "Prussians enter  + nine unit pictures printed inside the same slot", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_L_head_1pm_2pm.png"},
+      {"turn": 3, "printed": "3 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 4, "printed": "4 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 5, "printed": "5 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 6, "printed": "6 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 7, "printed": "7 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 8, "printed": "8 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 9, "printed": "9 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"},
+      {"turn": 10, "printed": "10 pm", "extra_printed": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_R_3pm_10pm.png"}
+    ],
+    "no_other_reinforcement": {
+      "claim": "The 2nd Edition Time Record prints reinforcements in the 2 pm slot ONLY. Slots 1 pm and 3 pm through 10 pm are empty boxes carrying nothing but the hour.",
+      "read": "by-eye",
+      "confidence": "certain",
+      "crops": ["b_timerecord_full.png", "b_timerecord_R_3pm_10pm.png", "b_timerecord_slot_edges.png"]
+    },
+    "sheet_carries_one_time_record": {
+      "claim": "One Time Record only, printed across the top of the sheet. No second copy for the opposing player.",
+      "read": "by-eye",
+      "confidence": "certain",
+      "crops": ["b_sheet_topband.png", "b_sheet_botband.png", "b_sheet_leftband.png", "b_sheet_rightband.png"]
+    }
+  },
+
+  "reinforcements": {
+    "side": "Allied (Prussian contingent)",
+    "arrival_turn": 2,
+    "arrival_turn_evidence": "printed Time Record 2 pm slot reads 'Prussians enter'; folio p.1 Setting Up: 'The Prussian units enter the game (i.e. come on the map) at the beginning of the Allied Player's second turn.'",
+    "staggered": false,
+    "stagger_note": "All nine units are printed in the single 2 pm slot. No unit is printed in any other slot, so the 2nd Edition has exactly one reinforcement event.",
+    "entry_edge_printed": "anywhere along the East edge",
+    "entry_edge_verbatim": "(B.) The Prussians enter the game at the beginning of the Allied Player's second turn. They come on the map anywhere along the East edge. They may enter at as many different points as desired by the Allied Player. The act of placing a Prussian unit on the map extends one Movement Point. The Prussian units may move and fight on their turn of entry just like any other Allied unit. Prussian losses count as part of total Allied losses. The entry of the Prussian units may not be deliberately delayed, nor may they leave the map once they have been brought on.",
+    "entry_edge_verbatim_read": "by-eye",
+    "entry_edge_verbatim_crops": ["b_p1_prussian_entry_caseB.png", "b_p1_prussian_entry_cont.png"],
+    "entry_hexes_enumerated": false,
+    "entry_hexes_note": "The 2nd Edition map carries no printed hex numbers and the Time Record names no entry hexes - only 'the East edge'. Enumerating the East-edge hex set belongs to the map bite, not here.",
+    "delay_legality": "FORBIDDEN",
+    "delay_legality_verbatim": "The entry of the Prussian units may not be deliberately delayed, nor may they leave the map once they have been brought on.",
+    "delay_legality_read": "by-eye",
+    "delay_legality_crop": "b_p1_prussian_entry_cont.png",
+    "setup_location_before_entry": "Place the Prussian units on the East side. (folio p.1 SETTING UP THE GAME, General Rule) - i.e. the green Prussian counters are set aside off-map on the East side, not placed in hexes.",
+    "setup_location_read": "OCR, confirmed by-eye at the top of b_p1_prussian_entry_caseB.png (the crop opens mid-sentence on 'side.')",
+    "roster": [
+      {"slot": 1, "combat": 5, "movement": 4, "printed": "5-4", "type_symbol": "box with crossed diagonals", "type": "infantry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M1_units_1_5.png", "unit_crop": "b_unit_01.png"},
+      {"slot": 2, "combat": 4, "movement": 4, "printed": "4-4", "type_symbol": "box with crossed diagonals", "type": "infantry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M1_units_1_5.png", "unit_crop": "b_unit_02.png"},
+      {"slot": 3, "combat": 4, "movement": 4, "printed": "4-4", "type_symbol": "box with crossed diagonals", "type": "infantry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M1_units_1_5.png", "unit_crop": "b_unit_03.png"},
+      {"slot": 4, "combat": 4, "movement": 4, "printed": "4-4", "type_symbol": "box with crossed diagonals", "type": "infantry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M1_units_1_5.png", "unit_crop": "b_unit_04.png", "note": "a small ink fleck sits above the 4 on the folio scan and reads as an apostrophe at low zoom ('4'-4'). At 4x and 9x it is plainly a printing speck, not a glyph. The value is 4-4."},
+      {"slot": 5, "combat": 4, "movement": 4, "printed": "4-4", "type_symbol": "box with crossed diagonals", "type": "infantry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M1_units_1_5.png", "unit_crop": "b_unit_05.png"},
+      {"slot": 6, "combat": 3, "movement": 5, "printed": "3-5", "type_symbol": "box with a single diagonal", "type": "cavalry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M2_units_5_9.png", "unit_crop": "b_unit_06.png"},
+      {"slot": 7, "combat": 3, "movement": 5, "printed": "3-5", "type_symbol": "box with a single diagonal", "type": "cavalry", "size_marker": "XX", "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M2_units_5_9.png", "unit_crop": "b_unit_07.png"},
+      {"slot": 8, "combat": 4, "movement": 3, "printed": "4-3", "type_symbol": "box with a centred dot", "type": "artillery", "size_marker": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M2_units_5_9.png", "unit_crop": "b_unit_08.png", "note": "no XX size marker is printed above the artillery symbol, unlike all seven infantry/cavalry entries"},
+      {"slot": 9, "combat": 3, "movement": 3, "printed": "3-3", "type_symbol": "box with a centred dot", "type": "artillery", "size_marker": null, "read": "by-eye", "confidence": "certain", "crop": "b_timerecord_M2_units_5_9.png", "unit_crop": "b_unit_09.png", "note": "no XX size marker printed"}
+    ],
+    "roster_totals": {
+      "units": 9,
+      "combat_strength_points": 34,
+      "by_type": {"infantry": 5, "cavalry": 2, "artillery": 2},
+      "note": "34 CSP arriving on turn 2 against an Allied demoralization threshold of 40 CSP lost."
+    },
+    "entry_cost": "one Movement Point per unit placed",
+    "may_act_on_arrival": true,
+    "losses_count_as": "Allied",
+    "may_leave_map_after_entry": false
+  },
+
+  "demoralization_scale": {
+    "title_printed": "DEMORALIZATION SCALE:",
+    "track": {"from": 1, "to": 40, "step": 1, "cells": 40, "gaps": [], "highlighted_cells": []},
+    "track_read": "by-eye, every cell 1 through 40 read individually across two crops",
+    "track_crops": ["b_demoralization_full.png", "b_demoralization_L_1_20.png", "b_demoralization_R_21_40.png"],
+    "copies_on_sheet": 1,
+    "copies_note": "One scale only, running the full width of the sheet along one long edge. There is no second, per-player track.",
+    "copies_crops": ["b_sheet_topband.png", "b_sheet_botband.png", "b_sheet_leftband.png", "b_sheet_rightband.png"],
+    "usage_instruction_printed_verbatim": "Use the first destroyed Enemy unit as a marker. Move the unit up the scale as losses are inflicted upon the Player to whom that unit belongs.",
+    "usage_instruction_read": "by-eye",
+    "usage_instruction_crop": "b_demoral_howto_french.png",
+    "usage_instruction_copies": 1,
+    "usage_instruction_location": "printed rotated 90 degrees beside the Demoralization Scale on the French Player's half of the sheet, with a printed arrow pointing at the scale. The British/Prussian half carries no copy.",
+    "usage_instruction_new": true,
+    "usage_instruction_significance": "The scale is a SHARED two-marker track, not an Allied-only one: each player's losses are marked by a captured enemy counter moved up the same 1-40 row. The name 'Demoralization Scale' understates it - it is also the apparatus for the Allied 40-French-point victory condition.",
+    "column_shift_rule": {
+      "claim_under_test": "PREP-2 recorded an Allied-only +/-1 odds-column shift",
+      "verdict": "CONFIRMED",
+      "printed_verbatim": "(E.) Effects of Allied Demoralization: When the Allies become Demoralized, their ability to attack and to defend is impaired in the following manner: (1.) All Allied attacks are reduced by one odds-column. For example, an Allied attack at THREE to ONE odds is automatically de-valued to TWO to ONE odds. (2.) All French attacks are increased by one odds-column. For example, a French attack at THREE to ONE odds is automatically up-graded to FOUR to ONE odds.",
+      "read": "OCR then confirmed by-eye",
+      "crop": "b_p1_allied_demoral_shift.png",
+      "location": "folio p.1, ALLIED DEMORALIZATION column, case (E.) - rules text, NOT printed on the scale itself",
+      "printed_on_the_scale": false
+    },
+    "loss_accounting_rule_verbatim": "Both Players should keep a running total of the Combat Strength Points lost by both sides. The French Player should not count exited units into his losses, and should keep exited units on display off the map.",
+    "loss_accounting_read": "by-eye",
+    "loss_accounting_crop": "b_p1_running_total_procedure.png"
+  },
+
+  "exited_french_units_box": {
+    "title_printed_verbatim": "EXITED FRENCH UNITS:",
+    "cells": 7,
+    "cells_read": "by-eye, dividers counted at 2.2x on the native scan",
+    "cell_labels": null,
+    "cell_labels_note": "the seven cells are blank - no numbering, no captions, no scoring text inside or beneath the box",
+    "other_text_in_box": null,
+    "copies_on_sheet": 1,
+    "location": "on the British/Prussian half of the sheet, immediately alongside the arrowed north-edge exit hexes",
+    "crops": ["b_exited_french_box.png", "b_exited_french_context.png", "b_exited_french_arrows_above.png"],
+    "confidence": "certain",
+    "scoring_role": {
+      "role": "physical tally of the French victory requirement - seven exited French units",
+      "governing_text_verbatim": [
+        "THE FRENCH PLAYER WINS if his army destroys forty Enemy Combat Strength Points and succeeds in exiting seven French units (of any type) off the North edge of the map on or before the tenth turn of the game.",
+        "(B.) The French units exiting in the North may do so only from the hexes marked with the arrows. The Act of exiting from the edge of the map expends one Movement Point. Exited units may not return to the game.",
+        "(C.) The exiting French units do not all have to exit in the same turn nor from the same exit-hex. They may exit before and/or after the French Player destroys forty Allied Combat Points. Allied units may never exit from the map, even to avoid being destroyed.",
+        "(D.) French units which are forced to retreat off the map due to Allied attacks, are not counted as exiting units even if they are forced off from \"exit-hexes.\" They are counted as destroyed units instead, just as would Allied units in a similar case.",
+        "The French Player should not count exited units into his losses, and should keep exited units on display off the map."
+      ],
+      "governing_text_read": "OCR for the victory paragraph; by-eye for cases (B) (C) (D) and the running-total sentence",
+      "crops": ["b_p1_loss_accounting_procedure.png", "b_p1_running_total_procedure.png"],
+      "cell_count_matches_requirement": true,
+      "note": "seven printed cells, seven required exits, and the box is the 'display off the map' the loss-accounting rule calls for. More than seven French units may exit; the box has room for exactly the winning number."
+    }
+  },
+
+  "exit_arrows_corroboration": {
+    "scope_note": "Enumerating exit hexes is not this job (it is diff row E41, already closed by the map bite). Counted here only because the arrows sit beside the Exited French Units box and bear on victory accounting.",
+    "arrows_counted": 11,
+    "read": "by-eye at 2x on the native scan",
+    "crops": ["b_exit_arrows_zoom.png", "b_exit_arrows_northedge.png"],
+    "agrees_with": "map_grid.json editions.2nd.exit_hexes = 11 hexes (0101..1101)",
+    "confidence": "high"
+  },
+
+  "retreat_and_advance_block": {
+    "checked": true,
+    "oob_relevant_content": false,
+    "finding": "The 'RETREAT AND ADVANCE AS A RESULT OF COMBAT' block and the DISRUPTION paragraph beneath it are combat prose. Nothing in them names a unit, a strength, an arrival, an exit count or a victory threshold. No OOB content.",
+    "crops": ["b_retreat_advance_allied.png", "b_disruption_allied.png", "b_sheet_leftband.png"],
+    "handoff_note": "Incidental to this job, the crops do resolve part of the DISRUPTION bridging clause flagged in RULEBOOK_VERIFIED.md section 3: '...then the uninvolved unit is \"disrupted\" (pushed out of its hex) by the retreating unit. The uninvolved unit is moved back (by the victorious Player) as if it were retreating, and its position is taken by the retreating unit. The disrupted unit itself may not be forced into Enemy units or Zones of Control or woods. If this would be the only path of retreat available, then the uninvolved unit is NOT dis[rupted]...' The tail is cut at the crop edge. This is the play-aid bite's job to close, not read here to completion."
+  },
+
+  "prep2_verdict": {
+    "overall": "CONFIRMED on every point, with one added detail and one printed typo neither prior bite recorded.",
+    "checks": [
+      {"claim": "nine Prussian arrival units", "verdict": "CONFIRMED", "evidence": "b_timerecord_M1_units_1_5.png + b_timerecord_M2_units_5_9.png"},
+      {"claim": "factors 5-4, 4-4, 4-4, 4-4, 4-4, 3-5, 3-5, 4-3, 3-3 in that printed order", "verdict": "CONFIRMED exactly", "evidence": "b_unit_01.png .. b_unit_09.png"},
+      {"claim": "arrival on Turn 2 (2 pm slot)", "verdict": "CONFIRMED", "evidence": "b_timerecord_L_head_1pm_2pm.png"},
+      {"claim": "all nine arrive together, not staggered", "verdict": "CONFIRMED - all nine are printed in the single 2 pm slot", "evidence": "b_timerecord_full.png"},
+      {"claim": "entry at the East edge", "verdict": "CONFIRMED as the rules text states it; the Time Record itself names no edge and no hexes", "evidence": "b_p1_prussian_entry_caseB.png"},
+      {"claim": "'may not be deliberately delayed'", "verdict": "CONFIRMED verbatim", "evidence": "b_p1_prussian_entry_cont.png"},
+      {"claim": "no other reinforcement printed for either side", "verdict": "CONFIRMED - nine of the ten slots carry nothing but the hour", "evidence": "b_timerecord_R_3pm_10pm.png"},
+      {"claim": "Demoralization Scale 1-40", "verdict": "CONFIRMED - 40 contiguous cells, no gaps, no marks", "evidence": "b_demoralization_L_1_20.png + b_demoralization_R_21_40.png"},
+      {"claim": "Allied-only +/-1 odds-column shift", "verdict": "CONFIRMED verbatim", "evidence": "b_p1_allied_demoral_shift.png"}
+    ],
+    "contradictions": [],
+    "additions": [
+      "Unit TYPES are printed on the nine Prussian pictures and no prior bite recorded them: 5 infantry (5-4, 4-4, 4-4, 4-4, 4-4), 2 cavalry (3-5, 3-5), 2 artillery (4-3, 3-3). Artillery carries no XX size marker; the other seven do.",
+      "Total arriving Prussian strength is 34 CSP.",
+      "The Demoralization Scale carries a printed usage instruction that is not in RULEBOOK_VERIFIED.md or edition_diff.json, and it makes the scale a shared two-marker loss track rather than an Allied-only one.",
+      "The Exited French Units box has exactly seven cells, matching the seven-unit French exit requirement.",
+      "The Prussians are set up off-map on the East side before play ('Place the Prussian units on the East side'), which is a placement fact the encoding needs and which sits in the SETTING UP General Rule, not in case (B)."
+    ]
+  },
+
+  "source_defect_candidates": [
+    {
+      "id": "NAW2-SD-1",
+      "class": "ORIGINAL PUBLISHED GAME - editing error (typo)",
+      "where": "folio p.1, SETTING UP THE GAME, case (B)",
+      "printed_verbatim": "The act of placing a Prussian unit on the map extends one Movement Point.",
+      "should_read": "expends one Movement Point",
+      "internal_evidence": "the same folio page, HOW THE GAME IS WON case (B), prints the identical construction correctly: 'The Act of exiting from the edge of the map expends one Movement Point.' The 3rd Edition [7.1] also reads as a normal expenditure.",
+      "read": "by-eye at 6x",
+      "crops": ["b_p1_extends_typo_zoom.png", "b_p1_loss_accounting_procedure.png"],
+      "impact": "none on play - the meaning is unambiguous",
+      "proposed_authority": "proven outcome-equivalence (same document, corrected usage two columns later)",
+      "note_for_prep5": "RULEBOOK_VERIFIED.md section 3 quotes this sentence as 'expends'. That is a silent normalisation of the printed text, not a transcription. Anything that claims to quote the folio verbatim must say 'extends'."
+    },
+    {
+      "id": "NAW2-SD-2",
+      "class": "candidate only - component asymmetry, NOT yet a defect",
+      "where": "map sheet",
+      "observation": "the Demoralization Scale usage instruction is printed once, on the French Player's half only. The British/Prussian half has no copy, although the CRT, the Explanation of Results and the exit furniture are duplicated per player elsewhere on the sheet.",
+      "impact": "none on legality; noted so a later bite does not go looking for a second copy",
+      "crops": ["b_sheet_leftband.png", "b_sheet_rightband.png"],
+      "recommendation": "do not register as a defect; record as a component fact"
+    }
+  ],
+
+  "unreadable": [],
+  "unreadable_note": "Nothing in this job's scope was left unresolved. Every Time Record slot, every one of the nine unit pictures, all 40 Demoralization Scale cells, all 7 Exited French Units cells and the full text of the scale's usage instruction were read at native scan resolution. The only text deliberately left open is the DISRUPTION bridging clause, which belongs to the play-aid bite and is recorded above with the crops that partially resolve it.",
+
+  "crops_dir": "C:\\VassalNaW\\prep_packs\\NAW_PREP4",
+  "crops_regenerate": "python games/napoleon-at-waterloo/ingest/naw_timerecord.py",
+  "crops_regenerate_witness_only": "python games/napoleon-at-waterloo/ingest/naw_timerecord.py --witness",
+  "crop_count": 45,
+
+  "witness_crosscheck": {
+    "witness": "Oliver ed2 module map (Nap at Waterloo map 20mm hexes.jpg, 6623x5648)",
+    "time_record": "agrees - 1 pm through 10 pm, reinforcements in the 2 pm slot only, 'Prussians enter', same nine units in the same order with the same type symbols and the same absence of XX on the two artillery",
+    "demoralization_scale": "agrees on content - caption 'DEMORALIZATION SCALE:' and cells 1 through 40; reflowed into two rows of 20, which is a layout change of the witness, not of the folio",
+    "exited_french_units": "agrees - 'EXITED FRENCH UNITS:' header over seven blank cells",
+    "disagreements": [],
+    "crops": ["b_w2_oliver_timerecord.png", "b_w2_oliver_tr_units.png", "b_w2_oliver_demoral.png", "b_w2_oliver_exited.png", "b_w2_oliver_layout.png"]
+  }
+}
