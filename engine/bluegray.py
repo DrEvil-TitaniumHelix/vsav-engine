@@ -485,6 +485,13 @@ class BlueGrayGame(GateGame):
             if all(hh in occ for hh in hexes):
                 return self._v(False, "both entry hexes occupied - delayed [15.5]")
             return self._v(False, f"entry hex {h} is occupied [15.4 unstacked column]")
+        if self.is_night():
+            board = self.rules_board(mover_side=side)
+            ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+            if h in ezoc:
+                return self._v(False,
+                               f"entry hex {h} is enemy controlled - no unit may enter "
+                               f"an EZOC on a night GT [10.2/15.1]")
         cost = 1 + s["entered"]   # 15.0: 1st unit 1 MP, 2nd 2 MP, ...
         if cost > self.budget({"slot": e["slot"]}):
             return self._v(False,
@@ -500,6 +507,13 @@ class BlueGrayGame(GateGame):
             return err
         if (u["col"], u["row"]) not in self.exit_hexes:
             return self._v(False, f"{u['slot']} is not on an exit hex 0101/0111 [16.1/16.5]")
+        board = self.rules_board(mover_side=side)
+        ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
+        if (u["col"], u["row"]) in ezoc:
+            return self._v(False,
+                           f"{u['slot']} is in an enemy controlled hex - it may not "
+                           f"exit during the movement phase (only combat frees it, "
+                           f"and 16.6 bars that) [5.13/6.3/16.5]")
         spent = s["moved"].get(u["pid"], 0)
         if spent + self.exit_cfg.get("mp", 1) > self.budget(u):
             return self._v(False, f"no MP left to exit ({spent} spent) [16.2]")
