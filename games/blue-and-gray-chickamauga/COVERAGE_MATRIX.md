@@ -193,7 +193,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | row | rule | requirement | status |
 |---|---|---|---|
 | D.1 | 7.81 | displace only when no other retreat path; displaced unit retreats likewise; never into EZOC/prohibited; 1-for-1 per stack | ENFORCED — displacement offered only when `open_h` empty :769-774, chain resolution :1118-1131; VR |
-| D.2 | 7.82 | if the displacement would eliminate the displaced unit, the RETREATING unit is eliminated instead | OPEN — **N4**: the engine eliminates the displaced unit when its own retreat finds no hex (:1110-1111 → `_eliminate [7.72]`; anchor corrected in the 2026-08-16 audit from :1131, which is the retreat event line); print swaps the fates. Silent incorrectness, reachable in crowded pockets |
+| D.2 | 7.82 | if the displacement would eliminate the displaced unit, the RETREATING unit is eliminated instead | ENFORCED — the retreat pending carries `disp_of` (displaced pid → displacer pid, inside the hashed `pending` payload, no new key); when a displaced unit resolves with no open hex, `_apply_retreat` eliminates its displacer and spares the displaced unit in place. VR's swap staging proves the whole shape: retreater dead, displaced alive on its original hex, stack mate untouched, VP = the retreater's CSP, chain terminates. **Closed N4, 2026-08-16** |
 | D.3 | 7.82 | displacement chains (chain reactions) resolve | ENFORCED — displaced units join the pending queue :1124-1127; VR (the captured cycle fixture resolves to completion) |
 | D.4 | 7.81 | displaced artillery that has not yet engaged may not fire this Combat Phase | OPEN — **N5**: no displacement state exists; a displaced, unfired battery can still bombard. Silent incorrectness; all six batteries reachable |
 | D.5 | 7.82 | a unit may be displaced more than once per Combat Phase if that is the only path | ENFORCED (declared ruling) — the per-battle `chain` cycle guard ends impossible chains in elimination instead of recursing (:737-742) — the printed text, read literally, permits non-terminating cycles; the engine's terminating resolution is regression-pinned (VR). **N14** registers the printed defect |
@@ -320,7 +320,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N1 | 5.13/6.3/16.x | exit from an enemy-controlled exit hex accepted — `_propose_exit` :494 never tests EZOC; the endgame the rule guards (units at the gap under pressure) is exactly when it bites — **CLOSED 2026-08-16: explicit EZOC test in the exit door, VGa §G both arms; VR's seed-1 pin unchanged (33/123), VA 5-seed campaigns complete** | 1 |
 | N2 | 17.32 | blocked reinforcements (and the Train) never scored as destroyed at game end — `_final_scoring` sweeps on-map units only; Deluxe 18.4.3 says "including blocked reinforcements" verbatim | 1 |
 | N3 | 18.11 | train auto-retreat armed only at phase start — a Confederate advance during the Union combat phase landing adjacent ("WHENEVER adjacent") never triggers it — **CLOSED 2026-08-16: arm-at-apply-choke (`_arm_train_contact`), VGa §I3; engine+validator hunks landed in b57966b (noted in its message), this commit carries the matrix closure. VR seed-1 pin unchanged** | 1 |
-| N4 | 7.82 | displacement-that-would-eliminate kills the DISPLACED unit; print eliminates the retreating unit instead (fates swapped) | 1 |
+| N4 | 7.82 | displacement-that-would-eliminate kills the DISPLACED unit; print eliminates the retreating unit instead (fates swapped) — **CLOSED 2026-08-16: `disp_of` in the pending payload + swap branch in `_apply_retreat`, VR swap staging. The stored fixture's resolution and VR's seed-1 pin (33/123) are UNCHANGED (that cycle ends through the 7.72 branch, not the swap); per-link reading (each displacer dies for its own displaced unit) = declared reading for chains, registered with N14's ruling** | 1 |
 | N5 | 7.81 | displaced, unfired artillery may still bombard — no displacement state exists | 1 |
 | N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable. Strict 7.22 (refuse the partial attack when the partner owes 7.12) + validator | 1 (+2 consequence) |
 | N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) — **CLOSED 2026-08-16: night/EZOC bar in the reinforce door, VGa §F three arms; VR seed-1 pin unchanged** | 1 |
@@ -352,13 +352,13 @@ analysis.
 
 ## §6 PLAYABILITY VERDICT
 
-**BUILD IN PROGRESS. build_open: 6.**
+**BUILD IN PROGRESS. build_open: 5.**
 
-Row counts: **117 rows** — ENFORCED 110 (fully proven 107, plus ENFORCED-unproven 3: EX.8, B.5,
+Row counts: **117 rows** — ENFORCED 111 (fully proven 108, plus ENFORCED-unproven 3: EX.8, B.5,
 V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
-sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 6** (C.9, B.7,
-B.17, D.2, D.4, V.9 — EX.7/N1, RF.7/N7, RF.3/N9, T.2/N3 closed 2026-08-16).
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 5** (C.9, B.7,
+B.17, D.4, V.9 — EX.7/N1, RF.7/N7, RF.3/N9, T.2/N3, D.2/N4 closed 2026-08-16).
 
 **Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
 re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
@@ -371,8 +371,8 @@ sub-clauses re-proven against RULE 2 (census re-counted from terrain.json: clear
 col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code→rulebook sweep
 clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
-Blocking rows: N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9),
-N10 (B.7), N11 (B.17). Five are class-1 silent incorrectness — the class this instrument exists
+Blocking rows: N2 (V.9), N5 (D.4), N6 (C.9),
+N10 (B.7), N11 (B.17). Four are class-1 silent incorrectness — the class this instrument exists
 to surface. Demotion of a shipped game is the expected outcome Bruce predicted 2026-08-08 ("the
 audit can DEMOTE shipped games"): Chickamauga shipped at earned Tier 3 under the tier ladder the
 coverage matrix has since replaced; under spec #13 as amended it is BUILD IN PROGRESS until the
