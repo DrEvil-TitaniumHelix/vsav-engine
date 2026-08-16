@@ -113,7 +113,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | RF.1 | 15.0 | column entry: 1st unit 1 MP, 2nd 2 MP, 3rd 3 MP…; owner picks order and moment | ENFORCED — `cost = 1 + entered` :488; one global column per player-turn (declared reading of "and/or" — the 15.3 excess rule is the column binding); VGa §A:108-117 |
 | RF.2 | 15.1/15.4 | enter at a charted southern-edge hex, during the movement phase, never stacked | ENFORCED — `_propose_reinforce` :465 (hex list, phase, occupancy); VGa §A |
 | RF.3 | 15.2 | once entered, a unit "may move and attack freely, just as any other unit" (remaining MA spendable) | OPEN — **N9**: apply marks the reinforcement fully moved (`moved[pid]=cost` :920) and `_propose_move` refuses it (:446) — the entry cost is treated as the whole move. Loud incompleteness; every game is affected (GT2 alone: 21 units) |
-| RF.4 | 15.3 | excess units roll to later GTs | ENFORCED (unproven) — pool retains pid; column-cost refusal :489-491; VGa §A stages due-GT and occupancy refusals only — **no test exercises the column-excess arm** (audit 2026-08-16: the "7th unit refused" citation named a test that does not exist). Validator debt **N21** |
+| RF.4 | 15.3 | excess units roll to later GTs | ENFORCED — pool retains pid; column-cost refusal :489-491; VGa §J stages the full column (units 1–6 at costs 1–6 accepted, the 7th refused at 7 MP > MA [15.0/15.3], held in pool, entering next GT at cost 1) |
 | RF.5 | 15.5 | may enter an EZOC hex; delayed only while BOTH entry hexes are physically occupied | ENFORCED — occupancy-only test :483-487 (no ZOC check — deliberate); VGa §A (occupied-hex refusals) |
 | RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED — scenario `reserve` data cross-checked against `rules_transcription.json` per (GT, class, strength) + entry hexes, both sides, on every run (validate_scoring.py §1 — **closed N22**); VGa §A exercises the entry machinery on the real scenario; VA campaigns place the schedule |
 | RF.7 | 10.2 | at night, reinforcement entry may not enter an EZOC hex (entry is movement, 15.1) | OPEN — **N7**: `_propose_reinforce` has no night/EZOC test (the `dests` filter :162 covers on-map moves only). Reachable via any reinforcement delayed onto GT 9 (15.3). Silent incorrectness |
@@ -337,7 +337,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested — **CLOSED 2026-08-16 by VC §12** | VD |
 | N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested — **CLOSED 2026-08-16 by VC §13** | VD |
 | N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — ships with N6's fix | VD |
-| N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — RF.4's original citation named a §A test that does not exist | VD |
+| N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — **CLOSED 2026-08-16 by VGa §J** | VD |
 | N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — **CLOSED 2026-08-16 by validate_scoring.py §1** (per-(GT, class, strength) multiset + entry hexes, both sides, vs rules_transcription.json) | VD |
 | N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — **CLOSED 2026-08-16 by VC §14** (2-vs-14 accepted, natural 1-7 → column 1-5, still rolls) | VD |
 | N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged — **CLOSED 2026-08-16 by VC §5** (bystander refusal added) | VD |
@@ -354,8 +354,8 @@ analysis.
 
 **BUILD IN PROGRESS. build_open: 10.**
 
-Row counts: **117 rows** — ENFORCED 106 (fully proven 102, plus ENFORCED-unproven 4: EX.8, B.5,
-V.8, RF.4 — B.5 rides N6/D6; EX.8+V.8 blocked by N25; RF.4 pending VGa §J),
+Row counts: **117 rows** — ENFORCED 106 (fully proven 103, plus ENFORCED-unproven 3: EX.8, B.5,
+V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
 sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7,
 B.17, D.2, D.4, T.2, V.9).

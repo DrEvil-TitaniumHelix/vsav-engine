@@ -370,6 +370,30 @@ rr = bg.submit("Union", {"type": "train_retreat",
 check(ok(rr), "train retreat resolved [18.11]")
 replay(bg, liveI, "train session")
 
+# ================================================================ J. column excess 15.3
+print("--- J: reinforcement column excess rolls to a later GT [15.0/15.3] ---")
+ent = [[20, 22], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27], [21, 22], [21, 23]]
+res = [{"id": f"r{i}", "slot": "1/2/XIV c", "side": "Union", "str": 5,
+        "cls": "inf", "due": 1, "entry": [list(h) for h in ent]} for i in range(1, 8)]
+scen = mkscen([], reserve=res, turns=2)
+bg, liveJ = mkgame(scen, seed=12)
+for i in range(1, 7):
+    r = bg.submit("Union", {"type": "reinforce", "unit": f"r{i}", "hex": ent[i - 1]})
+    check(ok(r), f"column unit {i} enters at cost {i} MP [15.0]")
+r = bg.submit("Union", {"type": "reinforce", "unit": "r7", "hex": ent[6]})
+check(not ok(r) and "[15.0/15.3]" in " ".join(r["verdict"]["reasons"]),
+      f"7th unit refused: column position 7 costs 7 MP > MA [15.0/15.3] "
+      f"({r['verdict']['reasons']})")
+check("r7" in bg.s["pool"], "the excess unit stays in the reinforcement pool [15.3]")
+bg.submit("Union", {"type": "end_movement"})
+bg.submit("Union", {"type": "end_phase"})
+bg.submit("Confederate", {"type": "end_movement"})
+bg.submit("Confederate", {"type": "end_phase"})
+check(bg.s["turn"] == 2 and bg.s["mover"] == "Union", "GT 2 begins [4.1.3]")
+r = bg.submit("Union", {"type": "reinforce", "unit": "r7", "hex": ent[6]})
+check(ok(r), "the rolled-over unit enters the next GT at column cost 1 [15.0/15.3]")
+replay(bg, liveJ, "column excess session")
+
 print()
 shutil.rmtree(TMP, ignore_errors=True)
 if fails:
