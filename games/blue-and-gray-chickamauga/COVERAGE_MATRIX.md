@@ -115,7 +115,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | RF.3 | 15.2 | once entered, a unit "may move and attack freely, just as any other unit" (remaining MA spendable) | OPEN — **N9**: apply marks the reinforcement fully moved (`moved[pid]=cost` :920) and `_propose_move` refuses it (:446) — the entry cost is treated as the whole move. Loud incompleteness; every game is affected (GT2 alone: 21 units) |
 | RF.4 | 15.3 | excess units roll to later GTs | ENFORCED (unproven) — pool retains pid; column-cost refusal :489-491; VGa §A stages due-GT and occupancy refusals only — **no test exercises the column-excess arm** (audit 2026-08-16: the "7th unit refused" citation named a test that does not exist). Validator debt **N21** |
 | RF.5 | 15.5 | may enter an EZOC hex; delayed only while BOTH entry hexes are physically occupied | ENFORCED — occupancy-only test :483-487 (no ZOC check — deliberate); VGa §A (occupied-hex refusals) |
-| RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED (unproven) — scenario `reserve` data; VGa §A exercises due-GT gating for 3 units on the real scenario and VA campaigns place the schedule (completion asserted, not contents). Audit 2026-08-16: the prior "VG §A" cite was a miscite (VG has no sections and checks no schedules); no validator compares the schedule contents to print — Validator debt **N22** (cross-check scenario reserve vs `rules_transcription.json`, the CRT two-source pattern) |
+| RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED — scenario `reserve` data cross-checked against `rules_transcription.json` per (GT, class, strength) + entry hexes, both sides, on every run (validate_scoring.py §1 — **closed N22**); VGa §A exercises the entry machinery on the real scenario; VA campaigns place the schedule |
 | RF.7 | 10.2 | at night, reinforcement entry may not enter an EZOC hex (entry is movement, 15.1) | OPEN — **N7**: `_propose_reinforce` has no night/EZOC test (the `dests` filter :162 covers on-map moves only). Reachable via any reinforcement delayed onto GT 9 (15.3). Silent incorrectness |
 
 ### EX — EXITING THE MAP (16.x) — a Movement-Phase action type
@@ -129,7 +129,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | EX.5 | 16.6 | no exit in fulfillment of a combat retreat — eliminated instead | ENFORCED — structurally: retreat destinations are on-map neighbors only (`_retreat_hexes` :705, no exit door); VC §7 |
 | EX.6 | 16.7 | unlimited exits per hex | ENFORCED — no counter on exit; VGa §G |
 | EX.7 | 5.13/6.3 | a unit on an exit hex that is enemy-controlled may NOT exit (EZOC exit bar applies — only combat frees it, and 16.6 bars that) | OPEN — **N1**: `_propose_exit` :494 checks phase/hex/MP but never whether the exit hex is in EZOC. Reachable in exactly the endgame the rule guards (units racing for the gap under pressure). Silent incorrectness |
-| EX.8 | 16.0/17.11 | WHO may exit: 1975 says "Union Units"; the same folder's VP schedule scores Confederate exits ×10 — Deluxe 18.3 corrects to "Either Player" | ENFORCED (unproven, CSA arm) — code has no side restriction on exit :494 (both sides may exit = the Deluxe correction; **N13** registers the 1975 internal inconsistency). Union exit arm VGa §G; the CSA-exit-to-VP arm shares N15's missing scoring test |
+| EX.8 | 16.0/17.11 | WHO may exit: 1975 says "Union Units"; the same folder's VP schedule scores Confederate exits ×10 — Deluxe 18.3 corrects to "Either Player" | ENFORCED (unproven, CSA arm) — code has no side restriction on exit :494 (both sides may exit = the Deluxe correction; **N13** registers the 1975 internal inconsistency). Union exit arm VGa §G; the CSA-exit-to-VP arm blocked by **N25** (the LOC gate is dead on fragmented road data) |
 
 ### C — COMBAT PHASE CORE (7.0–7.5, 7.9, CRT)
 
@@ -239,14 +239,14 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 
 | row | rule | requirement | status |
 |---|---|---|---|
-| V.1 | 17.0/18.4 | most VP at game end wins (a tie prints "draw" — the rules are silent on ties; declared) | ENFORCED — `_final_scoring` :1289-1293; VGa §G |
+| V.1 | 17.0/18.4 | most VP at game end wins (a tie prints "draw" — the rules are silent on ties; declared) | ENFORCED — `_final_scoring` :1289-1293; VGa §G; the tie reading pinned by validate_scoring.py §6 (exact 10-10 → draw) |
 | V.2 | 17.11 | 1 VP per enemy CSP eliminated (live accrual) | ENFORCED — `_eliminate` :1073; every validator's battles |
-| V.3 | 17.11/17.31 | exit VP: Union 1/CSP; Confederate 10/CSP gated on the 17.31 LOC | ENFORCED (Union arm) — :1230-1236; VGa §G:273. CSA arm shares **N15** (no validator scores a CSA exit) |
+| V.3 | 17.11/17.31 | exit VP: Union 1/CSP; Confederate 10/CSP gated on the 17.31 LOC | ENFORCED (Union arm) — :1230-1236; VGa §G:273. CSA arm: unprovable on current data — the 17.31 trace is dead because the road network is fragmented (**N25** wrong data; was N15's missing test, found trying to write it) |
 | V.4 | 17.11 | CSA +10 if the Train fails to exit (destroyed ≠ exited) | ENFORCED — :1237-1241; VGa §G:274 |
-| V.5 | 17.12/17.21/17.22 | occupation = last side to move a unit onto/through the hex | ENFORCED (unproven) — `_credit_occupation` :282 fires on move/reinforce/advance; **N8** also flags the retreat/displacement arm as a declared narrow reading. Validator debt **N15** |
-| V.6 | 17.12 | end-of-game scoring of the seven VP hexes (union/confederate/either pools) | ENFORCED (unproven) — :1242-1250; N15 |
-| V.7 | 17.23 | start occupation seeded (Union 0211/0502/0822/1108/1115; CSA 1920/2311) | ENFORCED (unproven) — `new_game` :64-68; N15 |
-| V.8 | 17.31 | CSA LOC: a continuous road chain from 0101/0111 off the EASTERN edge, free of Union units (ZOCs irrelevant) | ENFORCED (unproven) — road-graph BFS :1210-1227; the `col ≥ 25` proxy is exact on this map — the only road hex at col ≥ 25 is 2503, the network's eastern terminus (terrain.json census). Validator debt **N15** |
+| V.5 | 17.12/17.21/17.22 | occupation = last side to move a unit onto/through the hex | ENFORCED — `_credit_occupation` :282, all three writers proven (move/reinforce/advance each staged, credit + VP asserted; validate_scoring.py §3/§4/§5). **N8** still flags the retreat/displacement arm as a declared narrow reading (Bruce) |
+| V.6 | 17.12 | end-of-game scoring of the seven VP hexes (union/confederate/either pools) | ENFORCED — :1242-1250; pool-owner semantics pinned exactly (union-pool scored, enemy-held confederate-pool hex unscored, unheld either-pool unscored; validate_scoring.py §3, plus the draw case §6) |
+| V.7 | 17.23 | start occupation seeded (Union 0211/0502/0822/1108/1115; CSA 1920/2311) | ENFORCED — `new_game` :64-68; validate_scoring.py §2 (real scenario seeding exercised end-to-end by every VA campaign) |
+| V.8 | 17.31 | CSA LOC: a continuous road chain from 0101/0111 off the EASTERN edge, free of Union units (ZOCs irrelevant) | ENFORCED (unproven) — road-graph BFS :1210-1227; the `col ≥ 25` proxy is exact on this map — the only road hex at col ≥ 25 is 2503, the network's eastern terminus (terrain.json census). Validator debt **N15**. **2026-08-16: the trace is DEAD on current data — the road graph fragments into 29 components and no exit-hex chain reaches the east edge in any game (N25, wrong data); loc_ok is always False and the CSA exit VP is unawardable** |
 | V.9 | 17.32/Deluxe 18.4.3 | Union units unable to trace a ≤10-hex path (EZOC ok, enemy units not) to a road exiting at 0101/0111 are destroyed for VP — "including blocked reinforcements" | OPEN — **N2**: `_final_scoring` sweeps on-map units only (:1266); unentered pool units are never scored (and the Train is excluded — strict "any Union units" would include it, ±1 VP). Silent incorrectness |
 
 ---
@@ -331,16 +331,17 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N12 | 5.17 | "nor may it change its move without the consent of the opposing Player" vs the platform's UNDO (1 press = 1 decision, all games) — the same cross-game item as NaW M.13/MOV-19, already queued to Bruce (NOW.md call #3); recorded so the matrix does not silently bless it | cross-game, Bruce-blocked |
 | N13 | 16.0 vs 17.11 | 1975 prints "UNION Units may exit" while the same folder scores Confederate exits ×10 VP — internal inconsistency; Deluxe 18.3 corrects to "Either Player" (engine already Deluxe-correct) — **register candidate**, companion aspect of the registered exit-hex defect | register candidate |
 | N14 | 7.82 | the printed displacement rules, read literally, permit non-terminating cycles (proven live: the 14,000-entry loop behind VR); the engine's terminating resolution (impossible chains end in elimination) is a declared resolution of a printed defect — **register candidate** | register candidate |
-| N15 | 17.12/17.21–17.23/17.31 | validator debt: occupation credit, start-occupation seeding, occupation scoring, the CSA LOC trace, and a CSA-arm exit (V.3/V.5/V.6/V.7/V.8, EX.8) have code but no asserting test — one final-scoring validator closes all five | VD |
+| N15 | 17.12/17.21–17.23/17.31 | validator debt: occupation credit, start-occupation seeding, occupation scoring, the CSA LOC trace, and a CSA-arm exit (V.3/V.5/V.6/V.7/V.8, EX.8) have code but no asserting test — **CLOSED 2026-08-16 by validate_scoring.py except the LOC/CSA-exit arms, which are blocked by N25** (the trace is dead on fragmented road data; closing them requires the terrain fix first). Also pinned en route: V.1's draw tie and V.9's on-map 17.32 sweep | VD |
 | N16 | Deluxe 9.0 | validator debt: the solely-bombarded doubling (C.19) untested | VD |
 | N17 | 8.13 | validator debt: the multi-hex pure-bombardment refusal (B.4) untested | VD |
 | N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested | VD |
 | N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested | VD |
 | N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — ships with N6's fix | VD |
 | N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — RF.4's original citation named a §A test that does not exist | VD |
-| N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — scenario `reserve` vs `rules_transcription.json` reinforcements_union/confederate + entry hexes, the CRT two-source pattern | VD |
+| N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — **CLOSED 2026-08-16 by validate_scoring.py §1** (per-(GT, class, strength) multiset + entry hexes, both sides, vs rules_transcription.json) | VD |
 | N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — one staged below-1-5 battle asserting column "1-5" + a rolled result closes both | VD |
 | N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged | VD |
+| N25 | 5.22/17.31/18.23 | **WRONG DATA (found staging N15, 2026-08-16): the road network in terrain.json fragments into 29 disconnected components** — `_road_graph` from the exit hexes reaches ≤27 of 174 road hexes, never col ≥ 25, so `csa_loc_road_clear` is False in every reachable game and the 17.31-gated CSA exit VP (V.3/EX.8) is dead code; units overpay at every under-captured road junction (5.22); the Train's network is pocketed (18.23). Verified against the 1975 scan: solid printed roads run through the fragment gaps (e.g. 0417, 0217/0218, 0715) — the build_terrain.py solid-line discriminator (≥0.78 coverage) under-captured. Fix = recalibrate + per-side scan verification + validator; margin baseline MUST precede it (Stage C ordering already does). Escalated to Bruce 2026-08-16 | 3 |
 
 Related but NOT new: the three registered `source_defects` (exit-hex 0110→0111; ford+trail
 composition; CSA exit-VP asymmetry) are enforced as registered and cited in their rows (M.13,
@@ -353,9 +354,9 @@ analysis.
 
 **BUILD IN PROGRESS. build_open: 10.**
 
-Row counts: **117 rows** — ENFORCED 106 (fully proven 92, plus ENFORCED-unproven 14: EX.8, B.4, B.5, B.9,
-B.10, C.19, V.5, V.6, V.7, V.8, RF.4, RF.6, C.15, X.3 — count as ENFORCED carrying the
-N15–N24 validator-debt work items), UNREACHABLE 1 full row (M.12) plus two unreachable
+Row counts: **117 rows** — ENFORCED 106 (fully proven 96, plus ENFORCED-unproven 10: EX.8, B.4, B.5, B.9,
+B.10, C.19, V.8, RF.4, C.15, X.3 — count as ENFORCED carrying the surviving validator-debt
+work items), UNREACHABLE 1 full row (M.12) plus two unreachable
 sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7,
 B.17, D.2, D.4, T.2, V.9).
 
