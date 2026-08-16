@@ -96,6 +96,40 @@ def find_seed(scen_maker, action_maker, want, tries=60):
             return bg, live, r
     return None, None, None
 
+def ai_pending_resolve(bg):
+    p = bg.s["pending"]
+    if not p:
+        return None
+    if p["awaiting"] == "retreat":
+        out = []
+        for pid in list(p["units"]):
+            oh, dh = bg._retreat_hexes(bg.unit(pid))
+            dest = sorted((oh or dh))[0] if (oh or dh) else None
+            out.append((p["by"], {"type": "retreat", "unit": pid,
+                                  "dest": list(dest) if dest else None}))
+        return out
+    if p["awaiting"] == "exchange_loss":
+        pids, tot = [], 0
+        for pid in p["units"]:
+            if tot >= p["owe"]:
+                break
+            pids.append(pid)
+            tot += bg.printed(bg.unit(pid))
+        return [(p["by"], {"type": "exchange_loss", "units": pids})]
+    if p["awaiting"] == "advance":
+        return [(p["by"], {"type": "advance"})]
+    return None
+
+def drain_pending(bg):
+    guard = 0
+    while bg.s["pending"] and guard < 20:
+        guard += 1
+        steps = ai_pending_resolve(bg)
+        if not steps:
+            break
+        for side, action in steps:
+            bg.submit(side, action)
+
 # ---------------------------------------------------------- 3. multi-hex adjacency
 print("--- 3: multi-hex combat adjacency [7.24/7.25] ---")
 sp = mkscen([
@@ -422,6 +456,66 @@ if bg.s["pending"]:
         if bg.s["pending"] and bg.s["pending"]["awaiting"] == "advance":
             bg.submit(bg.s["pending"]["by"], {"type": "advance"})
     replay(bg, live, "poor-odds session")
+
+# ---------------------------------------------------------- 15. 7.22 partial attack
+print("--- 15: co-stacked attackers - one integral strength, no separate attacks [7.22/7.12] ---")
+sp = mkscen([
+    U("s1", "1/1/XIV c", "Union", 22, 22),
+    U("s2", "2/1/XIV c", "Union", 22, 22),
+    U("d1", "Fulton c", "Confederate", 22, 23),
+])
+bg, live = mkgame(sp, seed=21)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.propose("Union", {"type": "battle", "attackers": ["s1"], "defenders": ["d1"]})
+check(not r["legal"] and "[7.22" in " ".join(r["reasons"]),
+      f"the partial attack from a stacked hex is refused at proposal - the "
+      f"contact-obligated stackmate must join [7.22/7.12] ({r['reasons']})")
+r = bg.submit("Union", {"type": "battle", "attackers": ["s1", "s2"],
+                        "defenders": ["d1"]})
+check(ok(r), f"the co-stacked pair attacking together is accepted [7.22] "
+             f"({r['verdict']['reasons']})")
+drain_pending(bg)
+r = bg.submit("Union", {"type": "end_phase"})
+check(ok(r), f"end_phase closes cleanly after the combined attack - the old "
+             f"sequence deadlocked here [7.12] ({r['verdict']['reasons']})")
+replay(bg, live, "7.22 session")
+
+sp = mkscen([
+    U("s1", "1/1/XIV c", "Union", 22, 22),
+    U("s2", "2/1/XIV c", "Union", 22, 22),
+    U("d1", "Fulton c", "Confederate", 22, 23),
+])
+bg, _ = mkgame(sp, seed=21)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.submit("Union", {"type": "battle", "attackers": ["s1", "s2"],
+                        "defenders": ["d1"]})
+drain_pending(bg)
+r = bg.propose("Union", {"type": "battle", "attackers": ["s1"], "defenders": ["d1"]})
+check(not r["legal"], f"a unit that already fought cannot attack again [7.14] ({r['reasons']})")
+
+# N20: stacked batteries bombard separate targets - the SECOND is refused
+sp = mkscen([
+    U("a1", "XIV Artillery c", "Union", 1, 8, cls="arty"),
+    U("a2", "XX Artillery c", "Union", 1, 8, cls="arty"),
+    U("t1", "Russell c", "Confederate", 1, 10),
+    U("t2", "Fulton c", "Confederate", 1, 6),
+    U("far", "Wood c", "Confederate", 20, 20),
+])
+bg, _ = mkgame(sp, seed=22)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.submit("Union", {"type": "battle", "attackers": ["a1"],
+                        "defenders": ["t1"], "bombarding": ["a1"]})
+check(ok(r), f"the first battery bombards its target [8.1] ({r['verdict']['reasons']})")
+drain_pending(bg)
+r = bg.propose("Union", {"type": "battle", "attackers": ["a2"],
+                         "defenders": ["t2"], "bombarding": ["a2"]})
+check(not r["legal"] and "[7.22]" in " ".join(r["reasons"]),
+      f"stacked artillery may not bombard separate targets [8.14/7.22] "
+      f"({r['reasons']})")
+r = bg.propose("Union", {"type": "battle", "attackers": ["a2"],
+                         "defenders": ["t1"], "bombarding": ["a2"]})
+check(not r["legal"], f"the stackmate may not attack at all once the hex has "
+                      f"fought separately [7.22/7.14] ({r['reasons']})")
 
 print()
 shutil.rmtree(TMP, ignore_errors=True)

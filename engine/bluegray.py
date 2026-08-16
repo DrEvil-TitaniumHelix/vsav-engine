@@ -581,14 +581,22 @@ class BlueGrayGame(GateGame):
         # but a stacked pair engaged by 7.12 both must fight - checked at
         # end_phase. Here: co-stacked attackers in DIFFERENT battles is
         # prevented by 7.22 once either has fought.
+        mine_contacts, _ = self._contacts(side)
         for p in atk_ids:
             u = self.unit(p)
             for v in self._live(side):
-                if v["pid"] != p and (v["col"], v["row"]) == (u["col"], u["row"]) \
-                   and v["pid"] in s["fought"] and self.cls(v) != "train":
-                    return self._v(False,
-                                   f"co-stacked attackers fight as one combined strength - "
-                                   f"{v['slot']} already attacked separately [7.22]")
+                if v["pid"] != p and v["pid"] not in atk_ids \
+                   and (v["col"], v["row"]) == (u["col"], u["row"]) \
+                   and self.cls(v) != "train" and v["pid"] not in s["advanced"]:
+                    if v["pid"] in s["fought"]:
+                        return self._v(False,
+                                       f"co-stacked attackers fight as one combined strength - "
+                                       f"{v['slot']} already attacked separately [7.22]")
+                    if v["pid"] in mine_contacts:
+                        return self._v(False,
+                                       f"co-stacked attackers are one integral combat "
+                                       f"strength - the contact-obligated {v['slot']} "
+                                       f"must join this attack [7.22/7.12]")
         # bombarding artillery checks (8.x)
         board = self.rules_board(mover_side=side)
         ezoc = self.game.zoc_hexes(board, self.game.enemy(side))
