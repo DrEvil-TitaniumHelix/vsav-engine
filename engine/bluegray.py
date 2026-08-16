@@ -1139,7 +1139,15 @@ class BlueGrayGame(GateGame):
         ev = []
         dest = self._retreat_dest(action)
         if dest is None:
-            ev += self._eliminate([pid], "no retreat open [7.72]")
+            disp_of = p.get("disp_of") or {}
+            if pid in disp_of and disp_of[pid] in s["units"]:
+                ev += self._eliminate([disp_of[pid]],
+                                      "displacement fate swap - the retreating "
+                                      "unit is eliminated instead [7.82]")
+                ev.append({"displaced_spared": self.unit(pid)["slot"],
+                           "why": "7.82"})
+            else:
+                ev += self._eliminate([pid], "no retreat open [7.72]")
         else:
             # displacement (7.8): friendly full stack - displaced unit must
             # itself retreat; chains resolved as further pendings. A unit
@@ -1155,6 +1163,7 @@ class BlueGrayGame(GateGame):
                 # retreaters displacing the same stack before it resolves)
                 if disp["pid"] not in p["units"]:
                     p["units"].append(disp["pid"])
+                    p.setdefault("disp_of", {})[disp["pid"]] = pid
                 ev.append({"displaced": disp["slot"], "by": u["slot"]})
             u["col"], u["row"] = dest
             s["retreated_phase"].append(pid)
