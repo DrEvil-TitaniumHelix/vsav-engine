@@ -143,7 +143,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | C.6 | 7.14 | a unit attacks max once per Combat Phase; an enemy unit is attacked max once (7.74 bombardment exception aside) | ENFORCED — `fought`/`defended` maps :535-544 (+ retreat exception :542-544); VGa §B |
 | C.7 | 7.15 | attack only when adjacent (exception 8.0), and only across crossable hexsides (TEC: attacks cross bridges/fords only) | ENFORCED — `_engage_adjacent` :145 on every melee attacker-defender pair :604-614; VC §3 |
 | C.8 | 7.21 | a defending stack is attacked as one total strength; no withholding | ENFORCED — `stackmates` refusal :549-561; VC §3 |
-| C.9 | 7.22 | co-stacked attackers are one integral combat strength — never separate attacks | OPEN — **N6**: the engine refuses the SECOND separate attack (:566-573) but ACCEPTS the first partial attack while the co-stacked partner is itself contact-obligated (7.12) — after which the partner can never legally fight and `end_phase` deadlocks. Strict-reading fix + validator both owed (the refusal half is currently unproven — folded into N6's close) |
+| C.9 | 7.22 | co-stacked attackers are one integral combat strength — never separate attacks | ENFORCED — three bars in `_propose_battle`: a contact-obligated co-stacked stackmate not in the attacker set refuses the partial attack at proposal [7.22/7.12] (the deadlock fix — the strict reading built from 7.12's "all adjacent Friendly units participate in an attack" + 7.22's "may not be used in separate attacks"); a fought stackmate refuses any further attack from the hex [7.22]; the pair attacking together is always satisfiable because same-hex units share adjacency (7.25 cannot strand the stack). VC §15 proves all arms incl. the old deadlock sequence now closing cleanly. Declared reading: a NON-obligated stackmate may voluntarily abstain from a hex-mate's attack; recorded for Stage F rulings. **Closed N6+N20, 2026-08-16** |
 | C.10 | 7.23 | a unit in the ZOC of >1 enemy must attack all of them not engaged by others | ENFORCED — the same `un_att`/`defended` machinery treats each contacted enemy independently :870; VGa §B (single-enemy staging = the minimal case) |
 | C.11 | 7.24 | units in different hexes may combine against one hex | ENFORCED — multi-attacker battles; VC §3/§5 |
 | C.12 | 7.25 | in multi-hex combat ALL attackers adjacent to ALL defenders, plus bombarding artillery exempt from adjacency | ENFORCED — per-pair adjacency test :604-614, bombards exempt; VC §3 |
@@ -163,7 +163,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | B.2 | 8.11 | may attack non-adjacent units 2–3 hexes out; never forced to bombard merely by range | ENFORCED — range window + voluntariness (no obligation test for range) :577-596; VGa §H:291 |
 | B.3 | 8.12 | range counts the target hex, excludes the firer's | ENFORCED — `hex_distance` (gamespec.py:197); VGa §H:287 |
 | B.4 | 8.13 | a bombardment-only attack hits a single hex (combined attacks excepted) | ENFORCED — refusal :599-603; positive VC §6, negative VC §11 (both single-hex arms accepted, the two-hex pure bombardment refused [8.13]) |
-| B.5 | 8.14 | two artillery in one hex bombarding must share the target | ENFORCED (unproven negative) — enforced via the 7.22 co-stacked mechanism (:566-573, a second separate attack is refused); positive case VC §6 (stacked pair, one target). Negative + N6's fix land together |
+| B.5 | 8.14 | two artillery in one hex bombarding must share the target | ENFORCED — the 7.22 co-stacked mechanism (a second separate attack from the hex is refused once either fought); VC §15 stages the negative (first battery bombards, stackmate's separate target refused [8.14/7.22]) and §6 the positive. **Closed N20, 2026-08-16** |
 | B.6 | 8.15 | bombarding artillery suffers no combat results (never destroyed/retreated by its own attack) | ENFORCED — `victims = melee_ids` / pure-bombard no-op :1027-1061; VC §6 |
 | B.7 | 8.16 | bombarding artillery MAY voluntarily elect to suffer Ar | OPEN — **N10**: no door exists; a pure-bombard Ar is a forced no-op :1058-1061. Loud incompleteness (a printed option the gate cannot express) |
 | B.8 | 8.21 | combined attacks: bombard strength joins adjacent friendly attackers | ENFORCED — bombard ids ⊆ attackers :524 + strength summed in `_battle_odds` :667; VGa §H |
@@ -322,7 +322,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N3 | 18.11 | train auto-retreat armed only at phase start — a Confederate advance during the Union combat phase landing adjacent ("WHENEVER adjacent") never triggers it — **CLOSED 2026-08-16: arm-at-apply-choke (`_arm_train_contact`), VGa §I3; engine+validator hunks landed in b57966b (noted in its message), this commit carries the matrix closure. VR seed-1 pin unchanged** | 1 |
 | N4 | 7.82 | displacement-that-would-eliminate kills the DISPLACED unit; print eliminates the retreating unit instead (fates swapped) — **CLOSED 2026-08-16: `disp_of` in the pending payload + swap branch in `_apply_retreat`, VR swap staging. The stored fixture's resolution and VR's seed-1 pin (33/123) are UNCHANGED (that cycle ends through the 7.72 branch, not the swap); per-link reading (each displacer dies for its own displaced unit) = declared reading for chains, registered with N14's ruling** | 1 |
 | N5 | 7.81 | displaced, unfired artillery may still bombard — no displacement state exists | 1 |
-| N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable. Strict 7.22 (refuse the partial attack when the partner owes 7.12) + validator | 1 (+2 consequence) |
+| N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable — **CLOSED 2026-08-16: proposal-time refusal when an obligated stackmate is excluded, VC §15; the alternative reading (7.12 discharged by the stackmate's attack) REJECTED in writing: 7.12's own sentence requires the stackmate's participation, it cannot be discharged by another unit's battle** | 1 (+2 consequence) |
 | N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) — **CLOSED 2026-08-16: night/EZOC bar in the reinforce door, VGa §F three arms; VR seed-1 pin unchanged** | 1 |
 | N8 | 17.21/17.22 | retreats/displacement do not confer occupation credit (engine = deliberate-moves-only reading; the printed "last to have moved a Friendly unit onto the hex" plausibly includes combat moves) — declared reading, Bruce to rule | 1 under the literal reading |
 | N9 | 15.2 | a reinforcement's entry cost is treated as its whole movement — post-entry movement refused; print: "may move and attack freely, just as any other unit" — **CLOSED 2026-08-16: negative-spend continuation convention (no new HASH_KEYS entry), VGa §K; policy AI's own gate (`pid in moved`) skips continuations, so VR's seed-1 pin (33/123) and the VA campaigns are unchanged** | 2 |
@@ -336,7 +336,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N17 | 8.13 | validator debt: the multi-hex pure-bombardment refusal (B.4) untested — **CLOSED 2026-08-16 by VC §11** | VD |
 | N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested — **CLOSED 2026-08-16 by VC §12** | VD |
 | N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested — **CLOSED 2026-08-16 by VC §13** | VD |
-| N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — ships with N6's fix | VD |
+| N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — **CLOSED 2026-08-16 by VC §15** (first battery bombards; the stackmate's separate target refused [8.14/7.22]) | VD |
 | N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — **CLOSED 2026-08-16 by VGa §J** | VD |
 | N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — **CLOSED 2026-08-16 by validate_scoring.py §1** (per-(GT, class, strength) multiset + entry hexes, both sides, vs rules_transcription.json) | VD |
 | N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — **CLOSED 2026-08-16 by VC §14** (2-vs-14 accepted, natural 1-7 → column 1-5, still rolls) | VD |
@@ -352,13 +352,13 @@ analysis.
 
 ## §6 PLAYABILITY VERDICT
 
-**BUILD IN PROGRESS. build_open: 5.**
+**BUILD IN PROGRESS. build_open: 4.**
 
-Row counts: **117 rows** — ENFORCED 111 (fully proven 108, plus ENFORCED-unproven 3: EX.8, B.5,
-V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
+Row counts: **117 rows** — ENFORCED 113 (fully proven 111, plus ENFORCED-unproven 2: EX.8,
+V.8 — both blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
-sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 5** (C.9, B.7,
-B.17, D.4, V.9 — EX.7/N1, RF.7/N7, RF.3/N9, T.2/N3, D.2/N4 closed 2026-08-16).
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 4** (B.7, B.17,
+D.4, V.9 — EX.7/N1, RF.7/N7, RF.3/N9, T.2/N3, D.2/N4, C.9/N6+N20 closed 2026-08-16).
 
 **Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
 re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
@@ -371,8 +371,7 @@ sub-clauses re-proven against RULE 2 (census re-counted from terrain.json: clear
 col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code→rulebook sweep
 clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
-Blocking rows: N2 (V.9), N5 (D.4), N6 (C.9),
-N10 (B.7), N11 (B.17). Four are class-1 silent incorrectness — the class this instrument exists
+Blocking rows: N2 (V.9), N5 (D.4), N10 (B.7), N11 (B.17). Three are class-1 silent incorrectness — the class this instrument exists
 to surface. Demotion of a shipped game is the expected outcome Bruce predicted 2026-08-08 ("the
 audit can DEMOTE shipped games"): Chickamauga shipped at earned Tier 3 under the tier ladder the
 coverage matrix has since replaced; under spec #13 as amended it is BUILD IN PROGRESS until the
