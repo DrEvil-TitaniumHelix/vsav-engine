@@ -409,6 +409,58 @@ rr = bg.submit("Union", {"type": "train_retreat",
 check(ok(rr), "train retreat resolved [18.11]")
 replay(bg, liveI, "train session")
 
+# I3: 18.11 arms MID-PHASE - a Confederate advance during the Union combat
+# phase that lands adjacent to the Train must auto-retreat it [18.11]
+found = None
+for seed in range(1, 80):
+    scen = mkscen([
+        U("train", "Union Supply Train c", "Union", 19, 20, cls="train"),
+        U("atk", "1/1/XIV c", "Union", 19, 21),
+        U("reb", "Fulton c", "Confederate", 19, 22),
+    ], turns=2)
+    bg, _ = mkgame(scen, seed=seed)
+    bg.submit("Union", {"type": "end_movement"})
+    if bg.s["pending"]:
+        continue
+    r = bg.submit("Union", {"type": "battle", "attackers": ["atk"], "defenders": ["reb"]})
+    if not ok(r) or r["result"][0]["result"] != "Ar":
+        continue
+    u = bg.unit("atk")
+    oh, _ = bg._retreat_hexes(u)
+    if not oh:
+        continue
+    bg.submit("Union", {"type": "retreat", "unit": "atk", "dest": list(sorted(oh)[0])})
+    p = bg.s["pending"]
+    if not p or p["awaiting"] != "advance" or p["by"] != "Confederate":
+        continue
+    dests = [tuple(h) for h in p["hexes"]]
+    adj = [h for h in dests if h in bg.game.neighbors(19, 20)]
+    if not adj:
+        continue
+    found = (seed, adj[0])
+    break
+check(found is not None, "staged the Ar-advance-adjacent-to-train sequence")
+if found:
+    seed, adv_h = found
+    r = bg.submit("Confederate", {"type": "advance", "unit": "reb", "dest": list(adv_h)})
+    check(ok(r), f"the Confederate advances next to the Train [7.75] ({r['verdict']['reasons']})")
+    p = bg.s["pending"]
+    check(p and p["awaiting"] == "train_retreat",
+          f"the Train must auto-retreat MID-PHASE [18.11] (pending {p and p.get('awaiting')})")
+    r = bg.submit("Union", {"type": "end_phase"})
+    check(not ok(r), "end_phase refuses while the train retreat is pending [18.11]")
+    r = bg.submit("Union", {"type": "battle", "attackers": [], "defenders": []})
+    check(not ok(r), "the pending blocks other actions [7.7]")
+    u = bg.unit(p["unit"])
+    oh, _ = bg._retreat_hexes(u)
+    r = bg.submit("Union", {"type": "train_retreat",
+                            "dest": list(sorted(oh)[0]) if oh else None})
+    check(ok(r), "the mid-phase train retreat resolves [18.11]")
+    check(bg.s["pending"] is None,
+          "no advance offered after the train's retreat [18.11 parenthetical]")
+    r = bg.submit("Union", {"type": "end_phase"})
+    check(ok(r), "end_phase closes after the mid-phase retreat [18.11]")
+
 # ================================================================ J. column excess 15.3
 print("--- J: reinforcement column excess rolls to a later GT [15.0/15.3] ---")
 ent = [[20, 22], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27], [21, 22], [21, 23]]
@@ -432,6 +484,39 @@ check(bg.s["turn"] == 2 and bg.s["mover"] == "Union", "GT 2 begins [4.1.3]")
 r = bg.submit("Union", {"type": "reinforce", "unit": "r7", "hex": ent[6]})
 check(ok(r), "the rolled-over unit enters the next GT at column cost 1 [15.0/15.3]")
 replay(bg, liveJ, "column excess session")
+
+# ================================================================ K. 15.2 post-entry movement
+print("--- K: a reinforcement moves and attacks freely after entering [15.2] ---")
+scen = mkscen([U("reb", "Fulton c", "Confederate", 20, 24)],
+              reserve=[{"id": "k1", "slot": "1/2/XIV c", "side": "Union", "str": 5,
+                        "cls": "inf", "due": 1, "entry": [[20, 26]]}], turns=1)
+bg, liveK = mkgame(scen, seed=15)
+r = bg.submit("Union", {"type": "reinforce", "unit": "k1", "hex": [20, 26]})
+check(ok(r), f"reinforcement enters at column cost 1 [15.0] ({r['verdict']['reasons']})")
+r = bg.submit("Union", {"type": "move", "unit": "k1", "dest": [20, 25]})
+check(ok(r), f"the entered unit continues its move with the remaining MA [15.2] "
+             f"({r['verdict']['reasons']})")
+check(bg.s["moved"].get("k1") == 2,
+      f"cumulative spend = column 1 + path 1 [15.0/15.2] (got {bg.s['moved'].get('k1')})")
+r = bg.submit("Union", {"type": "move", "unit": "k1", "dest": [20, 26]})
+check(not ok(r) and "[5.17]" in " ".join(r["verdict"]["reasons"]),
+      f"a stopped reinforcement may not move again [5.17] ({r['verdict']['reasons']})")
+bg.submit("Union", {"type": "end_movement"})
+r = bg.propose("Union", {"type": "battle", "attackers": ["k1"], "defenders": ["reb"]})
+check(r["legal"], f"the entered unit attacks in the combat phase [15.2] ({r['reasons']})")
+replay(bg, liveK, "post-entry movement session")
+
+ent = [[20, 22], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27]]
+res = [{"id": f"k{i}", "slot": "1/2/XIV c", "side": "Union", "str": 5,
+        "cls": "inf", "due": 1, "entry": [list(h) for h in ent]} for i in range(1, 7)]
+scen = mkscen([U("far", "Fulton c", "Confederate", 8, 4)], reserve=res, turns=1)
+bg, _ = mkgame(scen, seed=15)
+for i in range(1, 7):
+    bg.submit("Union", {"type": "reinforce", "unit": f"k{i}", "hex": ent[i - 1]})
+r = bg.submit("Union", {"type": "move", "unit": "k6", "dest": [20, 26]})
+check(not ok(r),
+      f"the 6th column unit (6 MP spent on entry) has no MA left [15.0/5.15] "
+      f"({r['verdict']['reasons']})")
 
 print()
 shutil.rmtree(TMP, ignore_errors=True)
