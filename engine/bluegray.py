@@ -155,10 +155,14 @@ class BlueGrayGame(GateGame):
         me = dict(id=u["pid"], name=u["slot"], side=u["side"],
                   col=u["col"], row=u["row"])
         board = self.rules_board(exclude_pid=u["pid"], mover_side=u["side"])
+        ma = self.budget(u)
+        spent = self.s["moved"].get(u["pid"], 0)
+        if spent < 0:
+            ma += spent
         if self.cls(u) == "train":
             dd = self._train_dests(u, board)
         else:
-            dd = self.game.legal_destinations_t(me, self.budget(u), board)
+            dd = self.game.legal_destinations_t(me, ma, board)
         if self.is_night():
             ezoc = self.game.zoc_hexes(board, self.game.enemy(u["side"]))
             dd = {h: c for h, c in dd.items() if h not in ezoc}
@@ -443,7 +447,7 @@ class BlueGrayGame(GateGame):
         u, err = self._gate_unit(side, action)
         if err:
             return err
-        if u["pid"] in s["moved"]:
+        if u["pid"] in s["moved"] and s["moved"][u["pid"]] >= 0:
             return self._v(False, f"{u['slot']} has already moved this phase [5.17]")
         dest = tuple(action.get("dest", ()))
         if len(dest) != 2:
@@ -514,7 +518,7 @@ class BlueGrayGame(GateGame):
                            f"{u['slot']} is in an enemy controlled hex - it may not "
                            f"exit during the movement phase (only combat frees it, "
                            f"and 16.6 bars that) [5.13/6.3/16.5]")
-        spent = s["moved"].get(u["pid"], 0)
+        spent = abs(s["moved"].get(u["pid"], 0))
         if spent + self.exit_cfg.get("mp", 1) > self.budget(u):
             return self._v(False, f"no MP left to exit ({spent} spent) [16.2]")
         return self._v(True, f"{u['slot']} exits the map [16.1-16.4]")
@@ -908,6 +912,16 @@ class BlueGrayGame(GateGame):
         return None
 
     # ------------------------------------------------------------ apply
+    def _arm_train_contact(self, ev):
+        s = self.s
+        if s["phase"] != "combat" or s["mover"] != "Union" or s["pending"] \
+           or self.is_night():
+            return
+        tr = self._train_contact("Union")
+        if tr:
+            s["pending"] = {"awaiting": "train_retreat", "by": "Union", "unit": tr}
+            ev.append({"train_must_retreat": tr})
+
     def _apply(self, side, action, verdict):
         s = self.s
         t = action["type"]
@@ -919,7 +933,8 @@ class BlueGrayGame(GateGame):
             path = [tuple(h) for h in action.get("path") or []] \
                 or self._cheapest_path(u, dest)
             u["col"], u["row"] = dest
-            s["moved"][u["pid"]] = dd[dest]
+            prior = s["moved"].get(u["pid"], 0)
+            s["moved"][u["pid"]] = dd[dest] - min(prior, 0)
             self._credit_occupation(side, path + [dest])
             ev.append({"move": u["slot"], "to": list(dest), "mp": dd[dest]})
         elif t == "reinforce":
@@ -931,7 +946,7 @@ class BlueGrayGame(GateGame):
                                "col": h[0], "row": h[1]}
             s["pool"].pop(pid, None)
             s["entered"] += 1
-            s["moved"][pid] = cost         # column MP spent; may still move later? no - moved
+            s["moved"][pid] = -cost
             self._credit_occupation(side, [h])
             ev.append({"reinforce": e["slot"], "at": list(h), "column_mp": cost})
         elif t == "exit":
@@ -966,6 +981,8 @@ class BlueGrayGame(GateGame):
             ev += self._apply_train_retreat(side, action)
         elif t == "end_phase":
             ev += self._next_player()
+        if t in ("battle", "retreat", "advance", "exchange_loss", "train_retreat"):
+            self._arm_train_contact(ev)
         return ev
 
     def _reset_combat_tracking(self):
@@ -1334,7 +1351,7 @@ class BlueGrayGame(GateGame):
         if u["side"] != self.s["mover"]:
             return {"can_act": False,
                     "reasons": [f"not {u['side']}'s player turn [4.1]"], "dests": []}
-        if pid in self.s["moved"]:
+        if pid in self.s["moved"] and self.s["moved"][pid] >= 0:
             return {"can_act": False,
                     "reasons": [f"{u['slot']} has already moved this phase [5.17]"],
                     "dests": []}
@@ -1436,7 +1453,7 @@ class BlueGrayGame(GateGame):
         if s["phase"] == "movement" and not s["over"]:
             for u in self._live(s["mover"]):
                 if (u["col"], u["row"]) in self.exit_hexes \
-                   and s["moved"].get(u["pid"], 0) + self.exit_cfg.get("mp", 1) \
+                   and abs(s["moved"].get(u["pid"], 0)) + self.exit_cfg.get("mp", 1) \
                        <= self.budget(u):
                     exit_ready.append({"pid": u["pid"], "slot": u["slot"]})
         return {

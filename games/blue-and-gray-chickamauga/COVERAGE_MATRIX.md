@@ -112,7 +112,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 |---|---|---|---|
 | RF.1 | 15.0 | column entry: 1st unit 1 MP, 2nd 2 MP, 3rd 3 MP…; owner picks order and moment | ENFORCED — `cost = 1 + entered` :488; one global column per player-turn (declared reading of "and/or" — the 15.3 excess rule is the column binding); VGa §A:108-117 |
 | RF.2 | 15.1/15.4 | enter at a charted southern-edge hex, during the movement phase, never stacked | ENFORCED — `_propose_reinforce` :465 (hex list, phase, occupancy); VGa §A |
-| RF.3 | 15.2 | once entered, a unit "may move and attack freely, just as any other unit" (remaining MA spendable) | OPEN — **N9**: apply marks the reinforcement fully moved (`moved[pid]=cost` :920) and `_propose_move` refuses it (:446) — the entry cost is treated as the whole move. Loud incompleteness; every game is affected (GT2 alone: 21 units) |
+| RF.3 | 15.2 | once entered, a unit "may move and attack freely, just as any other unit" (remaining MA spendable) | ENFORCED — the entry stores its column cost as a NEGATIVE spend (`moved[pid] = -cost`); the move door treats a negative entry as an unfinished single move: `dests` computes with the remaining budget, the apply writes the cumulative spend, a stop locks the unit for the phase ([5.17] reads spend ≥ 0); the exit door and the UI panels read `abs()`. VGa §K proves all four arms: continuation at remaining MA, cumulative spend 1+1, second-move refusal, post-entry attack in the combat phase, and the 6-MP column entry leaving no MA. **Closed N9, 2026-08-16** |
 | RF.4 | 15.3 | excess units roll to later GTs | ENFORCED — pool retains pid; column-cost refusal :489-491; VGa §J stages the full column (units 1–6 at costs 1–6 accepted, the 7th refused at 7 MP > MA [15.0/15.3], held in pool, entering next GT at cost 1) |
 | RF.5 | 15.5 | may enter an EZOC hex; delayed only while BOTH entry hexes are physically occupied | ENFORCED — occupancy-only test :483-487 (no ZOC check — deliberate); VGa §A (occupied-hex refusals) |
 | RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED — scenario `reserve` data cross-checked against `rules_transcription.json` per (GT, class, strength) + entry hexes, both sides, on every run (validate_scoring.py §1 — **closed N22**); VGa §A exercises the entry machinery on the real scenario; VA campaigns place the schedule |
@@ -263,7 +263,7 @@ no mutable state escapes the hash. **Finding: none.**
 | `over` / `winner` | game end + result | `_final_scoring` :1289 (17.0) | propose :395 | never |
 | `rng_calls` | dice stream position | `roll_die` gate.py:153 (spec #11) | `_rng` replay | never |
 | `units` | pid → identity + hex | deploy, `move` :901, `reinforce` :911, retreat :1103, advance :1141, `_eliminate` :1064, `exit` :923 | everything | continuous |
-| `moved` | pid → MP spent this movement phase | move :908, reinforce :920 (column cost) | `_propose_move` :446 (5.17), `_propose_exit` :503 (16.2) | every phase change :929/:973 |
+| `moved` | pid → MP spent this movement phase | move :908 (cumulative), reinforce :920 (column cost as a NEGATIVE continuation marker, 15.2) | `_propose_move` (5.17 — spend ≥ 0 = locked), `dests` (remaining budget, 15.2), `_propose_exit` :503 + UI panels (abs, 16.2) | every phase change :929/:973 |
 | `pool` | reinforcement pid → due GT | init :75, reinforce pops :918 (15.0/15.3) | `_propose_reinforce` :476 | entries removed on entry |
 | `entered` | reinforcement column position this player-turn | reinforce :919 | column cost :488 (15.0) | every player-turn :930/:974 |
 | `exited` | pid → side, permanent | `exit` :925 (16.3) | `_final_scoring` :1230 (17.11) | never |
@@ -325,7 +325,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable. Strict 7.22 (refuse the partial attack when the partner owes 7.12) + validator | 1 (+2 consequence) |
 | N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) — **CLOSED 2026-08-16: night/EZOC bar in the reinforce door, VGa §F three arms; VR seed-1 pin unchanged** | 1 |
 | N8 | 17.21/17.22 | retreats/displacement do not confer occupation credit (engine = deliberate-moves-only reading; the printed "last to have moved a Friendly unit onto the hex" plausibly includes combat moves) — declared reading, Bruce to rule | 1 under the literal reading |
-| N9 | 15.2 | a reinforcement's entry cost is treated as its whole movement — post-entry movement refused; print: "may move and attack freely, just as any other unit" | 2 |
+| N9 | 15.2 | a reinforcement's entry cost is treated as its whole movement — post-entry movement refused; print: "may move and attack freely, just as any other unit" — **CLOSED 2026-08-16: negative-spend continuation convention (no new HASH_KEYS entry), VGa §K; policy AI's own gate (`pid in moved`) skips continuations, so VR's seed-1 pin (33/123) and the VA campaigns are unchanged** | 2 |
 | N10 | 8.16 | no door for bombarding artillery to voluntarily suffer Ar | 2 |
 | N11 | 8.45 vs 8.0/8.11 | the adjacent-unit-across-the-creek bombardment is refused (range strictly 2–3); 8.45's own words make the adjacent unit bombardable, which contradicts 8.0's "two or three hexes" — **register candidate** (ambiguity), engine strict pending the ruling | 2 |
 | N12 | 5.17 | "nor may it change its move without the consent of the opposing Player" vs the platform's UNDO (1 press = 1 decision, all games) — the same cross-game item as NaW M.13/MOV-19, already queued to Bruce (NOW.md call #3); recorded so the matrix does not silently bless it | cross-game, Bruce-blocked |
@@ -352,13 +352,13 @@ analysis.
 
 ## §6 PLAYABILITY VERDICT
 
-**BUILD IN PROGRESS. build_open: 8.**
+**BUILD IN PROGRESS. build_open: 7.**
 
-Row counts: **117 rows** — ENFORCED 108 (fully proven 105, plus ENFORCED-unproven 3: EX.8, B.5,
+Row counts: **117 rows** — ENFORCED 109 (fully proven 106, plus ENFORCED-unproven 3: EX.8, B.5,
 V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
-sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 8** (RF.3, C.9, B.7,
-B.17, D.2, D.4, T.2, V.9 — EX.7/N1 and RF.7/N7 closed 2026-08-16).
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 7** (C.9, B.7,
+B.17, D.2, D.4, T.2, V.9 — EX.7/N1, RF.7/N7, RF.3/N9 closed 2026-08-16).
 
 **Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
 re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
@@ -371,8 +371,8 @@ sub-clauses re-proven against RULE 2 (census re-counted from terrain.json: clear
 col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code→rulebook sweep
 clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
-Blocking rows: N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9), N9 (RF.3),
-N10 (B.7), N11 (B.17). Six are class-1 silent incorrectness — the class this instrument exists
+Blocking rows: N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9),
+N10 (B.7), N11 (B.17). Five are class-1 silent incorrectness — the class this instrument exists
 to surface. Demotion of a shipped game is the expected outcome Bruce predicted 2026-08-08 ("the
 audit can DEMOTE shipped games"): Chickamauga shipped at earned Tier 3 under the tier ladder the
 coverage matrix has since replaced; under spec #13 as amended it is BUILD IN PROGRESS until the
