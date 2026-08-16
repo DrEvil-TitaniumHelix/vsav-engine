@@ -158,6 +158,7 @@ def exch_scen():
         U("a1", "Wilder c", "Union", 12, 27),
         U("a2", "1/1/Res c", "Union", 13, 26),
         U("d1", "Russell c", "Confederate", 13, 27),
+        U("far", "1/1/XIV c", "Union", 20, 20),
     ])
 bg, live, r = find_seed(exch_scen, lambda: {"type": "battle",
                                             "attackers": ["a1", "a2"],
@@ -170,6 +171,9 @@ if bg:
     check(p and p["awaiting"] == "exchange_loss" and p["owe"] == 2,
           f"exchange owes the PRINTED defender total 2, not the doubled 4 [7.6] "
           f"(owe={p and p.get('owe')})")
+    r3 = bg.submit("Union", {"type": "exchange_loss", "units": ["a1", "far"]})
+    check(not ok(r3), f"exchange may not remove a non-participating unit [7.6] "
+                      f"({r3['verdict']['reasons']})")
     r2 = bg.submit("Union", {"type": "exchange_loss", "units": ["a1", "a2"]})
     check(not ok(r2), "over-removal rejected (either unit alone covers 2) [7.6]")
     r4 = bg.submit("Union", {"type": "exchange_loss", "units": ["a2"]})
@@ -285,6 +289,139 @@ if bg:
     r3 = bg.submit("Union", {"type": "end_phase"})
     check(ok(r3), "advanced unit creates no new obligations [7.75]")
     replay(bg, live, "advance session")
+
+# ---------------------------------------------------------- 10. solely-bombarded doubling
+print("--- 10: solely-bombarded defender doubled across a creek hexside [Deluxe 9.0] ---")
+sp = mkscen([
+    U("art", "XIV Artillery c", "Union", 15, 26, cls="arty"),
+    U("d", "Fulton c", "Confederate", 16, 27),
+])
+bg, _ = mkgame(sp, seed=1)
+bg.submit("Union", {"type": "end_movement"})
+pv = bg.battle_preview("Union", ["art"], ["d"], bomb_ids=["art"])
+check(pv["legal"] and pv["odds"] == "1-2",
+      f"bombardment whose LOS crosses the creek doubles the sole defender: "
+      f"3 vs 6 = 1-2 [Deluxe 9.0] (got {pv['odds']}, legal={pv['legal']})")
+sp = mkscen([
+    U("art", "XIV Artillery c", "Union", 1, 8, cls="arty"),
+    U("d", "Fulton c", "Confederate", 1, 10),
+])
+bg, _ = mkgame(sp, seed=1)
+bg.submit("Union", {"type": "end_movement"})
+pv = bg.battle_preview("Union", ["art"], ["d"], bomb_ids=["art"])
+check(pv["legal"] and pv["odds"] == "1-1",
+      f"clear-ground bombardment leaves the sole defender undoubled: "
+      f"3 vs 3 = 1-1 [Deluxe 9.0] (got {pv['odds']})")
+
+# ---------------------------------------------------------- 11. pure bombardment single hex
+print("--- 11: a pure bombardment attacks a single hex [8.13] ---")
+sp = mkscen([
+    U("art", "XIV Artillery c", "Union", 1, 10, cls="arty"),
+    U("d1", "Fulton c", "Confederate", 1, 12),
+    U("d2", "Wood c", "Confederate", 1, 8),
+])
+bg, _ = mkgame(sp, seed=1)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.propose("Union", {"type": "battle", "attackers": ["art"],
+                         "defenders": ["d1"], "bombarding": ["art"]})
+check(r["legal"], f"pure bombardment of the first hex accepted [8.1] ({r['reasons']})")
+r = bg.propose("Union", {"type": "battle", "attackers": ["art"],
+                         "defenders": ["d2"], "bombarding": ["art"]})
+check(r["legal"], f"pure bombardment of the second hex accepted [8.1] ({r['reasons']})")
+r = bg.propose("Union", {"type": "battle", "attackers": ["art"],
+                         "defenders": ["d1", "d2"], "bombarding": ["art"]})
+check(not r["legal"] and "[8.13]" in " ".join(r["reasons"]),
+      f"pure bombardment of two hexes refused [8.13] ({r['reasons']})")
+
+# ---------------------------------------------------------- 12. combined multi-hex reach
+print("--- 12: combined multi-hex attack - artillery needs range to ONE defending hex [8.22] ---")
+sp = mkscen([
+    U("a1", "Wilder c", "Union", 22, 22),
+    U("art", "XIV Artillery c", "Union", 18, 21, cls="arty"),
+    U("d1", "Fulton c", "Confederate", 21, 23),
+    U("d2", "Strahl c", "Confederate", 22, 23),
+])
+bg, _ = mkgame(sp, seed=1)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.propose("Union", {"type": "battle", "attackers": ["a1", "art"],
+                         "defenders": ["d1", "d2"], "bombarding": ["art"]})
+check(r["legal"], f"artillery in range of one defending hex joins the multi-hex "
+                  f"combined attack [8.22] ({r['reasons']})")
+check(G.hex_distance((18, 21), (22, 23)) == 4,
+      "the second defending hex is beyond bombardment range - the asymmetry is real [8.22]")
+
+# ---------------------------------------------------------- 13. mixed-attack result split
+print("--- 13: mixed attack - melee suffers results, bombarding artillery does not [8.23/8.15] ---")
+def mixed_scen():
+    return mkscen([
+        U("a1", "Russell c", "Union", 22, 22),
+        U("art", "XIV Artillery c", "Union", 20, 22, cls="arty"),
+        U("d1", "Wilder c", "Confederate", 22, 23),
+    ])
+bg, live, r = find_seed(mixed_scen, lambda: {"type": "battle",
+                                             "attackers": ["a1", "art"],
+                                             "defenders": ["d1"],
+                                             "bombarding": ["art"]}, "Ar")
+check(bg is not None, "found a seed rolling Ar on the mixed attack")
+if bg:
+    p = bg.s["pending"]
+    check(p and p["awaiting"] == "retreat" and p["units"] == ["a1"],
+          f"only the melee participant retreats on Ar [8.23] "
+          f"(units {p and p['units']})")
+    check("art" in bg.s["units"], "the bombarding battery ignores Ar [8.15/8.23]")
+    oh, _ = bg._retreat_hexes(bg.unit("a1"))
+    bg.submit("Union", {"type": "retreat", "unit": "a1",
+                        "dest": list(sorted(oh)[0]) if oh else None})
+    if bg.s["pending"] and bg.s["pending"]["awaiting"] == "advance":
+        bg.submit(bg.s["pending"]["by"], {"type": "advance"})
+    replay(bg, live, "mixed Ar session")
+bg, live, r = find_seed(mixed_scen, lambda: {"type": "battle",
+                                             "attackers": ["a1", "art"],
+                                             "defenders": ["d1"],
+                                             "bombarding": ["art"]}, "Ae")
+check(bg is not None, "found a seed rolling Ae on the mixed attack")
+if bg:
+    check("a1" not in bg.s["units"] and "art" in bg.s["units"],
+          "Ae eliminates the melee participant only - the battery is immune [8.23/8.15]")
+    check("d1" in bg.s["units"], "the defender survives the attackers' Ae [7.6]")
+
+# ---------------------------------------------------------- 14. poor odds + low clamp
+print("--- 14: diversionary poor-odds attack; worse than 1-5 clamps to 1-5 [7.5/7.6] ---")
+sp = mkscen([
+    U("a1", "Russell c", "Union", 22, 22),
+    U("d1", "Wilder c", "Confederate", 22, 23),
+    U("d2", "1/1/Res c", "Confederate", 22, 23),
+])
+bg, live = mkgame(sp, seed=3)
+bg.submit("Union", {"type": "end_movement"})
+r = bg.submit("Union", {"type": "battle", "attackers": ["a1"], "defenders": ["d1", "d2"]})
+check(ok(r), f"the 2-vs-14 diversionary attack is accepted [7.5] "
+             f"({r['verdict']['reasons']})")
+check(r["result"][0]["odds"] == "1-7" and r["result"][0]["column"] == "1-5",
+      f"odds worse than 1-5 roll on the 1-5 column [7.6 note] "
+      f"({r['result'][0]['odds']} -> {r['result'][0]['column']})")
+check(r["result"][0]["result"] in ("De", "Ae", "Ex", "Ar", "Dr"),
+      f"the clamped attack still ROLLS [7.6 note] (got {r['result'][0]['result']})")
+if bg.s["pending"]:
+    p = bg.s["pending"]
+    if p["awaiting"] == "retreat":
+        for pid in list(p["units"]):
+            oh, _ = bg._retreat_hexes(bg.unit(pid))
+            bg.submit(p["by"], {"type": "retreat", "unit": pid,
+                                "dest": list(sorted(oh)[0]) if oh else None})
+        if bg.s["pending"] and bg.s["pending"]["awaiting"] == "advance":
+            bg.submit(bg.s["pending"]["by"], {"type": "advance"})
+    elif p["awaiting"] == "exchange_loss":
+        pids, tot = [], 0
+        for pid in p["units"]:
+            if tot >= p["owe"]:
+                break
+            pids.append(pid)
+            tot += bg.printed(bg.unit(pid))
+        bg.submit(p["by"], {"type": "exchange_loss", "units": pids})
+        if bg.s["pending"] and bg.s["pending"]["awaiting"] == "advance":
+            bg.submit(bg.s["pending"]["by"], {"type": "advance"})
+    replay(bg, live, "poor-odds session")
 
 print()
 shutil.rmtree(TMP, ignore_errors=True)

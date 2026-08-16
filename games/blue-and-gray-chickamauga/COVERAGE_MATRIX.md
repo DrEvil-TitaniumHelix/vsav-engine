@@ -149,11 +149,11 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | C.12 | 7.25 | in multi-hex combat ALL attackers adjacent to ALL defenders, plus bombarding artillery exempt from adjacency | ENFORCED — per-pair adjacency test :604-614, bombards exempt; VC §3 |
 | C.13 | 7.3 | a unit's combat strength is unitary — never split between combats | ENFORCED — structural (a unit is in one battle; `fought` bars a second); VC §3/§5 |
 | C.14 | 7.4/TEC + Deluxe 7.4 | defender doubled in rough / forest+rough; multiplier, effects NOT cumulative — single best benefit | ENFORCED — `defense_double_terrain` + the one-doubling-per-hex logic :673-695 (terrain takes precedence, hexside checked only if terrain didn't double — never both); VGa §E, VC §2/§4 |
-| C.15 | 7.5 | diversionary attacks at poor odds are legal | ENFORCED (unproven) — any column ≥ 1-5 attackable; 7.9 covers deliberate reduction. Audit 2026-08-16: VC §2 asserts the odds arithmetic only; no validator stages a poor-odds battle and asserts acceptance. Validator debt **N23** |
-| C.16 | 7.6 | the CRT itself (10 columns × 6 rows) and the note >6-1→6-1, <1-5→1-5 (both still roll) | ENFORCED — game.json `crt` re-checked against BOTH printings on every run; VC §1 (60 cells), high clamp VGa §D:204. The LOW-clamp arm (<1-5→1-5, still rolls) is untested — **N23** |
+| C.15 | 7.5 | diversionary attacks at poor odds are legal | ENFORCED — any column ≥ 1-5 attackable; 7.9 covers deliberate reduction; VC §14 stages the 2-vs-14 attack and asserts acceptance |
+| C.16 | 7.6 | the CRT itself (10 columns × 6 rows) and the note >6-1→6-1, <1-5→1-5 (both still roll) | ENFORCED — game.json `crt` re-checked against BOTH printings on every run; VC §1 (60 cells), high clamp VGa §D:204, low clamp VC §14 (natural 1-7 rolls on the 1-5 column) |
 | C.17 | 7.6/7.9 | the attacker may voluntarily reduce the odds column before the roll, never after | ENFORCED — `odds_reduce` ≤ computed odds + valid column :616-626 (atomic propose-resolve makes "before the roll" structural); VGa §D:206-208, VC §2 |
 | C.18 | TEC + Deluxe 9.0 | defender doubled behind a bridge/ford hexside only when ALL adjacent attackers cross such a side (bombarders don't count) | ENFORCED — per-hex `all(...)` over adjacent melee :680-687; VC §4 (doubled across the ford; voided when one attacker crosses open ground) |
-| C.19 | Deluxe 9.0 (SPI clarification) | a unit attacked SOLELY by bombarding artillery is doubled when the LOS crosses a ford/bridge/creek hexside or an impassable hex | ENFORCED — `_los_crosses_double` :369 + the no-melee branch :688-694 (off-map sampling hexes read as impassable — declared reading, LOS near map edges only). No validator stages this specific doubling — covered by validator debt **N16** |
+| C.19 | Deluxe 9.0 (SPI clarification) | a unit attacked SOLELY by bombarding artillery is doubled when the LOS crosses a ford/bridge/creek hexside or an impassable hex | ENFORCED — `_los_crosses_double` :369 + the no-melee branch :688-694 (off-map sampling hexes read as impassable — declared reading, LOS near map edges only); VC §10 stages both arms on the real creek (crossed 3v6 = 1-2; clear control 3v3 = 1-1) |
 
 ### B — ARTILLERY (8.x) — the intricate subsystem, line-by-line per the handoff
 
@@ -162,13 +162,13 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | B.1 | 8.0/8.41 | artillery in an EZOC fights as a normal unit and may NOT bombard | ENFORCED — EZOC membership bars bombardment :582-585; VGa §H:333 |
 | B.2 | 8.11 | may attack non-adjacent units 2–3 hexes out; never forced to bombard merely by range | ENFORCED — range window + voluntariness (no obligation test for range) :577-596; VGa §H:291 |
 | B.3 | 8.12 | range counts the target hex, excludes the firer's | ENFORCED — `hex_distance` (gamespec.py:197); VGa §H:287 |
-| B.4 | 8.13 | a bombardment-only attack hits a single hex (combined attacks excepted) | ENFORCED (unproven negative) — refusal :599-603; positive case VC §6. The multi-hex-pure-bombardment REFUSAL is untested — validator debt **N17** |
+| B.4 | 8.13 | a bombardment-only attack hits a single hex (combined attacks excepted) | ENFORCED — refusal :599-603; positive VC §6, negative VC §11 (both single-hex arms accepted, the two-hex pure bombardment refused [8.13]) |
 | B.5 | 8.14 | two artillery in one hex bombarding must share the target | ENFORCED (unproven negative) — enforced via the 7.22 co-stacked mechanism (:566-573, a second separate attack is refused); positive case VC §6 (stacked pair, one target). Negative + N6's fix land together |
 | B.6 | 8.15 | bombarding artillery suffers no combat results (never destroyed/retreated by its own attack) | ENFORCED — `victims = melee_ids` / pure-bombard no-op :1027-1061; VC §6 |
 | B.7 | 8.16 | bombarding artillery MAY voluntarily elect to suffer Ar | OPEN — **N10**: no door exists; a pure-bombard Ar is a forced no-op :1058-1061. Loud incompleteness (a printed option the gate cannot express) |
 | B.8 | 8.21 | combined attacks: bombard strength joins adjacent friendly attackers | ENFORCED — bombard ids ⊆ attackers :524 + strength summed in `_battle_odds` :667; VGa §H |
-| B.9 | 8.22 | in a multi-hex combined attack, artillery need range/LOS to only ONE defending hex | ENFORCED (unproven) — the any-defender loop :586-596; no validator stages the multi-hex combined case — validator debt **N18** |
-| B.10 | 8.23 | in combined attacks inf/cav suffer all results; bombarding artillery does not | ENFORCED (unproven for the result-split) — Ar/Ae pendings carry melee-only unit lists :1027-1061; the mixed-attack result split is untested — validator debt **N19** |
+| B.9 | 8.22 | in a multi-hex combined attack, artillery need range/LOS to only ONE defending hex | ENFORCED — the any-defender loop :586-596; VC §12 (artillery 4 hexes from the far defender joins the multi-hex combined attack) |
+| B.10 | 8.23 | in combined attacks inf/cav suffer all results; bombarding artillery does not | ENFORCED — Ar/Ae pendings carry melee-only unit lists :1027-1061; VC §13 stages both results on a mixed attack (Ar: retreat list = the melee unit only; Ae: melee eliminated, battery and defender both alive) |
 | B.11 | 8.31/8.34 | LOS center-to-center; blocked by intervening blocking terrain; firer's and target's hexes never block | ENFORCED — `_hex_line`/`_los_clear` :325-367 (endpoints excluded); VGa §H (clear accepted :291, blocked refused :320) |
 | B.12 | 8.32 | LOS congruent to a hexside blocks only if BOTH adjacent hexes block | ENFORCED — congruence pair logic :337-366; VGa §H |
 | B.13 | 8.33 | blocking terrain = forest (incl. forest+rough) and town; rough alone never blocks | ENFORCED — `los_blocking_terrain` [forest, forest_rough] + forest cases VGa §H. Town clause UNREACHABLE — TEC prints town "(Cemetery Hill, Antietam only)"; census: zero town hexes |
@@ -214,7 +214,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 |---|---|---|---|
 | X.1 | 7.6 | all defenders eliminated; attacker eliminates participating units whose total PRINTED strength ≥ the defenders' printed total; bombarding artillery immune and unchoosable | ENFORCED — pending `owe`/`units` = melee only :1032-1044; `_propose_exchange_loss` :811-839; VC §5 (owe = printed 2, not doubled 4) |
 | X.2 | 7.6 | "at least equals" — the printed rule also permits over-removal | ENFORCED (stricter than print) — the engine refuses unnecessary over-removal :833-838 (note: over-removal can only gift the enemy VP; refusal is conservative and outcome-favorable, recorded as a declared strictness) |
-| X.3 | 7.6 | only units which participated may be eliminated | ENFORCED (unproven negative) — subset test :819-822; VC §5 stages in-set choices and over-removal only, never an out-of-set choice. Validator debt **N24** (audit 2026-08-16) |
+| X.3 | 7.6 | only units which participated may be eliminated | ENFORCED — subset test :819-822; VC §5 stages the in-set payments, the over-removal refusal, and the non-participant refusal |
 
 ### T — THE UNION TRAIN (18.x)
 
@@ -332,15 +332,15 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N13 | 16.0 vs 17.11 | 1975 prints "UNION Units may exit" while the same folder scores Confederate exits ×10 VP — internal inconsistency; Deluxe 18.3 corrects to "Either Player" (engine already Deluxe-correct) — **register candidate**, companion aspect of the registered exit-hex defect | register candidate |
 | N14 | 7.82 | the printed displacement rules, read literally, permit non-terminating cycles (proven live: the 14,000-entry loop behind VR); the engine's terminating resolution (impossible chains end in elimination) is a declared resolution of a printed defect — **register candidate** | register candidate |
 | N15 | 17.12/17.21–17.23/17.31 | validator debt: occupation credit, start-occupation seeding, occupation scoring, the CSA LOC trace, and a CSA-arm exit (V.3/V.5/V.6/V.7/V.8, EX.8) have code but no asserting test — **CLOSED 2026-08-16 by validate_scoring.py except the LOC/CSA-exit arms, which are blocked by N25** (the trace is dead on fragmented road data; closing them requires the terrain fix first). Also pinned en route: V.1's draw tie and V.9's on-map 17.32 sweep | VD |
-| N16 | Deluxe 9.0 | validator debt: the solely-bombarded doubling (C.19) untested | VD |
-| N17 | 8.13 | validator debt: the multi-hex pure-bombardment refusal (B.4) untested | VD |
-| N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested | VD |
-| N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested | VD |
+| N16 | Deluxe 9.0 | validator debt: the solely-bombarded doubling (C.19) untested — **CLOSED 2026-08-16 by VC §10** (creek-crossed vs clear-ground control) | VD |
+| N17 | 8.13 | validator debt: the multi-hex pure-bombardment refusal (B.4) untested — **CLOSED 2026-08-16 by VC §11** | VD |
+| N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested — **CLOSED 2026-08-16 by VC §12** | VD |
+| N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested — **CLOSED 2026-08-16 by VC §13** | VD |
 | N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — ships with N6's fix | VD |
 | N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — RF.4's original citation named a §A test that does not exist | VD |
 | N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — **CLOSED 2026-08-16 by validate_scoring.py §1** (per-(GT, class, strength) multiset + entry hexes, both sides, vs rules_transcription.json) | VD |
-| N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — one staged below-1-5 battle asserting column "1-5" + a rolled result closes both | VD |
-| N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged | VD |
+| N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — **CLOSED 2026-08-16 by VC §14** (2-vs-14 accepted, natural 1-7 → column 1-5, still rolls) | VD |
+| N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged — **CLOSED 2026-08-16 by VC §5** (bystander refusal added) | VD |
 | N25 | 5.22/17.31/18.23 | **WRONG DATA (found staging N15, 2026-08-16): the road network in terrain.json fragments into 29 disconnected components** — `_road_graph` from the exit hexes reaches ≤27 of 174 road hexes, never col ≥ 25, so `csa_loc_road_clear` is False in every reachable game and the 17.31-gated CSA exit VP (V.3/EX.8) is dead code; units overpay at every under-captured road junction (5.22); the Train's network is pocketed (18.23). Verified against the 1975 scan: solid printed roads run through the fragment gaps (e.g. 0417, 0217/0218, 0715) — the build_terrain.py solid-line discriminator (≥0.78 coverage) under-captured. Fix = recalibrate + per-side scan verification + validator; margin baseline MUST precede it (Stage C ordering already does). Escalated to Bruce 2026-08-16 | 3 |
 
 Related but NOT new: the three registered `source_defects` (exit-hex 0110→0111; ford+trail
@@ -354,9 +354,9 @@ analysis.
 
 **BUILD IN PROGRESS. build_open: 10.**
 
-Row counts: **117 rows** — ENFORCED 106 (fully proven 96, plus ENFORCED-unproven 10: EX.8, B.4, B.5, B.9,
-B.10, C.19, V.8, RF.4, C.15, X.3 — count as ENFORCED carrying the surviving validator-debt
-work items), UNREACHABLE 1 full row (M.12) plus two unreachable
+Row counts: **117 rows** — ENFORCED 106 (fully proven 102, plus ENFORCED-unproven 4: EX.8, B.5,
+V.8, RF.4 — B.5 rides N6/D6; EX.8+V.8 blocked by N25; RF.4 pending VGa §J),
+UNREACHABLE 1 full row (M.12) plus two unreachable
 sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7,
 B.17, D.2, D.4, T.2, V.9).
 
