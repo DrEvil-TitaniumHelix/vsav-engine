@@ -1,5 +1,5 @@
 import fitz, os, sys
-pdf = sys.argv[1] if len(sys.argv) > 1 else r"C:\VassalArnhem\literature\WestWallStdRules.pdf"
+pdf = sys.argv[1] if len(sys.argv) > 1 else r"C:\VassalArnhem\literature\westwall\WestWallStdRules.pdf"
 outdir = sys.argv[2] if len(sys.argv) > 2 else r"C:\VassalArnhem\literature\pages"
 os.makedirs(outdir, exist_ok=True)
 doc = fitz.open(pdf)
