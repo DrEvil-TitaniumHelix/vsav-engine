@@ -116,7 +116,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | RF.4 | 15.3 | excess units roll to later GTs | ENFORCED — pool retains pid; column-cost refusal :489-491; VGa §J stages the full column (units 1–6 at costs 1–6 accepted, the 7th refused at 7 MP > MA [15.0/15.3], held in pool, entering next GT at cost 1) |
 | RF.5 | 15.5 | may enter an EZOC hex; delayed only while BOTH entry hexes are physically occupied | ENFORCED — occupancy-only test :483-487 (no ZOC check — deliberate); VGa §A (occupied-hex refusals) |
 | RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED — scenario `reserve` data cross-checked against `rules_transcription.json` per (GT, class, strength) + entry hexes, both sides, on every run (validate_scoring.py §1 — **closed N22**); VGa §A exercises the entry machinery on the real scenario; VA campaigns place the schedule |
-| RF.7 | 10.2 | at night, reinforcement entry may not enter an EZOC hex (entry is movement, 15.1) | OPEN — **N7**: `_propose_reinforce` has no night/EZOC test (the `dests` filter :162 covers on-map moves only). Reachable via any reinforcement delayed onto GT 9 (15.3). Silent incorrectness |
+| RF.7 | 10.2 | at night, reinforcement entry may not enter an EZOC hex (entry is movement, 15.1) | ENFORCED — night/EZOC test in `_propose_reinforce` (bluegray.py, after the occupancy check; VGa §F stages all three arms: night+EZOC refused [10.2/15.1], night+clean hex accepted, day+EZOC accepted — EZOC is not occupancy [15.5]). **Closed N7, 2026-08-16** |
 
 ### EX — EXITING THE MAP (16.x) — a Movement-Phase action type
 
@@ -128,7 +128,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | EX.4 | 16.5 | no exit except at the two hexes | ENFORCED — hex membership test :501 + refusal off-hex VGa §A:98 |
 | EX.5 | 16.6 | no exit in fulfillment of a combat retreat — eliminated instead | ENFORCED — structurally: retreat destinations are on-map neighbors only (`_retreat_hexes` :705, no exit door); VC §7 |
 | EX.6 | 16.7 | unlimited exits per hex | ENFORCED — no counter on exit; VGa §G |
-| EX.7 | 5.13/6.3 | a unit on an exit hex that is enemy-controlled may NOT exit (EZOC exit bar applies — only combat frees it, and 16.6 bars that) | OPEN — **N1**: `_propose_exit` :494 checks phase/hex/MP but never whether the exit hex is in EZOC. Reachable in exactly the endgame the rule guards (units racing for the gap under pressure). Silent incorrectness |
+| EX.7 | 5.13/6.3 | a unit on an exit hex that is enemy-controlled may NOT exit (EZOC exit bar applies — only combat frees it, and 16.6 bars that) | ENFORCED — `_propose_exit` EZOC membership test (bluegray.py, after the hex-membership check; the exit door has no Dijkstra so the bar is explicit); VGa §G stages both arms (refused with the Confederate on 0201 controlling 0101; the clean-arm acceptance is §G's original session). **Closed N1, 2026-08-16** |
 | EX.8 | 16.0/17.11 | WHO may exit: 1975 says "Union Units"; the same folder's VP schedule scores Confederate exits ×10 — Deluxe 18.3 corrects to "Either Player" | ENFORCED (unproven, CSA arm) — code has no side restriction on exit :494 (both sides may exit = the Deluxe correction; **N13** registers the 1975 internal inconsistency). Union exit arm VGa §G; the CSA-exit-to-VP arm blocked by **N25** (the LOC gate is dead on fragmented road data) |
 
 ### C — COMBAT PHASE CORE (7.0–7.5, 7.9, CRT)
@@ -317,13 +317,13 @@ exists, believed correct, no proving test — RULE 1 work items).
 
 | # | rule | what's wrong | class |
 |---|---|---|---|
-| N1 | 5.13/6.3/16.x | exit from an enemy-controlled exit hex accepted — `_propose_exit` :494 never tests EZOC; the endgame the rule guards (units at the gap under pressure) is exactly when it bites | 1 |
+| N1 | 5.13/6.3/16.x | exit from an enemy-controlled exit hex accepted — `_propose_exit` :494 never tests EZOC; the endgame the rule guards (units at the gap under pressure) is exactly when it bites — **CLOSED 2026-08-16: explicit EZOC test in the exit door, VGa §G both arms; VR's seed-1 pin unchanged (33/123), VA 5-seed campaigns complete** | 1 |
 | N2 | 17.32 | blocked reinforcements (and the Train) never scored as destroyed at game end — `_final_scoring` sweeps on-map units only; Deluxe 18.4.3 says "including blocked reinforcements" verbatim | 1 |
 | N3 | 18.11 | train auto-retreat armed only at phase start — a Confederate advance during the Union combat phase landing adjacent ("WHENEVER adjacent") never triggers it | 1 |
 | N4 | 7.82 | displacement-that-would-eliminate kills the DISPLACED unit; print eliminates the retreating unit instead (fates swapped) | 1 |
 | N5 | 7.81 | displaced, unfired artillery may still bombard — no displacement state exists | 1 |
 | N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable. Strict 7.22 (refuse the partial attack when the partner owes 7.12) + validator | 1 (+2 consequence) |
-| N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) | 1 |
+| N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) — **CLOSED 2026-08-16: night/EZOC bar in the reinforce door, VGa §F three arms; VR seed-1 pin unchanged** | 1 |
 | N8 | 17.21/17.22 | retreats/displacement do not confer occupation credit (engine = deliberate-moves-only reading; the printed "last to have moved a Friendly unit onto the hex" plausibly includes combat moves) — declared reading, Bruce to rule | 1 under the literal reading |
 | N9 | 15.2 | a reinforcement's entry cost is treated as its whole movement — post-entry movement refused; print: "may move and attack freely, just as any other unit" | 2 |
 | N10 | 8.16 | no door for bombarding artillery to voluntarily suffer Ar | 2 |
@@ -352,13 +352,13 @@ analysis.
 
 ## §6 PLAYABILITY VERDICT
 
-**BUILD IN PROGRESS. build_open: 10.**
+**BUILD IN PROGRESS. build_open: 8.**
 
-Row counts: **117 rows** — ENFORCED 106 (fully proven 103, plus ENFORCED-unproven 3: EX.8, B.5,
+Row counts: **117 rows** — ENFORCED 108 (fully proven 105, plus ENFORCED-unproven 3: EX.8, B.5,
 V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
-sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7,
-B.17, D.2, D.4, T.2, V.9).
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 8** (RF.3, C.9, B.7,
+B.17, D.2, D.4, T.2, V.9 — EX.7/N1 and RF.7/N7 closed 2026-08-16).
 
 **Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
 re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
@@ -371,8 +371,8 @@ sub-clauses re-proven against RULE 2 (census re-counted from terrain.json: clear
 col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code→rulebook sweep
 clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
-Blocking rows: N1 (EX.7), N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9), N7 (RF.7), N9 (RF.3),
-N10 (B.7), N11 (B.17). Eight are class-1 silent incorrectness — the class this instrument exists
+Blocking rows: N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9), N9 (RF.3),
+N10 (B.7), N11 (B.17). Six are class-1 silent incorrectness — the class this instrument exists
 to surface. Demotion of a shipped game is the expected outcome Bruce predicted 2026-08-08 ("the
 audit can DEMOTE shipped games"): Chickamauga shipped at earned Tier 3 under the tier ladder the
 coverage matrix has since replaced; under spec #13 as amended it is BUILD IN PROGRESS until the

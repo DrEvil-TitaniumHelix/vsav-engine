@@ -255,6 +255,28 @@ r = bg.submit("Confederate", {"type": "battle", "attackers": ["n2"], "defenders"
 check(not ok(r), "battle rejected on a night GT [10.1]")
 replay(bg, liveF, "night session")
 
+# night reinforcement entry into an EZOC refused [10.2/15.1]; the day arm accepts
+# the same EZOC entry hex [15.5]
+ent = [[20, 26], [20, 27]]
+res = [{"id": "nr1", "slot": "1/2/XIV c", "side": "Union", "str": 5,
+        "cls": "inf", "due": 1, "entry": [list(h) for h in ent]}]
+scen = mkscen([U("reb", "Fulton c", "Confederate", 20, 25)],
+              reserve=res, night=[1], turns=1)
+bg, _ = mkgame(scen, seed=14)
+r = bg.submit("Union", {"type": "reinforce", "unit": "nr1", "hex": [20, 26]})
+check(not ok(r) and "[10.2" in " ".join(r["verdict"]["reasons"]),
+      f"night entry into the enemy-controlled hex refused [10.2/15.1] "
+      f"({r['verdict']['reasons']})")
+r = bg.submit("Union", {"type": "reinforce", "unit": "nr1", "hex": [20, 27]})
+check(ok(r), f"night entry at the uncontrolled hex accepted [10.2] "
+             f"({r['verdict']['reasons']})")
+scen = mkscen([U("reb", "Fulton c", "Confederate", 20, 25)],
+              reserve=res, turns=1)
+bg, _ = mkgame(scen, seed=14)
+r = bg.submit("Union", {"type": "reinforce", "unit": "nr1", "hex": [20, 26]})
+check(ok(r), f"day entry into an EZOC hex accepted - EZOC is not occupancy "
+             f"[15.5] ({r['verdict']['reasons']})")
+
 # ================================================================ G: exit + VP
 print("--- G: exit and final scoring [16.x/17.x] ---")
 scen = mkscen([
@@ -273,6 +295,23 @@ check(bg.s["over"], "game ends after the final GT [17.0]")
 check(bg.s["vp"]["Union"] >= 5, f"Union exit VP awarded (got {bg.s['vp']})")
 check(bg.s["vp"]["Confederate"] >= 10, "CSA train-fail VP awarded (no train in play) [17.11]")
 replay(bg, liveG, "exit session")
+
+# exit from an enemy-CONTROLLED exit hex refused [5.13/6.3/16.5]; the clean-arm
+# acceptance is the session above
+scen = mkscen([
+    U("e1", "1/1/XIV c", "Union", 1, 1),
+    U("reb", "Fulton c", "Confederate", 2, 1),
+], night=[1], turns=1)
+bg, _ = mkgame(scen, seed=13)
+r = bg.submit("Union", {"type": "exit", "unit": "e1"})
+check(not ok(r) and "[5.13" in " ".join(r["verdict"]["reasons"]),
+      f"exit refused from an enemy-controlled exit hex [5.13/6.3/16.5] "
+      f"({r['verdict']['reasons']})")
+check((2, 1) in bg.game.neighbors(1, 1) and bg.game.on_map(2, 1),
+      "staging check: the Confederate really controls 0101")
+bg.submit("Union", {"type": "end_movement"})
+bg.submit("Confederate", {"type": "end_movement"})
+check(bg.s["over"], "night staging completes to game end")
 
 # ================================================================ H: bombardment
 print("--- H: artillery bombardment + LOS [8.x] ---")
