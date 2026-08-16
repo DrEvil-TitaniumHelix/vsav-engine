@@ -113,9 +113,9 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | RF.1 | 15.0 | column entry: 1st unit 1 MP, 2nd 2 MP, 3rd 3 MP…; owner picks order and moment | ENFORCED — `cost = 1 + entered` :488; one global column per player-turn (declared reading of "and/or" — the 15.3 excess rule is the column binding); VGa §A:108-117 |
 | RF.2 | 15.1/15.4 | enter at a charted southern-edge hex, during the movement phase, never stacked | ENFORCED — `_propose_reinforce` :465 (hex list, phase, occupancy); VGa §A |
 | RF.3 | 15.2 | once entered, a unit "may move and attack freely, just as any other unit" (remaining MA spendable) | OPEN — **N9**: apply marks the reinforcement fully moved (`moved[pid]=cost` :920) and `_propose_move` refuses it (:446) — the entry cost is treated as the whole move. Loud incompleteness; every game is affected (GT2 alone: 21 units) |
-| RF.4 | 15.3 | excess units roll to later GTs | ENFORCED — pool retains pid; column-cost refusal :489-491; VGa §A (7th unit refused, enters next GT) |
+| RF.4 | 15.3 | excess units roll to later GTs | ENFORCED (unproven) — pool retains pid; column-cost refusal :489-491; VGa §A stages due-GT and occupancy refusals only — **no test exercises the column-excess arm** (audit 2026-08-16: the "7th unit refused" citation named a test that does not exist). Validator debt **N21** |
 | RF.5 | 15.5 | may enter an EZOC hex; delayed only while BOTH entry hexes are physically occupied | ENFORCED — occupancy-only test :483-487 (no ZOC check — deliberate); VGa §A (occupied-hex refusals) |
-| RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED — scenario `reserve` data; VG §A + VA full campaigns place every unit |
+| RF.6 | 15.51/15.52 | the printed schedules: Union 0728/1027 (GT2 ×12, GT5 ×9, GT6 ×3cav, GT7 train, GT8 ×1cav); CSA 1627/1928 (GT2 ×9, GT5 ×4cav, GT8 ×1cav) | ENFORCED (unproven) — scenario `reserve` data; VGa §A exercises due-GT gating for 3 units on the real scenario and VA campaigns place the schedule (completion asserted, not contents). Audit 2026-08-16: the prior "VG §A" cite was a miscite (VG has no sections and checks no schedules); no validator compares the schedule contents to print — Validator debt **N22** (cross-check scenario reserve vs `rules_transcription.json`, the CRT two-source pattern) |
 | RF.7 | 10.2 | at night, reinforcement entry may not enter an EZOC hex (entry is movement, 15.1) | OPEN — **N7**: `_propose_reinforce` has no night/EZOC test (the `dests` filter :162 covers on-map moves only). Reachable via any reinforcement delayed onto GT 9 (15.3). Silent incorrectness |
 
 ### EX — EXITING THE MAP (16.x) — a Movement-Phase action type
@@ -149,8 +149,8 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | C.12 | 7.25 | in multi-hex combat ALL attackers adjacent to ALL defenders, plus bombarding artillery exempt from adjacency | ENFORCED — per-pair adjacency test :604-614, bombards exempt; VC §3 |
 | C.13 | 7.3 | a unit's combat strength is unitary — never split between combats | ENFORCED — structural (a unit is in one battle; `fought` bars a second); VC §3/§5 |
 | C.14 | 7.4/TEC + Deluxe 7.4 | defender doubled in rough / forest+rough; multiplier, effects NOT cumulative — single best benefit | ENFORCED — `defense_double_terrain` + the one-doubling-per-hex logic :673-695 (terrain takes precedence, hexside checked only if terrain didn't double — never both); VGa §E, VC §2/§4 |
-| C.15 | 7.5 | diversionary attacks at poor odds are legal | ENFORCED — any column ≥ 1-5 attackable; 7.9 covers deliberate reduction; VC §2 |
-| C.16 | 7.6 | the CRT itself (10 columns × 6 rows) and the note >6-1→6-1, <1-5→1-5 (both still roll) | ENFORCED — game.json `crt` re-checked against BOTH printings on every run; VC §1 (60 cells), clamp VGa §D:204 |
+| C.15 | 7.5 | diversionary attacks at poor odds are legal | ENFORCED (unproven) — any column ≥ 1-5 attackable; 7.9 covers deliberate reduction. Audit 2026-08-16: VC §2 asserts the odds arithmetic only; no validator stages a poor-odds battle and asserts acceptance. Validator debt **N23** |
+| C.16 | 7.6 | the CRT itself (10 columns × 6 rows) and the note >6-1→6-1, <1-5→1-5 (both still roll) | ENFORCED — game.json `crt` re-checked against BOTH printings on every run; VC §1 (60 cells), high clamp VGa §D:204. The LOW-clamp arm (<1-5→1-5, still rolls) is untested — **N23** |
 | C.17 | 7.6/7.9 | the attacker may voluntarily reduce the odds column before the roll, never after | ENFORCED — `odds_reduce` ≤ computed odds + valid column :616-626 (atomic propose-resolve makes "before the roll" structural); VGa §D:206-208, VC §2 |
 | C.18 | TEC + Deluxe 9.0 | defender doubled behind a bridge/ford hexside only when ALL adjacent attackers cross such a side (bombarders don't count) | ENFORCED — per-hex `all(...)` over adjacent melee :680-687; VC §4 (doubled across the ford; voided when one attacker crosses open ground) |
 | C.19 | Deluxe 9.0 (SPI clarification) | a unit attacked SOLELY by bombarding artillery is doubled when the LOS crosses a ford/bridge/creek hexside or an impassable hex | ENFORCED — `_los_crosses_double` :369 + the no-melee branch :688-694 (off-map sampling hexes read as impassable — declared reading, LOS near map edges only). No validator stages this specific doubling — covered by validator debt **N16** |
@@ -193,7 +193,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | row | rule | requirement | status |
 |---|---|---|---|
 | D.1 | 7.81 | displace only when no other retreat path; displaced unit retreats likewise; never into EZOC/prohibited; 1-for-1 per stack | ENFORCED — displacement offered only when `open_h` empty :769-774, chain resolution :1118-1131; VR |
-| D.2 | 7.82 | if the displacement would eliminate the displaced unit, the RETREATING unit is eliminated instead | OPEN — **N4**: the engine eliminates the displaced unit when its own retreat finds no hex (:1131 → `_eliminate [7.72]`); print swaps the fates. Silent incorrectness, reachable in crowded pockets |
+| D.2 | 7.82 | if the displacement would eliminate the displaced unit, the RETREATING unit is eliminated instead | OPEN — **N4**: the engine eliminates the displaced unit when its own retreat finds no hex (:1110-1111 → `_eliminate [7.72]`; anchor corrected in the 2026-08-16 audit from :1131, which is the retreat event line); print swaps the fates. Silent incorrectness, reachable in crowded pockets |
 | D.3 | 7.82 | displacement chains (chain reactions) resolve | ENFORCED — displaced units join the pending queue :1124-1127; VR (the captured cycle fixture resolves to completion) |
 | D.4 | 7.81 | displaced artillery that has not yet engaged may not fire this Combat Phase | OPEN — **N5**: no displacement state exists; a displaced, unfired battery can still bombard. Silent incorrectness; all six batteries reachable |
 | D.5 | 7.82 | a unit may be displaced more than once per Combat Phase if that is the only path | ENFORCED (declared ruling) — the per-battle `chain` cycle guard ends impossible chains in elimination instead of recursing (:737-742) — the printed text, read literally, permits non-terminating cycles; the engine's terminating resolution is regression-pinned (VR). **N14** registers the printed defect |
@@ -214,7 +214,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 |---|---|---|---|
 | X.1 | 7.6 | all defenders eliminated; attacker eliminates participating units whose total PRINTED strength ≥ the defenders' printed total; bombarding artillery immune and unchoosable | ENFORCED — pending `owe`/`units` = melee only :1032-1044; `_propose_exchange_loss` :811-839; VC §5 (owe = printed 2, not doubled 4) |
 | X.2 | 7.6 | "at least equals" — the printed rule also permits over-removal | ENFORCED (stricter than print) — the engine refuses unnecessary over-removal :833-838 (note: over-removal can only gift the enemy VP; refusal is conservative and outcome-favorable, recorded as a declared strictness) |
-| X.3 | 7.6 | only units which participated may be eliminated | ENFORCED — subset test :819-822; VC §5 |
+| X.3 | 7.6 | only units which participated may be eliminated | ENFORCED (unproven negative) — subset test :819-822; VC §5 stages in-set choices and over-removal only, never an out-of-set choice. Validator debt **N24** (audit 2026-08-16) |
 
 ### T — THE UNION TRAIN (18.x)
 
@@ -337,6 +337,10 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N18 | 8.22 | validator debt: the multi-hex combined attack needing range to only one defending hex (B.9) untested | VD |
 | N19 | 8.15/8.23 | validator debt: the mixed melee+bombard result split under Ar/Ae (B.10) untested | VD |
 | N20 | 7.22 | validator debt: the co-stacked separate-attack refusal's negative case (B.5/C.9) untested — ships with N6's fix | VD |
+| N21 | 15.0/15.3 | validator debt (audit 2026-08-16): the column-excess arm (cost 1+entered > MA ⇒ refused, unit rolls to a later GT) untested — RF.4's original citation named a §A test that does not exist | VD |
+| N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — scenario `reserve` vs `rules_transcription.json` reinforcements_union/confederate + entry hexes, the CRT two-source pattern | VD |
+| N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — one staged below-1-5 battle asserting column "1-5" + a rolled result closes both | VD |
+| N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged | VD |
 
 Related but NOT new: the three registered `source_defects` (exit-hex 0110→0111; ford+trail
 composition; CSA exit-VP asymmetry) are enforced as registered and cited in their rows (M.13,
@@ -349,10 +353,22 @@ analysis.
 
 **BUILD IN PROGRESS. build_open: 10.**
 
-Row counts: **117 rows** — ENFORCED 106 (of which ENFORCED-unproven 10: EX.8, B.4, B.5, B.9,
-B.10, C.19, V.5, V.6, V.7, V.8 — count as ENFORCED carrying the N15–N20 validator-debt work
-items), UNREACHABLE 1 full row (M.12) plus two unreachable sub-clauses (Z.5 ferry clause, B.13
-town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7, B.17, D.2, D.4, T.2, V.9).
+Row counts: **117 rows** — ENFORCED 106 (fully proven 92, plus ENFORCED-unproven 14: EX.8, B.4, B.5, B.9,
+B.10, C.19, V.5, V.6, V.7, V.8, RF.4, RF.6, C.15, X.3 — count as ENFORCED carrying the
+N15–N24 validator-debt work items), UNREACHABLE 1 full row (M.12) plus two unreachable
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 10** (RF.3, RF.7, EX.7, C.9, B.7,
+B.17, D.2, D.4, T.2, V.9).
+
+**Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
+re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
+:1131 → :1110-1111); every validator-section claim opened and tested against what the section
+actually asserts — five rows re-statused for citing tests that don't exist or don't assert the
+rule (RF.4 phantom §A test, RF.6 "VG §A" miscite, C.15/C.16-low unasserted, X.3 negative
+unasserted), four new validator-debt items N21–N24; both UNREACHABLE claims and both
+sub-clauses re-proven against RULE 2 (census re-counted from terrain.json: clear 241 / forest
+300 / forest_rough 121 / rough 12 / offmap 54; `2503` re-confirmed the only road hex at
+col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code→rulebook sweep
+clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
 Blocking rows: N1 (EX.7), N2 (V.9), N3 (T.2), N4 (D.2), N5 (D.4), N6 (C.9), N7 (RF.7), N9 (RF.3),
 N10 (B.7), N11 (B.17). Eight are class-1 silent incorrectness — the class this instrument exists
