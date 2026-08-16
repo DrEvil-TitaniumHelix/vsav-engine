@@ -221,7 +221,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | row | rule | requirement | status |
 |---|---|---|---|
 | T.1 | 18.11/18.12 | never attacks; defense strength 1 | ENFORCED — attacker refusal :547-548; stats [0,1,6]; VGa §I |
-| T.2 | 18.11 | WHENEVER adjacent to a Confederate unit in the Union Combat Phase it must auto-retreat; no Confederate advance after | OPEN — **N3**: armed only at the phase-start transition (:934) — a Confederate ADVANCE during the Union combat phase landing adjacent never arms it (and `train_checked` short-circuits the end_phase recheck :867). The start-of-phase arm is §I-proven; the mid-phase arm is missing. Silent incorrectness |
+| T.2 | 18.11 | WHENEVER adjacent to a Confederate unit in the Union Combat Phase it must auto-retreat; no Confederate advance after | ENFORCED — phase-start arm at the `end_movement` pivot (:934) plus `_arm_train_contact` at the apply choke: every board-changing combat action during the Union combat phase re-arms the pending when none is open (mid-phase Confederate advance, retreat-into-adjacency, whenever). VGa §I2 (start-of-phase) + §I3 (full mid-phase sequence + the no-advance-after parenthetical). **Closed N3, 2026-08-16** |
 | T.3 | 18.21 | never stacks with anyone | ENFORCED — train excluded from every stacking door (`rules_board` flip :115-129, `_train_dests` occupancy :189, `_retreat_hexes` :729-732); VGa §I |
 | T.4 | 18.22 | no unit moves through its hex; it moves through no one (both directions) | ENFORCED — symmetric blocking via the side flip; VGa §I:347 |
 | T.5 | 18.23 | MA 6, roads/trails ONLY; forced retreat to a non-road/trail hex destroys it | ENFORCED — `_road_or_trail` gate :186-187/:724-725, destroy on no-open :853-854; VGa §I:365 |
@@ -319,7 +319,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 |---|---|---|---|
 | N1 | 5.13/6.3/16.x | exit from an enemy-controlled exit hex accepted — `_propose_exit` :494 never tests EZOC; the endgame the rule guards (units at the gap under pressure) is exactly when it bites — **CLOSED 2026-08-16: explicit EZOC test in the exit door, VGa §G both arms; VR's seed-1 pin unchanged (33/123), VA 5-seed campaigns complete** | 1 |
 | N2 | 17.32 | blocked reinforcements (and the Train) never scored as destroyed at game end — `_final_scoring` sweeps on-map units only; Deluxe 18.4.3 says "including blocked reinforcements" verbatim | 1 |
-| N3 | 18.11 | train auto-retreat armed only at phase start — a Confederate advance during the Union combat phase landing adjacent ("WHENEVER adjacent") never triggers it | 1 |
+| N3 | 18.11 | train auto-retreat armed only at phase start — a Confederate advance during the Union combat phase landing adjacent ("WHENEVER adjacent") never triggers it — **CLOSED 2026-08-16: arm-at-apply-choke (`_arm_train_contact`), VGa §I3; engine+validator hunks landed in b57966b (noted in its message), this commit carries the matrix closure. VR seed-1 pin unchanged** | 1 |
 | N4 | 7.82 | displacement-that-would-eliminate kills the DISPLACED unit; print eliminates the retreating unit instead (fates swapped) | 1 |
 | N5 | 7.81 | displaced, unfired artillery may still bombard — no displacement state exists | 1 |
 | N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable. Strict 7.22 (refuse the partial attack when the partner owes 7.12) + validator | 1 (+2 consequence) |
@@ -352,13 +352,13 @@ analysis.
 
 ## §6 PLAYABILITY VERDICT
 
-**BUILD IN PROGRESS. build_open: 7.**
+**BUILD IN PROGRESS. build_open: 6.**
 
-Row counts: **117 rows** — ENFORCED 109 (fully proven 106, plus ENFORCED-unproven 3: EX.8, B.5,
+Row counts: **117 rows** — ENFORCED 110 (fully proven 107, plus ENFORCED-unproven 3: EX.8, B.5,
 V.8 — B.5 rides N6/D6; EX.8+V.8 blocked by N25),
 UNREACHABLE 1 full row (M.12) plus two unreachable
-sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 7** (C.9, B.7,
-B.17, D.2, D.4, T.2, V.9 — EX.7/N1, RF.7/N7, RF.3/N9 closed 2026-08-16).
+sub-clauses (Z.5 ferry clause, B.13 town clause), **OPEN 6** (C.9, B.7,
+B.17, D.2, D.4, V.9 — EX.7/N1, RF.7/N7, RF.3/N9, T.2/N3 closed 2026-08-16).
 
 **Stage-A audit 2026-08-16 (pre-enforcement re-verification of this file):** every code anchor
 re-checked against `bluegray.py`/`gamespec.py` at `7c69220` — one wrong anchor corrected (D.2
