@@ -1,4 +1,5 @@
 import heapq
+import math
 
 try:
     from .gate import GateGame
@@ -140,6 +141,105 @@ class NawGame(GateGame):
         ma = self.budget(pid)
         return {h: c + self.exit_cost for h, c in cand.items()
                 if h in self.exit_hexes and h not in ezoc and c + self.exit_cost <= ma + 1e-9}
+
+    def _cbt(self):
+        return self.game.spec["combat"]
+
+    def attack_strength(self, atk_ids):
+        return sum(self.stats(p)["att"] for p in atk_ids)
+
+    def defense_strength(self, def_ids):
+        doubles = set(self._cbt()["terrain_effects"]["defender_doubles_in"])
+        tot = 0
+        for p in def_ids:
+            u = self.unit(p)
+            d = self.stats(p)["def"]
+            tot += d * 2 if self.game.hex_terrain(u["col"], u["row"]) in doubles else d
+        return tot
+
+    def odds_column(self, a, d):
+        cols = self._cbt()["crt"]["odds_columns"]
+        if d <= 0:
+            return cols[-1]
+        if a <= 0:
+            return cols[0]
+        col = f"{int(math.floor(a / d))}:1" if a >= d else f"1:{int(math.ceil(d / a))}"
+        if col not in cols:
+            n, m = (int(x) for x in col.split(":"))
+            return cols[-1] if n > m else cols[0]
+        return col
+
+    def crt_result(self, col, die):
+        crt = self._cbt()["crt"]
+        return crt["die_rows"][str(die)][crt["odds_columns"].index(col)]
+
+    def _adjacent(self, a, b):
+        return (b["col"], b["row"]) in self.game.neighbors(a["col"], a["row"])
+
+    def _bombard_los(self, art, dfd):
+        a, d = (art["col"], art["row"]), (dfd["col"], dfd["row"])
+        if self.game.hex_distance(a, d) != 2:
+            return False, "not exactly two hexes away [ART-01: artillery bombards a unit from two hexes distance]"
+        between = set(self.game.neighbors(*a)) & set(self.game.neighbors(*d))
+        woods = [self.game.grid.hexnum(*h) for h in sorted(between) if self.game.hex_terrain(*h) == "woods"]
+        if woods:
+            return False, f"line of fire crosses Woods hex {'/'.join(woods)} [ART-17/TEC row 3: artillery may not fire over an intervening Woods hex - enforced on every candidate intervening hex, NAW2-OR-9 pending]"
+        return True, "bombardment at two hexes; intervening units and Town hexes do not block [ART-01/ART-16]"
+
+    def battle_check(self, side, atk_ids, def_ids):
+        s = self.s
+        atk_ids = [str(p) for p in atk_ids]
+        def_ids = [str(p) for p in def_ids]
+        if s["phase"] != "combat":
+            return False, ["attacks only in the own Combat Phase [SEQ-06/MOV-04: no combat during the Movement Phase]"], None
+        if not atk_ids or not def_ids:
+            return False, ["an attack names at least one attacker and one defender [CBT-01]"], None
+        if len(set(atk_ids)) != len(atk_ids) or len(set(def_ids)) != len(def_ids):
+            return False, ["a unit is named twice [CBT-17: Combat Strength is used as an integral whole]"], None
+        enemy = self.game.enemy(side)
+        for p in atk_ids:
+            if p not in s["units"] or self.unit(p)["side"] != side:
+                return False, [f"attacker {p} is not a {side} unit on the map [SEQ-08]"], None
+            if p in s["fought"]:
+                return False, [f"{self.unit(p)['name']} has already attacked this Combat Phase [CBT-10]"], None
+        for p in def_ids:
+            if p not in s["units"] or self.unit(p)["side"] != enemy:
+                return False, [f"defender {p} is not an enemy unit on the map [CBT-05]"], None
+            if p in s["defended"]:
+                return False, [f"{self.unit(p)['name']} has already been attacked this Combat Phase [CBT-10]"], None
+        dfd = [self.unit(p) for p in def_ids]
+        melee, bomb = [], []
+        for p in atk_ids:
+            u = self.unit(p)
+            adj = [d for d in dfd if self._adjacent(u, d)]
+            if len(adj) == len(dfd):
+                melee.append(p)
+                continue
+            if self.cls(p) != "artillery":
+                return False, [f"{u['name']} is not adjacent to every defender it attacks [CBT-05 adjacency; CBT-11 all attackers adjacent to the defender; CBT-12 the attacker adjacent to every defender it combines]"], None
+            if adj:
+                return False, [f"{u['name']} is adjacent to some but not all defenders [CBT-11/CBT-12/ART-14]"], None
+            if len(dfd) != 1:
+                return False, [f"{u['name']} bombards from two hexes: a bombarding artillery unit may only attack a single unit [ART-13]"], None
+            ok, why = self._bombard_los(u, dfd[0])
+            if not ok:
+                return False, [f"{u['name']}: {why}"], None
+            bomb.append(p)
+        a = self.attack_strength(atk_ids)
+        d = self.defense_strength(def_ids)
+        col = self.odds_column(a, d)
+        return True, [f"attack {a} vs {d} = {col} [CBT-01/CBT-02 rounded in favour of the defender; clamp 1:5..6:1]"], {
+            "attack": a, "defense": d, "column": col, "melee": melee, "bombarding": bomb}
+
+    def battle_preview(self, side, atk_ids, def_ids, bomb_ids=None):
+        ok, reasons, meta = self.battle_check(side, atk_ids, def_ids)
+        out = {"legal": ok, "reasons": reasons, "needs_supply": False}
+        if meta:
+            out.update(odds=meta["column"], column=meta["column"], factors=[meta["attack"], meta["defense"]],
+                       bombarding=meta["bombarding"], melee=meta["melee"])
+        else:
+            out.update(odds=None)
+        return out
 
     def propose(self, side, action):
         s = self.s
