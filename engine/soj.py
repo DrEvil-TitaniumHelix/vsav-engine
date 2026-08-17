@@ -2822,6 +2822,8 @@ class SoJGame(GateGame):
     def _retreat_survivable(self, u, side, ctx, p, overlay):
         """Does ANY legal retreat end alive? False => the unit is eliminated
         [15.1/14.21/7.5] - the gate never deadlocks (B17)."""
+        if u["hex"] is None:
+            return False
         if self._retreat_capped(u, p):
             for n in self._nb(u["hex"]):
                 c, _ = self._retreat_step(u, u["hex"], n, side, ctx["zoc"],
@@ -3699,7 +3701,9 @@ class SoJGame(GateGame):
                                    self._apply_letter(u, "D", p["source"])
                                    + " (substituted for B) [14.2]"})
                 movers = [e for e in events
-                          if e["event"].startswith("disrupted")]
+                          if e["event"].startswith("disrupted")
+                          and self.s["units"][e["pid"]]["state"] == "disrupted"
+                          and self.s["units"][e["pid"]]["hex"] is not None]
                 if movers:
                     self.s["pending"] = {
                         "kind": "retreat", "hex": p["hex"],
@@ -3713,7 +3717,9 @@ class SoJGame(GateGame):
                                     p.get("attacker_pids"), p.get("mk"),
                                     p.get("lvl"), xe)
         elif p["source"] == "melee":
-            movers = [e for e in events if e["event"] == "disrupted"]
+            movers = [e for e in events if e["event"] == "disrupted"
+                      and self.s["units"][e["pid"]]["state"] == "disrupted"
+                      and self.s["units"][e["pid"]]["hex"] is not None]
             if movers:
                 self.s["pending"] = {"kind": "retreat", "hex": p["hex"],
                                      "pids": [e["pid"] for e in movers],

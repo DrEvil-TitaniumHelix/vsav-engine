@@ -372,7 +372,7 @@ def _pending(g, side, theta):
                 return
         yield (by, {"type": "resolve_loss", "picks": []}, "loss forfeit")
     elif k == "retreat":
-        pids = [q for q in (p.get("pids") or []) if _unit(g, q)["hex"] is not None]
+        pids = list(p.get("pids") or [])
         att = [_unit(g, q)["hex"] for q in (p.get("attackers") or [])
                if _unit(g, q)["hex"] is not None]
         ctx = {"rkind": p.get("rkind", "b"), "zoc": g._zoc_map(g._enemy(by))}
@@ -381,28 +381,35 @@ def _pending(g, side, theta):
         with g.memo_scope():
             for pid in pids:
                 u = _unit(g, pid)
+                if u["hex"] is None:
+                    elim.append(pid)
+                    overlay[pid] = None
+                    continue
                 best = None
-                frontier = [[u["hex"]]]
-                for depth in range(1, 7):
-                    nxt = []
-                    for path in frontier:
-                        for n in g._nb(path[-1]):
-                            if n in path:
-                                continue
-                            c, _why = g._retreat_step(u, path[-1], n, by, ctx["zoc"], overlay)
-                            if c is None:
-                                continue
-                            p2 = path + [n]
-                            nxt.append(p2)
-                            names = [_N(g, h) for h in p2]
-                            if g._retreat_path_verdict(u, by, ctx, p, names, overlay) is None:
-                                sc = (min([g._dist(n, a) for a in att] or [0]), -len(p2))
-                                if best is None or sc > best[0]:
-                                    best = (sc, names)
-                    if best is not None and depth >= 2:
-                        break
-                    frontier = nxt[:400]
-                    if not frontier:
+                for revisit in (False, True):
+                    frontier = [[u["hex"]]]
+                    for depth in range(1, 7):
+                        nxt = []
+                        for path in frontier:
+                            for n in g._nb(path[-1]):
+                                if n in path and not revisit:
+                                    continue
+                                c, _why = g._retreat_step(u, path[-1], n, by, ctx["zoc"], overlay)
+                                if c is None:
+                                    continue
+                                p2 = path + [n]
+                                nxt.append(p2)
+                                names = [_N(g, h) for h in p2]
+                                if g._retreat_path_verdict(u, by, ctx, p, names, overlay) is None:
+                                    sc = (min([g._dist(n, a) for a in att] or [0]), -len(p2))
+                                    if best is None or sc > best[0]:
+                                        best = (sc, names)
+                        if best is not None and depth >= 2:
+                            break
+                        frontier = nxt[:400]
+                        if not frontier:
+                            break
+                    if best is not None:
                         break
                 if best is not None:
                     pathsd[pid] = best[1]
@@ -858,14 +865,22 @@ def _log_entry(side, action, desc, r):
             "legal": r["verdict"]["legal"], "reasons": r["verdict"]["reasons"]}
 
 
-def _drive(gen, g):
+TURN_SUBMIT_CAP = 1500
+
+
+def _drive(gen, g, cap=None):
     log = []
+    cap = TURN_SUBMIT_CAP if cap is None else cap
     try:
         item = gen.send(None)
         while True:
             side, action, desc = item
             r = g.submit(side, action)
             log.append(_log_entry(side, action, desc, r))
+            if len(log) >= cap:
+                log.append({"desc": f"turn submission cap {cap} reached - AI stalled", "error": True})
+                gen.close()
+                break
             item = gen.send(r["verdict"]["legal"])
     except StopIteration:
         pass
