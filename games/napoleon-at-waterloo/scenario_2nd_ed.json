@@ -1,0 +1,1043 @@
+{
+ "name": "Napoleon at Waterloo, 2nd Edition (1971) - the game (10 Game-Turns, 1 pm to 10 pm)",
+ "mode": "naw",
+ "game": {
+  "turns": 10,
+  "first_player": "Fr",
+  "turn_labels": [
+   "1 pm",
+   "2 pm",
+   "3 pm",
+   "4 pm",
+   "5 pm",
+   "6 pm",
+   "7 pm",
+   "8 pm",
+   "9 pm",
+   "10 pm"
+  ],
+  "turn_cite": "printed Time Record, folio p.5 (ingest/timerecord_oob.json, all ten slots read by eye); SEQ-01 'The game is ten Game-Turns in length'; SEQ-02/SEQ-04 French Player-Turn then Allied Player-Turn, each Movement Phase then Combat Phase",
+  "opening_phase": "fr_move",
+  "opening_cite": "SET-04: placement is not a turn or phase; the game begins with the French Player's first Movement Phase"
+ },
+ "units": [
+  {
+   "id": "F01",
+   "slot": "French 2nd Cav (2-5)",
+   "img": "NAW_5_2.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 2nd Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 5
+   },
+   "hex": [
+    6,
+    14
+   ],
+   "module_piece_id": "29"
+  },
+  {
+   "id": "F02",
+   "slot": "French 6th Inf (7-4)",
+   "img": "NAW_5_4.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 6th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 7,
+    "def": 7,
+    "ma": 4
+   },
+   "hex": [
+    9,
+    14
+   ],
+   "module_piece_id": "31"
+  },
+  {
+   "id": "F03",
+   "slot": "French I Art (3-3)",
+   "img": "NAW_4_2.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French I Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 3
+   },
+   "hex": [
+    10,
+    15
+   ],
+   "module_piece_id": "23"
+  },
+  {
+   "id": "F04",
+   "slot": "French 12th Cav (2-5)",
+   "img": "NAW_1_4.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 12th Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 5
+   },
+   "hex": [
+    10,
+    16
+   ],
+   "module_piece_id": "7"
+  },
+  {
+   "id": "F05",
+   "slot": "French 9th Inf (5-4)",
+   "img": "NAW_2_6.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 9th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 4
+   },
+   "hex": [
+    11,
+    14
+   ],
+   "module_piece_id": "19"
+  },
+  {
+   "id": "F06",
+   "slot": "French 11th Cav (2-5)",
+   "img": "NAW_2_1.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 11th Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 5
+   },
+   "hex": [
+    11,
+    15
+   ],
+   "module_piece_id": "12"
+  },
+  {
+   "id": "F07",
+   "slot": "French Gd Hvy Cav (4-5)",
+   "img": "NAW_1_7.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Gd Hvy Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 5
+   },
+   "hex": [
+    11,
+    16
+   ],
+   "module_piece_id": "10"
+  },
+  {
+   "id": "F08",
+   "slot": "French 5th Inf (4-4)",
+   "img": "NAW_1_3.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 5th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    14,
+    14
+   ],
+   "module_piece_id": "6"
+  },
+  {
+   "id": "F09",
+   "slot": "French 19th Inf (4-4)",
+   "img": "NAW_2_2.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 19th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    14,
+    15
+   ],
+   "module_piece_id": "14"
+  },
+  {
+   "id": "F10",
+   "slot": "French 20th Inf (2-4)",
+   "img": "NAW_5_3.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 20th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 4
+   },
+   "hex": [
+    14,
+    16
+   ],
+   "module_piece_id": "30"
+  },
+  {
+   "id": "F11",
+   "slot": "French Chs Gd (6-4)",
+   "img": "NAW_2_3.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Chs Gd",
+   "cls": "infantry",
+   "stats": {
+    "att": 6,
+    "def": 6,
+    "ma": 4
+   },
+   "hex": [
+    14,
+    17
+   ],
+   "module_piece_id": "15"
+  },
+  {
+   "id": "F12",
+   "slot": "French Gd Art (5-3)",
+   "img": "NAW_1_2.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Gd Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 3
+   },
+   "hex": [
+    15,
+    11
+   ],
+   "module_piece_id": "3"
+  },
+  {
+   "id": "F13",
+   "slot": "French 3rd Cav (1-5)",
+   "img": "NAW_2_7.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 3rd Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 5
+   },
+   "hex": [
+    15,
+    14
+   ],
+   "module_piece_id": "20"
+  },
+  {
+   "id": "F14",
+   "slot": "French VI Art (2-3)",
+   "img": "NAW_1_6.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French VI Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 3
+   },
+   "hex": [
+    15,
+    15
+   ],
+   "module_piece_id": "9"
+  },
+  {
+   "id": "F15",
+   "slot": "French Yg Gd (5-4)",
+   "img": "NAW_1_5.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Yg Gd",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 4
+   },
+   "hex": [
+    15,
+    16
+   ],
+   "module_piece_id": "8"
+  },
+  {
+   "id": "F16",
+   "slot": "French Grn Gd (7-4)",
+   "img": "NAW_2_4.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Grn Gd",
+   "cls": "infantry",
+   "stats": {
+    "att": 7,
+    "def": 7,
+    "ma": 4
+   },
+   "hex": [
+    15,
+    17
+   ],
+   "module_piece_id": "17"
+  },
+  {
+   "id": "F17",
+   "slot": "French II Art (3-3)",
+   "img": "NAW_5_5.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French II Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 3
+   },
+   "hex": [
+    16,
+    11
+   ],
+   "module_piece_id": "32"
+  },
+  {
+   "id": "F18",
+   "slot": "French 1st Inf (4-4)",
+   "img": "NAW_5_1.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 1st Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    16,
+    13
+   ],
+   "module_piece_id": "28"
+  },
+  {
+   "id": "F19",
+   "slot": "French 5th Cav (1-5)",
+   "img": "NAW_4_4.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 5th Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 5
+   },
+   "hex": [
+    16,
+    15
+   ],
+   "module_piece_id": "25"
+  },
+  {
+   "id": "F20",
+   "slot": "French 2nd Inf (5-4)",
+   "img": "NAW_4_1.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 2nd Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 4
+   },
+   "hex": [
+    17,
+    12
+   ],
+   "module_piece_id": "22"
+  },
+  {
+   "id": "F21",
+   "slot": "French 3rd Inf (4-4)",
+   "img": "NAW_4_5.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 3rd Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    18,
+    12
+   ],
+   "module_piece_id": "26"
+  },
+  {
+   "id": "F22",
+   "slot": "French 13th Cav (1-5)",
+   "img": "NAW_2_5.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 13th Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 5
+   },
+   "hex": [
+    18,
+    14
+   ],
+   "module_piece_id": "18"
+  },
+  {
+   "id": "F23",
+   "slot": "French 4th Inf (4-4)",
+   "img": "NAW_2_8.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 4th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    19,
+    12
+   ],
+   "module_piece_id": "21"
+  },
+  {
+   "id": "F24",
+   "slot": "French 14th Cav (1-5)",
+   "img": "NAW_4_6.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 14th Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 5
+   },
+   "hex": [
+    19,
+    13
+   ],
+   "module_piece_id": "27"
+  },
+  {
+   "id": "F25",
+   "slot": "French Gd Lite Cav (3-6)",
+   "img": "NAW_1_8.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French Gd Lite Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 6
+   },
+   "hex": [
+    19,
+    14
+   ],
+   "module_piece_id": "11"
+  },
+  {
+   "id": "F26",
+   "slot": "French 1st Cav (2-5)",
+   "img": "NAW_4_3.png",
+   "side": "Fr",
+   "contingent": "French",
+   "desig": "French 1st Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 5
+   },
+   "hex": [
+    21,
+    11
+   ],
+   "module_piece_id": "24"
+  },
+  {
+   "id": "A01",
+   "slot": "British 3DB Inf (4-4)",
+   "img": "NAW_1_17.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 3DB Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "hex": [
+    4,
+    10
+   ],
+   "module_piece_id": "44"
+  },
+  {
+   "id": "A02",
+   "slot": "British 4th Inf (6-4)",
+   "img": "NAW_2_13.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 4th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 6,
+    "def": 6,
+    "ma": 4
+   },
+   "hex": [
+    6,
+    9
+   ],
+   "module_piece_id": "48"
+  },
+  {
+   "id": "A03",
+   "slot": "British Cav (3-5)",
+   "img": "NAW_2_16.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 5
+   },
+   "hex": [
+    8,
+    11
+   ],
+   "module_piece_id": "51"
+  },
+  {
+   "id": "A04",
+   "slot": "British Bru Inf (2-4)",
+   "img": "NAW_1_11.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British Bru Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 4
+   },
+   "hex": [
+    9,
+    7
+   ],
+   "module_piece_id": "38"
+  },
+  {
+   "id": "A05",
+   "slot": "British 2nd Inf (6-4)",
+   "img": "NAW_1_14.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 2nd Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 6,
+    "def": 6,
+    "ma": 4
+   },
+   "hex": [
+    9,
+    10
+   ],
+   "module_piece_id": "41"
+  },
+  {
+   "id": "A06",
+   "slot": "British Infantry (1-4)",
+   "img": "NAW_4_10.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British Infantry",
+   "cls": "infantry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 4
+   },
+   "hex": [
+    10,
+    14
+   ],
+   "module_piece_id": "53"
+  },
+  {
+   "id": "A07",
+   "slot": "British 1Gd Inf (7-4)",
+   "img": "NAW_5_10.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 1Gd Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 7,
+    "def": 7,
+    "ma": 4
+   },
+   "hex": [
+    11,
+    10
+   ],
+   "module_piece_id": "54"
+  },
+  {
+   "id": "A08",
+   "slot": "British 1Gd Cav (4-5)",
+   "img": "NAW_1_13.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 1Gd Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 5
+   },
+   "hex": [
+    12,
+    9
+   ],
+   "module_piece_id": "40"
+  },
+  {
+   "id": "A09",
+   "slot": "British II Art (2-3)",
+   "img": "NAW_2_17.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British II Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 2,
+    "def": 2,
+    "ma": 3
+   },
+   "hex": [
+    12,
+    10
+   ],
+   "module_piece_id": "52"
+  },
+  {
+   "id": "A10",
+   "slot": "British DB Cav (1-5)",
+   "img": "NAW_2_10.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British DB Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 1,
+    "def": 1,
+    "ma": 5
+   },
+   "hex": [
+    13,
+    7
+   ],
+   "module_piece_id": "45"
+  },
+  {
+   "id": "A11",
+   "slot": "British 3rd Inf (6-4)",
+   "img": "NAW_2_12.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 3rd Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 6,
+    "def": 6,
+    "ma": 4
+   },
+   "hex": [
+    13,
+    9
+   ],
+   "module_piece_id": "47"
+  },
+  {
+   "id": "A12",
+   "slot": "British R Art (3-3)",
+   "img": "NAW_1_10.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British R Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 3
+   },
+   "hex": [
+    14,
+    10
+   ],
+   "module_piece_id": "37"
+  },
+  {
+   "id": "A13",
+   "slot": "British Cavalry (4-5)",
+   "img": "NAW_1_15.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British Cavalry",
+   "cls": "cavalry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 5
+   },
+   "hex": [
+    15,
+    7
+   ],
+   "module_piece_id": "42"
+  },
+  {
+   "id": "A14",
+   "slot": "British I Art (3-3)",
+   "img": "NAW_1_16.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British I Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 3
+   },
+   "hex": [
+    15,
+    9
+   ],
+   "module_piece_id": "43"
+  },
+  {
+   "id": "A15",
+   "slot": "British 6th Inf (6-4)",
+   "img": "NAW_2_14.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 6th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 6,
+    "def": 6,
+    "ma": 4
+   },
+   "hex": [
+    16,
+    9
+   ],
+   "module_piece_id": "49"
+  },
+  {
+   "id": "A16",
+   "slot": "British 2DB Inf (5-4)",
+   "img": "NAW_2_11.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 2DB Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 4
+   },
+   "hex": [
+    17,
+    8
+   ],
+   "module_piece_id": "46"
+  },
+  {
+   "id": "A17",
+   "slot": "British Cavalry (3-5)",
+   "img": "NAW_1_12.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British Cavalry",
+   "cls": "cavalry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 5
+   },
+   "hex": [
+    18,
+    7
+   ],
+   "module_piece_id": "39"
+  },
+  {
+   "id": "A18",
+   "slot": "British 5th Inf (7-4)",
+   "img": "NAW_2_15.png",
+   "side": "Al",
+   "contingent": "British",
+   "desig": "British 5th Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 7,
+    "def": 7,
+    "ma": 4
+   },
+   "hex": [
+    18,
+    8
+   ],
+   "module_piece_id": "50"
+  }
+ ],
+ "reserve": [
+  {
+   "id": "P01",
+   "slot": "Prussian II Inf (5-4)",
+   "img": "NAW_4_15.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian II Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 5,
+    "def": 5,
+    "ma": 4
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "60"
+  },
+  {
+   "id": "P02",
+   "slot": "Prussian IV Inf (4-4)",
+   "img": "NAW_4_12.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "56"
+  },
+  {
+   "id": "P03",
+   "slot": "Prussian IV Inf (4-4)",
+   "img": "NAW_4_12.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "57"
+  },
+  {
+   "id": "P04",
+   "slot": "Prussian IV Inf (4-4)",
+   "img": "NAW_4_12.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "58"
+  },
+  {
+   "id": "P05",
+   "slot": "Prussian IV Inf (4-4)",
+   "img": "NAW_4_12.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Inf",
+   "cls": "infantry",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 4
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "59"
+  },
+  {
+   "id": "P06",
+   "slot": "Prussian II Cav (3-5)",
+   "img": "NAW_5_14.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian II Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 5
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "62"
+  },
+  {
+   "id": "P07",
+   "slot": "Prussian IV Cav (3-5)",
+   "img": "NAW_5_15.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Cav",
+   "cls": "cavalry",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 5
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "65"
+  },
+  {
+   "id": "P08",
+   "slot": "Prussian II Art (4-3)",
+   "img": "NAW_4_14.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian II Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 4,
+    "def": 4,
+    "ma": 3
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "61"
+  },
+  {
+   "id": "P09",
+   "slot": "Prussian IV Art (3-3)",
+   "img": "NAW_4_11.png",
+   "side": "Al",
+   "contingent": "Prussian",
+   "desig": "Prussian IV Art",
+   "cls": "artillery",
+   "stats": {
+    "att": 3,
+    "def": 3,
+    "ma": 3
+   },
+   "due": 2,
+   "arrival": "east_edge",
+   "module_piece_id": "55"
+  }
+ ],
+ "reinforcement": {
+  "event": "Prussians enter",
+  "turn": 2,
+  "player_turn": "Al",
+  "phase": "movement",
+  "entry": "anywhere along the East edge, at as many different points as desired",
+  "entry_cost_mp": 1,
+  "may_move_and_fight_on_entry": true,
+  "delay_legal": false,
+  "may_leave_map": false,
+  "losses_count_as": "Al",
+  "cite": "REI-01 (beginning of the Allied Player's second turn; printed Time Record 2 pm slot 'Prussians enter' with all nine unit pictures in that one slot), REI-02 (East edge, any points), REI-03 (placing a unit costs one Movement Point - printed 'extends', ruling NAW2-SD-1), REI-04 (move and fight on entry), REI-05 (Prussian losses are Allied losses), REI-06 (may not be delayed), REI-07 (may not leave the map)"
+ },
+ "oob_cite": "ingest/oob_2nd_ed.json - three independent witnesses (printed map unit pictures, printed counter photograph, Oliver module + Beginning Setup.vsav), 44/44 at-start hexes, factors, sides and types agree; nine Prussians in printed Time Record order; French 89 CS, Allied 73 CS + Prussian 34 CS",
+ "rules_scope": {
+  "status": "DATA LAYER ONLY (bite 1). Nothing is enforced yet; the gate class lands in bites 2-7 of DECODE_PLAN.md and every cell of COVERAGE_MATRIX.md must be ENFORCED or UNREACHABLE-with-evidence before this scenario is playable.",
+  "enforced": [],
+  "rulings": [
+   "NAW2-D4 (Bruce 2026-08-14): a defender in a Town OR a Woods/Road hex doubles; attacking from such terrain confers nothing",
+   "NAW2-SD-1: 'extends one Movement Point' is enforced as 'expends' (proven outcome-equivalence)"
+  ],
+  "open_for_bruce": [
+   "NAW2-SD-3: may a DISRUPTED unit be pushed into a Woods/Road hex?",
+   "C.7: are the mandatory-attack obligations (CBT-06/07/10) fixed at Combat Phase start or re-evaluated as results apply?",
+   "M.13 / MOV-19: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy"
+  ]
+ }
+}

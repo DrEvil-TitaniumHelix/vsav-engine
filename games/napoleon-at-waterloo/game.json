@@ -1,83 +1,901 @@
 {
- "name": "Napoleon at Waterloo \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
- "map_name": "Board",
- "board_name": "Large",
- "save_key": "a3",
+ "name": "Napoleon at Waterloo (SPI, Second Edition 1971)",
+ "blurb": "18 June 1815, 1 pm to 10 pm - Dunnigan's introductory division-scale Waterloo. Ten Game-Turns, forty Strength Points to break an army, seven French divisions to march off the north edge. Second Edition (1971) rules exactly as printed on the folio; the Third Edition is a separate game.",
+ "edition": {
+  "printed": "SPI Napoleon at Waterloo, Second Edition, copyright 1971 (folio: rules sheet, Examples of Attacks, counter set, map sheet with both CRT copies, TEC, Time Record, Demoralization Scale)",
+  "not_this_game": "The 1979 Third Edition is a different-sized battlefield (380 hexes vs 594), opposite hex-column parity, four reversed rules (E17/E21/E23/E28) - encoded as its own game, never as a flag here (Bruce 2026-08-13). Christian Holm Christensen's 2024 fan revamp (rules.pdf, CC BY-SA) is neither edition and is never cited.",
+  "work_order": "DECODE_PLAN.md; rule ids cited below are rows of ingest/rules_2nd_ed.json (127 verbatim rows with obligation + citation); charts in ingest/crt_2nd_ed.json and ingest/combat_charts.json; map graph ingest/hexgraph_2nd_ed.json; roster ingest/oob_2nd_ed.json"
+ },
+ "status": "DATA LAYER (bite 1 of 7). game.json, terrain.json and scenario_2nd_ed.json are built from the PREP artefacts and validated by validate_data.py. No engine logic exists for this game yet; nothing is enforced; not playable; not on the menu.",
+ "map_name": "Main Map",
+ "board_name": "Main Map",
+ "save_key": "4e",
  "grid": {
   "orient": "flat",
-  "dx": 88.6310374303766,
-  "dy": 102.31616022969065,
-  "x0": 369.0,
-  "y0": 116.0,
+  "dx": 205.55,
+  "dy": 238.0,
+  "x0": 628.4,
+  "y0": 249.0,
   "stagger": true,
   "stagger_sign": 1,
-  "odd_row_carry": 1,
-  "provenance": "hexgrid-direct (flat-top mapping validated on Westwall/Arnhem); module numbering: first=H hType=N vType=N hOff=0 vOff=1 stagger=true \u2014 hex LABELS unverified, geometry is what matters for Tier 0",
-  "hexnum_digits": 2
+  "odd_row_carry": 0,
+  "hexnum_digits": 2,
+  "provenance": "PREP-3 fit of Oliver's module map (Nap at Waterloo map 20mm hexes.jpg, 6623x5648): hex 0101 centre (833.95, 606.0), dx 205.55, dy 238.0, ODD columns half a hex LOWER (map_grid.json grid_px.oliver, even_down=false). Engine form: x0/y0 = that centre minus one dx/dy so col 1 row 1 = 0101; stagger_sign +1 + odd_row_carry 0 reproduces the neighbour formula PREP-5 PROVED (hexgraph_2nd_ed.json). validate_data.py asserts engine adjacency == the proved graph on all 594 hexes and maps every module at-start pixel (module_oob.json) to its printed hex, 44/44. The printed 2nd Ed map carries NO hex numbers; the CCRR scheme is ours (0101 = NW-most hex). NEVER share hex arithmetic with the 3rd Edition (opposite parity)."
  },
- "buildfile": "../../../VassalIngest/napoleon-at-waterloo/extracted/buildFile.xml",
- "moduledata": "../../../VassalIngest/napoleon-at-waterloo/extracted/moduledata",
+ "terrain_file": "terrain.json",
+ "scenario": "scenario_2nd_ed.json",
+ "setup_save": null,
+ "guide": {
+  "victory": "The French win by destroying forty Allied Combat Strength Points before losing forty of their own AND exiting seven French units off the north edge through the eleven arrowed hexes by the end of Game-Turn 10 (1 pm to 10 pm). The Allies win by destroying forty French Strength Points first. Forty Allied points lost without the seven exits = Allied DEMORALIZATION (all Allied attacks one odds column worse, all French attacks one better) and the best the Allies can then reach is a draw. Prussians (nine units, 34 points) enter anywhere on the east edge at the start of the Allied second turn."
+ },
  "assets": {
-  "map": "../../../VassalIngest/napoleon-at-waterloo/extracted/images/Large.png",
-  "counters_dir": "../../../VassalIngest/napoleon-at-waterloo/extracted/images"
+  "map": "../../../VassalNaW/modules/ed2_oliver/images/Nap at Waterloo map 20mm hexes.jpg",
+  "counters_dir": "../../../VassalNaW/modules/ed2_oliver/images",
+  "note": "Stephen Oliver's 'Napoleon at Waterloo 2nd Edition' module v2.2.0 (vassalengine.org project napoleon_at_waterloo_2nd_ed_stephen_oliver, sha256 d74511843cc04e7cd81fc2d061517732fad80bddbefb642238ea3ee54778e498, 157/157 files byte-identical to our extract) - the BYO module for this game (web/manifests/napoleon-at-waterloo.json). Its map is a colour restoration of the printed sheet (authority T1: content matched the folio hex for hex, layout re-flowed); its counter faces are redraws (T3, corroborating only). Local extract at C:/VassalNaW/modules/ed2_oliver."
  },
  "ui": {
-  "counter_px": 75
+  "counter_px": 165
  },
  "unit_kinds": [
   "piece",
   "prototype",
-  "mark",
-  "hideCmd"
+  "mark"
  ],
  "sides": {
   "order": [
-   "Allied",
-   "French"
+   "Fr",
+   "Al"
   ],
   "labels": {
-   "Allied": "Allied",
-   "French": "French"
+   "Fr": "French",
+   "Al": "Allied (British & Prussian)"
   },
-  "default": "French",
-  "detect_tokens": {},
-  "note": "TODO detect_tokens empty \u2014 every piece shows as the default side until filled in"
+  "default": "Fr",
+  "detect_tokens": {
+   "Fr": [
+    "French 11th Cav (2-5)",
+    "French 12th Cav (2-5)",
+    "French 13th Cav (1-5)",
+    "French 14th Cav (1-5)",
+    "French 19th Inf (4-4)",
+    "French 1st Cav (2-5)",
+    "French 1st Inf (4-4)",
+    "French 20th Inf (2-4)",
+    "French 2nd Cav (2-5)",
+    "French 2nd Inf (5-4)",
+    "French 3rd Cav (1-5)",
+    "French 3rd Inf (4-4)",
+    "French 4th Inf (4-4)",
+    "French 5th Cav (1-5)",
+    "French 5th Inf (4-4)",
+    "French 6th Inf (7-4)",
+    "French 9th Inf (5-4)",
+    "French Chs Gd (6-4)",
+    "French Gd Art (5-3)",
+    "French Gd Hvy Cav (4-5)",
+    "French Gd Lite Cav (3-6)",
+    "French Grn Gd (7-4)",
+    "French I Art (3-3)",
+    "French II Art (3-3)",
+    "French VI Art (2-3)",
+    "French Yg Gd (5-4)"
+   ],
+   "Al": [
+    "British 1Gd Cav (4-5)",
+    "British 1Gd Inf (7-4)",
+    "British 2DB Inf (5-4)",
+    "British 2nd Inf (6-4)",
+    "British 3DB Inf (4-4)",
+    "British 3rd Inf (6-4)",
+    "British 4th Inf (6-4)",
+    "British 5th Inf (7-4)",
+    "British 6th Inf (6-4)",
+    "British Bru Inf (2-4)",
+    "British Cav (3-5)",
+    "British Cavalry (3-5)",
+    "British Cavalry (4-5)",
+    "British DB Cav (1-5)",
+    "British I Art (3-3)",
+    "British II Art (2-3)",
+    "British Infantry (1-4)",
+    "British R Art (3-3)",
+    "Prussian II Art (4-3)",
+    "Prussian II Cav (3-5)",
+    "Prussian II Inf (5-4)",
+    "Prussian IV Art (3-3)",
+    "Prussian IV Cav (3-5)",
+    "Prussian IV Inf (4-4)"
+   ]
+  },
+  "cite": "PCS-05: French blue = First Player's army; British red and Prussian green = Second Player's army. SEQ-02: French Player-Turn first. detect_tokens generated by build_data.py from the module piece names; scenario units carry explicit sides"
  },
  "stats": {
-  "patterns": [],
+  "patterns": [
+   [
+    "British 1Gd Cav (4-5)",
+    [
+     4,
+     4,
+     5
+    ]
+   ],
+   [
+    "British 1Gd Inf (7-4)",
+    [
+     7,
+     7,
+     4
+    ]
+   ],
+   [
+    "British 2DB Inf (5-4)",
+    [
+     5,
+     5,
+     4
+    ]
+   ],
+   [
+    "British 2nd Inf (6-4)",
+    [
+     6,
+     6,
+     4
+    ]
+   ],
+   [
+    "British 3DB Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "British 3rd Inf (6-4)",
+    [
+     6,
+     6,
+     4
+    ]
+   ],
+   [
+    "British 4th Inf (6-4)",
+    [
+     6,
+     6,
+     4
+    ]
+   ],
+   [
+    "British 5th Inf (7-4)",
+    [
+     7,
+     7,
+     4
+    ]
+   ],
+   [
+    "British 6th Inf (6-4)",
+    [
+     6,
+     6,
+     4
+    ]
+   ],
+   [
+    "British Bru Inf (2-4)",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "British Cav (3-5)",
+    [
+     3,
+     3,
+     5
+    ]
+   ],
+   [
+    "British Cavalry (3-5)",
+    [
+     3,
+     3,
+     5
+    ]
+   ],
+   [
+    "British Cavalry (4-5)",
+    [
+     4,
+     4,
+     5
+    ]
+   ],
+   [
+    "British DB Cav (1-5)",
+    [
+     1,
+     1,
+     5
+    ]
+   ],
+   [
+    "British I Art (3-3)",
+    [
+     3,
+     3,
+     3
+    ]
+   ],
+   [
+    "British II Art (2-3)",
+    [
+     2,
+     2,
+     3
+    ]
+   ],
+   [
+    "British Infantry (1-4)",
+    [
+     1,
+     1,
+     4
+    ]
+   ],
+   [
+    "British R Art (3-3)",
+    [
+     3,
+     3,
+     3
+    ]
+   ],
+   [
+    "French 11th Cav (2-5)",
+    [
+     2,
+     2,
+     5
+    ]
+   ],
+   [
+    "French 12th Cav (2-5)",
+    [
+     2,
+     2,
+     5
+    ]
+   ],
+   [
+    "French 13th Cav (1-5)",
+    [
+     1,
+     1,
+     5
+    ]
+   ],
+   [
+    "French 14th Cav (1-5)",
+    [
+     1,
+     1,
+     5
+    ]
+   ],
+   [
+    "French 19th Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "French 1st Cav (2-5)",
+    [
+     2,
+     2,
+     5
+    ]
+   ],
+   [
+    "French 1st Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "French 20th Inf (2-4)",
+    [
+     2,
+     2,
+     4
+    ]
+   ],
+   [
+    "French 2nd Cav (2-5)",
+    [
+     2,
+     2,
+     5
+    ]
+   ],
+   [
+    "French 2nd Inf (5-4)",
+    [
+     5,
+     5,
+     4
+    ]
+   ],
+   [
+    "French 3rd Cav (1-5)",
+    [
+     1,
+     1,
+     5
+    ]
+   ],
+   [
+    "French 3rd Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "French 4th Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "French 5th Cav (1-5)",
+    [
+     1,
+     1,
+     5
+    ]
+   ],
+   [
+    "French 5th Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ],
+   [
+    "French 6th Inf (7-4)",
+    [
+     7,
+     7,
+     4
+    ]
+   ],
+   [
+    "French 9th Inf (5-4)",
+    [
+     5,
+     5,
+     4
+    ]
+   ],
+   [
+    "French Chs Gd (6-4)",
+    [
+     6,
+     6,
+     4
+    ]
+   ],
+   [
+    "French Gd Art (5-3)",
+    [
+     5,
+     5,
+     3
+    ]
+   ],
+   [
+    "French Gd Hvy Cav (4-5)",
+    [
+     4,
+     4,
+     5
+    ]
+   ],
+   [
+    "French Gd Lite Cav (3-6)",
+    [
+     3,
+     3,
+     6
+    ]
+   ],
+   [
+    "French Grn Gd (7-4)",
+    [
+     7,
+     7,
+     4
+    ]
+   ],
+   [
+    "French I Art (3-3)",
+    [
+     3,
+     3,
+     3
+    ]
+   ],
+   [
+    "French II Art (3-3)",
+    [
+     3,
+     3,
+     3
+    ]
+   ],
+   [
+    "French VI Art (2-3)",
+    [
+     2,
+     2,
+     3
+    ]
+   ],
+   [
+    "French Yg Gd (5-4)",
+    [
+     5,
+     5,
+     4
+    ]
+   ],
+   [
+    "Prussian II Art (4-3)",
+    [
+     4,
+     4,
+     3
+    ]
+   ],
+   [
+    "Prussian II Cav (3-5)",
+    [
+     3,
+     3,
+     5
+    ]
+   ],
+   [
+    "Prussian II Inf (5-4)",
+    [
+     5,
+     5,
+     4
+    ]
+   ],
+   [
+    "Prussian IV Art (3-3)",
+    [
+     3,
+     3,
+     3
+    ]
+   ],
+   [
+    "Prussian IV Cav (3-5)",
+    [
+     3,
+     3,
+     5
+    ]
+   ],
+   [
+    "Prussian IV Inf (4-4)",
+    [
+     4,
+     4,
+     4
+    ]
+   ]
+  ],
   "default": [
    0,
    0,
-   6
+   0
   ],
-  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+  "note": "[att, def, ma] per module piece name, generated by build_data.py from ingest/oob_2nd_ed.json (Combat Strength serves attack and defence alike, PCS-02; Movement Allowance PCS-03). Scenario units carry explicit stats; patterns are the board-layer fallback"
+ },
+ "unit_types": {
+  "cite": "PCS-04: three basic types - Infantry, Cavalry, Artillery divisions; type read off the printed counter photograph (PREP-4). Only artillery has a type-specific rule (ART-01..ART-18 bombardment at two hexes); infantry and cavalry differ only in their printed factors",
+  "infantry": {
+   "cls": "infantry"
+  },
+  "cavalry": {
+   "cls": "cavalry"
+  },
+  "artillery": {
+   "cls": "artillery",
+   "bombard_range": 2
+  }
  },
  "movement": {
-  "impassable_terrain": [],
-  "terrain_mp": {},
+  "impassable_terrain": [
+   "offmap"
+  ],
+  "terrain_mp": {
+   "clear": 1.0,
+   "town": 1.0,
+   "woods_road": 1.0,
+   "woods": 99.0
+  },
   "default_mp": 1.0,
-  "hexside_rules": [],
+  "hexside_rules": [
+   {
+    "feature": "woods_edge",
+    "value": true,
+    "effect": "prohibit",
+    "cite": "MOV-16/MOV-17: the only Woods hexes any unit may enter are those traversed by Roads, and only by travelling along the road into and out of the Woods - every non-road hexside of a Woods/Road hex is closed in both directions (terrain.json sides.woods_edge)"
+   }
+  ],
   "zoc": {
-   "exerts": false
+   "exerts": true,
+   "stop_on_enter": true,
+   "locked_at_start": true,
+   "cite": "ZOC-01 every unit controls the six adjacent hexes; ZOC-02 at all times; MOV-10/ZOC-04 entering an enemy-controlled hex ends movement; MOV-11/ZOC-05 may not move through or out of one; MOV-13 a unit beginning its Movement Phase in an enemy ZOC may not move at all; ZOC-03 friendly ZOC never inhibits; ZOC-08 mutual"
   },
-  "enter_enemy_hex": true,
+  "enter_enemy_hex": false,
   "pass_through_friendly": true,
-  "bounds": {
-   "cols": [
-    0,
-    27
+  "note": "Every enterable hex costs exactly one Movement Point (TEC rows 1-2, MOV-02/MOV-05); roads have no movement effect (TEC row 1); Woods entry prohibited (TEC row 3, MOV-18) - 99 MP here so no unit can afford it, the gate states the prohibition outright. MOV-07 through friendly units; MOV-08 never through or into enemy units; MOV-09 stacking PROHIBITED - no unit may finish its Movement Phase in the same hex as any other unit; MOV-06 consecutive hexes; MOV-20 no transfer or accumulation of MPs. All of this is DATA in bite 1; the naw gate class enforces it from bite 2."
+ },
+ "classes": {
+  "infantry": [
+   "British 1Gd Inf (7-4)",
+   "British 2DB Inf (5-4)",
+   "British 2nd Inf (6-4)",
+   "British 3DB Inf (4-4)",
+   "British 3rd Inf (6-4)",
+   "British 4th Inf (6-4)",
+   "British 5th Inf (7-4)",
+   "British 6th Inf (6-4)",
+   "British Bru Inf (2-4)",
+   "British Infantry (1-4)",
+   "French 19th Inf (4-4)",
+   "French 1st Inf (4-4)",
+   "French 20th Inf (2-4)",
+   "French 2nd Inf (5-4)",
+   "French 3rd Inf (4-4)",
+   "French 4th Inf (4-4)",
+   "French 5th Inf (4-4)",
+   "French 6th Inf (7-4)",
+   "French 9th Inf (5-4)",
+   "French Chs Gd (6-4)",
+   "French Grn Gd (7-4)",
+   "French Yg Gd (5-4)",
+   "Prussian II Inf (5-4)",
+   "Prussian IV Inf (4-4)"
+  ],
+  "cavalry": [
+   "British 1Gd Cav (4-5)",
+   "British Cav (3-5)",
+   "British Cavalry (3-5)",
+   "British Cavalry (4-5)",
+   "British DB Cav (1-5)",
+   "French 11th Cav (2-5)",
+   "French 12th Cav (2-5)",
+   "French 13th Cav (1-5)",
+   "French 14th Cav (1-5)",
+   "French 1st Cav (2-5)",
+   "French 2nd Cav (2-5)",
+   "French 3rd Cav (1-5)",
+   "French 5th Cav (1-5)",
+   "French Gd Hvy Cav (4-5)",
+   "French Gd Lite Cav (3-6)",
+   "Prussian II Cav (3-5)",
+   "Prussian IV Cav (3-5)"
+  ],
+  "artillery": [
+   "British I Art (3-3)",
+   "British II Art (2-3)",
+   "British R Art (3-3)",
+   "French Gd Art (5-3)",
+   "French I Art (3-3)",
+   "French II Art (3-3)",
+   "French VI Art (2-3)",
+   "Prussian II Art (4-3)",
+   "Prussian IV Art (3-3)"
+  ],
+  "prussian": [
+   "Prussian II Art (4-3)",
+   "Prussian II Cav (3-5)",
+   "Prussian II Inf (5-4)",
+   "Prussian IV Art (3-3)",
+   "Prussian IV Cav (3-5)",
+   "Prussian IV Inf (4-4)"
+  ],
+  "note": "generated by build_data.py from the scenario roster: unit type from the printed counter photograph (PREP-4); 'prussian' = the nine Time Record arrivals (Allied for every rule, REI-05)"
+ },
+ "combat": {
+  "_status": "DATA ONLY (bite 1): the CRT, result codes, terrain effects, artillery, retreat/disruption/advance texts are transcribed here with their rule ids. Odds arithmetic + CRT lookup land in bite 3 (gate: all 27 printed Examples of Attacks replay green), the mandatory-attack assignment in bite 4 (needs ruling C.7), result application in bite 5.",
+  "crt": {
+   "type": "odds_ratio",
+   "odds_columns": [
+    "1:5",
+    "1:4",
+    "1:3",
+    "1:2",
+    "1:1",
+    "2:1",
+    "3:1",
+    "4:1",
+    "5:1",
+    "6:1"
    ],
-   "rows": [
-    0,
-    21
-   ]
+   "die_rows": {
+    "1": [
+     "AE",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "DE",
+     "DE",
+     "DE",
+     "DE"
+    ],
+    "2": [
+     "AE",
+     "AE",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "DE",
+     "DE",
+     "DE"
+    ],
+    "3": [
+     "AE",
+     "AE",
+     "AE",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "Dr",
+     "DE",
+     "DE"
+    ],
+    "4": [
+     "AE",
+     "AE",
+     "AE",
+     "Ar",
+     "Ar",
+     "Dr",
+     "Dr",
+     "Dr",
+     "DE",
+     "DE"
+    ],
+    "5": [
+     "AE",
+     "AE",
+     "AE",
+     "Ar",
+     "Ar",
+     "EX",
+     "Dr",
+     "EX",
+     "EX",
+     "DE"
+    ],
+    "6": [
+     "AE",
+     "AE",
+     "AE",
+     "AE",
+     "Ar",
+     "Ar",
+     "EX",
+     "EX",
+     "EX",
+     "DE"
+    ]
+   },
+   "clamp": {
+    "low": "1:5",
+    "high": "6:1",
+    "printed": "Attacks executed at worse than “1 to 5” are treated as “1 to 5”; attacks executed at greater than “6 to 1” are treated as “6 to 1”."
+   },
+   "rounding": "Attacker's total Combat Strength vs defender's total, expressed as a ratio and ROUNDED OFF IN FAVOUR OF THE DEFENDER",
+   "results": {
+    "AE": "Attacker Eliminated",
+    "Ar": "Attacker Retreats one hex",
+    "Dr": "Defender Retreats",
+    "DE": "Defender Eliminated",
+    "EX": "Exchange - the defender is eliminated and the attacker suffers a loss AT LEAST EQUAL in Strength Points, made up only from units directly involved in that attack"
+   },
+   "cite": "folio p.5 Combat Resolution Table (printed twice, both copies agree cell for cell), read 4x - ingest/crt_2nd_ed.json; CBT-01/CBT-02 odds and rounding; validation corpus = the 27 printed Examples of Attacks (ingest/worked_examples.json, example_check.json 27/27)"
   },
-  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+  "terrain_effects": {
+   "defender_doubles_in": [
+    "town",
+    "woods_road"
+   ],
+   "attacker_from_such_terrain": "normal value",
+   "cite": "TEC row 2 'Towns &  Woods/Roads - Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain' + CBT-18 (Towns); ruling NAW2-D4 (Bruce 2026-08-14) follows the chart, independently corroborated by the printed 1979 sheet grouping Building + Woods-Road; printed examples EX-03/EX-04 prove an attacker in a Town gets nothing"
+  },
+  "procedure": {
+   "adjacency": "CBT-05 attackers must be adjacent (exception: artillery bombardment)",
+   "mandatory": "CBT-06 ALL enemy units adjacent to friendly units MUST be attacked; CBT-07 ALL friendly units adjacent to enemy units MUST participate; CBT-10 no defender attacked more than once, no attacker attacks more than once; CBT-08/CBT-09 the attacker chooses order and pairing; CBT-11 several attackers may combine on one defender (all adjacent); CBT-12 one attacker may attack several adjacent defenders (strengths totalled); CBT-13 diversionary attacks at poor odds are legal; CBT-17 a unit's strength is never split",
+   "immediate": "CBT-04 each result is applied immediately before the next attack is resolved",
+   "open": "C.7 - obligations fixed at phase start vs re-evaluated as results apply (two legal move sets); CBT-06+07+10 give no relief clause when no complete assignment exists. Both OPEN for Bruce; the gate is not written past them (DECODE_PLAN.md section 4)"
+  },
+  "artillery": {
+   "bombard_range": 2,
+   "cite": "ART-01 artillery may bombard from two hexes; ART-06 never forced to bombard; ART-02/ART-07/ART-10 adjacent artillery MUST participate and suffers all results; ART-03/ART-04/ART-09 bombarding artillery is never destroyed or retreated by the result (ART-11 may voluntarily take an Ar); ART-05/ART-12 co-operating non-artillery units always suffer results; ART-13 bombardment targets a single unit; ART-14 adjacent artillery may attack all adjacent units; ART-15 no range on defence; ART-16 may fire over units and Town hexes; ART-17 may NOT fire over a Woods hex; ART-18 bombarding artillery may not advance"
+  },
+  "retreat": {
+   "who_chooses": "the VICTORIOUS player, for Ar and Dr alike (E21 - the 3rd Edition reverses this)",
+   "distance": 1,
+   "bars": [
+    "enemy Zone of Control",
+    "off the map",
+    "non-Road Woods",
+    "enemy-occupied hex"
+   ],
+   "no_path": "the retreating unit is ELIMINATED",
+   "disruption": "if the only safe hex holds an uninvolved friendly unit, that unit is displaced (moved back by the victorious player as if retreating) and the retreating unit takes its hex; the displaced unit may not be forced into enemy units, Zones of Control or woods; if that would be its only path the uninvolved unit is NOT disrupted and the retreating unit is eliminated instead; chains are legal; disrupted artillery may not fire in that Combat Phase",
+   "advance": "optional, immediate, one hex into the vacated hex after Dr/DE/EX (never compulsory; legal even in enemy ZOC, CBT-15); advancing units may not participate in another attack or defence in that Combat Phase (X2); no MP cost (CBT-16); bombarding artillery may not advance (ART-18)",
+   "cite": "folio p.5 RETREAT AND ADVANCE AS A RESULT OF COMBAT + DISRUPTION + OPTIONAL ADVANCE (British/Prussian half only - NAW2-SD-2), EXPLANATION OF RESULTS (both halves), ingest/combat_charts.json verbatim; CBT-14/CBT-15/CBT-16",
+   "open": "NAW2-SD-3 - may a DISRUPTED unit be pushed into a Woods/Road hex (retreat bar says 'non-Road Woods', disruption bar says bare 'woods')? OPEN for Bruce"
+  }
  },
- "ingest": {
-  "tool": "engine/ingest.py",
-  "grid_how": "hexgrid",
-  "module_version": "1.4.0"
+ "exit": {
+  "side": "Fr",
+  "edge": "north",
+  "hexes": [
+   "0101",
+   "0201",
+   "0301",
+   "0401",
+   "0501",
+   "0601",
+   "0701",
+   "0801",
+   "0901",
+   "1001",
+   "1101"
+  ],
+  "cost_mp": 1,
+  "required_for_victory": 7,
+  "cite": "VIC-08 French units exit only from the arrowed hexes (eleven, columns 01-11 of row 01, read off the printed map); VIC-09 exiting expends one Movement Point; VIC-10 exited units may not return; VIC-11 need not exit together nor from one hex, before and/or after the forty points; VIC-12 Allied units may NEVER exit; VIC-13 French units retreated off the map by combat count as destroyed, not exited; VIC-06 exited units are not French losses"
  },
- "setup_save": "../../../VassalIngest/napoleon-at-waterloo/setups/atstart.vsav"
+ "victory": {
+  "loss_threshold_cs": 40,
+  "french_exit_required": 7,
+  "check": "immediate (VIC-07) - whichever side reaches its condition first wins at once, mid Player-Turn included",
+  "french_win": "forty Allied Combat Strength Points destroyed BEFORE forty French, AND seven French units exited by the end of Game-Turn 10 (VIC-01/VIC-02)",
+  "allied_win": "forty French Combat Strength Points destroyed before forty Allied (VIC-03)",
+  "draw": "neither side reaches forty; or the French reach forty but fail the seven exits (VIC-04)",
+  "simultaneous": "both sides reach forty at the same instant (an EX): French win if seven already exited, otherwise DRAW (VIC-14 - the folio's own case)",
+  "ledger": "one printed Demoralization Scale, cells 1-40, shared: each side's cumulative Strength Points destroyed is tracked; the punched set has no marker for it (the first destroyed enemy unit is the marker) - the engine keeps both running totals (VIC-05); Prussian losses are Allied losses (REI-05)"
+ },
+ "demoralization": {
+  "applies_to": "Al",
+  "trigger": "forty Allied Strength Points destroyed while fewer than seven French units have exited (DEM-01); immediate, mid Player-Turn included (DEM-02); permanent (DEM-03)",
+  "effects": {
+   "Al_attack_column_shift": -1,
+   "Fr_attack_column_shift": 1
+  },
+  "consequence": "the best the Allies can then reach is a draw (DEM-04, derived state - never a gate check); destroying forty French points afterwards is not an Allied win and relieves nothing (DEM-09); the French are never demoralized (DEM-05)",
+  "cite": "DEM-01..DEM-09, folio p.1 col.8"
+ },
+ "credits": {
+  "game": {
+   "title": "Napoleon at Waterloo, Second Edition",
+   "publisher": "Simulations Publications, Inc. (SPI)",
+   "year": "1971",
+   "design": "James F. Dunnigan (game design)",
+   "art": "Redmond A. Simonsen (graphics)",
+   "source": "'Second Edition Copyright 1971, Simulations Publications, Inc.' printed on the folio map sheet (p.5, beside the logo; crop b_second_edition_copyright.png); the folio's SPI cover letter is signed by Dunnigan; the designer/graphics credits are as printed in the game's Design Credits (3rd Edition rules [10.0]: 'Game design James F. Dunnigan ... Redmond A. Simonsen') - the 1971 folio itself prints no separate credits block that we could read"
+  },
+  "module": {
+   "title": "Napoleon at Waterloo 2nd Edition (VASSAL module) v2.2.0",
+   "implementation": "Stephen Oliver (vassalengine.org: Stephen_Oliver) - listing: 'implementation by Stephen Oliver (2021)'; v2.2.0 published 2022-01-24 by iam2509",
+   "contributors": "project co-owner cholmcc (Christian Holm Christensen); the module's map is a colour restoration of the printed sheet and its CRT/TEC images are scans of the printed charts (they independently confirmed our transcription in all 60 CRT cells and every TEC row); its at-start save corrected three of our own map misreads (PREP-4)",
+   "library": "https://vassalengine.org/library/projects/napoleon_at_waterloo_2nd_ed_stephen_oliver",
+   "source": "vassalengine.org /api/gls/v1/projects/napoleon_at_waterloo_2nd_ed_stephen_oliver (read 2026-08-17: file 'Napoleon at Waterloo 2nd Ed Vers 2.2.vmod', 12,439,999 bytes, sha256 d745118...8498) + moduledata",
+   "note": "Module observations for the author's worksheet live in literature/napoleon-at-waterloo/AUTHOR_QUESTIONS.md (internal register; nothing sent - Bruce's per-item go). The module's DM markers and VP boxes are the module's own conveniences (the punched set has exactly one marker, the turn marker); the engine keeps the loss ledger itself."
+  },
+  "note": "This engine enforces the printed game's rules against the module's own materials. All game content remains the property of its publisher; module art remains the work of the module authors. Bring-your-own-module: users download the module from the VASSAL module library."
+ },
+ "source_defects": {
+  "note": "Defects in the ORIGINAL PUBLISHED GAME (SPI 1971 folio) found during decode-prep and encoding - spec #21. Authority ladder (as amended 2026-08-09): official errata > publisher/tournament clarification or the game/module creator's answer > proven outcome-equivalence. SPI no longer exists and no errata for the 1971 folio has been found: for this game the only remaining rung is a declared ruling by Bruce (DECODE_PLAN.md section 4 - direction call surfaced). An OPEN entry blocks the cells it touches; the gate is not written past it.",
+  "list": [
+   {
+    "id": "NAW2-D4-town-woodsroad-doubling",
+    "kind": "contradiction",
+    "rules": [
+     "CBT-18",
+     "TEC row 2"
+    ],
+    "defect": "The rules sheet says 'Units defending in Towns DOUBLE their strength (on defense)' and never mentions Woods/Roads; the Terrain Effects Chart on the same folio prints 'Towns &  Woods/Roads' as ONE row with one shared effect cell 'Defending unit DOUBLES its Combat Strength'. Both are primary components of the same edition; the 27 printed examples never place a defender in a Woods/Road hex.",
+    "resolution": "FOLLOW THE CHART: a defender in a Town OR a Woods/Road hex doubles; attacking from either confers nothing. Blast radius five hexes (the woods_road class).",
+    "authority": "DECLARED RULING - Bruce, 2026-08-14 (judgement between printed equals). Independently corroborated the same evening by the printed 1979 sheet, whose key groups Building + Woods-Road with 'Defender in hex is doubled'.",
+    "enforced": false,
+    "lands_in": "bite 3 (combat arithmetic)"
+   },
+   {
+    "id": "NAW2-SD-1-extends-expends",
+    "kind": "editing_error",
+    "rules": [
+     "REI-03",
+     "VIC-09"
+    ],
+    "defect": "Folio p.1 case (B.) prints 'The act of placing a Prussian unit on the map extends one Movement Point', where the same page prints the mirror-image action correctly two columns later: 'The Act of exiting from the edge of the map expends one Movement Point.'",
+    "resolution": "Enforced as 'expends': placing a Prussian unit on the map costs one Movement Point.",
+    "authority": "PROVEN OUTCOME-EQUIVALENCE (same document, correct construction for the mirror case; no reading of 'extends' yields a coherent alternative rule).",
+    "enforced": false,
+    "lands_in": "bite 6 (reinforcement)"
+   },
+   {
+    "id": "NAW2-SD-2-asymmetric-player-aids",
+    "kind": "production_defect",
+    "rules": [
+     "TEC-01",
+     "RET-01",
+     "DIS-01"
+    ],
+    "defect": "The two player-aid halves of the printed map sheet are not mirrors: the French half carries the Terrain Effects Chart and no retreat rules; the British/Prussian half carries RETREAT AND ADVANCE, DISRUPTION and the optional advance and no Terrain Effects Chart. Only the Explanation of Results and the CRT grid are printed twice. The rules sheet contains no retreat procedure at all.",
+    "resolution": "No rules effect - the engine enforces every printed rule regardless of which half prints it. Registered because a human player consulting one half sincerely believes rules do not exist.",
+    "authority": "OBSERVED - two independent readings of the printed sheet (PREP-5).",
+    "enforced": true
+   },
+   {
+    "id": "NAW2-SD-3-disrupted-into-woods-road",
+    "kind": "undefined_case",
+    "rules": [
+     "RET-01",
+     "DIS-01"
+    ],
+    "defect": "The retreat bar forbids retreating 'into non-Road Woods'; the DISRUPTION paragraph two paragraphs later forbids forcing the displaced unit 'into Enemy units or Zones of Control or woods' - bare 'woods', and it also omits the retreat bar's 'off the map'. Whether a disrupted unit may be pushed into one of the five Woods/Road hexes is undefined; NAW2-D4 makes those hexes defensively valuable, sharpening the question.",
+    "resolution": "OPEN - awaiting Bruce's ruling. Options: (a) read 'woods' as the same 'non-Road Woods' the retreat bar defines; (b) read it literally - disruption is barred from ALL woods including Woods/Road. The gate is not written past this cell (bite 5).",
+    "authority": "PENDING - Bruce. No errata, no publisher, no module question.",
+    "enforced": false,
+    "lands_in": "bite 5 (result application) - BLOCKED until ruled"
+   },
+   {
+    "id": "NAW2-C7-mandatory-attack-timing",
+    "kind": "undefined_case",
+    "rules": [
+     "CBT-04",
+     "CBT-06",
+     "CBT-07",
+     "CBT-10"
+    ],
+    "defect": "Results apply immediately (CBT-04) and attacks resolve one at a time, so the set of 'adjacent enemy units' changes during the Combat Phase; the sheet does not say whether the mandatory-attack obligations (every adjacent enemy attacked, every adjacent friendly participating, nobody twice) are fixed at phase start or re-evaluated after each result - two defensible readings with different legal move sets. It also gives no relief clause for a position where no complete assignment exists.",
+    "resolution": "OPEN - awaiting Bruce's ruling (DECODE_PLAN.md section 4, C.7). The combat phase is a global assignment problem; the gate will be designed as a phase-level constraint check once the timing is ruled.",
+    "authority": "PENDING - Bruce.",
+    "enforced": false,
+    "lands_in": "bite 4 (assignment) - BLOCKED until ruled"
+   }
+  ]
+ }
 }
