@@ -27,8 +27,9 @@ import bluegray as bg_mod   # noqa: E402
 import westwall as ww_mod   # noqa: E402
 import napoleonic as nap_mod  # noqa: E402
 import soj as soj_mod       # noqa: E402
+import naw as naw_mod       # noqa: E402
 
-STRATEGIC_MODES = ("strategic", "bluegray", "westwall", "napoleonic", "soj")
+STRATEGIC_MODES = ("strategic", "bluegray", "westwall", "napoleonic", "soj", "naw")
 
 
 class ReplayMismatch(Exception):
@@ -60,6 +61,9 @@ def make_gate(game, scen_path, workdir, init):
     if mode == "westwall":
         return ww_mod.WestwallGame(game, scen_path, workdir,
                                    seed=init["seed"], tier=init.get("tier"))
+    if mode == "naw":
+        return naw_mod.NawGame(game, scen_path, workdir,
+                               seed=init["seed"], tier=init.get("tier"))
     if mode == "bluegray":
         return bg_mod.BlueGrayGame(game, scen_path, workdir,
                                    seed=init["seed"], tier=init.get("tier"))
