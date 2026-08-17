@@ -84,5 +84,62 @@ check(not any(e.get("error") for e in log) and turns >= 2,
 okv, msg = verify_game.verify(HERE, os.path.join(tmp, LOG))
 check(okv, f"theta game: {msg}")
 
+import random
+import families
+import plans
+import strategy_soj as strat
+import optimize
+import champion
+fam = families.for_game(G)
+check(fam["kind"] == "soj" and fam["strategy"] is strat and fam["ai"] is ai,
+      "families.for_game registers the soj family (ai_soj + strategy_soj)")
+lo = {n: a for n, a, _, _ in strat.GENES}
+hi = {n: b for n, _, b, _ in strat.GENES}
+check(all(n in ai.DEFAULTS for n in lo) and strat.baseline() == {n: ai.DEFAULTS[n] for n in lo},
+      f"{len(strat.GENES)} genes all read from ai_soj.DEFAULTS; baseline == the shipped policy")
+rng = random.Random(7)
+pop = strat.corners() + [strat.random_theta(rng) for _ in range(5)]
+pop += [strat.mutate(t, rng) for t in pop] + [strat.crossover(pop[0], pop[1], rng)]
+check(all(lo[n] <= t[n] <= hi[n] for t in pop for n in lo) and len(strat.corners()) == 5,
+      f"corners/random/mutate/crossover stay inside gene ranges ({len(pop)} thetas)")
+tmp = tempfile.mkdtemp()
+tp = SoJGame(G, SCEN, tmp, seed=2, tier=2)
+plans.play_game(tp, {sd: strat.StrategyPlanner(strat.baseline()) for sd in ("Rom", "Jud")}, max_turns=2)
+check(tp.state_hash() == hh[0],
+      "plans.play_game + StrategyPlanner(baseline) reproduces the shipped-policy game hash")
+t0 = time.time()
+res = optimize.play_one((HERE, strat.corners()[0], None, 1, 2))
+check(res["vp"]["Rom"]["need"] == 10 and res["margin_a"] < 0 and not res["over"],
+      f"optimize.play_one 2 turns: margin_a {res['margin_a']:+.2f} ({time.time() - t0:.0f}s)")
+mwin = fam["margin"]({"Rom": {"builtup": 10, "need": 10, "won": True, "lost": 20},
+                      "Jud": {"lost": 5}}, G.side_order)
+mloss = fam["margin"]({"Rom": {"builtup": 9, "need": 10, "won": False, "lost": 0},
+                       "Jud": {"lost": 40}}, G.side_order)
+check(mwin > 0 > mloss and abs(mloss + 1) < 0.5,
+      f"margin fn: Roman win {mwin:+.2f} > 0 > 9-of-10 built-up {mloss:+.2f} (loss tiebreak never flips the sign)")
+check(champion.plan_for(tp) is None, "no playbook yet: champion.plan_for = None (shipped policy plays)")
+
+sys.path.insert(0, os.path.join(ROOT, "ui"))
+import server
+server.LIVE = tempfile.mkdtemp()
+server.load_game(HERE)
+r = server.route_post("/api/ai_step", {})
+first = r["next"]
+n = 0
+while not r["done"] and n < 400:
+    r = server.route_post("/api/ai_step", {})
+    n += 1
+check(first and first["action"]["type"] == "deploy" and r["flow"]["phase"] == "deploy_rom",
+      f"server /api/ai_step: Judaean deployment stepped through the gate in {n} steps")
+r = server.route_post("/api/sg_ai_turn", {"side": "Jud"})
+check(r.get("error") == "it is not Jud's decision", "server refuses the AI for a seat not deciding")
+r = server.route_post("/api/sg_ai_turn", {})
+legal_n = sum(1 for e in r["steps"] if e["legal"])
+check(r["flow"]["phase"] == "rom_fire" and legal_n == len(r["steps"]) and server.SJ.s["turn"] == 1,
+      f"server /api/sg_ai_turn: Roman deployment {legal_n} legal / {len(r['steps'])} proposals, turn 1 opens")
+info = server.route_get("/api/state", {})
+check(info["game"]["tier"]["active"] == info["game"]["tier"]["earned"] == 3,
+      "Full rules mode includes the AI seat (server plumbing value 3 = max)")
+
 print("ALL PASS" if ok else "FAILURES ABOVE")
 sys.exit(0 if ok else 1)

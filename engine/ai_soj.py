@@ -16,7 +16,7 @@ DEFAULTS = {
     "jud_reserve_depth": 3.0,
     "jud_react": 2.0,
     "jud_react_size": 10.0,
-    "sortie": 0.0,
+    "sortie": 1.0,
 }
 
 HEAVY = ("RV1", "RL1", "RR1")
@@ -256,6 +256,8 @@ def _rom_deploy(g, theta):
         cands = _rom_deploy_hex(g, plan, roles, pid, taken)
         placed = False
         for h in cands[:80]:
+            if g._stack_check(h, "Rom", u):
+                continue
             a = {"type": "deploy", "pid": pid, "hex": _N(g, h)}
             role, arg = roles[pid]
             if role in ("ram", "tower"):
@@ -412,7 +414,7 @@ def _pending(g, side, theta):
         yield (by, {"type": "resolve_esc_up", "moves": {}}, "esc up none")
     elif k == "counterattack":
         cands = list(p.get("cands") or [])
-        if cands and _th(theta, "sortie") >= 0.0 and (
+        if cands and _th(theta, "sortie") >= 0.5 and (
                 yield (by, {"type": "resolve_counterattack", "attackers": cands}, "counterattack")):
             return
         yield (by, {"type": "resolve_counterattack", "decline": True}, "counterattack decline")
