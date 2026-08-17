@@ -22,8 +22,9 @@
  },
  "units": [
   {
-   "id": "F01",
-   "slot": "French 2nd Cav (2-5)",
+   "id": "101",
+   "slot": "NAW_5_2",
+   "name": "French 2nd Cav (2-5)",
    "img": "NAW_5_2.png",
    "side": "Fr",
    "contingent": "French",
@@ -41,8 +42,9 @@
    "module_piece_id": "29"
   },
   {
-   "id": "F02",
-   "slot": "French 6th Inf (7-4)",
+   "id": "102",
+   "slot": "NAW_5_4",
+   "name": "French 6th Inf (7-4)",
    "img": "NAW_5_4.png",
    "side": "Fr",
    "contingent": "French",
@@ -60,8 +62,9 @@
    "module_piece_id": "31"
   },
   {
-   "id": "F03",
-   "slot": "French I Art (3-3)",
+   "id": "103",
+   "slot": "NAW_4_2",
+   "name": "French I Art (3-3)",
    "img": "NAW_4_2.png",
    "side": "Fr",
    "contingent": "French",
@@ -79,8 +82,9 @@
    "module_piece_id": "23"
   },
   {
-   "id": "F04",
-   "slot": "French 12th Cav (2-5)",
+   "id": "104",
+   "slot": "NAW_1_4",
+   "name": "French 12th Cav (2-5)",
    "img": "NAW_1_4.png",
    "side": "Fr",
    "contingent": "French",
@@ -98,8 +102,9 @@
    "module_piece_id": "7"
   },
   {
-   "id": "F05",
-   "slot": "French 9th Inf (5-4)",
+   "id": "105",
+   "slot": "NAW_2_6",
+   "name": "French 9th Inf (5-4)",
    "img": "NAW_2_6.png",
    "side": "Fr",
    "contingent": "French",
@@ -117,8 +122,9 @@
    "module_piece_id": "19"
   },
   {
-   "id": "F06",
-   "slot": "French 11th Cav (2-5)",
+   "id": "106",
+   "slot": "NAW_2_1",
+   "name": "French 11th Cav (2-5)",
    "img": "NAW_2_1.png",
    "side": "Fr",
    "contingent": "French",
@@ -136,8 +142,9 @@
    "module_piece_id": "12"
   },
   {
-   "id": "F07",
-   "slot": "French Gd Hvy Cav (4-5)",
+   "id": "107",
+   "slot": "NAW_1_7",
+   "name": "French Gd Hvy Cav (4-5)",
    "img": "NAW_1_7.png",
    "side": "Fr",
    "contingent": "French",
@@ -155,8 +162,9 @@
    "module_piece_id": "10"
   },
   {
-   "id": "F08",
-   "slot": "French 5th Inf (4-4)",
+   "id": "108",
+   "slot": "NAW_1_3",
+   "name": "French 5th Inf (4-4)",
    "img": "NAW_1_3.png",
    "side": "Fr",
    "contingent": "French",
@@ -174,8 +182,9 @@
    "module_piece_id": "6"
   },
   {
-   "id": "F09",
-   "slot": "French 19th Inf (4-4)",
+   "id": "109",
+   "slot": "NAW_2_2",
+   "name": "French 19th Inf (4-4)",
    "img": "NAW_2_2.png",
    "side": "Fr",
    "contingent": "French",
@@ -193,8 +202,9 @@
    "module_piece_id": "14"
   },
   {
-   "id": "F10",
-   "slot": "French 20th Inf (2-4)",
+   "id": "110",
+   "slot": "NAW_5_3",
+   "name": "French 20th Inf (2-4)",
    "img": "NAW_5_3.png",
    "side": "Fr",
    "contingent": "French",
@@ -212,8 +222,9 @@
    "module_piece_id": "30"
   },
   {
-   "id": "F11",
-   "slot": "French Chs Gd (6-4)",
+   "id": "111",
+   "slot": "NAW_2_3",
+   "name": "French Chs Gd (6-4)",
    "img": "NAW_2_3.png",
    "side": "Fr",
    "contingent": "French",
@@ -231,8 +242,9 @@
    "module_piece_id": "15"
   },
   {
-   "id": "F12",
-   "slot": "French Gd Art (5-3)",
+   "id": "112",
+   "slot": "NAW_1_2",
+   "name": "French Gd Art (5-3)",
    "img": "NAW_1_2.png",
    "side": "Fr",
    "contingent": "French",
@@ -250,8 +262,9 @@
    "module_piece_id": "3"
   },
   {
-   "id": "F13",
-   "slot": "French 3rd Cav (1-5)",
+   "id": "113",
+   "slot": "NAW_2_7",
+   "name": "French 3rd Cav (1-5)",
    "img": "NAW_2_7.png",
    "side": "Fr",
    "contingent": "French",
@@ -269,8 +282,9 @@
    "module_piece_id": "20"
   },
   {
-   "id": "F14",
-   "slot": "French VI Art (2-3)",
+   "id": "114",
+   "slot": "NAW_1_6",
+   "name": "French VI Art (2-3)",
    "img": "NAW_1_6.png",
    "side": "Fr",
    "contingent": "French",
@@ -288,8 +302,9 @@
    "module_piece_id": "9"
   },
   {
-   "id": "F15",
-   "slot": "French Yg Gd (5-4)",
+   "id": "115",
+   "slot": "NAW_1_5",
+   "name": "French Yg Gd (5-4)",
    "img": "NAW_1_5.png",
    "side": "Fr",
    "contingent": "French",
@@ -307,8 +322,9 @@
    "module_piece_id": "8"
   },
   {
-   "id": "F16",
-   "slot": "French Grn Gd (7-4)",
+   "id": "116",
+   "slot": "NAW_2_4",
+   "name": "French Grn Gd (7-4)",
    "img": "NAW_2_4.png",
    "side": "Fr",
    "contingent": "French",
@@ -326,8 +342,9 @@
    "module_piece_id": "17"
   },
   {
-   "id": "F17",
-   "slot": "French II Art (3-3)",
+   "id": "117",
+   "slot": "NAW_5_5",
+   "name": "French II Art (3-3)",
    "img": "NAW_5_5.png",
    "side": "Fr",
    "contingent": "French",
@@ -345,8 +362,9 @@
    "module_piece_id": "32"
   },
   {
-   "id": "F18",
-   "slot": "French 1st Inf (4-4)",
+   "id": "118",
+   "slot": "NAW_5_1",
+   "name": "French 1st Inf (4-4)",
    "img": "NAW_5_1.png",
    "side": "Fr",
    "contingent": "French",
@@ -364,8 +382,9 @@
    "module_piece_id": "28"
   },
   {
-   "id": "F19",
-   "slot": "French 5th Cav (1-5)",
+   "id": "119",
+   "slot": "NAW_4_4",
+   "name": "French 5th Cav (1-5)",
    "img": "NAW_4_4.png",
    "side": "Fr",
    "contingent": "French",
@@ -383,8 +402,9 @@
    "module_piece_id": "25"
   },
   {
-   "id": "F20",
-   "slot": "French 2nd Inf (5-4)",
+   "id": "120",
+   "slot": "NAW_4_1",
+   "name": "French 2nd Inf (5-4)",
    "img": "NAW_4_1.png",
    "side": "Fr",
    "contingent": "French",
@@ -402,8 +422,9 @@
    "module_piece_id": "22"
   },
   {
-   "id": "F21",
-   "slot": "French 3rd Inf (4-4)",
+   "id": "121",
+   "slot": "NAW_4_5",
+   "name": "French 3rd Inf (4-4)",
    "img": "NAW_4_5.png",
    "side": "Fr",
    "contingent": "French",
@@ -421,8 +442,9 @@
    "module_piece_id": "26"
   },
   {
-   "id": "F22",
-   "slot": "French 13th Cav (1-5)",
+   "id": "122",
+   "slot": "NAW_2_5",
+   "name": "French 13th Cav (1-5)",
    "img": "NAW_2_5.png",
    "side": "Fr",
    "contingent": "French",
@@ -440,8 +462,9 @@
    "module_piece_id": "18"
   },
   {
-   "id": "F23",
-   "slot": "French 4th Inf (4-4)",
+   "id": "123",
+   "slot": "NAW_2_8",
+   "name": "French 4th Inf (4-4)",
    "img": "NAW_2_8.png",
    "side": "Fr",
    "contingent": "French",
@@ -459,8 +482,9 @@
    "module_piece_id": "21"
   },
   {
-   "id": "F24",
-   "slot": "French 14th Cav (1-5)",
+   "id": "124",
+   "slot": "NAW_4_6",
+   "name": "French 14th Cav (1-5)",
    "img": "NAW_4_6.png",
    "side": "Fr",
    "contingent": "French",
@@ -478,8 +502,9 @@
    "module_piece_id": "27"
   },
   {
-   "id": "F25",
-   "slot": "French Gd Lite Cav (3-6)",
+   "id": "125",
+   "slot": "NAW_1_8",
+   "name": "French Gd Lite Cav (3-6)",
    "img": "NAW_1_8.png",
    "side": "Fr",
    "contingent": "French",
@@ -497,8 +522,9 @@
    "module_piece_id": "11"
   },
   {
-   "id": "F26",
-   "slot": "French 1st Cav (2-5)",
+   "id": "126",
+   "slot": "NAW_4_3",
+   "name": "French 1st Cav (2-5)",
    "img": "NAW_4_3.png",
    "side": "Fr",
    "contingent": "French",
@@ -516,8 +542,9 @@
    "module_piece_id": "24"
   },
   {
-   "id": "A01",
-   "slot": "British 3DB Inf (4-4)",
+   "id": "201",
+   "slot": "NAW_1_17",
+   "name": "British 3DB Inf (4-4)",
    "img": "NAW_1_17.png",
    "side": "Al",
    "contingent": "British",
@@ -535,8 +562,9 @@
    "module_piece_id": "44"
   },
   {
-   "id": "A02",
-   "slot": "British 4th Inf (6-4)",
+   "id": "202",
+   "slot": "NAW_2_13",
+   "name": "British 4th Inf (6-4)",
    "img": "NAW_2_13.png",
    "side": "Al",
    "contingent": "British",
@@ -554,8 +582,9 @@
    "module_piece_id": "48"
   },
   {
-   "id": "A03",
-   "slot": "British Cav (3-5)",
+   "id": "203",
+   "slot": "NAW_2_16",
+   "name": "British Cav (3-5)",
    "img": "NAW_2_16.png",
    "side": "Al",
    "contingent": "British",
@@ -573,8 +602,9 @@
    "module_piece_id": "51"
   },
   {
-   "id": "A04",
-   "slot": "British Bru Inf (2-4)",
+   "id": "204",
+   "slot": "NAW_1_11",
+   "name": "British Bru Inf (2-4)",
    "img": "NAW_1_11.png",
    "side": "Al",
    "contingent": "British",
@@ -592,8 +622,9 @@
    "module_piece_id": "38"
   },
   {
-   "id": "A05",
-   "slot": "British 2nd Inf (6-4)",
+   "id": "205",
+   "slot": "NAW_1_14",
+   "name": "British 2nd Inf (6-4)",
    "img": "NAW_1_14.png",
    "side": "Al",
    "contingent": "British",
@@ -611,8 +642,9 @@
    "module_piece_id": "41"
   },
   {
-   "id": "A06",
-   "slot": "British Infantry (1-4)",
+   "id": "206",
+   "slot": "NAW_4_10",
+   "name": "British Infantry (1-4)",
    "img": "NAW_4_10.png",
    "side": "Al",
    "contingent": "British",
@@ -630,8 +662,9 @@
    "module_piece_id": "53"
   },
   {
-   "id": "A07",
-   "slot": "British 1Gd Inf (7-4)",
+   "id": "207",
+   "slot": "NAW_5_10",
+   "name": "British 1Gd Inf (7-4)",
    "img": "NAW_5_10.png",
    "side": "Al",
    "contingent": "British",
@@ -649,8 +682,9 @@
    "module_piece_id": "54"
   },
   {
-   "id": "A08",
-   "slot": "British 1Gd Cav (4-5)",
+   "id": "208",
+   "slot": "NAW_1_13",
+   "name": "British 1Gd Cav (4-5)",
    "img": "NAW_1_13.png",
    "side": "Al",
    "contingent": "British",
@@ -668,8 +702,9 @@
    "module_piece_id": "40"
   },
   {
-   "id": "A09",
-   "slot": "British II Art (2-3)",
+   "id": "209",
+   "slot": "NAW_2_17",
+   "name": "British II Art (2-3)",
    "img": "NAW_2_17.png",
    "side": "Al",
    "contingent": "British",
@@ -687,8 +722,9 @@
    "module_piece_id": "52"
   },
   {
-   "id": "A10",
-   "slot": "British DB Cav (1-5)",
+   "id": "210",
+   "slot": "NAW_2_10",
+   "name": "British DB Cav (1-5)",
    "img": "NAW_2_10.png",
    "side": "Al",
    "contingent": "British",
@@ -706,8 +742,9 @@
    "module_piece_id": "45"
   },
   {
-   "id": "A11",
-   "slot": "British 3rd Inf (6-4)",
+   "id": "211",
+   "slot": "NAW_2_12",
+   "name": "British 3rd Inf (6-4)",
    "img": "NAW_2_12.png",
    "side": "Al",
    "contingent": "British",
@@ -725,8 +762,9 @@
    "module_piece_id": "47"
   },
   {
-   "id": "A12",
-   "slot": "British R Art (3-3)",
+   "id": "212",
+   "slot": "NAW_1_10",
+   "name": "British R Art (3-3)",
    "img": "NAW_1_10.png",
    "side": "Al",
    "contingent": "British",
@@ -744,8 +782,9 @@
    "module_piece_id": "37"
   },
   {
-   "id": "A13",
-   "slot": "British Cavalry (4-5)",
+   "id": "213",
+   "slot": "NAW_1_15",
+   "name": "British Cavalry (4-5)",
    "img": "NAW_1_15.png",
    "side": "Al",
    "contingent": "British",
@@ -763,8 +802,9 @@
    "module_piece_id": "42"
   },
   {
-   "id": "A14",
-   "slot": "British I Art (3-3)",
+   "id": "214",
+   "slot": "NAW_1_16",
+   "name": "British I Art (3-3)",
    "img": "NAW_1_16.png",
    "side": "Al",
    "contingent": "British",
@@ -782,8 +822,9 @@
    "module_piece_id": "43"
   },
   {
-   "id": "A15",
-   "slot": "British 6th Inf (6-4)",
+   "id": "215",
+   "slot": "NAW_2_14",
+   "name": "British 6th Inf (6-4)",
    "img": "NAW_2_14.png",
    "side": "Al",
    "contingent": "British",
@@ -801,8 +842,9 @@
    "module_piece_id": "49"
   },
   {
-   "id": "A16",
-   "slot": "British 2DB Inf (5-4)",
+   "id": "216",
+   "slot": "NAW_2_11",
+   "name": "British 2DB Inf (5-4)",
    "img": "NAW_2_11.png",
    "side": "Al",
    "contingent": "British",
@@ -820,8 +862,9 @@
    "module_piece_id": "46"
   },
   {
-   "id": "A17",
-   "slot": "British Cavalry (3-5)",
+   "id": "217",
+   "slot": "NAW_1_12",
+   "name": "British Cavalry (3-5)",
    "img": "NAW_1_12.png",
    "side": "Al",
    "contingent": "British",
@@ -839,8 +882,9 @@
    "module_piece_id": "39"
   },
   {
-   "id": "A18",
-   "slot": "British 5th Inf (7-4)",
+   "id": "218",
+   "slot": "NAW_2_15",
+   "name": "British 5th Inf (7-4)",
    "img": "NAW_2_15.png",
    "side": "Al",
    "contingent": "British",
@@ -860,8 +904,9 @@
  ],
  "reserve": [
   {
-   "id": "P01",
-   "slot": "Prussian II Inf (5-4)",
+   "id": "301",
+   "slot": "NAW_4_15",
+   "name": "Prussian II Inf (5-4)",
    "img": "NAW_4_15.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -874,11 +919,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "60"
+   "module_piece_id": "60",
+   "stage_px": [
+    6485,
+    1760
+   ]
   },
   {
-   "id": "P02",
-   "slot": "Prussian IV Inf (4-4)",
+   "id": "302",
+   "slot": "NAW_4_12",
+   "name": "Prussian IV Inf (4-4)",
    "img": "NAW_4_12.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -891,11 +941,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "56"
+   "module_piece_id": "56",
+   "stage_px": [
+    6492,
+    1974
+   ]
   },
   {
-   "id": "P03",
-   "slot": "Prussian IV Inf (4-4)",
+   "id": "303",
+   "slot": "NAW_4_12",
+   "name": "Prussian IV Inf (4-4)",
    "img": "NAW_4_12.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -908,11 +963,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "57"
+   "module_piece_id": "57",
+   "stage_px": [
+    6492,
+    2185
+   ]
   },
   {
-   "id": "P04",
-   "slot": "Prussian IV Inf (4-4)",
+   "id": "304",
+   "slot": "NAW_4_12",
+   "name": "Prussian IV Inf (4-4)",
    "img": "NAW_4_12.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -925,11 +985,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "58"
+   "module_piece_id": "58",
+   "stage_px": [
+    6492,
+    2399
+   ]
   },
   {
-   "id": "P05",
-   "slot": "Prussian IV Inf (4-4)",
+   "id": "305",
+   "slot": "NAW_4_12",
+   "name": "Prussian IV Inf (4-4)",
    "img": "NAW_4_12.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -942,11 +1007,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "59"
+   "module_piece_id": "59",
+   "stage_px": [
+    6489,
+    2607
+   ]
   },
   {
-   "id": "P06",
-   "slot": "Prussian II Cav (3-5)",
+   "id": "306",
+   "slot": "NAW_5_14",
+   "name": "Prussian II Cav (3-5)",
    "img": "NAW_5_14.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -959,11 +1029,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "62"
+   "module_piece_id": "62",
+   "stage_px": [
+    6489,
+    2817
+   ]
   },
   {
-   "id": "P07",
-   "slot": "Prussian IV Cav (3-5)",
+   "id": "307",
+   "slot": "NAW_5_15",
+   "name": "Prussian IV Cav (3-5)",
    "img": "NAW_5_15.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -976,11 +1051,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "65"
+   "module_piece_id": "65",
+   "stage_px": [
+    6485,
+    3028
+   ]
   },
   {
-   "id": "P08",
-   "slot": "Prussian II Art (4-3)",
+   "id": "308",
+   "slot": "NAW_4_14",
+   "name": "Prussian II Art (4-3)",
    "img": "NAW_4_14.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -993,11 +1073,16 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "61"
+   "module_piece_id": "61",
+   "stage_px": [
+    6496,
+    3242
+   ]
   },
   {
-   "id": "P09",
-   "slot": "Prussian IV Art (3-3)",
+   "id": "309",
+   "slot": "NAW_4_11",
+   "name": "Prussian IV Art (3-3)",
    "img": "NAW_4_11.png",
    "side": "Al",
    "contingent": "Prussian",
@@ -1010,7 +1095,11 @@
    },
    "due": 2,
    "arrival": "east_edge",
-   "module_piece_id": "55"
+   "module_piece_id": "55",
+   "stage_px": [
+    6492,
+    3453
+   ]
   }
  ],
  "reinforcement": {
@@ -1028,16 +1117,34 @@
  },
  "oob_cite": "ingest/oob_2nd_ed.json - three independent witnesses (printed map unit pictures, printed counter photograph, Oliver module + Beginning Setup.vsav), 44/44 at-start hexes, factors, sides and types agree; nine Prussians in printed Time Record order; French 89 CS, Allied 73 CS + Prussian 34 CS",
  "rules_scope": {
-  "status": "DATA LAYER ONLY (bite 1). Nothing is enforced yet; the gate class lands in bites 2-7 of DECODE_PLAN.md and every cell of COVERAGE_MATRIX.md must be ENFORCED or UNREACHABLE-with-evidence before this scenario is playable.",
-  "enforced": [],
+  "status": "ENCODING IN PROGRESS - bite 2 of 7 (movement + ZOC + exit) enforced by engine/naw.py; combat, reinforcement, victory and demoralization land in bites 3-7. Not playable until every COVERAGE_MATRIX.md cell is ENFORCED or UNREACHABLE-with-evidence.",
+  "enforced": [
+   "Turn structure: 10 Game-Turns 1 pm-10 pm, French Player-Turn then Allied, each Movement Phase then Combat Phase; no enemy action in the friendly Player-Turn [SEQ-01..SEQ-08]",
+   "Movement: one Movement Point per hex entered, never more than the printed Movement Allowance, consecutive hexes only, none/some/all units, no pooling or carry-over [MOV-01/02/05/06/14/15/20, PCS-03]",
+   "Through friendly units yes, through or into enemy units never; a unit may not end its move stacked with any unit [MOV-07/MOV-08/MOV-09 - reading B, one unit per hex at all times, ruling NAW2-OR-2 pending]",
+   "Once moved, a unit may not be moved again that Player-Turn [MOV-19 first clause]",
+   "Woods: entry prohibited; Woods/Road hexes entered and left only across their road hexsides (terrain.json sides) [MOV-16/MOV-17/MOV-18, TEC row 3]",
+   "Zones of Control: every unit controls its six adjacent hexes at all times, including Woods hexes no unit can enter; a unit entering an enemy-controlled hex must stop; it may not move through one nor leave one by movement; a unit beginning its Movement Phase in an enemy ZOC may not move at all; friendly ZOC never inhibits [ZOC-01..ZOC-08, MOV-10/11/12/13]",
+   "Exit: French units only, from the eleven arrowed North-edge hexes 0101-1101, during the own Movement Phase, one Movement Point, exit hex reachable and free of enemy ZOC; exited units never return and are not French losses; Allied units never exit [VIC-08/09/10/11/12, VIC-06, REI-07]"
+  ],
+  "not_yet_enforced": [
+   "Combat Phase: odds, CRT, terrain doubling, mandatory attacks, artillery bombardment, results, retreat/disruption/advance (bites 3-5)",
+   "Prussian reinforcement entry at the start of the Allied Player-Turn of Game-Turn 2 (bite 6)",
+   "Victory: forty-point ledgers, seven French exits, immediate check, Allied demoralization (bite 6) - the game currently ends in a draw after Game-Turn 10"
+  ],
   "rulings": [
    "NAW2-D4 (Bruce 2026-08-14): a defender in a Town OR a Woods/Road hex doubles; attacking from such terrain confers nothing",
-   "NAW2-SD-1: 'extends one Movement Point' is enforced as 'expends' (proven outcome-equivalence)"
+   "NAW2-SD-1: 'extends one Movement Point' is enforced as 'expends' (proven outcome-equivalence)",
+   "MOV-09 stacking is enforced under reading B (no hex ever holds two units - a unit may not end its own move on a friendly unit); reading A (may end stacked, must un-stack by phase end) is a one-line switch - NAW2-OR-2 for Bruce",
+   "Exit hex 1101 (Woods/Road, road N-S, printed exit arrow inside the hex): enterable only from 1102 along the road, exit crosses the north road hexside - enforced as legal, NAW2-OR-18 for Bruce's confirmation",
+   "Woods/Road hex 1014 (Hougoumont) is a genuine printed cul-de-sac: the road enters from the NW and ends inside the hex - verified on Oliver's map scan 2026-08-17 (N2 closed)"
   ],
   "open_for_bruce": [
    "NAW2-SD-3: may a DISRUPTED unit be pushed into a Woods/Road hex?",
-   "C.7: are the mandatory-attack obligations (CBT-06/07/10) fixed at Combat Phase start or re-evaluated as results apply?",
-   "M.13 / MOV-19: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy"
+   "C.7 / NAW2-OR-6: are the mandatory-attack obligations (CBT-06/07/10) fixed at Combat Phase start or re-evaluated as results apply?",
+   "M.13 / MOV-19 / NAW2-OR-3: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy",
+   "NAW2-OR-2: MOV-09 stacking reading A vs B (enforced B meanwhile)",
+   "NAW2-OR-18: exit through Woods/Road hex 1101 (enforced legal meanwhile - the arrow is printed in the hex)"
   ]
  }
 }

@@ -131,15 +131,15 @@ check(all(u["side"] == "Al" and u["contingent"] == "Prussian" and u["due"] == 2 
       and scen["reinforcement"]["turn"] == 2 and scen["reinforcement"]["entry_cost_mp"] == 1 and scen["reinforcement"]["delay_legal"] is False,
       "Prussians: Allied side, due turn 2, east edge, 1 MP to place, not delayable (REI-01..07)")
 mods = {m["piece_id"]: m for m in mod["at_start"] + mod["off_field_staged"]}
-check(all(mods[u["module_piece_id"]]["image"] == u["img"] and mods[u["module_piece_id"]]["module_name"] == u["slot"] for u in units + res),
-      "every unit's img/slot is the module piece PREP-4 matched to it")
+check(all(mods[u["module_piece_id"]]["image"] == u["img"] and mods[u["module_piece_id"]]["module_name"] == u["name"] and u["slot"] + ".png" == u["img"] for u in units + res),
+      "every unit's img/name is the module piece PREP-4 matched to it; slot = image basename (board-layer convention)")
 check(all(u["contingent"] in ("French", "British", "Prussian") for u in units + res)
       and sum(u["contingent"] == "British" for u in units) == 18 and sum(u["contingent"] == "French" for u in units) == 26,
       "contingents: 26 French, 18 British at start, 9 Prussian arrivals")
 
-check(all(G.side(u["slot"]) == u["side"] for u in units + res), "sides.detect_tokens resolves every module piece name to its side")
+check(all(G.side(u["slot"]) == u["side"] for u in units + res), "sides.detect_tokens resolves every counter image name to its side")
 check(all(G.stats(u["slot"]) == (u["stats"]["att"], u["stats"]["def"], u["stats"]["ma"]) for u in units + res),
-      "stats.patterns resolve every module piece name to its printed factors")
+      "stats.patterns resolve every counter image name to its printed factors (longest fragment first: NAW_1_10 before NAW_1_1)")
 cls = spec["classes"]
 check(all(u["slot"] in cls[u["cls"]] for u in units + res) and set(cls["prussian"]) == {u["slot"] for u in res}
       and sum(len(cls[c]) for c in ("infantry", "cavalry", "artillery")) == len({u["slot"] for u in units + res}),

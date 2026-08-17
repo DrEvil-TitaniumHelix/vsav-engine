@@ -3,14 +3,14 @@
  "read_on": "2026-08-14",
  "edition": "SPI Napoleon at Waterloo, SECOND EDITION, copyright 1971",
  "scenario": "the whole edition - one printed game, ten Game-Turns (1 pm .. 10 pm), one at-start setup, one reinforcement event",
- "what_this_is": "The coverage matrix defined by PLATFORM_SPEC #13 as amended 2026-08-09: the matrix IS the playability rating. A scenario is playable exactly when every cell is ENFORCED or UNREACHABLE-with-evidence. There is no third acceptable state; an OPEN cell is a named defect that blocks playability, and nothing may be left to a human umpire. This is the SKELETON: nothing is encoded yet, so every cell that is not evidenced-unreachable starts OPEN. Its job is to enumerate exhaustively what must be closed.",
+ "what_this_is": "The coverage matrix defined by PLATFORM_SPEC #13 as amended 2026-08-09: the matrix IS the playability rating. A scenario is playable exactly when every cell is ENFORCED or UNREACHABLE-with-evidence. There is no third acceptable state; an OPEN cell is a named defect that blocks playability, and nothing may be left to a human umpire. Cells move to ENFORCED only with a code location and a validator line; the ENFORCED overlay in this script is the record.",
  "status_values": {
   "ENFORCED": "the gate checks it - must carry the code location and the validator that proves it against a printed table or worked example",
   "UNREACHABLE": "cannot arise in this scenario - must carry the evidence",
   "OPEN": "reachable and not (fully) enforced - the default, and a blocker"
  },
  "discipline": [
-  "nothing is marked ENFORCED: no engine code exists for this game yet",
+  "ENFORCED cells carry the code location and the validator line that proves them (ENFORCED overlay in naw_coverage_matrix.py); the overlay grows one bite at a time",
   "an UNREACHABLE claim with no evidence is exactly the silent gap this standard exists to prevent, so unreachability is claimed only from printed rules that close their own state space or from enumerated printed components",
   "where enforceability is uncertain the cell says so rather than choosing the optimistic answer - an over-optimistic call becomes a silent incorrectness, the worst failure class in this project"
  ],
@@ -40,11 +40,12 @@
      ],
      "obligation": "MUST",
      "requirement": "at-start placement is read off the printed map art: a setup is legal iff every printed position holds a unit of the printed strength AND type; historical designation is free",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/oob_2nd_ed.json (44 at-start units, hex/side/factors/type, three independent witnesses, module_factor_disagreements = 0)"
      ],
-     "note": "the data exists and is triple-witnessed; what is missing is the encoding and a validator asserting all 44 printed positions"
+     "note": "the data exists and is triple-witnessed; what is missing is the encoding and a validator asserting all 44 printed positions",
+     "evidence": "scenario_2nd_ed.json units (44) built by build_data.py from oob_2nd_ed.json; engine/naw.py new_game || games/napoleon-at-waterloo/validate_data.py: at-start roster (hex, side, CS, MA, type, designation) == oob 44/44; no two units share a hex; strengths 89/73/34"
     },
     {
      "id": "S.2",
@@ -54,10 +55,11 @@
      ],
      "obligation": "DEFINES",
      "requirement": "side is decided by the printed Front Line: North of it Allied, South of it French; French = blue, Allied = red (British) + green (Prussian)",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/oob_2nd_ed.json side field, 44/44 agreement with the module save"
-     ]
+     ],
+     "evidence": "scenario units carry side Fr/Al; game.json sides.detect_tokens || games/napoleon-at-waterloo/validate_data.py: every counter image resolves to its printed side; 26 French / 18 British at start"
     },
     {
      "id": "S.3",
@@ -70,7 +72,8 @@
      "status": "OPEN",
      "difficulty": "AMBIGUOUS AS PRINTED. Off-map staging vs literal on-map East-edge placement. The literal reading contradicts REI-01 (Prussians ENTER at the start of the Allied player-turn of Game-Turn 2) and would put nine units on the map from Game-Turn 1. Not enforceable until a ruling picks a reading.",
      "open_ruling": "NAW2-OR-1",
-     "source": "rules_2nd_ed.json unenforceable_as_written (SET-02); printed_defect_candidates kind=ambiguity"
+     "source": "rules_2nd_ed.json unenforceable_as_written (SET-02); printed_defect_candidates kind=ambiguity",
+     "note": "the engine stages the Prussians OFF-MAP (reserve pool, due Game-Turn 2) - the reading consistent with REI-01; NAW2-OR-1 stays open"
     },
     {
      "id": "S.4",
@@ -165,10 +168,11 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "exactly ten Game-Turns (1 pm .. 10 pm); step 5 of each turn advances the Time Record; the game ends on a victory condition or at the end of Game-Turn 10, whichever comes first",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/timerecord_oob.json time_record: 10 slots, read individually"
-     ]
+     ],
+     "evidence": "engine/naw.py _end_player_turn/_game_end: 10 Game-Turns then over (victory-halt = T.6, bite 6) || games/napoleon-at-waterloo/validate_movement.py: ten Game-Turns then the game ends; no action after"
     },
     {
      "id": "T.2",
@@ -179,7 +183,8 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "Game-Turn = French Player-Turn then Allied Player-Turn; each Player-Turn = Movement Phase then Combat Phase; the printed five-step order",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py propose/end_movement/end_phase: French then Allied, Movement then Combat || games/napoleon-at-waterloo/validate_movement.py: turn structure block"
     },
     {
      "id": "T.3",
@@ -199,7 +204,7 @@
      "obligation": "MUST NOT",
      "requirement": "no movement during a Combat Phase except as directed by the CRT: the only position changes are retreat, disruption displacement and advance",
      "status": "OPEN",
-     "note": "the advance (X.15) is OPTIONAL, not directed. Whether an optional advance falls inside SEQ-07's 'except as directed by the Combat Resolution Table' carve-out is the hinge of N7"
+     "note": "the advance (X.15) is OPTIONAL, not directed. Whether an optional advance falls inside SEQ-07's 'except as directed by the Combat Resolution Table' carve-out is the hinge of N7 || movement refusal in the Combat Phase is enforced (validate_movement: movement refused in the Combat Phase [SEQ-07]); the retreat/disruption/advance half lands with bite 5"
     },
     {
      "id": "T.5",
@@ -211,7 +216,7 @@
      "obligation": "MUST NOT",
      "requirement": "no non-phasing action of any kind: no enemy movement during friendly movement, no reaction, no defensive fire, no defensive use of artillery range",
      "status": "OPEN",
-     "note": "this is the rule the advance-after-Ar case collides with - see N7"
+     "note": "this is the rule the advance-after-Ar case collides with - see N7 || non-phasing movement is refused (validate_movement: Allied move during the French Player-Turn refused [SEQ-08]); the combat-side clauses land with bites 3-5"
     },
     {
      "id": "T.6",
@@ -239,7 +244,8 @@
      ],
      "obligation": "MAY",
      "requirement": "movement is never compulsory and never directionally constrained; a player may move none, some or all of his units",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py: no obligation to move; end_movement legal with unmoved units || games/napoleon-at-waterloo/validate_movement.py: random walk ends phases with unmoved units; end_movement always legal"
     },
     {
      "id": "M.2",
@@ -252,8 +258,9 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "flat 1 MP per hex entered in every terrain; hexes entered this Player-Turn <= printed Movement Allowance; unspent points are lost; no pooling between units, no carry-over between turns",
-     "status": "OPEN",
-     "note": "the TEC agrees: every enterable terrain costs exactly one MP per hex, and the road itself costs nothing and grants nothing (combat_charts O6). An engine that builds its movement predicate from the TEC alone will miss MOV-17"
+     "status": "ENFORCED",
+     "note": "the TEC agrees: every enterable terrain costs exactly one MP per hex, and the road itself costs nothing and grants nothing (combat_charts O6). An engine that builds its movement predicate from the TEC alone will miss MOV-17",
+     "evidence": "engine/naw.py dests(): 1 MP per hex (gamespec.move_cost, TEC costs), MA cap, per-Player-Turn reset || games/napoleon-at-waterloo/validate_movement.py: open field costs == hex distance, none beyond MA; gate == independent hexgraph oracle on >1500 positions"
     },
     {
      "id": "M.3",
@@ -262,7 +269,8 @@
      ],
      "obligation": "MUST",
      "requirement": "a move is a path of consecutively adjacent hexes; no hex may be skipped",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py dests(): Dijkstra over adjacent hexes only || games/napoleon-at-waterloo/validate_movement.py: oracle BFS agreement"
     },
     {
      "id": "M.4",
@@ -271,7 +279,8 @@
      ],
      "obligation": "MAY",
      "requirement": "friendly-occupied hexes may be moved THROUGH",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py dests(): friendly hexes traversable || games/napoleon-at-waterloo/validate_movement.py: moves THROUGH the friendly hex"
     },
     {
      "id": "M.5",
@@ -280,7 +289,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "enemy-occupied hexes may be neither entered nor passed through",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py dests(): enemy hexes never entered or traversed || games/napoleon-at-waterloo/validate_movement.py: enemy-occupied hex never entered"
     },
     {
      "id": "M.6",
@@ -290,9 +300,10 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "one unit per hex",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "difficulty": "TWO PRINTED SENTENCES, TWO SCOPES. Sentence 1 bars finishing the MOVEMENT PHASE stacked; sentence 2 says 'Players may NOT place more than one unit in a given hex' with no time qualifier. Under reading A a unit may end its own move stacked with a friend and be moved off later in the same phase; under reading B it may not. MOV-07 grants pass-through, which reading B makes the only legal co-occupancy. Different legal move sets. Not on any prior list - see N1",
-     "open_ruling": "NAW2-OR-2"
+     "open_ruling": "NAW2-OR-2",
+     "evidence": "engine/naw.py dests(): friendly-occupied destinations excluded (reading B - one unit per hex at all times); NAW2-OR-2 stays open, reading A is a one-line switch || games/napoleon-at-waterloo/validate_movement.py: may not end the move on a friendly unit; gate refuses with MOV-09"
     },
     {
      "id": "M.7",
@@ -302,7 +313,8 @@
      ],
      "obligation": "MUST",
      "requirement": "a unit entering any hex in an enemy Zone of Control MUST STOP there; entering is legal, continuing is not",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py dests(): a hex in enemy ZOC is a terminal destination || games/napoleon-at-waterloo/validate_movement.py: may move INTO the enemy ZOC / must STOP on entering it"
     },
     {
      "id": "M.8",
@@ -312,7 +324,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "no unit may travel THROUGH an enemy-controlled hex",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py dests(): no expansion from an EZOC hex || games/napoleon-at-waterloo/validate_movement.py: hexes beyond the ZOC ring unreachable through it"
     },
     {
      "id": "M.9",
@@ -324,7 +337,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "a unit in an enemy-controlled hex may not leave it by movement; the lock releases on exactly three events - the exerting enemy destroyed, the exerting enemy retreated, or the unit itself forced to retreat by combat",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py in_ezoc(): a unit in enemy ZOC has no destinations; the lock is a live read of enemy positions so it releases exactly when the exerting enemy is gone (combat removal = bite 5) || games/napoleon-at-waterloo/validate_movement.py: unit adjacent to an enemy may not move at all"
     },
     {
      "id": "M.10",
@@ -333,8 +347,9 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "a unit that BEGINS its Movement Phase in an enemy ZOC may not move at all that phase",
-     "status": "OPEN",
-     "note": "phase-start snapshot, not a live read. A unit that becomes ZOC-free mid-phase (impossible by movement alone, since only the phasing player moves) is still frozen; a unit whose enemy died in the previous combat phase is free"
+     "status": "ENFORCED",
+     "note": "phase-start snapshot, not a live read. A unit that becomes ZOC-free mid-phase (impossible by movement alone, since only the phasing player moves) is still frozen; a unit whose enemy died in the previous combat phase is free",
+     "evidence": "engine/naw.py in_ezoc() at proposal time (only the phasing player moves, so live == phase-start) || games/napoleon-at-waterloo/validate_movement.py: MOV-13 refusal with citation"
     },
     {
      "id": "M.11",
@@ -345,10 +360,11 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "Woods entry is PROHIBITED; the only Woods hexes any unit may enter are those traversed by a Road",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/hexgraph_2nd_ed.json: 56 woods, 5 woods_road"
-     ]
+     ],
+     "evidence": "terrain.json woods = 99 MP (never affordable) + gate reads terrain; MOV-18 || games/napoleon-at-waterloo/validate_movement.py: no Woods hex is ever a destination"
     },
     {
      "id": "M.12",
@@ -357,11 +373,12 @@
      ],
      "obligation": "MUST",
      "requirement": "a Woods/Road hex must be ENTERED and EXITED along the road: both hexsides used must be road hexsides",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/hexgraph_2nd_ed.json road_sides on the 5 woods_road hexes: 1014 [NW], 1101 [N,S], 1603 [NE,SW], 1701 [NE,S], 1702 [N,SW]"
      ],
-     "difficulty": "DATA VERIFICATION REQUIRED BEFORE ENCODING. Hex 1014 carries exactly ONE road hexside, which makes it a cul-de-sac under MOV-17: the only legal exit is back through the entry side. Either the printed road genuinely dead-ends there or the road_sides extraction is incomplete for that hex. Must be re-read off the print before this cell can close - see N2"
+     "difficulty": "DATA VERIFICATION REQUIRED BEFORE ENCODING. Hex 1014 carries exactly ONE road hexside, which makes it a cul-de-sac under MOV-17: the only legal exit is back through the entry side. Either the printed road genuinely dead-ends there or the road_sides extraction is incomplete for that hex. Must be re-read off the print before this cell can close - see N2",
+     "evidence": "terrain.json sides: road / woods_edge on the 5 Woods/Road hexes; gamespec.move_cost prohibit; N2 CLOSED 2026-08-17 - hex 1014 is a genuine printed cul-de-sac (road ends at Hougoumont), verified on Oliver's map scan || games/napoleon-at-waterloo/validate_movement.py: 1014 only via 0913; 1503-1603-1702-1701-1801 = 1,2,3,4 MP; 1101 only from 1102"
     },
     {
      "id": "M.13",
@@ -374,7 +391,8 @@
      "status": "OPEN",
      "difficulty": "PLATFORM-LEVEL QUESTION, NOT A GAME-LEVEL ONE. The trigger is physical (a hand leaving a piece) and the escape is social (opponent's consent); no gate can evaluate either from game state. Its subject matter is exactly what the platform's UNDO feature does - an undo IS 'changing a move'. That makes MOV-19 a question about the ENGINE's shipped feature set across ALL games, not a NAW encoding detail: either UNDO is a platform affordance that stands outside the printed rules (and is declared as such), or it is gated on an opponent-consent step. Bruce's call. Escalate before Fable touches undo semantics anywhere",
      "open_ruling": "NAW2-OR-3",
-     "source": "rules_2nd_ed.json unenforceable_as_written (MOV-19); the row is absent from RULEBOOK_VERIFIED entirely"
+     "source": "rules_2nd_ed.json unenforceable_as_written (MOV-19); the row is absent from RULEBOOK_VERIFIED entirely",
+     "note": "the first clause IS enforced: once moved, a unit may not be moved again that Player-Turn (validate_movement: MOV-19 refusal); the consent-to-change clause remains the platform UNDO question"
     },
     {
      "id": "M.14",
@@ -384,8 +402,9 @@
      ],
      "obligation": "MAY",
      "requirement": "there is NO one-mover-at-a-time finality rule in this edition beyond MOV-19",
-     "status": "OPEN",
-     "note": "recorded as an explicit ABSENCE so no one imports Siege of Jerusalem's 8.2 by habit. Units may be moved in any order and a player may interleave partial moves, subject only to MOV-19 and to M.6's unresolved reading. If M.6 resolves to reading B, interleaving is constrained by stacking rather than by any movement-finality rule"
+     "status": "ENFORCED",
+     "note": "recorded as an explicit ABSENCE so no one imports Siege of Jerusalem's 8.2 by habit. Units may be moved in any order and a player may interleave partial moves, subject only to MOV-19 and to M.6's unresolved reading. If M.6 resolves to reading B, interleaving is constrained by stacking rather than by any movement-finality rule",
+     "evidence": "engine/naw.py: no finality rule beyond MOV-19; any order, interleaving allowed || games/napoleon-at-waterloo/validate_movement.py: random walk interleaves units freely"
     }
    ]
   },
@@ -488,7 +507,8 @@
      ],
      "obligation": "DEFINES",
      "requirement": "every unit of every type controls the six hexes directly adjacent to it, at all times, whether or not it is that player's turn; there is no negated or inactive ZOC state",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "gamespec.zoc_hexes: every unit, all six neighbours, always || games/napoleon-at-waterloo/validate_movement.py: an enemy unit controls exactly its six adjacent hexes"
     },
     {
      "id": "Z.2",
@@ -497,7 +517,8 @@
      ],
      "obligation": "DEFINES",
      "requirement": "friendly ZOCs never inhibit friendly units",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py _board_sets: only enemy ZOC is computed || games/napoleon-at-waterloo/validate_movement.py: friendly ZOC never inhibits friendly movement"
     },
     {
      "id": "Z.3",
@@ -506,7 +527,8 @@
      ],
      "obligation": "DEFINES",
      "requirement": "ZOC does not stack or intensify; more than one unit may control the same hex and the test is set membership",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "gamespec.zoc_hexes returns a set || games/napoleon-at-waterloo/validate_movement.py: set membership (ZOC-06)"
     },
     {
      "id": "Z.4",
@@ -515,8 +537,9 @@
      ],
      "obligation": "DEFINES",
      "requirement": "the ZOC rule triggers on unit-to-unit adjacency, never on hex-to-hex ZOC overlap between non-adjacent opposing units",
-     "status": "OPEN",
-     "note": "absent from RULEBOOK_VERIFIED's ZOC summary; carried here so it is not lost"
+     "status": "ENFORCED",
+     "note": "absent from RULEBOOK_VERIFIED's ZOC summary; carried here so it is not lost",
+     "evidence": "engine/naw.py in_ezoc(): tests the unit's own hex against enemy ZOC only || games/napoleon-at-waterloo/validate_movement.py: ZOC tests are unit-hex membership"
     },
     {
      "id": "Z.5",
@@ -526,8 +549,9 @@
      ],
      "obligation": "DEFINES",
      "requirement": "ZOC is projected into all six adjacent hexes with NO terrain exception - including non-Road Woods hexes that no unit could legally enter",
-     "status": "OPEN",
-     "difficulty": "NAMED TRAP. Enforceable exactly as written, but an encoder who 'reasonably' exempts impassable hexes is silently wrong, and the error is invisible in movement (nobody can enter those hexes anyway) while being decisive in RETREAT: X.4 bars retreating into an enemy ZOC, so a phantom-free woods hex would create retreat destinations the printed rules forbid. Flagged in rules_2nd_ed.json unenforceable_as_written"
+     "status": "ENFORCED",
+     "difficulty": "NAMED TRAP. Enforceable exactly as written, but an encoder who 'reasonably' exempts impassable hexes is silently wrong, and the error is invisible in movement (nobody can enter those hexes anyway) while being decisive in RETREAT: X.4 bars retreating into an enemy ZOC, so a phantom-free woods hex would create retreat destinations the printed rules forbid. Flagged in rules_2nd_ed.json unenforceable_as_written",
+     "evidence": "gamespec.zoc_hexes projects into every neighbour incl. Woods (no terrain exception) || games/napoleon-at-waterloo/validate_movement.py: ZOC is projected into adjacent Woods hexes too"
     },
     {
      "id": "Z.6",
@@ -537,7 +561,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "the lock is MUTUAL: neither of two adjacent opposing units may leave the other's presence until one is destroyed or retreated by combat",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py in_ezoc(): symmetric by construction (adjacency) || games/napoleon-at-waterloo/validate_movement.py: mutual lock - unit adjacent to enemy may not move"
     }
    ]
   },
@@ -1173,12 +1198,13 @@
      ],
      "obligation": "MUST",
      "requirement": "French units may exit ONLY from the arrow-marked North-edge hexes",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/map_grid.json editions.2nd.exit_hexes: 11 hexes, 0101..1101, read off the folio arrows; columns 12+ of row 01 carry no arrow",
       "ingest/timerecord_oob.json exit_arrows_corroboration: 11 arrows counted independently"
      ],
-     "note": "E41 is closed for the 2nd Edition with an enumerated set - do NOT reuse the 3rd Edition's 9 exit hexes"
+     "note": "E41 is closed for the 2nd Edition with an enumerated set - do NOT reuse the 3rd Edition's 9 exit hexes",
+     "evidence": "engine/naw.py exit_options(): only game.json exit.hexes (11 arrowed hexes) || games/napoleon-at-waterloo/validate_movement.py: exit from a non-arrowed hex refused; column 12+ not an exit hex"
     },
     {
      "id": "V.6",
@@ -1188,7 +1214,8 @@
      ],
      "obligation": "MUST",
      "requirement": "the act of exiting expends one Movement Point",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py exit_options(): +1 MP, must fit within MA || games/napoleon-at-waterloo/validate_movement.py: exit costs 3 hexes + 1; unit at 0305 cannot exit"
     },
     {
      "id": "V.7",
@@ -1197,7 +1224,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "exited units may not return to the game",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py _apply exit: unit deleted, exited ledger || games/napoleon-at-waterloo/validate_movement.py: an exited unit is gone for good"
     },
     {
      "id": "V.8",
@@ -1206,7 +1234,8 @@
      ],
      "obligation": "MAY",
      "requirement": "exits are unconstrained in timing and grouping - not all in one turn, not all from one hex, before and/or after the 40-point mark",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py: exit legal in any own Movement Phase, any arrowed hex, no grouping || games/napoleon-at-waterloo/validate_movement.py: exits at any time in the random walk"
     },
     {
      "id": "V.9",
@@ -1216,7 +1245,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "Allied units may NEVER exit the map, even to avoid destruction",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py _propose_exit: exit_side Fr only (VIC-12; REI-07) || games/napoleon-at-waterloo/validate_movement.py: Allied units may never exit"
     },
     {
      "id": "V.10",
@@ -1227,7 +1257,7 @@
      "obligation": "PROCEDURE",
      "requirement": "EXITED is a third unit state, neither on-map nor lost: exited French units are not counted in French losses and are kept on display off the map",
      "status": "OPEN",
-     "note": "absent from RULEBOOK_VERIFIED. The printed Exited French Units box has exactly seven blank cells - a physical mirror of the victory requirement"
+     "note": "absent from RULEBOOK_VERIFIED. The printed Exited French Units box has exactly seven blank cells - a physical mirror of the victory requirement || the exited ledger exists (engine/naw.py s.exited, separate from s.dead); the loss ledger and its exclusion of exited units land with bite 6"
     },
     {
      "id": "V.11",
@@ -1249,9 +1279,10 @@
      ],
      "obligation": "MUST",
      "requirement": "exit hex 1101 is a Woods/Road hex whose road hexsides are N (off the north edge) and S",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "difficulty": "INTERACTION, NEW - see N3. Under M.12 a Woods/Road hex must be entered and exited along the road, so the eleventh exit hex is enterable ONLY from the south along the road and exitable only northwards off the map. The other ten exit hexes are clear terrain and carry no such constraint. Whether the off-map step counts as an 'exit along the road' for MOV-17 is not stated anywhere; the reading is natural but unprinted, and it decides whether one of the seven required French exits can be made through 1101 at all",
-     "open_ruling": "NAW2-OR-18"
+     "open_ruling": "NAW2-OR-18",
+     "evidence": "engine/naw.py: 1101 enterable only from 1102 along the road (terrain.json sides), exit crosses the N road hexside - LEGAL; NAW2-OR-18 kept open for Bruce's confirmation (the exit arrow is printed inside the hex) || games/napoleon-at-waterloo/validate_movement.py: exit through 1101 from 1102 = 2 MP; from 1002 = 3 MP via 1102"
     }
    ]
   },
@@ -1790,23 +1821,23 @@
  "counts_by_phase": {
   "P0 SETUP": {
    "cells": 9,
-   "OPEN": 9,
+   "OPEN": 7,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 2,
    "hard": 1
   },
   "T TURN STRUCTURE (the spine itself)": {
    "cells": 6,
-   "OPEN": 6,
+   "OPEN": 4,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 2,
    "hard": 0
   },
   "P1/P3 MOVEMENT PHASE (French / Allied)": {
    "cells": 14,
-   "OPEN": 14,
+   "OPEN": 1,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 13,
    "hard": 3
   },
   "P3r REINFORCEMENT (Prussian entry - a sub-step of the Allied Movement Phase, Game-Turn 2)": {
@@ -1818,9 +1849,9 @@
   },
   "Z ZONES OF CONTROL (continuous, both players' turns)": {
    "cells": 6,
-   "OPEN": 6,
+   "OPEN": 0,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 6,
    "hard": 1
   },
   "P2/P4 COMBAT PHASE - declaration and assignment": {
@@ -1846,9 +1877,9 @@
   },
   "V VICTORY AND EXIT (continuous; checked immediately)": {
    "cells": 12,
-   "OPEN": 12,
+   "OPEN": 6,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 6,
    "hard": 1
   },
   "D ALLIED DEMORALIZATION (continuous latch)": {
@@ -1861,9 +1892,9 @@
  },
  "counts_total": {
   "cells": 111,
-  "OPEN": 110,
+  "OPEN": 81,
   "UNREACHABLE": 1,
-  "ENFORCED": 0,
+  "ENFORCED": 29,
   "hard": 25,
   "open_rulings": 21
  },
@@ -1880,6 +1911,6 @@
  },
  "playability_verdict": {
   "verdict": "NOT PLAYABLE",
-  "reason": "skeleton only - no engine code, no validators, no game.json. 110 of 111 cells OPEN, 1 UNREACHABLE-with-evidence, 0 ENFORCED. 21 registered rulings (20 open, 1 ruled), of which NAW2-SD-3 and the whole hard-cell list block encoding rather than merely awaiting code."
+  "reason": "encoding in progress (bite 2 of 7 done: data layer, movement, ZOC, exit). 81 of 111 cells OPEN, 1 UNREACHABLE-with-evidence, 29 ENFORCED. 21 registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5."
  }
 }

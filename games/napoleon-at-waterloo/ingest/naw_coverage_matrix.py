@@ -1217,6 +1217,61 @@ OPEN_RULINGS = [
     ("NAW2-OR-19", "D.6", "the demoralization odds shift at the ends of the printed table, and whether the CRT clamp footnote governs a shifted column", "carried from printed_defect_candidates, needs a ruling"),
 ]
 
+VM = "games/napoleon-at-waterloo/validate_movement.py"
+VD = "games/napoleon-at-waterloo/validate_data.py"
+ENFORCED = {
+    "S.1": ("scenario_2nd_ed.json units (44) built by build_data.py from oob_2nd_ed.json; engine/naw.py new_game", VD + ": at-start roster (hex, side, CS, MA, type, designation) == oob 44/44; no two units share a hex; strengths 89/73/34"),
+    "S.2": ("scenario units carry side Fr/Al; game.json sides.detect_tokens", VD + ": every counter image resolves to its printed side; 26 French / 18 British at start"),
+    "T.1": ("engine/naw.py _end_player_turn/_game_end: 10 Game-Turns then over (victory-halt = T.6, bite 6)", VM + ": ten Game-Turns then the game ends; no action after"),
+    "T.2": ("engine/naw.py propose/end_movement/end_phase: French then Allied, Movement then Combat", VM + ": turn structure block"),
+    "M.1": ("engine/naw.py: no obligation to move; end_movement legal with unmoved units", VM + ": random walk ends phases with unmoved units; end_movement always legal"),
+    "M.2": ("engine/naw.py dests(): 1 MP per hex (gamespec.move_cost, TEC costs), MA cap, per-Player-Turn reset", VM + ": open field costs == hex distance, none beyond MA; gate == independent hexgraph oracle on >1500 positions"),
+    "M.3": ("engine/naw.py dests(): Dijkstra over adjacent hexes only", VM + ": oracle BFS agreement"),
+    "M.4": ("engine/naw.py dests(): friendly hexes traversable", VM + ": moves THROUGH the friendly hex"),
+    "M.5": ("engine/naw.py dests(): enemy hexes never entered or traversed", VM + ": enemy-occupied hex never entered"),
+    "M.6": ("engine/naw.py dests(): friendly-occupied destinations excluded (reading B - one unit per hex at all times); NAW2-OR-2 stays open, reading A is a one-line switch", VM + ": may not end the move on a friendly unit; gate refuses with MOV-09"),
+    "M.7": ("engine/naw.py dests(): a hex in enemy ZOC is a terminal destination", VM + ": may move INTO the enemy ZOC / must STOP on entering it"),
+    "M.8": ("engine/naw.py dests(): no expansion from an EZOC hex", VM + ": hexes beyond the ZOC ring unreachable through it"),
+    "M.9": ("engine/naw.py in_ezoc(): a unit in enemy ZOC has no destinations; the lock is a live read of enemy positions so it releases exactly when the exerting enemy is gone (combat removal = bite 5)", VM + ": unit adjacent to an enemy may not move at all"),
+    "M.10": ("engine/naw.py in_ezoc() at proposal time (only the phasing player moves, so live == phase-start)", VM + ": MOV-13 refusal with citation"),
+    "M.11": ("terrain.json woods = 99 MP (never affordable) + gate reads terrain; MOV-18", VM + ": no Woods hex is ever a destination"),
+    "M.12": ("terrain.json sides: road / woods_edge on the 5 Woods/Road hexes; gamespec.move_cost prohibit; N2 CLOSED 2026-08-17 - hex 1014 is a genuine printed cul-de-sac (road ends at Hougoumont), verified on Oliver's map scan", VM + ": 1014 only via 0913; 1503-1603-1702-1701-1801 = 1,2,3,4 MP; 1101 only from 1102"),
+    "M.14": ("engine/naw.py: no finality rule beyond MOV-19; any order, interleaving allowed", VM + ": random walk interleaves units freely"),
+    "Z.1": ("gamespec.zoc_hexes: every unit, all six neighbours, always", VM + ": an enemy unit controls exactly its six adjacent hexes"),
+    "Z.2": ("engine/naw.py _board_sets: only enemy ZOC is computed", VM + ": friendly ZOC never inhibits friendly movement"),
+    "Z.3": ("gamespec.zoc_hexes returns a set", VM + ": set membership (ZOC-06)"),
+    "Z.4": ("engine/naw.py in_ezoc(): tests the unit's own hex against enemy ZOC only", VM + ": ZOC tests are unit-hex membership"),
+    "Z.5": ("gamespec.zoc_hexes projects into every neighbour incl. Woods (no terrain exception)", VM + ": ZOC is projected into adjacent Woods hexes too"),
+    "Z.6": ("engine/naw.py in_ezoc(): symmetric by construction (adjacency)", VM + ": mutual lock - unit adjacent to enemy may not move"),
+    "V.5": ("engine/naw.py exit_options(): only game.json exit.hexes (11 arrowed hexes)", VM + ": exit from a non-arrowed hex refused; column 12+ not an exit hex"),
+    "V.6": ("engine/naw.py exit_options(): +1 MP, must fit within MA", VM + ": exit costs 3 hexes + 1; unit at 0305 cannot exit"),
+    "V.7": ("engine/naw.py _apply exit: unit deleted, exited ledger", VM + ": an exited unit is gone for good"),
+    "V.8": ("engine/naw.py: exit legal in any own Movement Phase, any arrowed hex, no grouping", VM + ": exits at any time in the random walk"),
+    "V.9": ("engine/naw.py _propose_exit: exit_side Fr only (VIC-12; REI-07)", VM + ": Allied units may never exit"),
+    "V.12": ("engine/naw.py: 1101 enterable only from 1102 along the road (terrain.json sides), exit crosses the N road hexside - LEGAL; NAW2-OR-18 kept open for Bruce's confirmation (the exit arrow is printed inside the hex)", VM + ": exit through 1101 from 1102 = 2 MP; from 1002 = 3 MP via 1102"),
+}
+NOTES = {
+    "T.4": "movement refusal in the Combat Phase is enforced (validate_movement: movement refused in the Combat Phase [SEQ-07]); the retreat/disruption/advance half lands with bite 5",
+    "T.5": "non-phasing movement is refused (validate_movement: Allied move during the French Player-Turn refused [SEQ-08]); the combat-side clauses land with bites 3-5",
+    "M.13": "the first clause IS enforced: once moved, a unit may not be moved again that Player-Turn (validate_movement: MOV-19 refusal); the consent-to-change clause remains the platform UNDO question",
+    "S.3": "the engine stages the Prussians OFF-MAP (reserve pool, due Game-Turn 2) - the reading consistent with REI-01; NAW2-OR-1 stays open",
+    "V.10": "the exited ledger exists (engine/naw.py s.exited, separate from s.dead); the loss ledger and its exclusion of exited units land with bite 6",
+}
+
+
+def apply_overlay():
+    for ph in SPINE:
+        for c in ph["cells"]:
+            if c["id"] in ENFORCED:
+                code, ev = ENFORCED[c["id"]]
+                c["status"] = "ENFORCED"
+                c["evidence"] = code + " || " + ev
+            if c["id"] in NOTES:
+                c["note"] = (c.get("note", "") + " || " if c.get("note") else "") + NOTES[c["id"]]
+
+
+apply_overlay()
+
 
 def build():
     with open(os.path.join(HERE, "rules_2nd_ed.json"), encoding="utf-8") as f:
@@ -1253,14 +1308,14 @@ def build():
         "read_on": "2026-08-14",
         "edition": "SPI Napoleon at Waterloo, SECOND EDITION, copyright 1971",
         "scenario": "the whole edition - one printed game, ten Game-Turns (1 pm .. 10 pm), one at-start setup, one reinforcement event",
-        "what_this_is": "The coverage matrix defined by PLATFORM_SPEC #13 as amended 2026-08-09: the matrix IS the playability rating. A scenario is playable exactly when every cell is ENFORCED or UNREACHABLE-with-evidence. There is no third acceptable state; an OPEN cell is a named defect that blocks playability, and nothing may be left to a human umpire. This is the SKELETON: nothing is encoded yet, so every cell that is not evidenced-unreachable starts OPEN. Its job is to enumerate exhaustively what must be closed.",
+        "what_this_is": "The coverage matrix defined by PLATFORM_SPEC #13 as amended 2026-08-09: the matrix IS the playability rating. A scenario is playable exactly when every cell is ENFORCED or UNREACHABLE-with-evidence. There is no third acceptable state; an OPEN cell is a named defect that blocks playability, and nothing may be left to a human umpire. Cells move to ENFORCED only with a code location and a validator line; the ENFORCED overlay in this script is the record.",
         "status_values": {
             "ENFORCED": "the gate checks it - must carry the code location and the validator that proves it against a printed table or worked example",
             "UNREACHABLE": "cannot arise in this scenario - must carry the evidence",
             "OPEN": "reachable and not (fully) enforced - the default, and a blocker",
         },
         "discipline": [
-            "nothing is marked ENFORCED: no engine code exists for this game yet",
+            "ENFORCED cells carry the code location and the validator line that proves them (ENFORCED overlay in naw_coverage_matrix.py); the overlay grows one bite at a time",
             "an UNREACHABLE claim with no evidence is exactly the silent gap this standard exists to prevent, so unreachability is claimed only from printed rules that close their own state space or from enumerated printed components",
             "where enforceability is uncertain the cell says so rather than choosing the optimistic answer - an over-optimistic call becomes a silent incorrectness, the worst failure class in this project",
         ],
@@ -1298,7 +1353,7 @@ def build():
         },
         "playability_verdict": {
             "verdict": "NOT PLAYABLE",
-            "reason": "skeleton only - no engine code, no validators, no game.json. " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, 0 ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (20 open, 1 ruled), of which NAW2-SD-3 and the whole hard-cell list block encoding rather than merely awaiting code.",
+            "reason": "encoding in progress (bite 2 of 7 done: data layer, movement, ZOC, exit). " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["ENFORCED"]) + " ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5.",
         },
     }
     return doc, index

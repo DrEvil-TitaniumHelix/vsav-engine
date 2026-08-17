@@ -51,6 +51,7 @@ import gamestate as gs_mod  # noqa: E402
 import strategic as strat_mod  # noqa: E402
 import bluegray as bg_mod  # noqa: E402
 import westwall as ww_mod  # noqa: E402
+import naw as naw_mod  # noqa: E402
 import napoleonic as nap_mod  # noqa: E402
 import soj as soj_mod  # noqa: E402
 import ai as ai_mod  # noqa: E402
@@ -65,7 +66,7 @@ import champion as champ_mod  # noqa: E402
 import salvo as salvo_mod  # noqa: E402
 import undo as undo_mod  # noqa: E402
 
-SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic")
+SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic", "naw")
 
 
 def sg_earned_tier(scen_mode, spec):
@@ -149,6 +150,8 @@ def build_gate():
         SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "westwall":
         SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+    elif SCEN_MODE == "naw":
+        SG = naw_mod.NawGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "napoleonic":
         SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "soj":
@@ -221,6 +224,8 @@ def unit_view(u):
         su = SG.s["units"].get(u["id"])
         if su:
             v.update(side=su["side"])
+            if su.get("name"):
+                v["name"] = su["name"]
             if SCEN_MODE == "napoleonic":
                 v.update(facing=su["facing"], formation=su["formation"],
                          morale_state=su.get("morale_state", "good"),
@@ -249,6 +254,8 @@ def unit_view(u):
             e = SG.schedule.get(u["id"])
             if e:
                 v["due"] = SG.turn_label(e["due"])
+                if e.get("name"):
+                    v["name"] = e["name"]
     return v
 
 
@@ -1169,7 +1176,7 @@ def api_end_phase():
         else:
             t = "end_turn"
     else:
-        t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall")
+        t = "end_movement" if (SCEN_MODE in ("bluegray", "westwall", "naw")
                                and SG.s["phase"] == "movement") \
             else "end_phase"
     n0 = SG.s["n"]
