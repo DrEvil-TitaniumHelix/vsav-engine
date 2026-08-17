@@ -1,4 +1,5 @@
 import itertools
+import zlib
 import math
 
 DEFAULTS = {
@@ -58,6 +59,16 @@ def _is_leader(g, u):
     return _cls(g, u) in ("leader", "hq") or u["pid"] in ("R01", "J01", "Y01", "E01")
 
 
+def _S(g, name):
+    c = getattr(g, "_ai_sorted", None)
+    if c is None:
+        c = g._ai_sorted = {}
+    v = c.get(name)
+    if v is None:
+        v = c[name] = tuple(sorted(getattr(g, name)))
+    return v
+
+
 def _elev(g, h):
     return g.hex_t0.get(h) in ("north_wall", "bastion", "fort", "fortress",
                                "wall", "gate_wall", "gate_north_wall")
@@ -66,10 +77,10 @@ def _elev(g, h):
 def _perimeter(g):
     if hasattr(g, "_ai_perim"):
         return g._ai_perim
-    walls = [h for h in g.playable
+    walls = [h for h in _S(g, "playable")
              if g.hex_t0.get(h) in ("north_wall", "bastion", "fort", "fortress")]
-    cx = sum(g.px[h][0] for h in g.jud_zone) / max(1, len(g.jud_zone))
-    cy = sum(g.px[h][1] for h in g.jud_zone) / max(1, len(g.jud_zone))
+    cx = sum(g.px[h][0] for h in _S(g, "jud_zone")) / max(1, len(g.jud_zone))
+    cy = sum(g.px[h][1] for h in _S(g, "jud_zone")) / max(1, len(g.jud_zone))
     rows = []
     for h in walls:
         outs = [n for n in g._nb(h) if n in g.playable and n not in g.jud_zone
@@ -126,11 +137,11 @@ def _plan(g, theta):
     center = sec[len(sec) // 2][1] if sec else per[0][1]
     ramw, rampost = breach[0]
     lane = {rampost}
-    for h in g.playable:
+    for h in _S(g, "playable"):
         if g._dist(h, rampost) <= 1 and not _elev(g, h) and h not in g.jud_zone:
             lane.add(h)
     sd = _th(theta, "stage_dist")
-    stage = sorted((h for h in g.rom_zone
+    stage = sorted((h for h in _S(g, "rom_zone")
                     if sd <= min(g._dist(h, s[1]) for s in sec) <= sd + 1
                     and h not in lane),
                    key=lambda h: (min(g._dist(h, s[1]) for s in sec),
@@ -138,7 +149,7 @@ def _plan(g, theta):
     flank = _th(theta, "cav_flank")
     lo, hi = per[idx[0]], per[idx[-1]]
     fl = lo if flank < 0.5 else hi
-    cav = sorted((h for h in g.rom_zone
+    cav = sorted((h for h in _S(g, "rom_zone")
                   if g._dist(h, fl[1]) <= 8 and h not in lane),
                  key=lambda h: (g._dist(h, fl[1]), g._dist(h, center)))
     plan = {"sector": [r[1] for r in sec], "center": center,
@@ -219,26 +230,26 @@ def _rom_deploy_hex(g, plan, roles, pid, taken):
     se_hexes = {u["hex"] for u in g.s["units"].values() if u["hex"] is not None and _cls(g, u) == "siege_engine"}
     art_hexes = {taken[q] for q, (r, _) in roles.items() if r == "artillery" and q in taken}
     if role == "artillery":
-        return sorted((h for h in g.rom_zone if h not in art_hexes and h not in se_hexes),
+        return sorted((h for h in _S(g, "rom_zone") if h not in art_hexes and h not in se_hexes),
                       key=lambda h: (abs(_dist_to_sector(g, plan, h) - 6),
                                      g._dist(h, plan["center"])))
     if role in ("ram", "tower"):
         post = arg[1]
-        cands = sorted((h for h in g.rom_zone if not _elev(g, h)),
+        cands = sorted((h for h in _S(g, "rom_zone") if not _elev(g, h)),
                        key=lambda h: (g._dist(h, post), g._dist(h, plan["center"])))
         return cands
     if role == "cav":
         return [h for h in plan["cav"] if h not in se_hexes] or sorted(
-            (h for h in g.rom_zone if h not in se_hexes), key=lambda h: g._dist(h, plan["center"]))
+            (h for h in _S(g, "rom_zone") if h not in se_hexes), key=lambda h: g._dist(h, plan["center"]))
     if role == "escalade":
-        return sorted((h for h in g.rom_zone if h not in se_hexes), key=lambda h: (g._dist(h, arg[1]), h))
+        return sorted((h for h in _S(g, "rom_zone") if h not in se_hexes), key=lambda h: (g._dist(h, arg[1]), h))
     if role == "park":
-        return sorted((h for h in g.rom_zone if not g._occupants(h)),
+        return sorted((h for h in _S(g, "rom_zone") if not g._occupants(h)),
                       key=lambda h: -_dist_to_sector(g, plan, h))
     if role in ("assault", "hq", "guard", "light", "archer", "crew"):
-        return sorted((h for h in g.rom_zone if h not in plan["lane"] and h not in se_hexes),
+        return sorted((h for h in _S(g, "rom_zone") if h not in plan["lane"] and h not in se_hexes),
                       key=lambda h: (_dist_to_sector(g, plan, h), g._dist(h, plan["center"])))
-    return sorted(g.rom_zone, key=lambda h: g._dist(h, plan["center"]))
+    return sorted(_S(g, "rom_zone"), key=lambda h: g._dist(h, plan["center"]))
 
 
 def _rom_deploy(g, theta):
@@ -269,7 +280,7 @@ def _rom_deploy(g, theta):
                 placed = True
                 break
         if not placed:
-            for h in sorted(g.rom_zone, key=lambda h: g._dist(h, plan["center"]))[:200]:
+            for h in sorted(_S(g, "rom_zone"), key=lambda h: g._dist(h, plan["center"]))[:200]:
                 a = {"type": "deploy", "pid": pid, "hex": _N(g, h)}
                 if roles[pid][0] in ("ram", "tower"):
                     a["facing"] = _N(g, g._nb(h)[0])
@@ -281,8 +292,8 @@ def _rom_deploy(g, theta):
 
 def _jud_deploy(g, theta):
     mf = list(g.min_force)
-    inner = [h for h in g.jud_zone if h in g.playable and not _elev(g, h)]
-    walls = [h for h in g.jud_zone if h in g.playable and _elev(g, h)
+    inner = [h for h in _S(g, "jud_zone") if h in g.playable and not _elev(g, h)]
+    walls = [h for h in _S(g, "jud_zone") if h in g.playable and _elev(g, h)
              and g.hex_t0.get(h) in ("north_wall", "bastion", "fort", "fortress")]
     per = _perimeter(g)
     outer = [r[1] for r in per]
@@ -329,7 +340,7 @@ def _jud_deploy(g, theta):
     for u in list(g.s["units"].values()):
         if u["side"] == "Jud" and u["hex"] is None and u["state"] not in ("eliminated", "exited") \
                 and u["pid"] not in [q["pid"] for q in g.s.get("pool", [])]:
-            for h in sorted(g.jud_zone, key=lambda h: used.get(h, 0))[:60]:
+            for h in sorted(_S(g, "jud_zone"), key=lambda h: used.get(h, 0))[:60]:
                 if (yield ("Jud", {"type": "deploy", "pid": u["pid"], "hex": _N(g, h)}, "deploy fallback")):
                     used[h] = used.get(h, 0) + 1
                     break
@@ -364,35 +375,50 @@ def _pending(g, side, theta):
         pids = [q for q in (p.get("pids") or []) if _unit(g, q)["hex"] is not None]
         att = [_unit(g, q)["hex"] for q in (p.get("attackers") or [])
                if _unit(g, q)["hex"] is not None]
-
-        def paths_for(pid, n):
-            u = _unit(g, pid)
-            res = []
-            for nb1 in g._nb(u["hex"]):
-                if nb1 not in g.playable or any(o["side"] != u["side"] for o in g._occupants(nb1)):
-                    continue
-                if n == 1:
-                    res.append([u["hex"], nb1])
-                    continue
-                for nb2 in g._nb(nb1):
-                    if nb2 == u["hex"] or nb2 not in g.playable or any(
-                            o["side"] != u["side"] for o in g._occupants(nb2)):
-                        continue
-                    res.append([u["hex"], nb1, nb2])
-            res.sort(key=lambda pv: -min([g._dist(pv[-1], a) for a in att] or [0]))
-            return res
-
-        for n in (2, 1):
-            cands = {pid: paths_for(pid, n) for pid in pids}
-            for i in range(10):
-                if not all(cands[pid] for pid in pids):
-                    break
-                pathsd = {pid: [_N(g, h) for h in cands[pid][min(i, len(cands[pid]) - 1)]]
-                          for pid in pids}
-                if (yield (by, {"type": "resolve_retreat", "paths": pathsd, "eliminate": []}, "retreat")):
-                    return
-        if (yield (by, {"type": "resolve_retreat", "paths": {}, "eliminate": pids}, "retreat elim")):
+        ctx = {"rkind": p.get("rkind", "b"), "zoc": g._zoc_map(g._enemy(by))}
+        pathsd, elim = {}, []
+        overlay = {}
+        with g.memo_scope():
+            for pid in pids:
+                u = _unit(g, pid)
+                best = None
+                frontier = [[u["hex"]]]
+                for depth in range(1, 7):
+                    nxt = []
+                    for path in frontier:
+                        for n in g._nb(path[-1]):
+                            if n in path:
+                                continue
+                            c, _why = g._retreat_step(u, path[-1], n, by, ctx["zoc"], overlay)
+                            if c is None:
+                                continue
+                            p2 = path + [n]
+                            nxt.append(p2)
+                            names = [_N(g, h) for h in p2]
+                            if g._retreat_path_verdict(u, by, ctx, p, names, overlay) is None:
+                                sc = (min([g._dist(n, a) for a in att] or [0]), -len(p2))
+                                if best is None or sc > best[0]:
+                                    best = (sc, names)
+                    if best is not None and depth >= 2:
+                        break
+                    frontier = nxt[:400]
+                    if not frontier:
+                        break
+                if best is not None:
+                    pathsd[pid] = best[1]
+                    overlay[pid] = g.name_hex.get(best[1][-1], best[1][-1])
+                elif not g._retreat_survivable(u, by, ctx, p, overlay):
+                    elim.append(pid)
+                    overlay[pid] = None
+                else:
+                    pathsd[pid] = [_N(g, u["hex"]), _N(g, g._nb(u["hex"])[0])]
+        if p.get("optional") and elim:
+            elim = []
+        if (yield (by, {"type": "resolve_retreat", "paths": pathsd, "eliminate": elim}, "retreat")):
             return
+        if not p.get("optional"):
+            if (yield (by, {"type": "resolve_retreat", "paths": {}, "eliminate": pids}, "retreat elim")):
+                return
         yield (by, {"type": "resolve_retreat", "paths": {}, "eliminate": []}, "retreat none")
     elif k == "advance":
         cands = [q for q in (p.get("pids") or []) if _unit(g, q)["hex"] is not None]
@@ -449,7 +475,7 @@ def _best_target(g, u, theta, adj_only=False):
     if adj_enemy:
         rng = 1
     best = None
-    for k2 in g.playable:
+    for k2 in _S(g, "playable"):
         if k2 in fired:
             continue
         occ = g._occupants(k2)
@@ -591,7 +617,7 @@ def _se_go(g, pid, post, wall):
 
 def _builtup_goal(g, u):
     best = None
-    for h in g.playable:
+    for h in _S(g, "playable"):
         if g.hex_t0.get(h) != "builtup" or g.s["control"].get(_N(g, h), g.s["control"].get(h)) == "Rom":
             continue
         occ = g._occupants(h)
@@ -663,7 +689,7 @@ def _rom_move(g, theta):
             if a:
                 yield ("Rom", a, "cavalry flank")
         elif role == "archer" or role == "light":
-            goal = plan["sector"][(hash(pid) % len(plan["sector"]))]
+            goal = plan["sector"][(zlib.crc32(pid.encode()) % len(plan["sector"]))]
             a = _move_toward(g, pid, goal, stop_dist=int(_th(theta, "archer_stand")), avoid=plan["lane"])
             if a:
                 yield ("Rom", a, "missile line")
@@ -723,7 +749,7 @@ def _threat_hexes(g):
 
 def _jud_move(g, theta):
     threat = sum(g.s["breach"].values()) if isinstance(g.s["breach"], dict) else 0
-    opened = [h for h in g.playable if g.hex_t(h) == "breach"]
+    opened = [h for h in _S(g, "playable") if g.hex_t(h) == "breach"]
     th = _threat_hexes(g)
     rally = min(th, key=lambda t: t) if th else None
     for q in list(g.s["entry_queue"]):

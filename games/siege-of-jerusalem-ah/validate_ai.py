@@ -56,6 +56,26 @@ for _ in range(2):
 check(hh[0] == hh[1] and tg2.s["turn"] >= 2,
       f"seed 2: two-turn policy replay is deterministic ({hh[0]}, n={tg2.s['n']})")
 
+import subprocess
+_XP = ("import sys,tempfile;sys.path.insert(0,%r);import gamespec,ai_soj;"
+       "from soj import SoJGame;g=gamespec.Game(%r);t=SoJGame(g,%r,tempfile.mkdtemp(),seed=2,tier=2);"
+       "ai_soj.play_game(t,max_turns=3);print(t.state_hash(),t.s['n'])"
+       % (os.path.join(ROOT, "engine"), HERE, SCEN))
+xp = []
+for hs in ("11", "22"):
+    env = dict(os.environ, PYTHONHASHSEED=hs)
+    xp.append(subprocess.run([sys.executable, "-c", _XP], capture_output=True, text=True, env=env).stdout.strip())
+check(xp[0] == xp[1] and xp[0],
+      f"seed 2: three-turn policy game identical across processes with different PYTHONHASHSEED ({xp[0]} vs {xp[1]})")
+
+tmp_r = tempfile.mkdtemp()
+tr = SoJGame(G, SCEN, tmp_r, seed=1, tier=2)
+_, log_r = ai.play_game(tr)
+ret = [e for e in log_r if e["action"].get("type") == "resolve_retreat"]
+ret_ok = sum(1 for e in ret if e.get("legal"))
+check(ret and ret_ok == len(ret),
+      f"seed 1: every AI retreat resolution legal on first submission ({ret_ok}/{len(ret)})")
+
 tmp_a = tempfile.mkdtemp()
 tmp_b = tempfile.mkdtemp()
 wa = SoJGame(G, SCEN, tmp_a, seed=9, tier=2)

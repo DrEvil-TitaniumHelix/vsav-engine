@@ -23,6 +23,7 @@ everywhere (decode-prep 6) - their one citation mismatch (17.23 vs 17.3)
 is registered in game.json source_defects. Every enforcement carries its
 citation.
 """
+import contextlib
 import os
 import sys
 
@@ -81,6 +82,8 @@ class SoJGame(GateGame):
               "jud_rally", "jud_fire", "jud_move", "jud_melee"]
 
     def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+        self._memo = None
+        self._nbc = {}
         super().__init__(game, scenario_path, live_dir)
         self._resolve_tier(tier)
         self.types = game.spec["unit_types"]
@@ -192,6 +195,9 @@ class SoJGame(GateGame):
         return t
 
     def _nb(self, h):
+        out = self._nbc.get(h)
+        if out is not None:
+            return out
         c, r = int(h[:2]), int(h[2:])
         N = r - c // 2
         out = []
@@ -200,6 +206,7 @@ class SoJGame(GateGame):
             k = f"{c2:02d}{n2 + c2 // 2:02d}"
             if k in self.hex_t0:
                 out.append(k)
+        self._nbc[h] = out
         return out
 
     def _dir_of(self, frm, to):
@@ -327,7 +334,7 @@ class SoJGame(GateGame):
                              "faction": spec.get("faction"),
                              "leader_first": bool(spec.get("leader_enters_with_first_draw"))})
         control = {}
-        for h in self.playable:
+        for h in sorted(self.playable):
             control[h] = "Rom" if h in self.outside else "Jud"
         self.s = {
             "schema": 2, "tier": self.tier, "seed": seed, "rng_calls": 0,
@@ -409,8 +416,26 @@ class SoJGame(GateGame):
                 return True
         return False
 
+    @contextlib.contextmanager
+    def memo_scope(self):
+        outer = self._memo
+        self._memo = {}
+        try:
+            yield
+        finally:
+            self._memo = outer
+
     def _occupants(self, h):
-        return [u for u in self.s["units"].values() if u["hex"] == h]
+        m = self._memo
+        if m is None:
+            return [u for u in self.s["units"].values() if u["hex"] == h]
+        occ = m.get("occ")
+        if occ is None:
+            occ = {}
+            for u in self.s["units"].values():
+                occ.setdefault(u["hex"], []).append(u)
+            m["occ"] = occ
+        return occ.get(h, [])
 
     def _enemy(self, side):
         return "Jud" if side == "Rom" else "Rom"
@@ -634,15 +659,29 @@ class SoJGame(GateGame):
         return out
 
     def _zoc_map(self, side):
+        m = self._memo
+        if m is not None and ("zoc", side) in m:
+            return m[("zoc", side)]
         if self.is_night():
             return set()          # no ZOC at night [7.2]
         zoc = set()
         for u in self.s["units"].values():
             if u["side"] == side:
                 zoc |= self._unit_zoc(u)
+        if m is not None:
+            m[("zoc", side)] = zoc
         return zoc
 
     def _heavy_ground_zoc(self, side):
+        m = self._memo
+        if m is not None and ("hgz", side) in m:
+            return m[("hgz", side)]
+        out = self._heavy_ground_zoc0(side)
+        if m is not None:
+            m[("hgz", side)] = out
+        return out
+
+    def _heavy_ground_zoc0(self, side):
         if self.is_night():
             return set()
         out = set()
@@ -876,6 +915,15 @@ class SoJGame(GateGame):
     def _road_ref_dist(self, side, zoc):
         if side != "Jud":
             return {}
+        m = self._memo
+        if m is not None and ("rrd", side) in m:
+            return m[("rrd", side)]
+        out = self._road_ref_dist0(side, zoc)
+        if m is not None:
+            m[("rrd", side)] = out
+        return out
+
+    def _road_ref_dist0(self, side, zoc):
         enemy = self._enemy(side)
 
         def blocked(h):
@@ -905,6 +953,16 @@ class SoJGame(GateGame):
 
     def _refuge_laggards(self, side, skip=None, states=("routed",
                                                         "panicked")):
+        m = self._memo
+        key = ("lag", side, skip, tuple(states))
+        if m is not None and key in m:
+            return m[key]
+        out = self._refuge_laggards0(side, skip, states)
+        if m is not None:
+            m[key] = out
+        return out
+
+    def _refuge_laggards0(self, side, skip, states):
         out = []
         for u in self.s["units"].values():
             if u["side"] != side or u["hex"] is None or u["pid"] == skip \
@@ -3998,6 +4056,16 @@ class SoJGame(GateGame):
                     and x["hex"] == u["hex"] and not x.get("up")
                     and not x.get("pushed")][:2]
         budget = self._ma(u) - u.get("mv", 0.0) + 8.0
+        with self.memo_scope():
+            best = self._legal_dests_search(u, side, start, crew, tst, budget)
+        return {"dests": [{"hex": self.hex_name[h], "cost": round(sp, 1),
+                           "path": [self.hex_name[x] for x in p],
+                           "x": round(self.px[h][0]),
+                           "y": round(self.px[h][1])}
+                          for h, (sp, p) in sorted(best.items())],
+                "crew": crew or []}
+
+    def _legal_dests_search(self, u, side, start, crew, tst, budget):
         best = {}
         seen = {start: 0.0}
         frontier = [(0.0, [start])]
@@ -4022,9 +4090,4 @@ class SoJGame(GateGame):
                                    or v["spent"] < best[n][0] - 1e-9):
                     best[n] = (v["spent"], p2)
                 frontier.append((e2, p2))
-        return {"dests": [{"hex": self.hex_name[h], "cost": round(sp, 1),
-                           "path": [self.hex_name[x] for x in p],
-                           "x": round(self.px[h][0]),
-                           "y": round(self.px[h][1])}
-                          for h, (sp, p) in sorted(best.items())],
-                "crew": crew or []}
+        return best
