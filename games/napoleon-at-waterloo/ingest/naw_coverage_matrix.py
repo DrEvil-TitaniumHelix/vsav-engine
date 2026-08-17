@@ -1259,6 +1259,28 @@ NOTES = {
 }
 
 
+VC = "games/napoleon-at-waterloo/validate_combat.py"
+ENFORCED.update({
+    "C.1": ("engine/naw.py attack_strength/defense_strength/battle_check: summed strengths, ratio", VC + ": 27/27 printed examples through battle_check"),
+    "C.2": ("engine/naw.py odds_column: floor(a/d):1 else 1:ceil(d/a), clamped to the printed columns", VC + ": rounding pairs incl. EX-13 (2 vs 3 = 1:2), clamp 1 vs 40 = 1:5 / 30 vs 1 = 6:1, the 8-vs-3 rules example"),
+    "C.13": ("engine/naw.py battle_check: a unit named twice is refused; strengths enter whole", VC + ": a unit named twice is refused [CBT-17]"),
+    "C.14": ("engine/naw.py defense_strength: x2 when the DEFENDER's hex kind is town or woods_road (game.json combat.terrain_effects, ruling NAW2-D4); attackers never doubled", VC + ": Town defender 6->12, Woods/Road 1014 defender 6->12, clear 6, attacker in Town 6 vs 6 = 1:1 (EX-03/EX-04)"),
+    "C.16": ("engine/naw.py battle_check + odds_column + crt_result", VC + ": 27/27 printed examples reproduce their odds; 60/60 CRT cells == crt_2nd_ed.json; corpus gaps stated (no die/result printed, columns 1:5/1:3/5:1/6:1 and the clamp untested by print)"),
+})
+NOTES.update({
+    "C.3": "roll_die (gate.py) is seeded/counted/replayable (validate_combat: 300 rolls 1..6, same seed same rolls); the per-attack roll lands with the battle action (bite 5)",
+    "C.5": "predicate BUILT + validated (battle_check: adjacent legal, non-adjacent infantry refused, artillery at exactly two hexes) - flips to ENFORCED when the battle action makes battle_check the door (bite 5)",
+    "C.10": "predicate built + validated (several attackers vs one defender, all adjacent) - flips with the battle action",
+    "C.11": "predicate built + validated (one attacker vs several adjacent defenders; several-on-several EX-14 under the every-attacker-adjacent-to-every-defender reading) - flips with the battle action",
+    "C.12": "validated: a 1:4 attack is legal, battle_check never refuses on odds - flips with the battle action",
+    "C.15": "predicate built + validated via the fought/defended flags - the flags are set by the battle action (bite 5)",
+    "A.1": "predicate built + validated: distance exactly 2 legal, 3 refused - flips with the battle action",
+    "A.10": "predicate built + validated: bombarding gun vs two defenders refused (ART-13); adjacent gun vs two adjacent defenders legal (ART-14)",
+    "A.11": "predicate built + validated: adjacent cavalry 1 + bombarding artillery 3 = 4:1 (EX-09/EX-24)",
+    "A.13": "predicate built + validated: fires over an intervening enemy unit and over a Town hex",
+    "A.14": "predicate built under the STRICT reading (any candidate intervening Woods hex blocks) - NAW2-OR-9 open; validated on a real Woods pair",
+})
+
 def apply_overlay():
     for ph in SPINE:
         for c in ph["cells"]:
@@ -1353,7 +1375,7 @@ def build():
         },
         "playability_verdict": {
             "verdict": "NOT PLAYABLE",
-            "reason": "encoding in progress (bite 2 of 7 done: data layer, movement, ZOC, exit). " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["ENFORCED"]) + " ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5.",
+            "reason": "encoding in progress (bites 1-3 of 7 done: data layer, movement/ZOC/exit, combat arithmetic). " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["ENFORCED"]) + " ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5.",
         },
     }
     return doc, index

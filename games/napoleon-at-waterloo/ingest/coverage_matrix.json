@@ -580,7 +580,8 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "one attack = the summed Combat Strength of the attacking unit(s) compared to the summed Combat Strength of the adjacent defending unit(s), stated as a ratio",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py attack_strength/defense_strength/battle_check: summed strengths, ratio || games/napoleon-at-waterloo/validate_combat.py: 27/27 printed examples through battle_check"
     },
     {
      "id": "C.2",
@@ -591,11 +592,12 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "the ratio is simplified to a printed column, ALWAYS rounded in favour of the defender; attacks worse than 1:5 are treated as 1:5 and better than 6:1 as 6:1",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/crt_2nd_ed.json (10 columns, 6 rows, 60 cells, four independent readings, clamp footnote verbatim)"
      ],
-     "note": "the arithmetic expression that reproduces all 27 printed examples is OURS, not printed: floor(a/d):1 when a>=d, else 1:ceil(d/a). EX-13 (2 vs 3 -> 1:2) is the ONLY printed witness that the adverse side rounds by ceil rather than floor. A single witness - treat accordingly and write the validator against the whole 27-example corpus"
+     "note": "the arithmetic expression that reproduces all 27 printed examples is OURS, not printed: floor(a/d):1 when a>=d, else 1:ceil(d/a). EX-13 (2 vs 3 -> 1:2) is the ONLY printed witness that the adverse side rounds by ceil rather than floor. A single witness - treat accordingly and write the validator against the whole 27-example corpus",
+     "evidence": "engine/naw.py odds_column: floor(a/d):1 else 1:ceil(d/a), clamped to the printed columns || games/napoleon-at-waterloo/validate_combat.py: rounding pairs incl. EX-13 (2 vs 3 = 1:2), clamp 1 vs 40 = 1:5 / 30 vs 1 = 6:1, the 8-vs-3 rules example"
     },
     {
      "id": "C.3",
@@ -606,7 +608,7 @@
      "obligation": "PROCEDURE",
      "requirement": "one six-sided die per attack, rolled by the attacking player, read against the odds column",
      "status": "OPEN",
-     "note": "engine-owned dice: seeded, logged, replayable (spec #11). No client-side rolls"
+     "note": "engine-owned dice: seeded, logged, replayable (spec #11). No client-side rolls || roll_die (gate.py) is seeded/counted/replayable (validate_combat: 300 rolls 1..6, same seed same rolls); the per-attack roll lands with the battle action (bite 5)"
     },
     {
      "id": "C.4",
@@ -625,7 +627,8 @@
      ],
      "obligation": "MUST",
      "requirement": "attacking units must be adjacent to the enemy unit attacked, during the attacker's own Combat Phase; the sole exception is artillery bombardment at exactly two hexes",
-     "status": "OPEN"
+     "status": "OPEN",
+     "note": "predicate BUILT + validated (battle_check: adjacent legal, non-adjacent infantry refused, artillery at exactly two hexes) - flips to ENFORCED when the battle action makes battle_check the door (bite 5)"
     },
     {
      "id": "C.6",
@@ -681,7 +684,8 @@
      ],
      "obligation": "MAY",
      "requirement": "many attackers may combine against one defender, provided every attacker is adjacent to that defender (artillery bombardment excepted); their strengths total into one figure",
-     "status": "OPEN"
+     "status": "OPEN",
+     "note": "predicate built + validated (several attackers vs one defender, all adjacent) - flips with the battle action"
     },
     {
      "id": "C.11",
@@ -690,7 +694,8 @@
      ],
      "obligation": "MAY",
      "requirement": "one attacker may attack two or more defenders it is adjacent to; the defenders' strengths total into one figure",
-     "status": "OPEN"
+     "status": "OPEN",
+     "note": "predicate built + validated (one attacker vs several adjacent defenders; several-on-several EX-14 under the every-attacker-adjacent-to-every-defender reading) - flips with the battle action"
     },
     {
      "id": "C.12",
@@ -700,7 +705,7 @@
      "obligation": "MAY",
      "requirement": "deliberately poor-odds ('diversionary') attacks are legal; the gate must never require odds maximisation or refuse a suicidal attack",
      "status": "OPEN",
-     "note": "a real refusal risk: an engine that helpfully rejects a 1:5 attack breaks the printed permission. EX-16 prints a 1:4 attack"
+     "note": "a real refusal risk: an engine that helpfully rejects a 1:5 attack breaks the printed permission. EX-16 prints a 1:4 attack || validated: a 1:4 attack is legal, battle_check never refuses on odds - flips with the battle action"
     },
     {
      "id": "C.13",
@@ -709,7 +714,8 @@
      ],
      "obligation": "MUST NOT",
      "requirement": "Combat Strength is used as an integral whole and may never be split across two attacks",
-     "status": "OPEN"
+     "status": "ENFORCED",
+     "evidence": "engine/naw.py battle_check: a unit named twice is refused; strengths enter whole || games/napoleon-at-waterloo/validate_combat.py: a unit named twice is refused [CBT-17]"
     },
     {
      "id": "C.14",
@@ -719,9 +725,10 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "a DEFENDING unit in a Town hex or a Woods/Road hex doubles its Combat Strength; attacking FROM such terrain confers nothing",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "note": "NAW2-D4 RULED (Bruce, 2026-08-14): follow the chart, which prints 'Towns & Woods/Roads' as one row. The rules text case (J.) names Towns only. Both are printed components of the same 1971 folio and no documentary ladder separates them; the 27 printed examples are silent (no example places a defender in a Woods/Road hex). Blast radius 5 hexes of 594. The predicate keys on the DEFENDER's hex only - EX-03 proves an attacker in a Town is NOT doubled, EX-04 proves the Town defender IS. Escalation to the game/module creator remains outstanding per spec #21 as amended",
-     "open_ruling": "NAW2-D4 (ruled; escalation outstanding)"
+     "open_ruling": "NAW2-D4 (ruled; escalation outstanding)",
+     "evidence": "engine/naw.py defense_strength: x2 when the DEFENDER's hex kind is town or woods_road (game.json combat.terrain_effects, ruling NAW2-D4); attackers never doubled || games/napoleon-at-waterloo/validate_combat.py: Town defender 6->12, Woods/Road 1014 defender 6->12, clear 6, attacker in Town 6 vs 6 = 1:1 (EX-03/EX-04)"
     },
     {
      "id": "C.15",
@@ -731,7 +738,7 @@
      "obligation": "MUST NOT",
      "requirement": "no defending unit may be attacked more than once per turn, nor any attacking unit attack more than once per turn",
      "status": "OPEN",
-     "note": "the print says 'per turn' where the neighbouring cases say Combat Phase. A unit can only be attacked in its enemy's Combat Phase and there is exactly one of those per Game-Turn, so the two readings coincide in play; the wording is loose, not defective. Recorded so no one re-derives it"
+     "note": "the print says 'per turn' where the neighbouring cases say Combat Phase. A unit can only be attacked in its enemy's Combat Phase and there is exactly one of those per Game-Turn, so the two readings coincide in play; the wording is loose, not defective. Recorded so no one re-derives it || predicate built + validated via the fought/defended flags - the flags are set by the battle action (bite 5)"
     },
     {
      "id": "C.16",
@@ -741,12 +748,13 @@
      ],
      "obligation": "PROCEDURE",
      "requirement": "the validation corpus: 27 printed worked examples (folio p.2) plus the 8-vs-3 example printed inside the COMBAT column must all reproduce under the encoded odds arithmetic",
-     "status": "OPEN",
+     "status": "ENFORCED",
      "data": [
       "ingest/worked_examples.json (27 examples)",
       "ingest/example_check.json (27/27 odds reproduced under both readings of D4)"
      ],
-     "difficulty": "VALIDATION COVERAGE IS PARTIAL AND MUST BE STATED, NOT ASSUMED (hard rule #1). What the corpus does NOT exercise: the CRT itself (no example states a die roll or a result code, so AE/Ar/EX/Dr/DE are validated only by the printed table); CRT columns 1:5, 1:3, 5:1 and 6:1; the clamp footnote (most extreme printed odds are 1:4 and 4:1); Zones of Control (never drawn); a Woods/Road defender (D4 is untouched by the corpus); nationality (attacker/defender is coded by grey tint, so no example constrains which side attacks); and terrain of any hex other than the two Town hexes. Enforcement of anything on that list ships on the printed table alone, not on a worked example"
+     "difficulty": "VALIDATION COVERAGE IS PARTIAL AND MUST BE STATED, NOT ASSUMED (hard rule #1). What the corpus does NOT exercise: the CRT itself (no example states a die roll or a result code, so AE/Ar/EX/Dr/DE are validated only by the printed table); CRT columns 1:5, 1:3, 5:1 and 6:1; the clamp footnote (most extreme printed odds are 1:4 and 4:1); Zones of Control (never drawn); a Woods/Road defender (D4 is untouched by the corpus); nationality (attacker/defender is coded by grey tint, so no example constrains which side attacks); and terrain of any hex other than the two Town hexes. Enforcement of anything on that list ships on the printed table alone, not on a worked example",
+     "evidence": "engine/naw.py battle_check + odds_column + crt_result || games/napoleon-at-waterloo/validate_combat.py: 27/27 printed examples reproduce their odds; 60/60 CRT cells == crt_2nd_ed.json; corpus gaps stated (no die/result printed, columns 1:5/1:3/5:1/6:1 and the clamp untested by print)"
     }
    ]
   },
@@ -763,7 +771,8 @@
      ],
      "obligation": "MAY",
      "requirement": "artillery may attack by bombarding from EXACTLY two hexes' distance, as well as adjacently",
-     "status": "OPEN"
+     "status": "OPEN",
+     "note": "predicate built + validated: distance exactly 2 legal, 3 refused - flips with the battle action"
     },
     {
      "id": "A.2",
@@ -861,7 +870,7 @@
      "obligation": "MUST NOT",
      "requirement": "a BOMBARDING artillery unit may attack only a single unit (never part of a one-to-many attack); an ADJACENT artillery unit may attack as many units as it is adjacent to",
      "status": "OPEN",
-     "note": "the bar is on the bombarding unit's participation, so it also constrains mixed attacks (A.11): a combined attack that includes a bombarding gun cannot have two defenders"
+     "note": "the bar is on the bombarding unit's participation, so it also constrains mixed attacks (A.11): a combined attack that includes a bombarding gun cannot have two defenders || predicate built + validated: bombarding gun vs two defenders refused (ART-13); adjacent gun vs two adjacent defenders legal (ART-14)"
     },
     {
      "id": "A.11",
@@ -873,7 +882,8 @@
      "status": "OPEN",
      "data": [
       "worked_examples.json: EX-09 and EX-24 print exactly this combination"
-     ]
+     ],
+     "note": "predicate built + validated: adjacent cavalry 1 + bombarding artillery 3 = 4:1 (EX-09/EX-24)"
     },
     {
      "id": "A.12",
@@ -893,7 +903,8 @@
      ],
      "obligation": "MAY",
      "requirement": "bombardment may fire over intervening units (enemy or friendly) and over Town hexes",
-     "status": "OPEN"
+     "status": "OPEN",
+     "note": "predicate built + validated: fires over an intervening enemy unit and over a Town hex"
     },
     {
      "id": "A.14",
@@ -905,7 +916,8 @@
      "requirement": "artillery may not fire over a Woods hex to attack a unit two hexes away",
      "status": "OPEN",
      "difficulty": "AMBIGUOUS AT THE GEOMETRY. On a hex grid two hexes apart there are either one or two intervening hexes depending on the axis. The print never says whether ONE Woods hex among two candidate paths blocks the shot, or whether every path must be blocked. The two readings give different legal bombardment sets, and 56 of 594 hexes are Woods, so the difference is not marginal. Flagged MATERIAL in rules_2nd_ed.json; listed in unenforceable_as_written. Note also that the TEC states the same bar on its Woods row, so both printed sources agree on the rule and disagree with neither - the ambiguity is in the geometry, not between components",
-     "open_ruling": "NAW2-OR-9"
+     "open_ruling": "NAW2-OR-9",
+     "note": "predicate built under the STRICT reading (any candidate intervening Woods hex blocks) - NAW2-OR-9 open; validated on a real Woods pair"
     },
     {
      "id": "A.15",
@@ -1856,9 +1868,9 @@
   },
   "P2/P4 COMBAT PHASE - declaration and assignment": {
    "cells": 16,
-   "OPEN": 16,
+   "OPEN": 11,
    "UNREACHABLE": 0,
-   "ENFORCED": 0,
+   "ENFORCED": 5,
    "hard": 3
   },
   "P2a/P4a COMBAT PHASE - artillery": {
@@ -1892,9 +1904,9 @@
  },
  "counts_total": {
   "cells": 111,
-  "OPEN": 81,
+  "OPEN": 76,
   "UNREACHABLE": 1,
-  "ENFORCED": 29,
+  "ENFORCED": 34,
   "hard": 25,
   "open_rulings": 21
  },
@@ -1911,6 +1923,6 @@
  },
  "playability_verdict": {
   "verdict": "NOT PLAYABLE",
-  "reason": "encoding in progress (bite 2 of 7 done: data layer, movement, ZOC, exit). 81 of 111 cells OPEN, 1 UNREACHABLE-with-evidence, 29 ENFORCED. 21 registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5."
+  "reason": "encoding in progress (bites 1-3 of 7 done: data layer, movement/ZOC/exit, combat arithmetic). 76 of 111 cells OPEN, 1 UNREACHABLE-with-evidence, 34 ENFORCED. 21 registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5."
  }
 }

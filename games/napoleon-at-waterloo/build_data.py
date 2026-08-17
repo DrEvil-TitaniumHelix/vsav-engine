@@ -166,9 +166,12 @@ def build_scenario(oob, mod, tr):
                 "Woods: entry prohibited; Woods/Road hexes entered and left only across their road hexsides (terrain.json sides) [MOV-16/MOV-17/MOV-18, TEC row 3]",
                 "Zones of Control: every unit controls its six adjacent hexes at all times, including Woods hexes no unit can enter; a unit entering an enemy-controlled hex must stop; it may not move through one nor leave one by movement; a unit beginning its Movement Phase in an enemy ZOC may not move at all; friendly ZOC never inhibits [ZOC-01..ZOC-08, MOV-10/11/12/13]",
                 "Exit: French units only, from the eleven arrowed North-edge hexes 0101-1101, during the own Movement Phase, one Movement Point, exit hex reachable and free of enemy ZOC; exited units never return and are not French losses; Allied units never exit [VIC-08/09/10/11/12, VIC-06, REI-07]",
+                "Combat arithmetic: attacker total vs defender total, odds rounded in favour of the defender (floor(a/d):1, else 1:ceil(d/a)), clamped 1:5..6:1, the 60-cell CRT, engine-owned seeded d6 - proved against all 27 printed Examples of Attacks and the 8-vs-3 rules example [CBT-01/02/03, CBT-EX-01, CRT-01]",
+                "Terrain effects on combat: a DEFENDER in a Town or Woods/Road hex doubles; attacking from such terrain confers nothing [CBT-18, TEC row 2, ruling NAW2-D4; EX-03/EX-04]",
+                "Per-attack legality (battle_check): every non-artillery attacker adjacent to every defender it attacks; several attackers may combine on one defender and one attacker on several defenders (EX-14: several on several); a unit never split or named twice; a 1:5 diversionary attack is never refused; no unit attacks or is attacked twice a phase; artillery may bombard exactly two hexes away, one target only, over units and Towns but never across an intervening Woods hex (every candidate intervening hex counts - NAW2-OR-9 pending); adjacent artillery attacks like any unit [CBT-05/10/11/12/13/17, ART-01/08/13/14/16/17]",
             ],
             "not_yet_enforced": [
-                "Combat Phase: odds, CRT, terrain doubling, mandatory attacks, artillery bombardment, results, retreat/disruption/advance (bites 3-5)",
+                "The battle ACTION itself (declare, roll, apply) and the phase-level mandatory-attack assignment (CBT-06/07/10 - needs rulings NAW2-OR-5/OR-6), result application: retreat (victor chooses), disruption, EX, advance, artillery immunity (bites 4-5; SD-3 and OR-7..OR-17 pending)",
                 "Prussian reinforcement entry at the start of the Allied Player-Turn of Game-Turn 2 (bite 6)",
                 "Victory: forty-point ledgers, seven French exits, immediate check, Allied demoralization (bite 6) - the game currently ends in a draw after Game-Turn 10",
             ],
@@ -178,6 +181,8 @@ def build_scenario(oob, mod, tr):
                 "MOV-09 stacking is enforced under reading B (no hex ever holds two units - a unit may not end its own move on a friendly unit); reading A (may end stacked, must un-stack by phase end) is a one-line switch - NAW2-OR-2 for Bruce",
                 "Exit hex 1101 (Woods/Road, road N-S, printed exit arrow inside the hex): enterable only from 1102 along the road, exit crosses the north road hexside - enforced as legal, NAW2-OR-18 for Bruce's confirmation",
                 "Woods/Road hex 1014 (Hougoumont) is a genuine printed cul-de-sac: the road enters from the NW and ends inside the hex - verified on Oliver's map scan 2026-08-17 (N2 closed)",
+                "Artillery line of fire (ART-17): blocked if ANY candidate intervening hex is Woods (a bent two-hex pair has two candidates) - the stricter reading, NAW2-OR-9 for Bruce",
+                "Several-on-several attacks (EX-14) are legal only when every attacker is adjacent to every defender - the reading that satisfies CBT-11 and CBT-12 simultaneously and matches the printed geometry",
             ],
             "open_for_bruce": [
                 "NAW2-SD-3: may a DISRUPTED unit be pushed into a Woods/Road hex?",
@@ -185,6 +190,7 @@ def build_scenario(oob, mod, tr):
                 "M.13 / MOV-19 / NAW2-OR-3: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy",
                 "NAW2-OR-2: MOV-09 stacking reading A vs B (enforced B meanwhile)",
                 "NAW2-OR-18: exit through Woods/Road hex 1101 (enforced legal meanwhile - the arrow is printed in the hex)",
+                "NAW2-OR-9: does one Woods hex among two candidate intervening hexes block a bombardment? (enforced: yes, meanwhile)",
             ],
         },
     }
