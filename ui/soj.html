@@ -278,7 +278,7 @@ function refuse(reasons){
     const up=FLOW&&FLOW.unplaced&&FLOW.unplaced[m[2]==='Judaean'?'Jud':'Rom'];
     if(up&&up.length)ctx=`Still in the tray: ${up.slice(0,12).join(', ')}${up.length>12?' …':''}`;
   } else if(/strongpoint/.test(txt)){
-    hint='Garrison every gold strongpoint hex before ending deployment — click a placed unit, then click the empty gold hex to redeploy it there.';
+    hint='Garrison every gold strongpoint hex before ending deployment — click a placed unit ON THE MAP to pick it up (it turns yellow), then click the empty gold hex to move it there.';
     const mfe=FLOW&&FLOW.min_force_empty;
     if(mfe&&mfe.length)ctx=`Empty strongpoints: ${mfe.join(', ')} [card SR1]`;
   } else if(/Judaean deployment first/.test(txt)){
@@ -312,6 +312,11 @@ async function selectUnit(id, additive){
   const p=FLOW.phase, side=FLOW.side_to_move;
   if(FLOW.pending){ return; }              // the modal owns the screen
   if(u.side!==side){ targetClick(u.hex); return; }
+  if(p==='deploy_jud'||p==='deploy_rom'){
+    if(!u.onmap)return;
+    deploySel=(deploySel===id)?null:id; deployFace=null;
+    renderTray(); renderGuide(); render(); return;
+  }
   if(p.endsWith('_move')){
     sel=[id]; faceCtx=null; climb=false;
     moveCtx={pid:id, dests:null, crew:[], tst:false};
@@ -524,6 +529,7 @@ function renderTray(){
   if(deploying){
     const un=UNITS.filter(u=>!u.onmap&&u.side===side&&u.state!=='eliminated');
     h+=`<div class="hdr">UNPLACED — ${sideLabel(side)} (${un.length}). Click a unit, then a highlighted hex.</div>`;
+    if(!un.length)h+=`<div style="padding:5px 10px;font-size:12px">All placed. To <b>redeploy</b>: click a placed ${sideLabel(side)} unit on the map, then click its new hex.${side==='Jud'?' Empty gold strongpoints must be garrisoned [SR1].':''}</div>`;
     if(side==='Rom'&&un.some(u=>u.cls==='artillery'))
       h+=`<div style="padding:5px 10px"><label style="font-size:12px"><input type="checkbox" ${artDisrupted?'checked':''}
         onchange="artDisrupted=this.checked"> deploy Artillery <b>Disrupted (movable)</b> [3.4]</label></div>`;
@@ -592,7 +598,8 @@ function render(){
       const el=document.createElement('img');
       const done=(FLOW.phase.endsWith('_fire')&&u.fired)||(FLOW.phase.endsWith('_move')&&u.moved);
       el.className='counter'+(done?' done':'')
-        +(sel.includes(u.id)?(FLOW.phase.endsWith('_melee')||FLOW.phase.endsWith('_fire')?' selatk':' sel'):'');
+        +(sel.includes(u.id)?(FLOW.phase.endsWith('_melee')||FLOW.phase.endsWith('_fire')?' selatk':' sel'):'')
+        +(deploySel===u.id?' sel':'');
       el.src=GAME.counters_url+encodeURIComponent(u.img);
       el.style.width=CPX+'px'; el.style.height=CPX+'px';
       el.style.margin=`-${CPX/2}px 0 0 -${CPX/2}px`;
@@ -623,9 +630,9 @@ function drawZones(){
   if((p==='deploy_jud'||p==='deploy_rom')&&deploySel){
     const zone=p==='deploy_jud'?BOARD.zones.jud:BOARD.zones.rom;
     zone.forEach(n=>{ const h=hexXY(n); if(h)poly(h.x,h.y,'#7ce07c','rgba(120,220,120,0.13)',3); });
-    if(p==='deploy_jud')BOARD.zones.min_force.forEach(n=>{ const h=hexXY(n);
-      if(h&&!unitsAt(n).length)poly(h.x,h.y,'#ffd75e','rgba(255,215,94,0.25)',6); });
   }
+  if(p==='deploy_jud')BOARD.zones.min_force.forEach(n=>{ const h=hexXY(n);
+    if(h&&!unitsAt(n).length)poly(h.x,h.y,'#ffd75e','rgba(255,215,94,0.25)',6); });
   if(deployFace){
     const h=hexXY(deployFace.hex);
     if(h)poly(h.x,h.y,'#ffd75e','rgba(255,215,94,0.3)',8);
@@ -694,14 +701,18 @@ function renderGuide(){
   if(p==='deploy_jud'||p==='deploy_rom'){
     const un=FLOW.unplaced[side==='Jud'?'Jud':'Rom'].length;
     if(deployFace){ FRAME.setGuide(`<b>Set the Facing arrow</b> — click the hex adjacent to ${deployFace.hex} the Siege Engine faces [2.45].`); FRAME.soleNext(null); return; }
+    if(deploySel&&unit(deploySel)&&unit(deploySel).onmap){
+      FRAME.setGuide(`<b>Redeploying ${deploySel}</b> from ${unit(deploySel).hex} — click its new hex (click the unit again to cancel).`);
+      FRAME.soleNext(null); return;
+    }
     if(un===0){
       const mf=FLOW.min_force_empty.length;
       FRAME.setGuide(side==='Jud'&&mf
-        ? `All units placed but <b>${mf} strongpoint(s) still empty</b> (gold hexes): ${FLOW.min_force_empty.slice(0,6).join(', ')}${mf>6?'…':''} [card SR1]. Move units there by redeploying, or press ✓ and the Umpire will spell out what is missing.`
+        ? `All units placed but <b>${mf} strongpoint(s) still empty</b> (gold hexes): ${FLOW.min_force_empty.slice(0,6).join(', ')}${mf>6?'…':''} [card SR1]. <b>Redeploy</b>: click a placed unit on the map to pick it up, then click the empty gold hex. Or press ✓ and the Umpire will spell out what is missing.`
         : `<b>All ${sideLabel(side)} units placed</b> — press <b>✓ Deployment done</b>.`);
       FRAME.soleNext('deploydonebtn'); return;
     }
-    FRAME.setGuide(`<b>${sideLabel(side)} deployment</b> — ${un} unit(s) left: click a unit in the LEFT tray, then a highlighted hex. ${side==='Jud'?'Gold hexes are the mandatory strongpoint garrisons [SR1].':'Anywhere outside Jerusalem, ≥5 hexes from Elevated (card).'}`);
+    FRAME.setGuide(`<b>${sideLabel(side)} deployment</b> — ${un} unit(s) left: click a unit in the LEFT tray, then a highlighted hex. Placed units can be picked up again by clicking them on the map. ${side==='Jud'?'Gold hexes are the mandatory strongpoint garrisons [SR1].':'Anywhere outside Jerusalem, ≥5 hexes from Elevated (card).'}`);
     FRAME.soleNext(null); return;
   }
   if(p.endsWith('_rally')){
