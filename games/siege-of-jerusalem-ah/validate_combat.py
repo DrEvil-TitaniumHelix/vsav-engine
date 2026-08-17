@@ -309,6 +309,25 @@ def retreat_engine_checks(g):
         assert z4["hex"] == legal[0] and z4["state"] == "fresh"
         print("retreat: 14.21 cap + forced-overstack elimination OK")
 
+        # ---- case 4b: a unit Disrupted then Eliminated (or Routed) by later
+        # letters of the SAME result never enters the melee-retreat pending
+        # (the manual door mirrors the auto door: only units STILL Disrupted
+        # and on the map retreat [15.1]); before this the pending named an
+        # eliminated unit and `eliminate` crashed inside _retreat_survivable
+        h0g = next(rest)
+        k1, k2 = take("judaean_regular", 2)
+        place(k1, h0g)
+        place(k2, h0g)
+        tg.s["pending"] = {"kind": "loss", "hex": h0g, "letters": ["D", "E"],
+                           "by": "Jud", "source": "melee",
+                           "attacker": "Rom", "attacker_pids": []}
+        submit_ok(tg, "Jud", {"type": "resolve_loss",
+                              "picks": [{"pid": k1["pid"]}, {"pid": k1["pid"]}]})
+        assert k1["state"] == "eliminated" and k1["hex"] is None
+        assert tg.s["pending"] is None,             "an eliminated unit must not be queued to retreat [15.1]"
+        k1["hex"] = k2["hex"] = None
+        print("retreat: D+E on one unit queues no melee retreat for the eliminated unit (manual door = auto door)")
+
         # ---- case 5: N23 - substitute a D for the B [14.2]
         h0f = next(rest)
         j1, j2 = take("judaean_regular", 2)
