@@ -303,6 +303,39 @@ for h, v in G.terrain["hexes"].items():
             break
     if town_pairs:
         break
+bent = []
+for h, v in G.terrain["hexes"].items():
+    if v["t"] != "clear":
+        continue
+    c = hx(h)
+    for t in {n for r in G.neighbors(*c) for n in G.neighbors(*r)}:
+        if G.on_map(*t) and terr(t) == "clear" and G.hex_distance(c, t) == 2:
+            mids = list(set(G.neighbors(*c)) & set(G.neighbors(*t)))
+            if len(mids) == 2 and sum(1 for b in mids if terr(b) in ("woods", "woods_road")) == 1:
+                bent.append((c, t))
+                break
+    if bent:
+        break
+c, t = bent[0]
+POOL.clear()
+g = fresh()
+d = take("Al", "cavalry", 1)
+place(g, d, t, "Al")
+art = take("Fr", "artillery", 3)
+place(g, art, c, "Fr")
+legal, reasons, _ = g.battle_check("Fr", [art], [d])
+check(legal, f"bent two-hex shot with ONE woods candidate and one clear candidate is OPEN ({hn(c)} -> {hn(t)}) [SPI 1979 Terrain Key example: 0803 fires into 0705 past woods 0804]")
+wr_t = next(hx(h) for h, v in G.terrain["hexes"].items() if v["t"] == "woods_road")
+src = next(h for h in {n for r in G.neighbors(*wr_t) for n in G.neighbors(*r)} if G.on_map(*h) and terr(h) == "clear" and G.hex_distance(h, wr_t) == 2
+           and any(terr(b) not in ("woods", "woods_road") for b in set(G.neighbors(*h)) & set(G.neighbors(*wr_t))))
+POOL.clear()
+g = fresh()
+d = take("Al", "cavalry", 1)
+place(g, d, wr_t, "Al")
+art = take("Fr", "artillery", 3)
+place(g, art, src, "Fr")
+legal, reasons, _ = g.battle_check("Fr", [art], [d])
+check(legal, f"a Woods/Road hex may be bombarded INTO ({hn(src)} -> {hn(wr_t)}) [1979 Terrain Key: 'Artillery may bombard into Woods-Road hexes']")
 c, t = town_pairs[0]
 POOL.clear()
 g = fresh()

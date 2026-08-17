@@ -180,10 +180,10 @@ class NawGame(GateGame):
         a, d = (art["col"], art["row"]), (dfd["col"], dfd["row"])
         if self.game.hex_distance(a, d) != 2:
             return False, "not exactly two hexes away [ART-01: artillery bombards a unit from two hexes distance]"
-        between = set(self.game.neighbors(*a)) & set(self.game.neighbors(*d))
-        woods = [self.game.grid.hexnum(*h) for h in sorted(between) if self.game.hex_terrain(*h) == "woods"]
-        if woods:
-            return False, f"line of fire crosses Woods hex {'/'.join(woods)} [ART-17/TEC row 3: artillery may not fire over an intervening Woods hex - enforced on every candidate intervening hex, NAW2-OR-9 pending]"
+        between = sorted(set(self.game.neighbors(*a)) & set(self.game.neighbors(*d)))
+        blocked = [self.game.grid.hexnum(*h) for h in between if self.game.hex_terrain(*h) in ("woods", "woods_road")]
+        if len(blocked) == len(between):
+            return False, f"line of fire crosses Woods hex {'/'.join(blocked)} [ART-17/TEC row 3 + footnote (a hex with any woods symbol is Woods): artillery may not fire over an intervening Woods hex; a bent two-hex shot is open if either candidate hex is clear - SPI 1979 Terrain Key example 0803->0705 legal past woods 0804, 0803->0805 blocked]"
         return True, "bombardment at two hexes; intervening units and Town hexes do not block [ART-01/ART-16]"
 
     def battle_check(self, side, atk_ids, def_ids):
