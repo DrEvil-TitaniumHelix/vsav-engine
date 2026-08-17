@@ -8,7 +8,7 @@ import soj
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, "games", "siege-of-jerusalem-ah")
-OLDLOG = os.path.join(ROOT, "live", "game_siege-of-jerusalem-ah.log.jsonl")
+OLDLOG = os.path.join(GAME, "ref_gallus.log.jsonl")
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else 20260813
 WORK = sys.argv[1]
 os.makedirs(WORK, exist_ok=True)
