@@ -1,0 +1,1919 @@
+{
+ "hexes": {
+  "0101": {
+   "t": "clear",
+   "exit": true
+  },
+  "0102": {
+   "t": "clear"
+  },
+  "0103": {
+   "t": "clear"
+  },
+  "0104": {
+   "t": "clear"
+  },
+  "0105": {
+   "t": "clear"
+  },
+  "0106": {
+   "t": "clear"
+  },
+  "0107": {
+   "t": "clear"
+  },
+  "0108": {
+   "t": "clear"
+  },
+  "0109": {
+   "t": "clear"
+  },
+  "0110": {
+   "t": "clear"
+  },
+  "0111": {
+   "t": "clear"
+  },
+  "0112": {
+   "t": "clear"
+  },
+  "0113": {
+   "t": "clear"
+  },
+  "0114": {
+   "t": "clear"
+  },
+  "0115": {
+   "t": "clear"
+  },
+  "0116": {
+   "t": "clear"
+  },
+  "0117": {
+   "t": "clear"
+  },
+  "0118": {
+   "t": "clear"
+  },
+  "0119": {
+   "t": "clear"
+  },
+  "0120": {
+   "t": "clear"
+  },
+  "0121": {
+   "t": "clear"
+  },
+  "0122": {
+   "t": "clear"
+  },
+  "0201": {
+   "t": "clear",
+   "exit": true
+  },
+  "0202": {
+   "t": "clear"
+  },
+  "0203": {
+   "t": "clear"
+  },
+  "0204": {
+   "t": "clear"
+  },
+  "0205": {
+   "t": "clear"
+  },
+  "0206": {
+   "t": "clear"
+  },
+  "0207": {
+   "t": "clear"
+  },
+  "0208": {
+   "t": "clear"
+  },
+  "0209": {
+   "t": "clear"
+  },
+  "0210": {
+   "t": "town"
+  },
+  "0211": {
+   "t": "clear"
+  },
+  "0212": {
+   "t": "clear"
+  },
+  "0213": {
+   "t": "clear"
+  },
+  "0214": {
+   "t": "clear"
+  },
+  "0215": {
+   "t": "clear"
+  },
+  "0216": {
+   "t": "clear"
+  },
+  "0217": {
+   "t": "clear"
+  },
+  "0218": {
+   "t": "clear"
+  },
+  "0219": {
+   "t": "clear"
+  },
+  "0220": {
+   "t": "clear"
+  },
+  "0221": {
+   "t": "clear"
+  },
+  "0222": {
+   "t": "clear"
+  },
+  "0301": {
+   "t": "clear",
+   "exit": true
+  },
+  "0302": {
+   "t": "clear"
+  },
+  "0303": {
+   "t": "clear"
+  },
+  "0304": {
+   "t": "clear"
+  },
+  "0305": {
+   "t": "clear"
+  },
+  "0306": {
+   "t": "town"
+  },
+  "0307": {
+   "t": "clear"
+  },
+  "0308": {
+   "t": "town"
+  },
+  "0309": {
+   "t": "town"
+  },
+  "0310": {
+   "t": "clear"
+  },
+  "0311": {
+   "t": "clear"
+  },
+  "0312": {
+   "t": "clear"
+  },
+  "0313": {
+   "t": "clear"
+  },
+  "0314": {
+   "t": "clear"
+  },
+  "0315": {
+   "t": "clear"
+  },
+  "0316": {
+   "t": "clear"
+  },
+  "0317": {
+   "t": "clear"
+  },
+  "0318": {
+   "t": "clear"
+  },
+  "0319": {
+   "t": "clear"
+  },
+  "0320": {
+   "t": "clear"
+  },
+  "0321": {
+   "t": "clear"
+  },
+  "0322": {
+   "t": "clear"
+  },
+  "0401": {
+   "t": "clear",
+   "exit": true
+  },
+  "0402": {
+   "t": "clear"
+  },
+  "0403": {
+   "t": "clear"
+  },
+  "0404": {
+   "t": "clear"
+  },
+  "0405": {
+   "t": "clear"
+  },
+  "0406": {
+   "t": "clear"
+  },
+  "0407": {
+   "t": "clear"
+  },
+  "0408": {
+   "t": "clear"
+  },
+  "0409": {
+   "t": "town"
+  },
+  "0410": {
+   "t": "clear"
+  },
+  "0411": {
+   "t": "clear"
+  },
+  "0412": {
+   "t": "clear"
+  },
+  "0413": {
+   "t": "clear"
+  },
+  "0414": {
+   "t": "clear"
+  },
+  "0415": {
+   "t": "clear"
+  },
+  "0416": {
+   "t": "clear"
+  },
+  "0417": {
+   "t": "woods"
+  },
+  "0418": {
+   "t": "clear"
+  },
+  "0419": {
+   "t": "clear"
+  },
+  "0420": {
+   "t": "clear"
+  },
+  "0421": {
+   "t": "clear"
+  },
+  "0422": {
+   "t": "clear"
+  },
+  "0501": {
+   "t": "clear",
+   "exit": true
+  },
+  "0502": {
+   "t": "clear"
+  },
+  "0503": {
+   "t": "clear"
+  },
+  "0504": {
+   "t": "clear"
+  },
+  "0505": {
+   "t": "clear"
+  },
+  "0506": {
+   "t": "clear"
+  },
+  "0507": {
+   "t": "clear"
+  },
+  "0508": {
+   "t": "clear"
+  },
+  "0509": {
+   "t": "clear"
+  },
+  "0510": {
+   "t": "clear"
+  },
+  "0511": {
+   "t": "clear"
+  },
+  "0512": {
+   "t": "clear"
+  },
+  "0513": {
+   "t": "clear"
+  },
+  "0514": {
+   "t": "clear"
+  },
+  "0515": {
+   "t": "clear"
+  },
+  "0516": {
+   "t": "clear"
+  },
+  "0517": {
+   "t": "clear"
+  },
+  "0518": {
+   "t": "clear"
+  },
+  "0519": {
+   "t": "clear"
+  },
+  "0520": {
+   "t": "clear"
+  },
+  "0521": {
+   "t": "woods"
+  },
+  "0522": {
+   "t": "clear"
+  },
+  "0601": {
+   "t": "clear",
+   "exit": true
+  },
+  "0602": {
+   "t": "clear"
+  },
+  "0603": {
+   "t": "clear"
+  },
+  "0604": {
+   "t": "clear"
+  },
+  "0605": {
+   "t": "clear"
+  },
+  "0606": {
+   "t": "clear"
+  },
+  "0607": {
+   "t": "clear"
+  },
+  "0608": {
+   "t": "clear"
+  },
+  "0609": {
+   "t": "clear"
+  },
+  "0610": {
+   "t": "clear"
+  },
+  "0611": {
+   "t": "clear"
+  },
+  "0612": {
+   "t": "clear"
+  },
+  "0613": {
+   "t": "clear"
+  },
+  "0614": {
+   "t": "clear"
+  },
+  "0615": {
+   "t": "clear"
+  },
+  "0616": {
+   "t": "clear"
+  },
+  "0617": {
+   "t": "clear"
+  },
+  "0618": {
+   "t": "clear"
+  },
+  "0619": {
+   "t": "clear"
+  },
+  "0620": {
+   "t": "woods"
+  },
+  "0621": {
+   "t": "woods"
+  },
+  "0622": {
+   "t": "clear"
+  },
+  "0701": {
+   "t": "clear",
+   "exit": true
+  },
+  "0702": {
+   "t": "clear"
+  },
+  "0703": {
+   "t": "clear"
+  },
+  "0704": {
+   "t": "clear"
+  },
+  "0705": {
+   "t": "town"
+  },
+  "0706": {
+   "t": "town"
+  },
+  "0707": {
+   "t": "clear"
+  },
+  "0708": {
+   "t": "town"
+  },
+  "0709": {
+   "t": "clear"
+  },
+  "0710": {
+   "t": "clear"
+  },
+  "0711": {
+   "t": "clear"
+  },
+  "0712": {
+   "t": "clear"
+  },
+  "0713": {
+   "t": "clear"
+  },
+  "0714": {
+   "t": "clear"
+  },
+  "0715": {
+   "t": "clear"
+  },
+  "0716": {
+   "t": "clear"
+  },
+  "0717": {
+   "t": "clear"
+  },
+  "0718": {
+   "t": "clear"
+  },
+  "0719": {
+   "t": "clear"
+  },
+  "0720": {
+   "t": "woods"
+  },
+  "0721": {
+   "t": "woods"
+  },
+  "0722": {
+   "t": "clear"
+  },
+  "0801": {
+   "t": "clear",
+   "exit": true
+  },
+  "0802": {
+   "t": "clear"
+  },
+  "0803": {
+   "t": "clear"
+  },
+  "0804": {
+   "t": "clear"
+  },
+  "0805": {
+   "t": "clear"
+  },
+  "0806": {
+   "t": "clear"
+  },
+  "0807": {
+   "t": "clear"
+  },
+  "0808": {
+   "t": "town"
+  },
+  "0809": {
+   "t": "town"
+  },
+  "0810": {
+   "t": "clear"
+  },
+  "0811": {
+   "t": "clear"
+  },
+  "0812": {
+   "t": "clear"
+  },
+  "0813": {
+   "t": "clear"
+  },
+  "0814": {
+   "t": "clear"
+  },
+  "0815": {
+   "t": "clear"
+  },
+  "0816": {
+   "t": "clear"
+  },
+  "0817": {
+   "t": "clear"
+  },
+  "0818": {
+   "t": "clear"
+  },
+  "0819": {
+   "t": "clear"
+  },
+  "0820": {
+   "t": "clear"
+  },
+  "0821": {
+   "t": "clear"
+  },
+  "0822": {
+   "t": "clear"
+  },
+  "0901": {
+   "t": "clear",
+   "exit": true
+  },
+  "0902": {
+   "t": "clear"
+  },
+  "0903": {
+   "t": "clear"
+  },
+  "0904": {
+   "t": "woods"
+  },
+  "0905": {
+   "t": "clear"
+  },
+  "0906": {
+   "t": "clear"
+  },
+  "0907": {
+   "t": "clear"
+  },
+  "0908": {
+   "t": "clear"
+  },
+  "0909": {
+   "t": "clear"
+  },
+  "0910": {
+   "t": "clear"
+  },
+  "0911": {
+   "t": "clear"
+  },
+  "0912": {
+   "t": "clear"
+  },
+  "0913": {
+   "t": "clear"
+  },
+  "0914": {
+   "t": "clear"
+  },
+  "0915": {
+   "t": "clear"
+  },
+  "0916": {
+   "t": "clear"
+  },
+  "0917": {
+   "t": "clear"
+  },
+  "0918": {
+   "t": "clear"
+  },
+  "0919": {
+   "t": "clear"
+  },
+  "0920": {
+   "t": "clear"
+  },
+  "0921": {
+   "t": "clear"
+  },
+  "0922": {
+   "t": "clear"
+  },
+  "1001": {
+   "t": "clear",
+   "exit": true
+  },
+  "1002": {
+   "t": "clear"
+  },
+  "1003": {
+   "t": "clear"
+  },
+  "1004": {
+   "t": "clear"
+  },
+  "1005": {
+   "t": "clear"
+  },
+  "1006": {
+   "t": "clear"
+  },
+  "1007": {
+   "t": "clear"
+  },
+  "1008": {
+   "t": "clear"
+  },
+  "1009": {
+   "t": "clear"
+  },
+  "1010": {
+   "t": "clear"
+  },
+  "1011": {
+   "t": "clear"
+  },
+  "1012": {
+   "t": "clear"
+  },
+  "1013": {
+   "t": "town"
+  },
+  "1014": {
+   "t": "woods_road"
+  },
+  "1015": {
+   "t": "clear"
+  },
+  "1016": {
+   "t": "clear"
+  },
+  "1017": {
+   "t": "clear"
+  },
+  "1018": {
+   "t": "clear"
+  },
+  "1019": {
+   "t": "clear"
+  },
+  "1020": {
+   "t": "woods"
+  },
+  "1021": {
+   "t": "woods"
+  },
+  "1022": {
+   "t": "woods"
+  },
+  "1101": {
+   "t": "woods_road",
+   "exit": true
+  },
+  "1102": {
+   "t": "town"
+  },
+  "1103": {
+   "t": "town"
+  },
+  "1104": {
+   "t": "clear"
+  },
+  "1105": {
+   "t": "clear"
+  },
+  "1106": {
+   "t": "clear"
+  },
+  "1107": {
+   "t": "clear"
+  },
+  "1108": {
+   "t": "clear"
+  },
+  "1109": {
+   "t": "clear"
+  },
+  "1110": {
+   "t": "clear"
+  },
+  "1111": {
+   "t": "clear"
+  },
+  "1112": {
+   "t": "clear"
+  },
+  "1113": {
+   "t": "woods"
+  },
+  "1114": {
+   "t": "clear"
+  },
+  "1115": {
+   "t": "clear"
+  },
+  "1116": {
+   "t": "clear"
+  },
+  "1117": {
+   "t": "clear"
+  },
+  "1118": {
+   "t": "clear"
+  },
+  "1119": {
+   "t": "clear"
+  },
+  "1120": {
+   "t": "woods"
+  },
+  "1121": {
+   "t": "woods"
+  },
+  "1122": {
+   "t": "clear"
+  },
+  "1201": {
+   "t": "woods"
+  },
+  "1202": {
+   "t": "clear"
+  },
+  "1203": {
+   "t": "clear"
+  },
+  "1204": {
+   "t": "clear"
+  },
+  "1205": {
+   "t": "clear"
+  },
+  "1206": {
+   "t": "town"
+  },
+  "1207": {
+   "t": "clear"
+  },
+  "1208": {
+   "t": "clear"
+  },
+  "1209": {
+   "t": "clear"
+  },
+  "1210": {
+   "t": "clear"
+  },
+  "1211": {
+   "t": "clear"
+  },
+  "1212": {
+   "t": "clear"
+  },
+  "1213": {
+   "t": "clear"
+  },
+  "1214": {
+   "t": "clear"
+  },
+  "1215": {
+   "t": "clear"
+  },
+  "1216": {
+   "t": "clear"
+  },
+  "1217": {
+   "t": "clear"
+  },
+  "1218": {
+   "t": "clear"
+  },
+  "1219": {
+   "t": "clear"
+  },
+  "1220": {
+   "t": "clear"
+  },
+  "1221": {
+   "t": "clear"
+  },
+  "1222": {
+   "t": "clear"
+  },
+  "1301": {
+   "t": "clear"
+  },
+  "1302": {
+   "t": "clear"
+  },
+  "1303": {
+   "t": "clear"
+  },
+  "1304": {
+   "t": "clear"
+  },
+  "1305": {
+   "t": "clear"
+  },
+  "1306": {
+   "t": "town"
+  },
+  "1307": {
+   "t": "clear"
+  },
+  "1308": {
+   "t": "clear"
+  },
+  "1309": {
+   "t": "clear"
+  },
+  "1310": {
+   "t": "clear"
+  },
+  "1311": {
+   "t": "clear"
+  },
+  "1312": {
+   "t": "clear"
+  },
+  "1313": {
+   "t": "clear"
+  },
+  "1314": {
+   "t": "clear"
+  },
+  "1315": {
+   "t": "clear"
+  },
+  "1316": {
+   "t": "clear"
+  },
+  "1317": {
+   "t": "clear"
+  },
+  "1318": {
+   "t": "clear"
+  },
+  "1319": {
+   "t": "clear"
+  },
+  "1320": {
+   "t": "clear"
+  },
+  "1321": {
+   "t": "clear"
+  },
+  "1322": {
+   "t": "clear"
+  },
+  "1401": {
+   "t": "clear"
+  },
+  "1402": {
+   "t": "clear"
+  },
+  "1403": {
+   "t": "clear"
+  },
+  "1404": {
+   "t": "clear"
+  },
+  "1405": {
+   "t": "clear"
+  },
+  "1406": {
+   "t": "clear"
+  },
+  "1407": {
+   "t": "clear"
+  },
+  "1408": {
+   "t": "clear"
+  },
+  "1409": {
+   "t": "clear"
+  },
+  "1410": {
+   "t": "town"
+  },
+  "1411": {
+   "t": "clear"
+  },
+  "1412": {
+   "t": "clear"
+  },
+  "1413": {
+   "t": "clear"
+  },
+  "1414": {
+   "t": "clear"
+  },
+  "1415": {
+   "t": "clear"
+  },
+  "1416": {
+   "t": "clear"
+  },
+  "1417": {
+   "t": "clear"
+  },
+  "1418": {
+   "t": "clear"
+  },
+  "1419": {
+   "t": "clear"
+  },
+  "1420": {
+   "t": "clear"
+  },
+  "1421": {
+   "t": "clear"
+  },
+  "1422": {
+   "t": "clear"
+  },
+  "1501": {
+   "t": "clear"
+  },
+  "1502": {
+   "t": "clear"
+  },
+  "1503": {
+   "t": "clear"
+  },
+  "1504": {
+   "t": "clear"
+  },
+  "1505": {
+   "t": "clear"
+  },
+  "1506": {
+   "t": "woods"
+  },
+  "1507": {
+   "t": "clear"
+  },
+  "1508": {
+   "t": "clear"
+  },
+  "1509": {
+   "t": "clear"
+  },
+  "1510": {
+   "t": "clear"
+  },
+  "1511": {
+   "t": "clear"
+  },
+  "1512": {
+   "t": "clear"
+  },
+  "1513": {
+   "t": "clear"
+  },
+  "1514": {
+   "t": "clear"
+  },
+  "1515": {
+   "t": "clear"
+  },
+  "1516": {
+   "t": "clear"
+  },
+  "1517": {
+   "t": "clear"
+  },
+  "1518": {
+   "t": "clear"
+  },
+  "1519": {
+   "t": "town"
+  },
+  "1520": {
+   "t": "clear"
+  },
+  "1521": {
+   "t": "clear"
+  },
+  "1522": {
+   "t": "clear"
+  },
+  "1601": {
+   "t": "clear"
+  },
+  "1602": {
+   "t": "woods"
+  },
+  "1603": {
+   "t": "woods_road"
+  },
+  "1604": {
+   "t": "clear"
+  },
+  "1605": {
+   "t": "clear"
+  },
+  "1606": {
+   "t": "clear"
+  },
+  "1607": {
+   "t": "clear"
+  },
+  "1608": {
+   "t": "clear"
+  },
+  "1609": {
+   "t": "clear"
+  },
+  "1610": {
+   "t": "clear"
+  },
+  "1611": {
+   "t": "clear"
+  },
+  "1612": {
+   "t": "clear"
+  },
+  "1613": {
+   "t": "clear"
+  },
+  "1614": {
+   "t": "clear"
+  },
+  "1615": {
+   "t": "clear"
+  },
+  "1616": {
+   "t": "clear"
+  },
+  "1617": {
+   "t": "clear"
+  },
+  "1618": {
+   "t": "clear"
+  },
+  "1619": {
+   "t": "clear"
+  },
+  "1620": {
+   "t": "clear"
+  },
+  "1621": {
+   "t": "clear"
+  },
+  "1622": {
+   "t": "clear"
+  },
+  "1701": {
+   "t": "woods_road"
+  },
+  "1702": {
+   "t": "woods_road"
+  },
+  "1703": {
+   "t": "clear"
+  },
+  "1704": {
+   "t": "clear"
+  },
+  "1705": {
+   "t": "clear"
+  },
+  "1706": {
+   "t": "clear"
+  },
+  "1707": {
+   "t": "clear"
+  },
+  "1708": {
+   "t": "clear"
+  },
+  "1709": {
+   "t": "clear"
+  },
+  "1710": {
+   "t": "clear"
+  },
+  "1711": {
+   "t": "clear"
+  },
+  "1712": {
+   "t": "clear"
+  },
+  "1713": {
+   "t": "clear"
+  },
+  "1714": {
+   "t": "clear"
+  },
+  "1715": {
+   "t": "clear"
+  },
+  "1716": {
+   "t": "clear"
+  },
+  "1717": {
+   "t": "town"
+  },
+  "1718": {
+   "t": "clear"
+  },
+  "1719": {
+   "t": "clear"
+  },
+  "1720": {
+   "t": "clear"
+  },
+  "1721": {
+   "t": "clear"
+  },
+  "1722": {
+   "t": "clear"
+  },
+  "1801": {
+   "t": "clear"
+  },
+  "1802": {
+   "t": "woods"
+  },
+  "1803": {
+   "t": "clear"
+  },
+  "1804": {
+   "t": "clear"
+  },
+  "1805": {
+   "t": "clear"
+  },
+  "1806": {
+   "t": "clear"
+  },
+  "1807": {
+   "t": "clear"
+  },
+  "1808": {
+   "t": "clear"
+  },
+  "1809": {
+   "t": "clear"
+  },
+  "1810": {
+   "t": "clear"
+  },
+  "1811": {
+   "t": "town"
+  },
+  "1812": {
+   "t": "clear"
+  },
+  "1813": {
+   "t": "clear"
+  },
+  "1814": {
+   "t": "clear"
+  },
+  "1815": {
+   "t": "clear"
+  },
+  "1816": {
+   "t": "town"
+  },
+  "1817": {
+   "t": "town"
+  },
+  "1818": {
+   "t": "clear"
+  },
+  "1819": {
+   "t": "clear"
+  },
+  "1820": {
+   "t": "woods"
+  },
+  "1821": {
+   "t": "woods"
+  },
+  "1822": {
+   "t": "woods"
+  },
+  "1901": {
+   "t": "clear"
+  },
+  "1902": {
+   "t": "clear"
+  },
+  "1903": {
+   "t": "clear"
+  },
+  "1904": {
+   "t": "clear"
+  },
+  "1905": {
+   "t": "clear"
+  },
+  "1906": {
+   "t": "clear"
+  },
+  "1907": {
+   "t": "clear"
+  },
+  "1908": {
+   "t": "clear"
+  },
+  "1909": {
+   "t": "clear"
+  },
+  "1910": {
+   "t": "town"
+  },
+  "1911": {
+   "t": "clear"
+  },
+  "1912": {
+   "t": "clear"
+  },
+  "1913": {
+   "t": "clear"
+  },
+  "1914": {
+   "t": "clear"
+  },
+  "1915": {
+   "t": "clear"
+  },
+  "1916": {
+   "t": "clear"
+  },
+  "1917": {
+   "t": "town"
+  },
+  "1918": {
+   "t": "woods"
+  },
+  "1919": {
+   "t": "woods"
+  },
+  "1920": {
+   "t": "clear"
+  },
+  "1921": {
+   "t": "clear"
+  },
+  "1922": {
+   "t": "clear"
+  },
+  "2001": {
+   "t": "town"
+  },
+  "2002": {
+   "t": "clear"
+  },
+  "2003": {
+   "t": "clear"
+  },
+  "2004": {
+   "t": "clear"
+  },
+  "2005": {
+   "t": "clear"
+  },
+  "2006": {
+   "t": "clear"
+  },
+  "2007": {
+   "t": "clear"
+  },
+  "2008": {
+   "t": "clear"
+  },
+  "2009": {
+   "t": "clear"
+  },
+  "2010": {
+   "t": "clear"
+  },
+  "2011": {
+   "t": "clear"
+  },
+  "2012": {
+   "t": "clear"
+  },
+  "2013": {
+   "t": "clear"
+  },
+  "2014": {
+   "t": "clear"
+  },
+  "2015": {
+   "t": "clear"
+  },
+  "2016": {
+   "t": "woods"
+  },
+  "2017": {
+   "t": "clear"
+  },
+  "2018": {
+   "t": "woods"
+  },
+  "2019": {
+   "t": "clear"
+  },
+  "2020": {
+   "t": "clear"
+  },
+  "2021": {
+   "t": "clear"
+  },
+  "2022": {
+   "t": "clear"
+  },
+  "2101": {
+   "t": "clear"
+  },
+  "2102": {
+   "t": "clear"
+  },
+  "2103": {
+   "t": "clear"
+  },
+  "2104": {
+   "t": "clear"
+  },
+  "2105": {
+   "t": "clear"
+  },
+  "2106": {
+   "t": "clear"
+  },
+  "2107": {
+   "t": "clear"
+  },
+  "2108": {
+   "t": "clear"
+  },
+  "2109": {
+   "t": "clear"
+  },
+  "2110": {
+   "t": "town"
+  },
+  "2111": {
+   "t": "clear"
+  },
+  "2112": {
+   "t": "clear"
+  },
+  "2113": {
+   "t": "clear"
+  },
+  "2114": {
+   "t": "clear"
+  },
+  "2115": {
+   "t": "clear"
+  },
+  "2116": {
+   "t": "clear"
+  },
+  "2117": {
+   "t": "clear"
+  },
+  "2118": {
+   "t": "clear"
+  },
+  "2119": {
+   "t": "woods"
+  },
+  "2120": {
+   "t": "clear"
+  },
+  "2121": {
+   "t": "clear"
+  },
+  "2122": {
+   "t": "clear"
+  },
+  "2201": {
+   "t": "clear"
+  },
+  "2202": {
+   "t": "woods"
+  },
+  "2203": {
+   "t": "clear"
+  },
+  "2204": {
+   "t": "clear"
+  },
+  "2205": {
+   "t": "clear"
+  },
+  "2206": {
+   "t": "clear"
+  },
+  "2207": {
+   "t": "clear"
+  },
+  "2208": {
+   "t": "clear"
+  },
+  "2209": {
+   "t": "clear"
+  },
+  "2210": {
+   "t": "clear"
+  },
+  "2211": {
+   "t": "town"
+  },
+  "2212": {
+   "t": "woods"
+  },
+  "2213": {
+   "t": "clear"
+  },
+  "2214": {
+   "t": "clear"
+  },
+  "2215": {
+   "t": "clear"
+  },
+  "2216": {
+   "t": "woods"
+  },
+  "2217": {
+   "t": "clear"
+  },
+  "2218": {
+   "t": "woods"
+  },
+  "2219": {
+   "t": "woods"
+  },
+  "2220": {
+   "t": "woods"
+  },
+  "2221": {
+   "t": "clear"
+  },
+  "2222": {
+   "t": "clear"
+  },
+  "2301": {
+   "t": "woods"
+  },
+  "2302": {
+   "t": "clear"
+  },
+  "2303": {
+   "t": "clear"
+  },
+  "2304": {
+   "t": "clear"
+  },
+  "2305": {
+   "t": "clear"
+  },
+  "2306": {
+   "t": "clear"
+  },
+  "2307": {
+   "t": "clear"
+  },
+  "2308": {
+   "t": "clear"
+  },
+  "2309": {
+   "t": "clear"
+  },
+  "2310": {
+   "t": "clear"
+  },
+  "2311": {
+   "t": "clear"
+  },
+  "2312": {
+   "t": "clear"
+  },
+  "2313": {
+   "t": "clear"
+  },
+  "2314": {
+   "t": "woods"
+  },
+  "2315": {
+   "t": "woods"
+  },
+  "2316": {
+   "t": "clear"
+  },
+  "2317": {
+   "t": "woods"
+  },
+  "2318": {
+   "t": "clear"
+  },
+  "2319": {
+   "t": "clear"
+  },
+  "2320": {
+   "t": "clear"
+  },
+  "2321": {
+   "t": "clear"
+  },
+  "2322": {
+   "t": "clear"
+  },
+  "2401": {
+   "t": "woods"
+  },
+  "2402": {
+   "t": "woods"
+  },
+  "2403": {
+   "t": "clear"
+  },
+  "2404": {
+   "t": "woods"
+  },
+  "2405": {
+   "t": "woods"
+  },
+  "2406": {
+   "t": "woods"
+  },
+  "2407": {
+   "t": "town"
+  },
+  "2408": {
+   "t": "clear"
+  },
+  "2409": {
+   "t": "clear"
+  },
+  "2410": {
+   "t": "woods"
+  },
+  "2411": {
+   "t": "clear"
+  },
+  "2412": {
+   "t": "clear"
+  },
+  "2413": {
+   "t": "clear"
+  },
+  "2414": {
+   "t": "woods"
+  },
+  "2415": {
+   "t": "woods"
+  },
+  "2416": {
+   "t": "clear"
+  },
+  "2417": {
+   "t": "woods"
+  },
+  "2418": {
+   "t": "clear"
+  },
+  "2419": {
+   "t": "clear"
+  },
+  "2420": {
+   "t": "clear"
+  },
+  "2421": {
+   "t": "clear"
+  },
+  "2422": {
+   "t": "clear"
+  },
+  "2501": {
+   "t": "clear"
+  },
+  "2502": {
+   "t": "clear"
+  },
+  "2503": {
+   "t": "clear"
+  },
+  "2504": {
+   "t": "woods"
+  },
+  "2505": {
+   "t": "woods"
+  },
+  "2506": {
+   "t": "clear"
+  },
+  "2507": {
+   "t": "clear"
+  },
+  "2508": {
+   "t": "clear"
+  },
+  "2509": {
+   "t": "clear"
+  },
+  "2510": {
+   "t": "clear"
+  },
+  "2511": {
+   "t": "clear"
+  },
+  "2512": {
+   "t": "clear"
+  },
+  "2513": {
+   "t": "clear"
+  },
+  "2514": {
+   "t": "clear"
+  },
+  "2515": {
+   "t": "clear"
+  },
+  "2516": {
+   "t": "woods"
+  },
+  "2517": {
+   "t": "clear"
+  },
+  "2518": {
+   "t": "clear"
+  },
+  "2519": {
+   "t": "clear"
+  },
+  "2520": {
+   "t": "clear"
+  },
+  "2521": {
+   "t": "clear"
+  },
+  "2522": {
+   "t": "clear"
+  },
+  "2601": {
+   "t": "clear"
+  },
+  "2602": {
+   "t": "clear"
+  },
+  "2603": {
+   "t": "clear"
+  },
+  "2604": {
+   "t": "woods"
+  },
+  "2605": {
+   "t": "clear"
+  },
+  "2606": {
+   "t": "clear"
+  },
+  "2607": {
+   "t": "woods"
+  },
+  "2608": {
+   "t": "clear"
+  },
+  "2609": {
+   "t": "clear"
+  },
+  "2610": {
+   "t": "clear"
+  },
+  "2611": {
+   "t": "woods"
+  },
+  "2612": {
+   "t": "woods"
+  },
+  "2613": {
+   "t": "woods"
+  },
+  "2614": {
+   "t": "clear"
+  },
+  "2615": {
+   "t": "clear"
+  },
+  "2616": {
+   "t": "clear"
+  },
+  "2617": {
+   "t": "clear"
+  },
+  "2618": {
+   "t": "clear"
+  },
+  "2619": {
+   "t": "clear"
+  },
+  "2620": {
+   "t": "clear"
+  },
+  "2621": {
+   "t": "clear"
+  },
+  "2622": {
+   "t": "clear"
+  },
+  "2701": {
+   "t": "clear"
+  },
+  "2702": {
+   "t": "clear"
+  },
+  "2703": {
+   "t": "clear"
+  },
+  "2704": {
+   "t": "town"
+  },
+  "2705": {
+   "t": "clear"
+  },
+  "2706": {
+   "t": "clear"
+  },
+  "2707": {
+   "t": "clear"
+  },
+  "2708": {
+   "t": "clear"
+  },
+  "2709": {
+   "t": "woods"
+  },
+  "2710": {
+   "t": "woods"
+  },
+  "2711": {
+   "t": "woods"
+  },
+  "2712": {
+   "t": "woods"
+  },
+  "2713": {
+   "t": "clear"
+  },
+  "2714": {
+   "t": "clear"
+  },
+  "2715": {
+   "t": "clear"
+  },
+  "2716": {
+   "t": "town"
+  },
+  "2717": {
+   "t": "town"
+  },
+  "2718": {
+   "t": "clear"
+  },
+  "2719": {
+   "t": "clear"
+  },
+  "2720": {
+   "t": "clear"
+  },
+  "2721": {
+   "t": "clear"
+  },
+  "2722": {
+   "t": "clear"
+  }
+ },
+ "sides": {
+  "1014|1013": {
+   "woods_edge": true
+  },
+  "1014|1113": {
+   "woods_edge": true
+  },
+  "1014|1114": {
+   "woods_edge": true
+  },
+  "1014|1015": {
+   "woods_edge": true
+  },
+  "1014|0914": {
+   "woods_edge": true
+  },
+  "1014|0913": {
+   "road": true
+  },
+  "1101|1201": {
+   "woods_edge": true
+  },
+  "1101|1202": {
+   "woods_edge": true
+  },
+  "1101|1102": {
+   "road": true
+  },
+  "1101|1002": {
+   "woods_edge": true
+  },
+  "1101|1001": {
+   "woods_edge": true
+  },
+  "1603|1602": {
+   "woods_edge": true
+  },
+  "1603|1702": {
+   "road": true
+  },
+  "1603|1703": {
+   "woods_edge": true
+  },
+  "1603|1604": {
+   "woods_edge": true
+  },
+  "1603|1503": {
+   "road": true
+  },
+  "1603|1502": {
+   "woods_edge": true
+  },
+  "1701|1801": {
+   "road": true
+  },
+  "1701|1802": {
+   "woods_edge": true
+  },
+  "1701|1702": {
+   "road": true
+  },
+  "1701|1602": {
+   "woods_edge": true
+  },
+  "1701|1601": {
+   "woods_edge": true
+  },
+  "1702|1802": {
+   "woods_edge": true
+  },
+  "1702|1803": {
+   "woods_edge": true
+  },
+  "1702|1703": {
+   "woods_edge": true
+  },
+  "1702|1602": {
+   "woods_edge": true
+  }
+ },
+ "provenance": {
+  "built_by": "games/napoleon-at-waterloo/build_data.py from ingest/hexgraph_2nd_ed.json (PREP-5, adjacency PROVED against two fitted pixel grids); terrain kinds and exit flags read off the printed 1971 folio map (PREP-3, MAP_GRID_VERIFIED.md), witnessed by Oliver's module scan",
+  "numbering": {
+   "scheme": "OURS — the printed 2nd Ed map carries NO hex numbers (discrepancy D11)",
+   "definition": "CCRR, columns 01..27 west to east, rows 01..22 north to south within each column",
+   "anchor": "0101 = the north-westernmost hex of the field; it carries an exit arrow",
+   "parity": "ODD columns sit half a hex LOWER than even columns (inverse of the printed 3rd Ed convention — do not cross the two)",
+   "neighbours": "N=(c,r-1) S=(c,r+1); odd c: NE=(c+1,r) SE=(c+1,r+1) NW=(c-1,r) SW=(c-1,r+1); even c: NE=(c+1,r-1) SE=(c+1,r) NW=(c-1,r-1) SW=(c-1,r)"
+  },
+  "kinds": {
+   "clear": "1 MP, no combat effect [TEC row 1]",
+   "town": "1 MP, defender doubles [TEC row 2, CBT-18]",
+   "woods": "entry PROHIBITED [TEC row 3, MOV-16/MOV-18]; artillery may not bombard over it [ART-17]; never a retreat destination [RET bar (c)]",
+   "woods_road": "1 MP, defender doubles [TEC row 2 + ruling NAW2-D4]; entered and left ONLY across its road hexsides [MOV-16/MOV-17]"
+  },
+  "sides": {
+   "road": "the road hexsides of the five Woods/Road hexes - the only hexsides that admit a unit to such a hex (MOV-17); roads have no movement or combat effect otherwise [TEC row 1]",
+   "woods_edge": "every non-road hexside of a Woods/Road hex - crossing it in either direction is prohibited (MOV-17: units must enter AND exit along the road)"
+  },
+  "road_sides_off_map": [
+   "1101:N"
+  ],
+  "counts": {
+   "clear": 503,
+   "town": 30,
+   "woods": 56,
+   "woods_road": 5
+  },
+  "exit_hexes": [
+   "0101",
+   "0201",
+   "0301",
+   "0401",
+   "0501",
+   "0601",
+   "0701",
+   "0801",
+   "0901",
+   "1001",
+   "1101"
+  ]
+ }
+}
