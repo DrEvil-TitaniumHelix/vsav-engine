@@ -181,7 +181,7 @@ def build_scenario(oob, mod, tr):
                 "MOV-09 stacking is enforced under reading B (no hex ever holds two units - a unit may not end its own move on a friendly unit); reading A (may end stacked, must un-stack by phase end) is a one-line switch - NAW2-OR-2 for Bruce",
                 "Exit hex 1101 (Woods/Road, road N-S, printed exit arrow inside the hex): enterable only from 1102 along the road, exit crosses the north road hexside - enforced as legal, NAW2-OR-18 for Bruce's confirmation",
                 "Woods/Road hex 1014 (Hougoumont) is a genuine printed cul-de-sac: the road enters from the NW and ends inside the hex - verified on Oliver's map scan 2026-08-17 (N2 closed)",
-                "Artillery line of fire (ART-17): blocked if ANY candidate intervening hex is Woods (a bent two-hex pair has two candidates) - the stricter reading, NAW2-OR-9 for Bruce",
+                "Artillery line of fire (ART-17 + TEC footnote): Woods AND Woods/Road hexes block; a straight two-hex shot is blocked by its one intervening hex, a bent shot is OPEN if either candidate hex is clear; a Woods/Road hex may be bombarded INTO - SPI's own 1979 Terrain Key example (0803 into 0705 legal past woods 0804; 0803 into 0805 blocked) = publisher clarification, NAW2-OR-9 CLOSED",
                 "Several-on-several attacks (EX-14) are legal only when every attacker is adjacent to every defender - the reading that satisfies CBT-11 and CBT-12 simultaneously and matches the printed geometry",
             ],
             "open_for_bruce": [
@@ -190,7 +190,6 @@ def build_scenario(oob, mod, tr):
                 "M.13 / MOV-19 / NAW2-OR-3: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy",
                 "NAW2-OR-2: MOV-09 stacking reading A vs B (enforced B meanwhile)",
                 "NAW2-OR-18: exit through Woods/Road hex 1101 (enforced legal meanwhile - the arrow is printed in the hex)",
-                "NAW2-OR-9: does one Woods hex among two candidate intervening hexes block a bombardment? (enforced: yes, meanwhile)",
             ],
         },
     }

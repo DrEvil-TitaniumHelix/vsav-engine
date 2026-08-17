@@ -753,7 +753,7 @@
   "artillery": {
    "bombard_range": 2,
    "cite": "ART-01 artillery may bombard from two hexes; ART-06 never forced to bombard; ART-02/ART-07/ART-10 adjacent artillery MUST participate and suffers all results; ART-03/ART-04/ART-09 bombarding artillery is never destroyed or retreated by the result (ART-11 may voluntarily take an Ar); ART-05/ART-12 co-operating non-artillery units always suffer results; ART-13 bombardment targets a single unit; ART-14 adjacent artillery may attack all adjacent units; ART-15 no range on defence; ART-16 may fire over units and Town hexes; ART-17 may NOT fire over a Woods hex; ART-18 bombarding artillery may not advance",
-   "los_reading": "STRICT: a bombardment is blocked if ANY candidate intervening hex (one for a straight pair, two for a bent pair) is Woods - NAW2-OR-9 pending Bruce"
+   "los_reading": "SPI 1979 Terrain Key (publisher clarification of the identical 2nd Ed rule): Woods and Woods-Road hexes block bombardment over them; a bent two-hex shot is open if either candidate intervening hex is clear ('0803 could not fire into 0805 but could fire into 0705 and 0905 because of the intervening woods in 0804'); artillery may bombard INTO Woods-Road hexes. NAW2-OR-9 closed."
   },
   "retreat": {
    "who_chooses": "the VICTORIOUS player, for Ar and Dr alike (E21 - the 3rd Edition reverses this)",

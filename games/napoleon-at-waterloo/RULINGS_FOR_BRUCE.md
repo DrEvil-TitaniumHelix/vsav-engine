@@ -1,96 +1,63 @@
-# Napoleon at Waterloo (2nd Ed) — rulings needed from Bruce
+# Napoleon at Waterloo (2nd Ed) — open rulings, DISTILLED (v2, 2026-08-17 evening)
 
-Written 2026-08-17 after bites 1–3. SPI is gone and no errata for the 1971 folio exists, so for every item below the only remaining rung on the authority ladder is **a declared ruling by you**. Nothing here is a coding choice; each one changes what moves the gate accepts. Where I have already encoded a reading to keep working, it says so — a different answer is a small change, not a rewrite.
+**What changed since v1:** I ran every open item against **SPI's own 1979 Third Edition text** (same publisher, same designer, rules rewritten by Simonsen — the printed booklet scan we hold, plus the 1979 map-sheet Terrain Key). Where the 1979 text answers a 2nd Ed gap in so many words, that is a **publisher clarification** — a real rung on the authority ladder, above a declared ruling. Christian Holm Christensen's community rules (GitLab) were read as a second opinion only.
 
-Answer format that works: the item id and a letter (e.g. `OR-2: B`). Anything you don't answer stays OPEN and blocks the cell it touches.
+Result: **14 of 21 items are answered by SPI's own later text. 5 remain for you. 1 is platform policy. 1 (D4) was already ruled.**
 
----
-
-## A. Blocks bite 4 (mandatory attacks — the "assignment problem")
-
-**OR-6 (cell C.7) — when are the must-attack obligations evaluated?**
-The rules say every enemy adjacent to your units must be attacked and every unit of yours adjacent to an enemy must attack (CBT-06/07), and results apply immediately (CBT-04) — so the set of "adjacent enemies" changes during the phase.
-- **A. Fixed at the start of the Combat Phase.** The gate computes the obligation set once; retreats/advances mid-phase don't add or remove duties. *(Recommended: computable, matches how the printed 16-unit battle-line examples are drawn — one board, two complete partitions.)*
-- B. Re-evaluated live after each result. New contacts create new duties (which CBT-10 may make impossible to meet).
-
-**OR-5 (cell C.6) — what does the gate do when NO complete assignment exists, or several do?**
-- **A. The gate solves it: end_phase is refused while any obligation is unmet AND a complete assignment still exists; if none exists from the phase-start position, the player must still attack with everything that can attack, and unattackable enemies are excused with the reason logged.** *(Recommended: the print's spirit — attack everything you can — with a loud, logged excuse instead of a silent one.)*
-- B. Refuse end_phase whenever any obligation is unmet, full stop (a position with no complete assignment cannot be closed — game wedges).
-- C. Any partition the player picks is fine as long as every attacker attacks once (drop the "every enemy attacked" half).
-
-## B. Blocks bite 5 (applying results)
-
-**SD-3 (cell X.8) — may a DISRUPTED (pushed) unit be shoved into a Woods/Road hex?** Retreat bar says "non-Road Woods"; disruption bar says bare "woods".
-- **A. Same as retreat: barred from non-Road Woods only, Woods/Road allowed.** *(Recommended: the two bars sit two paragraphs apart and were plainly meant to match.)*
-- B. Literal: barred from ALL woods including Woods/Road.
-
-**OR-11 (X.9) — disruption direction ("moved back … as if retreating"): back relative to what?**
-- **A. Any hex passing the bars, chosen by the victorious player** (same freedom a retreat has — X.5 says retreats needn't move away). *(Recommended.)*
-- B. Must increase distance from the retreating unit's attacker.
-
-**OR-12 (X.11) — chain disruption (a pushed unit pushes another): compulsory? who dies if the chain fails?**
-- **A. Each link obeys the same bars; the chain is taken when it is the only safe path; if the chain fails at any depth nothing moves and the ORIGINAL retreating unit is eliminated.** *(Recommended: one rule applied recursively, one loser.)*
-- B. Chains never happen: a friendly-occupied "only safe hex" whose occupant cannot itself be pushed = retreating unit eliminated. (Contradicts the printed sentence that says chains occur.)
-
-**OR-13 (X.12) — "uninvolved" friendly unit means:**
-- **A. Not part of the attack just resolved.** *(Recommended: the natural reading; anything narrower leaves nobody to disrupt.)*
-- B. Not part of ANY attack this Combat Phase.
-
-**OR-14 (X.13) — how long does "disrupted" last?**
-- **A. A flag for the rest of that Combat Phase only (its sole printed effect: disrupted artillery may not fire that phase); cleared at phase end.** *(Recommended: the punched set has no marker for it.)*
-- B. Until the unit's next friendly Movement Phase.
-
-**OR-15 (X.14) — EX loss: who picks the attacking units lost, and may he over-pay?**
-- **A. The attacker picks, from units in that attack, any subset totalling AT LEAST the defender's (printed, undoubled) strength; over-payment allowed.** *(Recommended: the print says "at least", not "cheapest".)*
-- B. Attacker picks but must choose a minimal sufficient subset.
-- Sub-question: the loss compares against the defender's printed strength or its doubled defence value? *(Recommended: printed strength — "Strength Points" is the printed number, and the loss ledgers count printed points.)*
-
-**OR-16 (X.17) — an advanced unit "may not participate in another attack or defense" that phase, but CBT-07 says every adjacent unit MUST attack.**
-- **A. The advance bar wins: an advanced unit is excluded from the obligation set and cannot be named an attacker again; if it is later attacked (as defender) that phase — impossible for the phasing side's own units — no conflict.** *(Recommended, and consistent with OR-6 A.)*
-- B. Advance is refused whenever it would put the unit next to an as-yet-unattacked enemy.
-
-**OR-17 (X.18) — after an Ar (attacker retreats), may the DEFENDER (non-phasing) advance into the vacated hex?**
-- A. Yes — the Retreat and Advance block grants the advance to "the victorious unit", which on an Ar is the defender.
-- **B. No — advances are phasing-player only (SEQ-08: no non-phasing movement); the vacated hex simply stays empty.** *(Recommended: keeps SEQ-08 whole; the cost is that ART-11's voluntary Ar has no purpose, which is a print oddity either way.)*
-
-**OR-7 (A.8) — EX when EVERY attacker is bombarding artillery (immune): does the defender die for free?**
-- **A. Yes — literal: the defender is eliminated, nobody pays.** *(Recommended: the 2nd Ed print says immune; the 3rd Ed later closed this; we encode the 2nd Ed as printed and register the exploit.)*
-- B. Such an EX is read as "no effect" (defender survives).
-- C. The gate refuses an all-bombardment attack whose column can produce an EX (blocks the exploit at declaration).
-
-**OR-8 (A.9) — a bombarding gun VOLUNTARILY takes an Ar it is immune to: who picks its direction?**
-- **A. The gun's owner picks (it is his election).** *(Recommended.)*
-- B. The victorious (enemy) player, as with any retreat.
-
-**OR-10 (A.16) — disrupted artillery "may not fire in the Combat Phase in which it was disrupted":**
-- **A. Forward-looking only (a gun that already fired is unaffected), and a disrupted gun still counts as an adjacent unit for the obligation set (its duty is discharged by other units attacking its neighbour).** *(Recommended.)*
-- B. A disrupted gun is out of the phase entirely and drops out of the obligation set.
-
-## C. Already encoded under a stated reading — confirm or flip
-
-**OR-2 (M.6) — stacking.** Encoded **B: no hex ever holds two units** (a unit may not even end its own move on a friend and shuffle later). A = allowed mid-phase, must be un-stacked by phase end. *(Recommended B.)*
-
-**OR-18 (V.12) — exit through Woods/Road hex 1101.** Encoded **LEGAL** (enter only from 1102 along the road, exit north — the exit arrow is printed inside that hex). *(Recommended: confirm.)*
-
-**OR-9 (A.14) — artillery firing over Woods on a "bent" two-hex line (two candidate intervening hexes).** Encoded **STRICT: blocked if either candidate hex is Woods.** Alternative: blocked only if both are. *(Recommended strict.)*
-
-**D4 (C.14) — Town OR Woods/Road defender doubles** — you ruled 2026-08-14; encoded and validated. Nothing needed.
-
-## D. Bite 6 (reinforcement / victory / demoralization) — I will encode these readings unless you object
-
-**OR-1 (S.3) — "Place the Prussian units on the East side":** encoded as **off-map staging** (they enter at the start of the Allied turn of Game-Turn 2, REI-01). *(Recommended.)*
-
-**OR-4 (R.5) — Prussians "may not be delayed", but every East-edge hex is enemy-occupied / in enemy ZOC:** encoded as **enter wherever legally possible; a unit that cannot legally enter this turn enters on the first later turn it can, and the gate logs the excuse; entering into an enemy ZOC hex is legal (the unit just stops there).** *(Recommended.)*
-
-**OR-19 (D.6) — demoralization shifts a column that is already at the end of the table (Allied at 1:5, French at 6:1):** encoded as **clamp at the printed end (no change)**. *(Recommended: the table has no other column, and the clamp footnote is the only printed guidance.)*
-
-## E. Platform-level (not NaW-specific)
-
-**OR-3 (M.13) — MOV-19 "may not change its move without the consent of the opposing Player" vs the platform's UNDO in all games.**
-- **A. UNDO is a platform affordance declared as such (solo/hot-seat convenience); it is already unavailable in mailed and LLM matches, which is where an opponent's consent would matter.** *(Recommended: nothing changes.)*
-- B. Add an opponent-consent prompt to UNDO in any two-player mode.
-- C. Disable UNDO in Full-rules mode for this game.
+Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the printed scan (RULEBOOK_VERIFIED §4, ed3 OCR pages 4–5 cross-checked); 1979 Terrain Key read by OCR at 2× off the map sheet scan (`Nap_Waterloo_1979_Map.pdf` p.1, rotated 90°).
 
 ---
 
-Counts: 5 answers unblock bite 4/5 fully if you take every recommendation (OR-6, OR-5, SD-3, OR-15, OR-17 are the ones with real teeth; the rest follow). Everything else keeps moving meanwhile.
+## RESOLVED by SPI's own 1979 text (encoded / to be encoded as stated — tell me only if you object)
+
+| item | question | SPI 1979 says | encoding |
+|---|---|---|---|
+| **OR-9** | bombardment past Woods on a "bent" two-hex line | Terrain Key: *"an artillery unit in hex 0803 could not fire into hex 0805 (but could fire into 0705 and 0905) because of the intervening woods in hex 0804. Artillery may bombard into Woods-Road hexes."* Woods **and Woods-Road** block. | **DONE (this session):** bent shot open if either candidate hex is clear; woods_road blocks and is a legal target. My earlier "strict" reading was wrong and is fixed. |
+| **SD-3** | may a displaced unit be pushed into a Woods/Road hex | [6.4] safe hex = "traversable" (a hex the unit could enter in movement) + not in EZOC; [4.2] woods entered only via road hexsides "even when advancing or retreating"; [6.5] displaced units retreat to safe hexes | **A** — same bars as a retreat; Woods/Road allowed via its road hexside |
+| **OR-11** | displacement direction | [6.5] no direction rule; any safe hex | **A** — any safe hex, victorious player chooses (2nd Ed's chooser) |
+| **OR-12** | chain displacement; who dies | [6.5] *"The displaced unit may itself cause a displacement in a sort of chain reaction of retreats"*; *"if not, the original unit is destroyed instead of causing displacement"* | **A** — chain compulsory when only path; failure at any depth ⇒ original retreating unit eliminated |
+| **OR-13** | "uninvolved" | [6.5] any friendly unit in the only safe hex may be displaced (only bar: artillery still owing a required bombardment) | **broad** — any friendly unit not in the attack being resolved |
+| **OR-14** | how long "disrupted" lasts | 3rd Ed has no disrupted state at all | **A** — per-Combat-Phase flag; only effect = disrupted artillery may not fire that phase |
+| **OR-15** | EX: who pays, how much, over-pay | [6.3] Ee: *"the attacking force must lose a number of Combat Strength Points at least equal to the PRINTED value of the defending force"* | **A** — attacker picks from units in the attack; ≥ printed (undoubled) strength; over-payment legal |
+| **OR-17** | defender advances after Ar/AE? | [6.3] Ae/Ar: *"Defending unit has the option to advance after combat"* | **A** — YES, the non-phasing defender may advance one unit (reverses my v1 recommendation) |
+| **OR-7** | all-bombardment EX kills for free? | [6.8] *"Even in the case of an Ee result, the defender is destroyed but the artillery unit is unaffected."* | **A** — literal; SPI confirmed it, not an oversight we may fix. (PREP-7's note that the 3rd Ed "closes" this was wrong.) |
+| **OR-8** | voluntary Ar by a bombarding gun — who picks direction | [6.8] *"Bombarding artillery units may voluntarily retreat after combat"* — the owner's option | **A** — owner chooses hex |
+| **OR-10** | disrupted artillery already fired / still counts for obligations | 3rd Ed instead forbids displacing artillery that still owes a bombardment | **A** — forward-looking; disrupted gun still counts as adjacent |
+| **OR-2** | stacking reading | [4.4] units may never **END a Movement Phase** stacked (penalty if inadvertent) | **A** — a unit may end its own move on a friend mid-phase; end_movement refused while any hex holds two. **Currently encoded B — I will switch to A next session unless you say no.** |
+| **OR-18** | exit through Woods/Road hex 1101 | [4.2] woods entered/left only via road hexsides — the north hexside IS the road | **legal** (as encoded) |
+| **OR-1** | Prussian staging | [7.0] reinforcements ENTER during the Movement Phase | **off-map pool** (as encoded) |
+| (C.10/11) | several-on-several attack geometry | [5.4] *"provided each attacker could have attacked each defender separately"* | every attacker adjacent to every defender (as encoded) |
+
+## STILL YOURS — 5 items
+
+**OR-6 (C.7) — when are the must-attack obligations evaluated?** 3rd Ed [5.1]/[6.1] repeats the same words (per-attack announcement, any order, results immediate) and does not say.
+- **A. Fixed at the start of the Combat Phase** *(recommended — computable once; matches the printed battle-line examples).*
+- B. Re-evaluated live after each result.
+
+**OR-5 (C.6) — no complete assignment exists / several do.** No help from 1979.
+- **A. Gate solves it: end_phase refused while an obligation is unmet AND a complete assignment still exists; if none exists from the phase-start position, attack with everything that can, unattackable enemies excused with the reason logged** *(recommended).*
+- B. Refuse end_phase whenever any obligation is unmet (can wedge).
+- C. Only "every attacker attacks once" is enforced.
+
+**OR-16 (X.17) — advanced unit "may not participate in another attack or defense that phase" vs CBT-07.** 2nd-Ed-only clause; 3rd Ed dropped it. With OR-6 = A it is a sequencing constraint.
+- **A. Advanced unit leaves the obligation set; may not be named again** *(recommended).*
+- B. Refuse advances that create new contact.
+
+**OR-4 (R.5) — Prussians "may not be delayed" but no legal entry hex.** 3rd Ed [7.2]: no entry into an enemy-occupied hex or an enemy ZOC; [7.3] made delay legal (a deliberate 2nd→3rd change, so it does not bind).
+- **A. Entry hex must be free of enemy units and enemy ZOC (per [7.2]); a unit with no legal entry hex enters at the first later Movement Phase it can, reason logged; a unit that CAN enter must** *(recommended).*
+- B. Entry into an EZOC hex allowed (unit just stops); refuse end_movement only if literally no hex exists.
+
+**OR-19 (D.6) — demoralization shift at the table's ends.** 3rd Ed [6.2] *"ratios beyond the table's ends are treated as the end column"* — arguably covers it.
+- **A. Clamp at the printed end** *(recommended, low stakes).*
+- B. Shift is void when at the end.
+
+## PLATFORM — 1 item
+
+**OR-3 (M.13) — MOV-19 "may not change its move without the consent of the opposing Player" vs UNDO.**
+- **A. UNDO is a declared platform affordance (already unavailable in mailed/LLM matches)** *(recommended: nothing changes).*
+- B. Opponent-consent prompt in two-player modes. C. Disable UNDO in Full rules for this game.
+
+## Still worth downloading (nice-to-have, not blocking)
+- **MOVES #28 and #30** ("8,000 to 1" — Simonsen adjudicating readers' NaW moves; may speak to OR-5/OR-6) and any early MOVES errata page naming NaW.
+- **BGG** (boardgamegeek.com/boardgame/3573) rules-forum threads + Files section, in case an SPI errata sheet or a Rules Question Editor reply was ever posted.
+- Decision Games 2014 rules = 3rd Ed per Christian's edition history — **not needed**.
