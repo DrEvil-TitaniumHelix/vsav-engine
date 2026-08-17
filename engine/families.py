@@ -102,8 +102,44 @@ def _napoleonic():
     }
 
 
+def _soj_margin(vp, order):
+    a, b = order
+    m = float(vp[a]["builtup"] - vp[a]["need"])
+    if vp[a]["won"]:
+        m += 50.0
+    m += 0.01 * (vp[b]["lost"] - vp[a]["lost"])
+    return m
+
+
+def _soj_result(tg):
+    s = tg.s
+    lost = {sd: 0 for sd in ("Rom", "Jud")}
+    for u in s["units"].values():
+        if u["state"] == "eliminated":
+            lost[u["side"]] += 1
+    need = tg.scenario["vp"]["roman_win"]["builtup_controlled"]
+    vp = {"Rom": {"builtup": tg._roman_builtup_count(), "need": need,
+                  "won": s["winner"] == "Rom", "lost": lost["Rom"]},
+          "Jud": {"lost": lost["Jud"]}}
+    return {"vp": vp, "winner": s["winner"], "over": bool(s["over"])}
+
+
+def _soj():
+    import soj
+    import ai_soj
+    import strategy_soj
+    return {
+        "kind": "soj",
+        "game_cls": soj.SoJGame,
+        "ai": ai_soj,
+        "strategy": strategy_soj,
+        "margin": _soj_margin,
+        "result": _soj_result,
+    }
+
+
 _LOADERS = {"bluegray": _bluegray, "westwall": _westwall,
-            "napoleonic": _napoleonic}
+            "napoleonic": _napoleonic, "soj": _soj}
 
 
 def kind_of(game):

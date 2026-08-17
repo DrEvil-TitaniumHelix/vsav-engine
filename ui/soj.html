@@ -128,6 +128,21 @@
     <span class="chip fixw" id="seatchip" style="width:190px; text-align:center">…</span>
     <button class="sidebtn fixw" id="endphasebtn" style="width:150px">End phase</button>
     <button class="sidebtn holdspace fixw" id="deploydonebtn" style="width:170px">✓ Deployment done</button>
+    <span id="aictl" style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap">
+      <span style="color:#9fc27f; font-weight:600">AI</span>
+      <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+        <option value="step" selected>stepped (SPACE)</option>
+        <option value="auto">auto play</option>
+      </select>
+      <span style="font-size:12px">pace</span>
+      <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+        <option value="1200">slow</option>
+        <option value="600" selected>medium</option>
+        <option value="250">fast</option>
+      </select>
+      <button class="sidebtn fixw" id="aiplaybtn" style="width:190px">▶ AI decides</button>
+      <span id="aithinking" class="holdspace" style="color:#ffd75e; white-space:nowrap">⏳ thinking…</span>
+    </span>
     <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
       <button class="sidebtn" id="prevunit" title="previous unit (B)">◀ unit</button>
       <button class="sidebtn" id="nextunit" title="next unit (N)">unit ▶</button>
@@ -173,6 +188,7 @@ let artDisrupted=false;     // Roman artillery deploys Disrupted [3.4]
 let pathBuild=null;         // {kind:'retreat'|'beyond', pid, path:[names]}
 let modalState=null;        // per-pending client inputs, keyed by signature
 let dragging=null, panDrag=null, busy=false;
+let aiBusy=false, aiActive=false, aiNext=null;
 
 const PHASE_TXT = {
   deploy_jud:'DEPLOYMENT — Judaean player sets up first (card)',
@@ -577,7 +593,7 @@ function render(){
   OV.innerHTML='';
   if(!FLOW||!BOARD)return;
   renderChips(); renderTray(); renderGuide(); renderModal(); renderSelInfo();
-  drawZones(); drawDests(); drawPath();
+  drawZones(); drawDests(); drawPath(); drawAIIntent();
   MARKERS.forEach((m,i)=>{
     const el=document.createElement('img');
     el.className='marker';
@@ -667,6 +683,17 @@ function drawPath(){
     prev=h;
   });
 }
+function drawAIIntent(){
+  if(!aiNext||!aiNext.action)return;
+  const a=aiNext.action;
+  const ring=(name,color)=>{ const h=hexXY(name); if(h)poly(h.x,h.y,color,'none',7); };
+  const actors=[].concat(a.pid?[a.pid]:[], a.pids||[], a.attackers||[], a.firers||[],
+                         Object.keys(a.paths||{}), Object.keys(a.moves||{}));
+  actors.forEach(id=>{ const u=unit(id); if(u&&u.onmap)ring(u.hex,'#ffd75e'); });
+  if(a.path&&a.path.length)ring(a.path[a.path.length-1],'#7ce07c');
+  if(a.hex)ring(a.hex,'#7ce07c');
+  if(a.target)ring(a.target,'#ff6a5e');
+}
 function renderChips(){
   document.getElementById('turnchip').textContent=
     FLOW.turn===0?'SETUP':`${FLOW.turn_label} / ${FLOW.turns}`;
@@ -688,6 +715,16 @@ function renderChips(){
 
 // ---------- guidance (engine rule: every state says what to do) ----------
 function renderGuide(){
+  const AB=document.getElementById('aiplaybtn');
+  AB.textContent=aiActive?'■ Stop AI':`▶ AI decides for ${FLOW.over?'…':sideLabel(actingSide())}`;
+  AB.disabled=!!FLOW.over;
+  if(!FLOW.over&&aiActive){
+    FRAME.setGuide(`The AI is deciding for <b>${sideLabel(actingSide())}</b>`
+      +(document.getElementById('aimode').value==='step'
+        ?' — press <b>SPACE</b> to execute each highlighted proposal (yellow = acting unit, green = destination, red = target).'
+        :' — every proposal animates on its own. It stops when the decision passes to the other seat.'));
+    FRAME.soleNext(null); return;
+  }
   if(FLOW.over){
     FRAME.setGuide(`<b>${sideLabel(FLOW.winner)} WINS</b> — ${
       FLOW.winner==='Rom'?'ten Built-up hexes controlled [SR3/18.3]':'the assault is repulsed through turn '+FLOW.turns}. <b>Reset game</b> starts over.`, true);
@@ -995,9 +1032,54 @@ FRAME.initPanels({
     `<li><b>Modals</b> — when the Umpire needs a decision (losses, retreats, errant
      fire, advances, escalade move-ups, sorties) a modal takes the screen: the
      game is blocked until you answer it.</li>`,
-    `<li><b>Hotseat</b> — both seats play at this screen; the turn chip names
-     whose decision the game is waiting on. No AI seat exists for this game.</li>`,
+    `<li><b>Hotseat or AI</b> — both seats play at this screen; the turn chip names
+     whose decision the game is waiting on. <b>▶ AI decides</b> lets the engine's policy AI
+     answer for whichever seat is deciding (deployment, fire, movement, melee, every modal),
+     one proposal at a time (SPACE) or auto-played; every proposal goes through the same
+     Umpire and is logged with its verdict. Press it again to stop and take the seat back.</li>`,
   ],
+});
+async function aiStepOnce(){
+  if(aiBusy)return {done:true};
+  aiBusy=true; FRAME.show('aithinking',true);
+  let r;
+  try{ r=await(await fetch('/api/ai_step',{method:'POST',body:JSON.stringify({side:actingSide()})})).json(); }
+  catch(e){ aiBusy=false; FRAME.show('aithinking',false); toast('AI step failed: '+e); return {done:true}; }
+  aiBusy=false; FRAME.show('aithinking',false);
+  if(r.error){ toast('Gate: '+r.error); return {done:true}; }
+  if(r.flow)FLOW=r.flow;
+  aiNext=r.next;
+  if(r.step){
+    await refresh();
+    if(r.step.legal===false)toast('The Umpire refused the AI proposal: '+(r.step.reasons||[]).join('; '));
+  } else render();
+  if(aiNext&&aiNext.action){
+    const a=aiNext.action, id=a.pid||(a.attackers&&a.attackers[0])||(a.firers&&a.firers[0]);
+    const u=id&&unit(id); if(u&&u.onmap)FRAME.centerOn(u.x,u.y);
+  }
+  if(r.done){ aiNext=null; await refresh(); }
+  return r;
+}
+async function aiAutoLoop(){
+  if(!aiActive)return;
+  const r=await aiStepOnce();
+  if(r.done||!aiActive){ aiActive=false; aiNext=null; render(); return; }
+  setTimeout(aiAutoLoop, r.step?parseInt(document.getElementById('aipace').value):0);
+}
+async function startAI(){
+  if(aiActive){ aiActive=false; aiNext=null; render(); return; }
+  aiActive=true; render();
+  document.getElementById('aiplaybtn').blur();
+  if(document.getElementById('aimode').value==='auto')aiAutoLoop();
+  else{ const r=await aiStepOnce(); if(r.done){ aiActive=false; render(); } }
+}
+document.getElementById('aiplaybtn').onclick=startAI;
+document.getElementById('aimode').onchange=()=>{ if(aiActive&&document.getElementById('aimode').value==='auto')aiAutoLoop(); };
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space'||!aiActive||aiBusy)return;
+  if(document.getElementById('aimode').value!=='step')return;
+  e.preventDefault();
+  aiStepOnce().then(r=>{ if(r.done){ aiActive=false; aiNext=null; render(); } });
 });
 document.getElementById('endphasebtn').onclick=endPhase;
 document.getElementById('deploydonebtn').onclick=()=>post({type:'deploy_done'}, FLOW.side_to_move);

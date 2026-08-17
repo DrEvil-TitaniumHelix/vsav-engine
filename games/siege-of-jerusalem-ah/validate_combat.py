@@ -3797,8 +3797,8 @@ def main():
         table_checks(g)
         tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
                          live, seed=23)
-        assert tg.tier == 2 and tg.tier_earned == 2, \
-            f"combat validated => tier 2 earned (got {tg.tier_earned})"
+        assert tg.tier == 3 and tg.tier_earned == 3, \
+            f"Full rules = combat gate + AI seat (plumbing 3, got {tg.tier_earned})"
         engine_math(tg)
         gate_ring_checks(tg)
         retreat_engine_checks(g)

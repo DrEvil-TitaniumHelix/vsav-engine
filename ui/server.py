@@ -58,6 +58,7 @@ import ai_strategic as sai_mod  # noqa: E402
 import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
 import ai_napoleonic as nai_mod  # noqa: E402
+import ai_soj as soj_ai_mod  # noqa: E402
 import pbm as pbm_mod  # noqa: E402
 import plans as plans_mod  # noqa: E402
 import champion as champ_mod  # noqa: E402
@@ -544,7 +545,7 @@ def game_meta(slug):
             earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
         elif scen_mode == "soj":
-            earned = 2 if spec.get("combat") else 1
+            earned = (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
             choices = list(range(1, earned + 1))
         else:
             earned, choices = 3, [0, 3]
@@ -953,6 +954,41 @@ def api_soj_action(body):
     if not r["verdict"]["legal"]:
         r["error"] = "; ".join(r["verdict"]["reasons"])
     return r
+
+
+def api_soj_ai_turn(body):
+    if SJ.s["over"]:
+        return dict(steps=[], flow=SJ.flow(), error="game is over")
+    side = body.get("side") or SJ.side_to_move()
+    if SJ.side_to_move() != side:
+        return dict(steps=[], flow=SJ.flow(),
+                    error=f"it is not {side}'s decision")
+    steps = soj_ai_mod.take_turn(SJ, side, champ_mod.plan_for(SJ))
+    return dict(steps=steps, flow=SJ.flow())
+
+
+def api_soj_ai_step(body):
+    global AI_STEP
+    if SJ.s["over"]:
+        AI_STEP = None
+        return dict(done=True, step=None, next=None, flow=SJ.flow(),
+                    error="game is over")
+    side = body.get("side") or SJ.side_to_move()
+    fresh = (AI_STEP is None or AI_STEP.done() or AI_STEP.sg is not SJ
+             or getattr(AI_STEP, "side", None) != side)
+    if fresh:
+        if SJ.side_to_move() != side:
+            return dict(done=False, step=None, next=None, flow=SJ.flow(),
+                        error=f"it is not {side}'s decision")
+        AI_STEP = soj_ai_mod.TurnStepper(SJ, side, champ_mod.plan_for(SJ))
+        return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
+                    flow=SJ.flow())
+    entry = AI_STEP.step()
+    nxt = AI_STEP.peek()
+    finished = AI_STEP.done()
+    if finished:
+        AI_STEP = None
+    return dict(done=finished, step=entry, next=nxt, flow=SJ.flow())
 
 
 def api_soj_log(qs):
@@ -1693,7 +1729,7 @@ def load_game(game_dir, tier=None):
         elif SCEN_MODE == "soj":
             # no tier-0 free play: free deployment means no setup .vsav to
             # serve, so the gate is the only way to play; no AI seat exists
-            TIER_EARNED = 2 if GAME_OBJ.spec.get("combat") else 1
+            TIER_EARNED = (3 if GAME_OBJ.spec.get("policy_ai") else 2)                 if GAME_OBJ.spec.get("combat") else 1
             TIER_CHOICES = list(range(1, TIER_EARNED + 1))
         else:
             # tactical family: validated combat rules + policy AI both ship
@@ -1775,6 +1811,10 @@ def route_get(path, qs):
 def route_post(path, body):
     if SJ and path == "/api/soj/action":
         return api_soj_action(body)
+    if SJ and path == "/api/sg_ai_turn":
+        return api_soj_ai_turn(body)
+    if SJ and path == "/api/ai_step":
+        return api_soj_ai_step(body)
     if TG and path == "/api/action":
         return api_action(body)
     if TG and path == "/api/ai_turn":

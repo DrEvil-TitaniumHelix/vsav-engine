@@ -95,7 +95,7 @@ class GateGame:
         if any(k not in self.s for k in required):
             self.new_game(seed)               # older-schema state file: reset
         elif hasattr(self, "tier") \
-                and self.s.get("tier", self.tier_earned) != self.tier:
+                and min(self.s.get("tier", self.tier_earned), 2) != min(self.tier, 2):
             self.new_game(seed)               # state was played at another tier
 
     @staticmethod

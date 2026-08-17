@@ -1,5 +1,12 @@
 {
  "name": "The Siege of Jerusalem (Avalon Hill, 1989)",
+ "policy_ai": {
+  "kind": "soj",
+  "engine": "engine/ai_soj.py",
+  "strategy": "engine/strategy_soj.py",
+  "validated": "games/siege-of-jerusalem-ah/validate_ai.py",
+  "note": "Full rules mode ships an AI seat: transparent policy AI for BOTH seats (deployment as sector templates, fire, movement, melee, every pending decision), submits only through the gate; full 10-turn AI-vs-AI games complete and replay byte-exact through verify_game. Declared-weak (Roman conversion after a breach, no multi-turn plans, no testudo/escalade-move-up planning beyond the greedy answer). Judaean-favored outcomes across seeds; the 14-gene strategy family (strategy_soj.py) is the training substrate for the champion."
+ },
  "blurb": "66 AD — Cestius Gallus and the XII Legion assault the walls of Jerusalem. Rams, towers, artillery, escalade and morale: every action of both sides checked by the rules engine (Assault of Gallus scenario).",
  "map_name": "Main Map",
  "board_name": "MainMap",
