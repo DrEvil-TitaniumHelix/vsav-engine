@@ -175,5 +175,26 @@ info = server.route_get("/api/state", {})
 check(set(info["game"]["seats"]["available"]) == {"human", "basic", "champion"} and info["game"]["seats"]["pairing"],
       f"seat model: SoJ offers Human / Basic AI / Champion AI, no tier field ({info['game']['seats']['pairing']})")
 
+gs = champion.generalship(HERE)
+check(gs and gs["rung"] == 5 and gs["general"] == "George Meade" and "graduation bar MET" in gs["evidence"],
+      f"generalship computed from the record: {gs and gs['label']} ({gs and gs['evidence']})")
+check(info["game"]["seats"].get("generalship", {}).get("rung") == 5,
+      "seat dialog receives the generalship record through seats_view")
+_man = json.load(open(os.path.join(HERE, "playbook", "manifest.json"), encoding="utf-8"))
+_g = dict(_man["earned_by"]["graduation"]); _g["unbeaten"] = True; _g["streak"] = _g["target"]
+_tmp = tempfile.mkdtemp(); os.makedirs(os.path.join(_tmp, "playbook"))
+import shutil
+shutil.copy(os.path.join(HERE, "playbook", "champion.json"), os.path.join(_tmp, "playbook", "champion.json"))
+_m2 = dict(_man); _m2["earned_by"] = dict(_man["earned_by"], graduation=_g)
+json.dump(_m2, open(os.path.join(_tmp, "playbook", "manifest.json"), "w"))
+check(champion.generalship(_tmp)["rung"] == 6, "an unbeaten title streak on record lifts the rung to 6 (George Thomas)")
+_m3 = dict(_man); _m3["earned_by"] = {k: v for k, v in _man["earned_by"].items() if k != "graduation_bar"}
+json.dump(_m3, open(os.path.join(_tmp, "playbook", "manifest.json"), "w"))
+check(champion.generalship(_tmp)["rung"] == 4, "without a graduation-bar record the same genome is capped at 4 (Joseph Hooker)")
+os.remove(os.path.join(_tmp, "playbook", "champion.json"))
+json.dump({"portfolio": {"weights": [["baseline", 1.0]], "genomes": {}}}, open(os.path.join(_tmp, "playbook", "champion.json"), "w"))
+check(champion.generalship(_tmp)["rung"] == 3, "a playbook whose portfolio kept the baseline rates 3 (George McClellan)")
+check(champion.generalship(tempfile.mkdtemp()) is None, "no playbook, no rating: a scripted policy alone is never rated")
+
 print("ALL PASS" if ok else "FAILURES ABOVE")
 sys.exit(0 if ok else 1)
