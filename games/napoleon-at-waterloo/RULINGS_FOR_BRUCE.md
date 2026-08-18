@@ -65,6 +65,16 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 - **Christian Holm Christensen's rules** (GitLab rules.tex): agrees on EX at-least/printed/attacker-picks, chain displacement, defender advance after Ar; his retreat chooser = owner (3rd Ed).
 - BGG needs a login (API and site) — untested; Decision Games 2014 = 3rd Ed text (not needed).
 
+- **BGG rules forum, read 2026-08-17 evening through Bruce's browser** (98 threads listed; the rules threads that touch our items):
+  - *Advance from ZOC, combat order* (2023, incl. "Donald Johnson, Designer"): advancing while in another enemy's ZOC is legal; advances DO shape later combats in the same phase; the attacker orders his combats to advantage — "all yes". Consistent with sequential resolution on a live board (fits OR-6 A: obligation set fixed, board live) and with OR-16 A.
+  - *[SOLVED] Combat results with Ee* + *question on Ee*: whole units, attacker chooses, must total at least the defender's points, no step reduction — = OR-15 A.
+  - *Defender advance after combat* (2018): **Stephen Oliver himself** — "either the attacker or the defender can advance after combat if eligible" — = OR-17 A.
+  - *Retreat question*: one hex; may displace a friendly unit, again one hex.
+  - *Voluntarily eliminate unit(s) instead of retreating?* (2026): consensus NOT allowed (retreat is mandatory).
+  - *Attacking Enemy in Wood Hex Through Non-Road Hexside* (2022): attacks across a non-road hexside into a Woods/Road hex are legal (adjacency has no terrain limit); advancing into it across a non-road hexside is not (3rd Ed 4.2 "even when advancing or retreating"). Our per-attack adjacency already matches; the advance/retreat hexside bar goes into bite 5.
+  - *Clarification on Reinforcement rules* (2021): **Stephen Oliver** — reinforcements may not enter an edge hex that is enemy-occupied or in an enemy ZOC — = the entry bar encoded under OR-4 A.
+  - Nothing found on OR-5 (no complete assignment) or OR-6 (timing) as such — the community plays sequentially and never names the edge case.
+  - Stephen Oliver is active on BGG as @Snowdash — a second person to ask alongside Christian.
+
 ## Still worth downloading (nice-to-have, not blocking)
-- **BGG** (boardgamegeek.com/boardgame/3573) rules-forum threads + Files section, in case an SPI errata sheet or a Rules Question Editor reply was ever posted.
 - Decision Games 2014 rules = 3rd Ed per Christian's edition history — **not needed**.
