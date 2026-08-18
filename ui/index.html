@@ -687,7 +687,7 @@ function renderFlow() {
     && (FLOW.mode === 'napoleonic'
         ? FLOW.decider !== mySide
         : (FLOW.phase === 'movement'
-           && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall))));
+           && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall || FLOW.naw))));
   // napoleonic: the cluster stays VISIBLE whenever the game has an AI —
   // vanishing controls read as broken (Bruce 2026-07-17). When the decision
   // is yours the button just waits, disabled.
@@ -1038,14 +1038,22 @@ function renderArrivals() {
   if (FLOW && FLOW.mode === 'napoleonic' && !FLOW.over) {
     renderNapPanel(box); return;
   }
-  if (FLOW && FLOW.mode === 'westwall' && !FLOW.over) {
-    const W = FLOW.westwall || {};
+  if (FLOW && (FLOW.mode === 'westwall' || FLOW.mode === 'naw') && !FLOW.over) {
+    const W = FLOW.westwall || FLOW.naw || {};
     const showR = FLOW.phase === 'movement' && (W.due||[]).length;
-    const extras = (W.gsp_left || (W.demolished||[]).length);
+    const naw = FLOW.mode === 'naw';
+    const extras = (W.gsp_left || (W.demolished||[]).length || naw);
     if (!showR && !extras) { box.style.display = 'none'; return; }
-    let h = `<b>${sideLabel(FLOW.mover)} — reinforcements</b><br>`;
+    let h = '';
+    if (naw) {
+      const L = W.losses || {}, T = W.loss_threshold || 40;
+      h += `<b>Demoralization Scale</b> — French lost ${L.Fr||0}/${T} · Allied lost ${L.Al||0}/${T}` +
+           (W.demoralized ? ` · <span style="color:#e0a34e">ALLIES DEMORALIZED (Al −1 / Fr +1 column)</span>` : '') +
+           `<br>French exited ${(W.exited||[]).length}/${W.exit_required||7} [VIC-01..05]<br>`;
+    }
+    if (showR) h += `<b>${sideLabel(FLOW.mover)} — reinforcements</b><br>`;
     (W.due || []).forEach(d => {
-      h += `<div style="margin:2px 0">${d.slot} <i style="color:#9aa3ad">(GT ${d.due}, ${d.arrival})</i> `;
+      h += `<div style="margin:2px 0">${d.name || d.slot} <i style="color:#9aa3ad">(GT ${d.due}, ${d.arrival})</i> `;
       if (d.arrival === 'airborne' && d.target) {
         h += `<button class="sidebtn" onclick='wwDrop("${d.pid}", [${d.target}])'>drop near ${String(d.target[0]).padStart(2,"0")}${String(d.target[1]).padStart(2,"0")} [15.31]</button>`;
       } else {

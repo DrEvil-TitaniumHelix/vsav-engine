@@ -771,6 +771,17 @@
    "open": "NAW2-SD-3 - may a DISRUPTED unit be pushed into a Woods/Road hex (retreat bar says 'non-Road Woods', disruption bar says bare 'woods')? OPEN for Bruce"
   }
  },
+ "reinforcements": {
+  "side": "Al",
+  "contingent": "Prussian",
+  "turn": 2,
+  "phase": "movement",
+  "entry_column": 27,
+  "entry_cost_mp": 1,
+  "entry_hex_rule": "any hex of column 27 (the East edge, 22 hexes; 4 are Woods and never enterable) that holds no enemy unit, lies in no enemy ZOC and holds no friendly unit; the entering unit pays 1 MP and may spend the rest of its Movement Allowance and fight this turn",
+  "delay": "not permitted while any due unit has a legal entry hex (end_movement is refused); a unit with no legal entry hex enters at the first later Movement Phase it can, with the reason logged",
+  "cite": "REI-01 (beginning of the Allied Player's second turn; Time Record 2 pm 'Prussians enter'), REI-02 (anywhere along the East edge, as many points as desired), REI-03 (placing expends one MP - printed 'extends', NAW2-SD-1), REI-04 (move and fight on entry), REI-05 (Prussian losses are Allied losses), REI-06 (may not be deliberately delayed - NAW2-OR-4 reading A), REI-07 (never leave the map); entry-hex bars = MOV-08 (enemy hex), MOV-16 (Woods), SPI 1979 7.2 (no entry into an enemy ZOC - publisher clarification), stacking MOV-09"
+ },
  "exit": {
   "side": "Fr",
   "edge": "north",
@@ -799,7 +810,7 @@
   "allied_win": "forty French Combat Strength Points destroyed before forty Allied (VIC-03)",
   "draw": "neither side reaches forty; or the French reach forty but fail the seven exits (VIC-04)",
   "simultaneous": "both sides reach forty at the same instant (an EX): French win if seven already exited, otherwise DRAW (VIC-14 - the folio's own case)",
-  "ledger": "one printed Demoralization Scale, cells 1-40, shared: each side's cumulative Strength Points destroyed is tracked; the punched set has no marker for it (the first destroyed enemy unit is the marker) - the engine keeps both running totals (VIC-05); Prussian losses are Allied losses (REI-05)"
+  "ledger": "one printed Demoralization Scale, cells 1-40, shared: the engine keeps both running totals of printed Combat Strength destroyed (VIC-05); Prussian losses are Allied losses (REI-05); exited French units are not losses (VIC-06); first_forty records which side reached forty first (VIC-02) or 'both' (VIC-14)"
  },
  "demoralization": {
   "applies_to": "Al",
@@ -809,7 +820,8 @@
    "Fr_attack_column_shift": 1
   },
   "consequence": "the best the Allies can then reach is a draw (DEM-04, derived state - never a gate check); destroying forty French points afterwards is not an Allied win and relieves nothing (DEM-09); the French are never demoralized (DEM-05)",
-  "cite": "DEM-01..DEM-09, folio p.1 col.8"
+  "cite": "DEM-01..DEM-09, folio p.1 col.8",
+  "end_of_table": "a shifted column past 1:5 or 6:1 stays at the printed end column (clamp) - NAW2-OR-19 reading A; SPI 1979 6.2 'ratios beyond the table's ends are treated as the end column'"
  },
  "credits": {
   "game": {

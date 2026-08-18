@@ -1281,6 +1281,37 @@ NOTES.update({
     "A.14": "predicate built under the STRICT reading (any candidate intervening Woods hex blocks) - NAW2-OR-9 open; validated on a real Woods pair",
 })
 
+VV = "games/napoleon-at-waterloo/validate_victory.py"
+ENFORCED.update({
+    "S.3": ("engine/naw.py: the nine Prussians are an OFF-MAP reserve pool due Game-Turn 2 (SPI 1979 7.0: reinforcements ENTER during a Movement Phase - NAW2-OR-1 A)", VV + ": nine Prussians staged OFF the map, due Game-Turn 2"),
+    "S.4": ("engine/naw.py new_game: turn 1, French mover, Movement Phase; no setup phase exists", "validate_movement.py: game opens with the French Movement Phase of Game-Turn 1"),
+    "S.5": ("scenario_2nd_ed.json fixes both sides' setup at once; no setup action exists in the gate (simultaneity is trivial)", "validate_data.py: at-start roster 44/44"),
+    "S.6": ("scenario units carry cls + stats{att,def,ma}; nothing else is read by any verdict", "validate_data.py: Combat Strength serves attack and defence alike; classes partition every piece"),
+    "S.7": ("terrain.json 594 hexes; gamespec grid adjacency == the proved hexgraph", "validate_data.py: engine adjacency == PROVED hexgraph 594/594"),
+    "S.8": ("terrain.json kinds {clear, town, woods, woods_road}; hexside features road/woods_edge; nothing else carries a rule", "validate_data.py: terrain counts 503/30/56/5; sides = exactly the Woods/Road hexsides"),
+    "S.9": ("scenario turn_labels 1 pm..10 pm; scale is descriptive only (no rule keys on it)", "validate_data.py: turn labels = the printed Time Record"),
+    "T.6": ("engine/naw.py _check_victory runs after every elimination and every exit and sets over/winner at once", VV + ": Allied win immediately on the fortieth French point; French win the instant the seventh exit follows demoralization"),
+    "R.1": ("engine/naw.py _propose_reinforce: pool due Game-Turn 2, Allied Movement Phase only, refused before", VV + ": Game-Turn 1 refused [REI-01]; Game-Turn 2 accepted"),
+    "R.2": ("engine/naw.py entry_hexes: column 27 = the East edge (all 22 hexes of the last column of the 594-hex graph; 4 are Woods), any number of entry points", VV + ": entry hexes = column 27 minus the 4 Woods hexes = 18; column 26 refused"),
+    "R.3": ("engine/naw.py _apply reinforce: moved[pid] = 1 MP (game.json reinforcements.entry_cost_mp; NAW2-SD-1 'extends' = expends)", VV + ": Prussian enters at 2705 for 1 MP"),
+    "R.4": ("engine/naw.py budget = MA - moved: an entered unit may still move MA-1 and fight (no done flag on entry)", VV + ": it may still move with MA-1 this turn"),
+    "R.5": ("engine/naw.py end_movement refused while any due unit has a legal entry hex; no legal hex -> the unit waits (NAW2-OR-4 A, logged)", VV + ": end_movement REFUSED while due Prussians can still enter; entry physically impossible -> accepted, Prussians wait"),
+    "R.6": ("engine/naw.py _propose_exit: exit_side Fr only", VV + ": Prussians may never leave the map [REI-07/VIC-12]"),
+    "R.7": ("engine/naw.py _eliminate: losses[unit side]; Prussians carry side Al", VV + ": Prussian losses count as Allied losses"),
+    "V.1": ("engine/naw.py s.losses {Fr, Al} incremented by printed Combat Strength in _eliminate", VV + ": eliminating an Allied unit adds its points to the Allied ledger"),
+    "V.2": ("engine/naw.py _check_victory: first_forty == Fr and exited >= 7 -> French win", VV + ": forty Allied points with seven already exited -> French win; seventh exit after demoralization wins"),
+    "V.3": ("engine/naw.py _check_victory: first_forty == Al -> Allied win", VV + ": forty French points destroyed first -> Allied win, immediately"),
+    "V.4": ("engine/naw.py _game_end after Game-Turn 10: draw unless already over", VV + ": end of Game-Turn 10 while demoralized and under seven exits -> DRAW; validate_movement: no losses -> draw"),
+    "V.10": ("engine/naw.py s.exited (separate from s.dead); _eliminate never touches exited units; losses unchanged by exit", VV + ": an exited French unit is not a French loss"),
+    "V.11": ("engine/naw.py _check_victory: both ledgers crossing forty in one elimination step -> first_forty 'both' -> French if seven exited else Allied", VV + ": both ledgers cross forty in one step -> Allied win / French win with seven exited [VIC-14]"),
+    "D.1": ("engine/naw.py _check_victory: first_forty == Fr and exited < 7 -> demoralized latch, game continues", VV + ": forty Allied points with no exits -> game continues, Allies DEMORALIZED"),
+    "D.2": ("engine/naw.py: the latch is set inside _eliminate, i.e. at the instant of the loss, mid-phase", VV + ": latch set by the eliminating call itself"),
+    "D.3": ("engine/naw.py: s.demoralized is never cleared", VV + ": demoralization stands after forty French points"),
+    "D.4": ("engine/naw.py _check_victory: once first_forty == Fr, forty French points later never sets an Allied win; the French are never demoralized (D.5)", VV + ": forty French points AFTER demoralization: no Allied win, demoralization stands [DEM-09]"),
+    "D.6": ("engine/naw.py demoralization_shift inside battle_check: Al -1 / Fr +1 column, clamped at the printed ends (NAW2-OR-19 A; SPI 1979 6.2)", VV + ": 2:1 -> 1:1 Allied / 3:1 French; 1:5 and 6:1 stay put; battle_check reports the shift"),
+})
+
+
 def apply_overlay():
     for ph in SPINE:
         for c in ph["cells"]:
@@ -1375,7 +1406,7 @@ def build():
         },
         "playability_verdict": {
             "verdict": "NOT PLAYABLE",
-            "reason": "encoding in progress (bites 1-3 of 7 done: data layer, movement/ZOC/exit, combat arithmetic). " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["ENFORCED"]) + " ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5.",
+            "reason": "encoding in progress (bites 1-3 + 6 of 7 done: data layer, movement/ZOC/exit, combat arithmetic, reinforcement/victory/demoralization; bites 4-5 wait on rulings OR-5/OR-6/OR-16). " + str(total["OPEN"]) + " of " + str(total["cells"]) + " cells OPEN, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["ENFORCED"]) + " ENFORCED. " + str(len(OPEN_RULINGS)) + " registered rulings (NAW2-D4 ruled; NAW2-OR-2 and NAW2-OR-18 enforced under a declared reading pending Bruce; the rest open), of which NAW2-SD-3 / OR-5 / OR-6 block bites 4-5.",
         },
     }
     return doc, index
