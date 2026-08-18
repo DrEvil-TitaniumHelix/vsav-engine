@@ -1139,6 +1139,7 @@
   "rulings": [
    "NAW2-D4 (Bruce 2026-08-14): a defender in a Town OR a Woods/Road hex doubles; attacking from such terrain confers nothing",
    "NAW2-SD-1: 'extends one Movement Point' is enforced as 'expends' (proven outcome-equivalence)",
+   "NAW2-OR-6 (Bruce 2026-08-17): mandatory-attack obligations are fixed at the start of the Combat Phase, resolved on the live board, and lapse when their contact disappears; OR-5 closes by proof (a complete assignment always exists at phase start); OR-16 A (an advanced unit leaves the list)",
    "MOV-09 stacking under reading A (SPI 1979 4.4): a unit may end its own move on a friend mid-phase, the phase cannot close while any hex holds two units; wedge guard - only onto a friend that can still move off",
    "Exit hex 1101 (Woods/Road, road N-S, printed exit arrow inside the hex): enterable only from 1102 along the road, exit crosses the north road hexside - enforced as legal, NAW2-OR-18 for Bruce's confirmation",
    "Woods/Road hex 1014 (Hougoumont) is a genuine printed cul-de-sac: the road enters from the NW and ends inside the hex - verified on Oliver's map scan 2026-08-17 (N2 closed)",
@@ -1147,7 +1148,6 @@
   ],
   "open_for_bruce": [
    "NAW2-SD-3: may a DISRUPTED unit be pushed into a Woods/Road hex?",
-   "C.7 / NAW2-OR-6: are the mandatory-attack obligations (CBT-06/07/10) fixed at Combat Phase start or re-evaluated as results apply?",
    "M.13 / MOV-19 / NAW2-OR-3: the printed rules require the opponent's consent to change a move; the platform ships UNDO - engine policy",
    "NAW2-OR-18: exit through Woods/Road hex 1101 (enforced legal meanwhile - the arrow is printed in the hex)"
   ]

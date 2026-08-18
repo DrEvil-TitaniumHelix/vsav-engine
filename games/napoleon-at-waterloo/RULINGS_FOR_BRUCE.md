@@ -28,7 +28,13 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 | **OR-1** | Prussian staging | [7.0] reinforcements ENTER during the Movement Phase | **off-map pool** (as encoded) |
 | (C.10/11) | several-on-several attack geometry | [5.4] *"provided each attacker could have attacked each defender separately"* | every attacker adjacent to every defender (as encoded) |
 
-## STILL YOURS — 3 items block bites 4–5 (OR-4 and OR-19 below are already encoded per my recommendation; object if you disagree)
+## RULED BY BRUCE 2026-08-17 (evening)
+- **OR-6: A** — must-attack obligations are fixed at the start of the Combat Phase; each attack resolves on the live board; an obligation lapses if its contact no longer exists when it comes up. *Reasoning: this is how humans play the physical game; matches the printed battle-line examples; the only reading a referee can enforce without inventing relief rules.*
+- **OR-5: closed by proof** — with the list fixed at phase start a complete assignment always exists (any uncovered enemy can be folded into an adjacent friend's attack, since one unit may attack every enemy it touches). validate_combat will prove it constructively on every reachable position rather than assert it.
+- **OR-16: A** — an advanced unit drops off the fixed obligation list and may not be named again that phase.
+Christian's reply (asked the same evening) may still overturn these.
+
+## PREVIOUS TEXT (kept for the record) — 3 items that blocked bites 4–5
 
 **OR-6 (C.7) — when are the must-attack obligations evaluated?** 3rd Ed [5.1]/[6.1] repeats the same words (per-attack announcement, any order, results immediate) and does not say.
 - **A. Fixed at the start of the Combat Phase** *(recommended — computable once; matches the printed battle-line examples).*

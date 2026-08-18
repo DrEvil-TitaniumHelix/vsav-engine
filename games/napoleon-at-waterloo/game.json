@@ -907,10 +907,10 @@
      "CBT-10"
     ],
     "defect": "Results apply immediately (CBT-04) and attacks resolve one at a time, so the set of 'adjacent enemy units' changes during the Combat Phase; the sheet does not say whether the mandatory-attack obligations (every adjacent enemy attacked, every adjacent friendly participating, nobody twice) are fixed at phase start or re-evaluated after each result - two defensible readings with different legal move sets. It also gives no relief clause for a position where no complete assignment exists.",
-    "resolution": "OPEN - awaiting Bruce's ruling (DECODE_PLAN.md section 4, C.7). The combat phase is a global assignment problem; the gate will be designed as a phase-level constraint check once the timing is ruled.",
-    "authority": "PENDING - Bruce.",
+    "resolution": "RULED: obligations (every adjacent enemy attacked, every adjacent friendly attacks, nobody twice) are FIXED at the start of the Combat Phase; each attack resolves on the live board; an obligation lapses when its contact no longer exists (the enemy retreated/was eliminated, or the friendly advanced - an advanced unit leaves the list). With the list fixed a complete assignment always exists (a unit may attack every enemy it touches, so any uncovered enemy folds into a neighbour's attack) - to be PROVED by validator, closing NAW2-OR-5 without a ruling.",
+    "authority": "DECLARED RULING - Bruce, 2026-08-17 (table practice; the printed Examples of Attacks show one board with two complete partitions; the only referee-enforceable reading). SPI 1979 [5.1]/[6.1] repeat the same words and do not decide it. Christian Holm Christensen asked the same evening; may overturn.",
     "enforced": false,
-    "lands_in": "bite 4 (assignment) - BLOCKED until ruled"
+    "lands_in": "bite 4 (assignment) - UNBLOCKED"
    }
   ]
  }
