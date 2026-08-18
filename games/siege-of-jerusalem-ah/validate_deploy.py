@@ -187,8 +187,7 @@ def main():
         tg = soj.SoJGame(g, os.path.join(HERE, "scenario_gallus.json"),
                          live, seed=7)
         bound_and_builtup_checks(tg)
-        assert tg.tier == 3 and tg.tier_earned == 3, \
-            f"Full rules = combat gate + AI seat (plumbing 3, got {tg.tier_earned})"
+        assert not hasattr(tg, "tier") and tg.combat, "no tier dimension: the combat gate is always on"
         assert tg.s["phase"] == "deploy_jud"
 
         # N13/N17 setup options on a throwaway (its own log, not replayed here)

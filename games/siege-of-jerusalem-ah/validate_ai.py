@@ -30,7 +30,7 @@ hashes = {}
 for seed in SEEDS:
     t0 = time.time()
     tmp = tempfile.mkdtemp()
-    tg = SoJGame(G, SCEN, tmp, seed=seed, tier=2)
+    tg = SoJGame(G, SCEN, tmp, seed=seed)
     turns, log = ai.play_game(tg)
     errors = [e for e in log if e.get("error")]
     rejected = sum(1 for e in log if not e.get("legal", True))
@@ -50,7 +50,7 @@ for seed in SEEDS:
 hh = []
 for _ in range(2):
     tmp = tempfile.mkdtemp()
-    tg2 = SoJGame(G, SCEN, tmp, seed=2, tier=2)
+    tg2 = SoJGame(G, SCEN, tmp, seed=2)
     ai.play_game(tg2, max_turns=2)
     hh.append(tg2.state_hash())
 check(hh[0] == hh[1] and tg2.s["turn"] >= 2,
@@ -58,7 +58,7 @@ check(hh[0] == hh[1] and tg2.s["turn"] >= 2,
 
 import subprocess
 _XP = ("import sys,tempfile;sys.path.insert(0,%r);import gamespec,ai_soj;"
-       "from soj import SoJGame;g=gamespec.Game(%r);t=SoJGame(g,%r,tempfile.mkdtemp(),seed=2,tier=2);"
+       "from soj import SoJGame;g=gamespec.Game(%r);t=SoJGame(g,%r,tempfile.mkdtemp(),seed=2);"
        "ai_soj.play_game(t,max_turns=3);print(t.state_hash(),t.s['n'])"
        % (os.path.join(ROOT, "engine"), HERE, SCEN))
 xp = []
@@ -69,7 +69,7 @@ check(xp[0] == xp[1] and xp[0],
       f"seed 2: three-turn policy game identical across processes with different PYTHONHASHSEED ({xp[0]} vs {xp[1]})")
 
 tmp_r = tempfile.mkdtemp()
-tr = SoJGame(G, SCEN, tmp_r, seed=1, tier=2)
+tr = SoJGame(G, SCEN, tmp_r, seed=1)
 _, log_r = ai.play_game(tr)
 ret = [e for e in log_r if e["action"].get("type") == "resolve_retreat"]
 ret_ok = sum(1 for e in ret if e.get("legal"))
@@ -78,8 +78,8 @@ check(ret and ret_ok == len(ret),
 
 tmp_a = tempfile.mkdtemp()
 tmp_b = tempfile.mkdtemp()
-wa = SoJGame(G, SCEN, tmp_a, seed=9, tier=2)
-wb = SoJGame(G, SCEN, tmp_b, seed=9, tier=2)
+wa = SoJGame(G, SCEN, tmp_a, seed=9)
+wb = SoJGame(G, SCEN, tmp_b, seed=9)
 log_a = ai.take_turn(wa)
 stepper = ai.TurnStepper(wb)
 log_b = []
@@ -94,7 +94,7 @@ check(wa.state_hash() == wb.state_hash(), "state hashes identical after the depl
 
 theta = dict(ai.DEFAULTS, sector=0.15, escalade_share=0.6, tower_commit=0.34)
 tmp = tempfile.mkdtemp()
-tg3 = SoJGame(G, SCEN, tmp, seed=1, tier=2)
+tg3 = SoJGame(G, SCEN, tmp, seed=1)
 plan = ai._plan(tg3, theta)
 plan0 = ai._plan(tg3, None)
 check(plan["sector"] != plan0["sector"], "theta moves the assault sector")
@@ -123,7 +123,7 @@ pop += [strat.mutate(t, rng) for t in pop] + [strat.crossover(pop[0], pop[1], rn
 check(all(lo[n] <= t[n] <= hi[n] for t in pop for n in lo) and len(strat.corners()) == 5,
       f"corners/random/mutate/crossover stay inside gene ranges ({len(pop)} thetas)")
 tmp = tempfile.mkdtemp()
-tp = SoJGame(G, SCEN, tmp, seed=2, tier=2)
+tp = SoJGame(G, SCEN, tmp, seed=2)
 plans.play_game(tp, {sd: strat.StrategyPlanner(strat.baseline()) for sd in ("Rom", "Jud")}, max_turns=2)
 check(tp.state_hash() == hh[0],
       "plans.play_game + StrategyPlanner(baseline) reproduces the shipped-policy game hash")
@@ -140,7 +140,7 @@ check(mwin > 0 > mloss and abs(mloss + 1) < 0.5,
 cp = champion.plan_for(tp)
 check(cp is not None and champion.validated(HERE),
       "playbook present: champion.plan_for returns the graduated genome plan (elite_0, GRADUATION MET 2026-08-18) - the AI seat plays it")
-tc = SoJGame(G, SCEN, tempfile.mkdtemp(), seed=970, tier=2)
+tc = SoJGame(G, SCEN, tempfile.mkdtemp(), seed=970)
 cg = json.load(open(os.path.join(HERE, "playbook", "champion.json"), encoding="utf-8"))
 ctheta = cg["portfolio"]["genomes"][cg["portfolio"]["weights"][0][0]] if cg["type"] == "portfolio" else cg["genome"]
 ai.play_game(tc, thetas={"Rom": ctheta})
@@ -162,12 +162,18 @@ check(first and first["action"]["type"] == "deploy" and r["flow"]["phase"] == "d
 r = server.route_post("/api/sg_ai_turn", {"side": "Jud"})
 check(r.get("error") == "it is not Jud's decision", "server refuses the AI for a seat not deciding")
 r = server.route_post("/api/sg_ai_turn", {})
+check("seat is Human" in (r.get("error") or ""), f"server refuses to play a Human seat: {r.get('error')}")
+r = server.route_post("/api/seats", {"seats": {"Rom": "harness"}})
+check("not available" in (r.get("error") or ""), f"seat picker refuses a seat the game lacks: {r.get('error')}")
+r = server.route_post("/api/seats", {"seats": {"Rom": "champion"}})
+check(r.get("ok") and r["seats"]["pairing"] == "Computer (Champion) vs Computer (Champion)", f"seats set: {r.get('seats', {}).get('pairing')}")
+r = server.route_post("/api/sg_ai_turn", {})
 legal_n = sum(1 for e in r["steps"] if e["legal"])
 check(r["flow"]["phase"] == "rom_fire" and legal_n == len(r["steps"]) and server.SJ.s["turn"] == 1,
       f"server /api/sg_ai_turn: Roman deployment {legal_n} legal / {len(r['steps'])} proposals, turn 1 opens")
 info = server.route_get("/api/state", {})
-check(info["game"]["tier"]["active"] == info["game"]["tier"]["earned"] == 3,
-      "Full rules mode includes the AI seat (server plumbing value 3 = max)")
+check(set(info["game"]["seats"]["available"]) == {"human", "basic", "champion"} and info["game"]["seats"]["pairing"],
+      f"seat model: SoJ offers Human / Basic AI / Champion AI, no tier field ({info['game']['seats']['pairing']})")
 
 print("ALL PASS" if ok else "FAILURES ABOVE")
 sys.exit(0 if ok else 1)

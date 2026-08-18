@@ -131,7 +131,8 @@
       }
       job.resolve({ ok: true, status: 200, json: async () => obj,
                     text: async () => out });
-      if (method !== "GET") saveLive();   // state changed — sync the saved game
+      if (path === "/api/seats") writeSaveNow();
+      else if (method !== "GET") saveLive();   // state changed — sync the saved game
     } catch (e) {
       console.error("bridge: api error", job.u, e);
       job.resolve({ ok: true, status: 200,

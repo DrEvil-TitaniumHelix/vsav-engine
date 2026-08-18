@@ -135,13 +135,112 @@ def save_tier():
         json.dump({"tier": TIER}, f)
 
 
+SEATS = {}
+SEAT_LABEL = {"human": "Human", "basic": "Basic AI",
+              "champion": "Champion AI", "harness": "Harness"}
+SEAT_NAME = {"human": "Human", "basic": "Computer (Basic AI)",
+             "champion": "Computer (Champion)", "harness": "Harness"}
+
+
+def seats_path():
+    return WORK + ".seats.json"
+
+
+def seat_kinds():
+    kinds = ["human"]
+    if GAME_OBJ and (SCEN_MODE == "tactical"
+                     or (SCEN_PATH and SCEN_MODE not in SG_FAMILY and SCEN_MODE != "soj")
+                     or GAME_OBJ.spec.get("policy_ai")):
+        kinds.append("basic")
+    if "basic" in kinds and champ_mod.genome(GAME_OBJ.dir) is not None:
+        kinds.append("champion")
+    if SCEN_MODE in salvo_mod.SALVO_MODES:
+        kinds.append("harness")
+    return kinds
+
+
+def default_seats():
+    kinds = seat_kinds()
+    comp = ("champion" if "champion" in kinds
+            else "basic" if "basic" in kinds else "human")
+    return {sd: ("human" if i == 0 else comp)
+            for i, sd in enumerate(GAME_OBJ.side_order)}
+
+
+def load_seats():
+    d = default_seats()
+    if os.path.exists(seats_path()):
+        try:
+            saved = json.load(open(seats_path()))
+        except Exception:
+            saved = {}
+        kinds = seat_kinds()
+        for sd in d:
+            if saved.get(sd) in kinds:
+                d[sd] = saved[sd]
+    return d
+
+
+def save_seats():
+    with open(seats_path(), "w") as f:
+        json.dump(SEATS, f)
+
+
+def seat_pairing():
+    return " vs ".join(SEAT_NAME[SEATS.get(sd, "human")]
+                       for sd in GAME_OBJ.side_order)
+
+
+def seats_view():
+    return dict(current=dict(SEATS), available=seat_kinds(),
+                labels=SEAT_LABEL, names=SEAT_NAME, pairing=seat_pairing(),
+                order=list(GAME_OBJ.side_order))
+
+
+def api_seats(body):
+    global AI_STEP
+    req = (body or {}).get("seats") or {}
+    kinds = seat_kinds()
+    for sd, k in req.items():
+        if sd not in SEATS:
+            return dict(error=f"unknown side {sd!r}")
+        if k not in kinds:
+            return dict(error=f"{SEAT_LABEL.get(k, k)} is not available for this "
+                              f"game (available: {', '.join(SEAT_LABEL[x] for x in kinds)})")
+    if req:
+        SEATS.update(req)
+        save_seats()
+        AI_STEP = None
+    return dict(ok=True, seats=seats_view())
+
+
+def seat_theta(side, body=None):
+    k = (body or {}).get("brain") or SEATS.get(side, "human")
+    if k == "human":
+        return dict(error=f"the {side} seat is Human - no computer plays it "
+                          f"(change it under Mode)")
+    if k == "harness":
+        return dict(error=f"the {side} seat is a Harness - its moves arrive "
+                          f"through the match folder, not this button")
+    if k not in seat_kinds():
+        return dict(error=f"{k} is not available for this game")
+    if k == "champion":
+        return dict(theta=champ_mod.plan_for(SJ or SG or TG, side=side))
+    return dict(theta=None)
+
+
 def build_gate():
     """(Re)build the legality gate for the ACTIVE tier — tier selection is an
     engine-level function: tier 0 = no gate (V3-parity free play, the user is
     the umpire), tier 1 = movement/arrivals gate, tier 2+ = full gate."""
     global TG, SG, SJ
     TG = SG = SJ = None
-    if not SCEN_PATH or TIER == 0:
+    if not SCEN_PATH:
+        return
+    if SCEN_MODE == "soj":
+        SJ = soj_mod.SoJGame(GAME_OBJ, SCEN_PATH, LIVE)
+        return
+    if TIER == 0:
         return
     if SCEN_MODE == "strategic":
         SG = strat_mod.StrategicGame(GAME_OBJ, SCEN_PATH,
@@ -154,8 +253,6 @@ def build_gate():
         SG = naw_mod.NawGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "napoleonic":
         SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
-    elif SCEN_MODE == "soj":
-        SJ = soj_mod.SoJGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     else:
         TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 
@@ -431,11 +528,13 @@ def game_descriptor():
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
-        tier=dict(active=TIER, earned=TIER_EARNED, choices=TIER_CHOICES,
-                  labels={0: "Tier 0 — free play, you are the umpire",
-                          1: "Tier 1 — movement & arrivals enforced",
-                          2: "Tier 2 — combat enforced (full gate)",
-                          3: "Tier 3 — full gate + AI opponent"}),
+        tier=None if SJ else dict(
+            active=TIER, earned=TIER_EARNED, choices=TIER_CHOICES,
+            labels={0: "Tier 0 — free play, you are the umpire",
+                    1: "Tier 1 — movement & arrivals enforced",
+                    2: "Tier 2 — combat enforced (full gate)",
+                    3: "Tier 3 — full gate + AI opponent"}),
+        seats=seats_view(),
         source_defects=g.spec.get("source_defects"),
         credits=g.spec.get("credits"),
         guide=g.spec.get("guide"),
@@ -518,16 +617,17 @@ def game_tags(gdir, spec, scen_mode, earned):
     graduated) shows 'Advanced AI pending' (Bruce 2026-07-19): honest news
     — the shipped policy is still the reigning champion of its own decision
     space, and the upgrade remains open."""
-    tags = [dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
-    if earned >= 3:
+    tags = [] if earned is None else [
+        dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
+    if earned is None or earned >= 3:
         champion = champ_mod.genome(gdir) is not None
         tags.append(dict(
-            label="Advanced AI" if champion
+            label="Champion AI" if champion
             else "Advanced AI pending" if champ_mod.validated(gdir)
             else "Basic AI",
             kind="ai"))
     m = MODE_TAG.get(scen_mode or "free")
-    if m and earned > 0:
+    if m and (earned is None or earned > 0):
         tags.append(dict(label=m, kind="mode"))
     if scen_mode in pbm_mod.PBM_MODES:
         tags.append(dict(label="Play by mail", kind="feature"))
@@ -554,15 +654,14 @@ def game_meta(slug):
             earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
         elif scen_mode == "soj":
-            earned = (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
-            choices = list(range(1, earned + 1))
+            earned, choices = None, []
         else:
             earned, choices = 3, [0, 3]
     mode = scen_mode or ("tactical" if has_scen else "free")
     return dict(slug=slug, name=spec.get("name", slug),
                 mode=mode,
                 client=game_client(scen_mode, has_scen),
-                tier=dict(earned=earned, choices=choices),
+                tier=None if earned is None else dict(earned=earned, choices=choices),
                 tags=game_tags(gdir, spec, mode, earned),
                 blurb=spec.get("blurb") or spec.get("description"))
 
@@ -972,7 +1071,10 @@ def api_soj_ai_turn(body):
     if SJ.side_to_move() != side:
         return dict(steps=[], flow=SJ.flow(),
                     error=f"it is not {side}'s decision")
-    steps = soj_ai_mod.take_turn(SJ, side, champ_mod.plan_for(SJ))
+    br = seat_theta(side, body)
+    if "error" in br:
+        return dict(steps=[], flow=SJ.flow(), error=br["error"])
+    steps = soj_ai_mod.take_turn(SJ, side, br["theta"])
     return dict(steps=steps, flow=SJ.flow())
 
 
@@ -989,15 +1091,22 @@ def api_soj_ai_step(body):
         if SJ.side_to_move() != side:
             return dict(done=False, step=None, next=None, flow=SJ.flow(),
                         error=f"it is not {side}'s decision")
-        AI_STEP = soj_ai_mod.TurnStepper(SJ, side, champ_mod.plan_for(SJ))
+        br = seat_theta(side, body)
+        if "error" in br:
+            return dict(done=False, step=None, next=None, flow=SJ.flow(),
+                        error=br["error"])
+        AI_STEP = soj_ai_mod.TurnStepper(SJ, side, br["theta"])
+        AI_STEP.brain = (body or {}).get("brain") or SEATS.get(side)
         return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
-                    flow=SJ.flow())
+                    flow=SJ.flow(), brain=AI_STEP.brain)
     entry = AI_STEP.step()
     nxt = AI_STEP.peek()
     finished = AI_STEP.done()
+    brain = getattr(AI_STEP, "brain", None)
     if finished:
         AI_STEP = None
-    return dict(done=finished, step=entry, next=nxt, flow=SJ.flow())
+    return dict(done=finished, step=entry, next=nxt, flow=SJ.flow(),
+                brain=brain)
 
 
 def api_soj_log(qs):
@@ -1678,7 +1787,7 @@ def api_reset(body=None):
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
     undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window
-    t = (body or {}).get("tier")
+    t = None if SJ else (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
             return dict(error=f"tier {t} is not available for this game "
@@ -1736,21 +1845,20 @@ def load_game(game_dir, tier=None):
             TIER_EARNED = sg_earned_tier(SCEN_MODE, GAME_OBJ.spec)
             TIER_CHOICES = list(range(TIER_EARNED + 1))
         elif SCEN_MODE == "soj":
-            # no tier-0 free play: free deployment means no setup .vsav to
-            # serve, so the gate is the only way to play; no AI seat exists
-            TIER_EARNED = (3 if GAME_OBJ.spec.get("policy_ai") else 2)                 if GAME_OBJ.spec.get("combat") else 1
-            TIER_CHOICES = list(range(1, TIER_EARNED + 1))
+            pass
         else:
             # tactical family: validated combat rules + policy AI both ship
             TIER_EARNED = 3
             TIER_CHOICES = [0, 3]
     TIER = load_tier()
-    if tier is not None:
+    if tier is not None and SCEN_MODE != "soj":
         if tier not in TIER_CHOICES:
             raise ValueError(f"tier {tier} not available (choices: {TIER_CHOICES})")
         TIER = tier
         save_tier()
     build_gate()
+    SEATS.clear()
+    SEATS.update(load_seats())
     # migrate the pre-generalization Arnhem work save (was live\game.vsav)
     legacy = os.path.join(LIVE, "game.vsav")
     if gkey == "arnhem" and not os.path.exists(WORK) and os.path.exists(legacy):
@@ -1864,6 +1972,8 @@ def route_post(path, body):
         return api_undo(body)
     if path == "/api/reset":
         return api_reset(body)
+    if path == "/api/seats":
+        return api_seats(body)
     return None
 
 

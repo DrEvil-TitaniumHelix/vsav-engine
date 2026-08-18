@@ -51,8 +51,7 @@ def make_gate(game, scen_path, workdir, init):
     """A fresh gate of the family the init entry names, seeded from the log."""
     mode = init.get("mode")
     if mode == "soj":
-        return soj_mod.SoJGame(game, scen_path, workdir,
-                               seed=init["seed"], tier=init.get("tier"))
+        return soj_mod.SoJGame(game, scen_path, workdir, seed=init["seed"])
     if mode == "napoleonic":
         return nap_mod.NapoleonicGame(game, scen_path, workdir,
                                       seed=init["seed"],
