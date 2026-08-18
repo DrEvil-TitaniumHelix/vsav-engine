@@ -376,26 +376,26 @@ const FRAME = (() => {
       z-index:70; display:flex; align-items:center; justify-content:center`;
     const label = id => ((G.sides || []).find(x => x.id === id) || {label: id}).label;
     const rows = S.order.map(sd => `
-      <div style="display:flex; align-items:center; gap:10px; margin:8px 0">
-        <b style="width:110px">${escp(label(sd))}</b>
-        <select data-side="${sd}" style="flex:1; background:#1a1d22; color:#dfe5ec;
-          border:1px solid #3a3f47; border-radius:6px; padding:5px 8px; font-size:13px">
-          ${S.available.map(k => `<option value="${k}" ${S.current[sd] === k ? 'selected' : ''}>
+      <div style="display:flex; align-items:center; gap:14px; margin:12px 0">
+        <b style="width:130px; font-size:18px">${escp(label(sd))}</b>
+        <select data-side="${sd}" style="flex:1; background:#1a1d22; color:#f0f4f8;
+          border:1px solid #4a5058; border-radius:8px; padding:9px 12px; font-size:17px">
+          ${S.available.map(k => `<option value="${k}" style="color:#f0f4f8; background:#1a1d22" ${S.current[sd] === k ? 'selected' : ''}>
              ${escp(S.labels[k])} — ${escp(SEAT_DESC[k] || '')}</option>`).join('')}
         </select></div>`).join('');
-    ov.innerHTML = `<div style="width:560px; max-width:92vw; background:#23262c;
-        border:1px solid #3a3f47; border-radius:10px; padding:16px 18px;
-        font-size:13px; line-height:1.45; box-shadow:0 8px 30px rgba(0,0,0,.6)">
-      <div style="font-size:16px; font-weight:700; margin-bottom:4px">Mode — who plays each seat</div>
-      <div class="dim" style="margin-bottom:8px">The ${UMPIRE} checks every action whoever
+    ov.innerHTML = `<div style="width:760px; max-width:94vw; background:#23262c;
+        border:1px solid #3a3f47; border-radius:12px; padding:22px 26px;
+        font-size:17px; line-height:1.5; color:#e6ebf0; box-shadow:0 8px 30px rgba(0,0,0,.6)">
+      <div style="font-size:24px; font-weight:700; margin-bottom:8px; color:#fff">Mode — who plays each seat</div>
+      <div style="margin-bottom:12px; color:#b9c2cc">The ${UMPIRE} checks every action whoever
         sits in the seat. Any pairing is legal: Human vs Human is hot-seat, Human vs a
         computer is a match, computer vs computer plays itself for you to watch.
         Seats change immediately; the game continues from where it stands.</div>
       ${rows}
-      <div id="seatsprev" style="margin:10px 0 6px; color:#8fb8d8; font-weight:600"></div>
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px">
-        <button id="seatscancel" class="sidebtn">Cancel</button>
-        <button id="seatsapply" class="sidebtn" style="font-weight:700">Apply</button>
+      <div id="seatsprev" style="margin:14px 0 8px; color:#9cc4ee; font-weight:700; font-size:19px"></div>
+      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px">
+        <button id="seatscancel" class="sidebtn" style="font-size:16px; padding:8px 18px; color:#e6ebf0">Cancel</button>
+        <button id="seatsapply" class="sidebtn" style="font-weight:700; font-size:16px; padding:8px 22px; color:#fff">Apply</button>
       </div></div>`;
     document.body.appendChild(ov);
     const sels = [...ov.querySelectorAll('select')];
