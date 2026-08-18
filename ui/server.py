@@ -602,27 +602,34 @@ MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter"
             "free": "Free play"}
 TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
             3: "Full rules"}
-# Champion (trained, graduated) AIs are WIRED: the interactive AI seat and
-# the PBM responder play the playbook champion wherever one exists
-# (engine/champion.py), so "Advanced AI" is now the truth for those games.
+# Champion (trained) AIs are WIRED: the interactive AI seat and the PBM
+# responder play the playbook champion wherever one exists (engine/champion.py).
+# "Champion AI" is reserved for the ones that CLEARED the graduation bar
+# (champ_mod.graduated) - a wired genome that won its own optimization run but
+# never faced held-out pairs and fresh randoms reads "Advanced AI" instead
+# (Bruce 2026-08-18: the public label may not outrun the evidence).
 CHAMPION_WIRED = True
 
 
 def game_tags(gdir, spec, scen_mode, earned):
     """Capability tags for the selection pages — one implementation, both
     menus (app + browser demo). Every tag states something the build actually
-    does; 'Advanced AI' appears only where the trained champion IS the
-    opponent behind the button. A playbook whose training runs kept the
-    baseline (Austerlitz: two evolutionary attacks, 92k games, no genome
-    graduated) shows 'Advanced AI pending' (Bruce 2026-07-19): honest news
-    — the shipped policy is still the reigning champion of its own decision
-    space, and the upgrade remains open."""
+    does, and the AI tag is a THREE-step ladder of evidence: 'Champion AI'
+    only with a graduation bar on record (held-out pairs vs the baseline plus
+    fresh randoms — Westwall 20/20 + 15/15, SoJ 20/20 + 5/5); 'Advanced AI'
+    where a trained genome IS the opponent behind the button but never faced
+    that bar (Chickamauga: it won its own run, 13/16, streak 0 of target 3);
+    'Advanced AI pending' where a playbook exists but the training runs kept
+    the baseline (Austerlitz: two evolutionary attacks, 92k games, no genome
+    graduated — Bruce 2026-07-19). Honest news at every rung: a shipped
+    policy is still the reigning champion of its own decision space, and the
+    upgrade remains open."""
     tags = [] if earned is None else [
         dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
     if earned is None or earned >= 3:
-        champion = champ_mod.genome(gdir) is not None
         tags.append(dict(
-            label="Champion AI" if champion
+            label="Champion AI" if champ_mod.graduated(gdir)
+            else "Advanced AI" if champ_mod.genome(gdir) is not None
             else "Advanced AI pending" if champ_mod.validated(gdir)
             else "Basic AI",
             kind="ai"))

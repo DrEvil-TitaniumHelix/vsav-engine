@@ -16,6 +16,13 @@
    "of": 8,
    "margin": 361.0
   },
+  "graduation_bar": {
+   "script": "games/westwall-arnhem/grad_bar.py",
+   "held_out_pairs_vs_baseline": "20/20 (seeds 960-979), average pair margin +144",
+   "fresh_random_pairs": "15/15 vs three fresh random genomes (seeds 980-984), average +176",
+   "result": "GRADUATION MET 2026-07-14",
+   "record": "playbook/doctrine.md 'Measured result'; commit e4e9be3"
+  },
   "matrix_evidence": "matrix.json"
  },
  "contents": {

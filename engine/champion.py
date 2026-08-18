@@ -53,6 +53,25 @@ def genome(game_dir):
     return dict(g) if g else None
 
 
+def graduated(game_dir):
+    """The graduation-bar record (spec #22) when the game's champion CLEARED
+    the bar, else None. A wired genome is not a graduated one: the bar is
+    held-out pairs against the shipped baseline plus fresh random genomes the
+    champion never trained against, and only a manifest that records the run
+    counts. Public 'Champion AI' claims key off this, never off genome()."""
+    path = os.path.join(game_dir, "playbook", "manifest.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        m = json.load(open(path, encoding="utf-8"))
+    except Exception:
+        return None
+    bar = (m.get("earned_by") or {}).get("graduation_bar")
+    if not isinstance(bar, dict):
+        return None
+    return bar if "MET" in str(bar.get("result", "")).upper() else None
+
+
 def validated(game_dir):
     """True when the game ships a playbook at all - the self-play
     certificate exists even where the equilibrium kept the baseline."""
