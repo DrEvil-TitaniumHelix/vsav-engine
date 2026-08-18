@@ -144,3 +144,23 @@ Language knowledge first; the auto-distilled champion genome is appended by
   behind the threatened sector re-occupies Built-up hexes after each Roman
   melee phase and resets the count. Sorties (counterattack pending, gene
   `sortie`) spend that reserve outside the walls.
+
+
+## The champion genome, in words (auto-distilled)
+
+Machine-optimized doctrine - every number below was selected by tournament survival, not by argument:
+
+- the Roman assault sector is centred at 0.32 of the way round the assaultable perimeter (0.62 = the shipped north wall choice; the perimeter is the 63 wall hexes with an outside approach, ordered by angle round the city)
+- the sector spans 0.24 of the perimeter (breach targets, escalade spots and tower posts are all drawn from it)
+- 0.00 of the heavy infantry not crewing engines carries ladders against the sector walls [6.5]; the rest stage for the breach
+- 0.02 of the siege towers are crewed and pushed to their posts (0 = park them all) [10.x]
+- cavalry rides the high end of the sector's perimeter window: no (no = the low end)
+- velitae/archers hold 1 hexes off the sector walls, outside the ram lane [4.x missile ranges]
+- assault cohorts stage 4 hexes from the sector before the breach opens
+- fire targets weight fresh occupants at 0.59 per unit against plain nearest-hex (0 = closest legal target)
+- loss allocations spare leaders: no
+- 0.34 of the Judaean units left after the strongpoint garrisons [SR1] man the walls (plain wall hexes first); the rest form the reserve
+- the Judaean reserve stands 1 hexes inside the walls
+- the reserve commits once breach damage reaches 3 (or a breach opens, or three walls are threatened)
+- at most 13 fresh reserve units react per movement phase
+- the Judaeans take counterattack windows: yes [14.x]

@@ -137,7 +137,15 @@ mloss = fam["margin"]({"Rom": {"builtup": 9, "need": 10, "won": False, "lost": 0
                        "Jud": {"lost": 40}}, G.side_order)
 check(mwin > 0 > mloss and abs(mloss + 1) < 0.5,
       f"margin fn: Roman win {mwin:+.2f} > 0 > 9-of-10 built-up {mloss:+.2f} (loss tiebreak never flips the sign)")
-check(champion.plan_for(tp) is None, "no playbook yet: champion.plan_for = None (shipped policy plays)")
+cp = champion.plan_for(tp)
+check(cp is not None and champion.validated(HERE),
+      "playbook present: champion.plan_for returns the graduated genome plan (elite_0, GRADUATION MET 2026-08-18) - the AI seat plays it")
+tc = SoJGame(G, SCEN, tempfile.mkdtemp(), seed=970, tier=2)
+cg = json.load(open(os.path.join(HERE, "playbook", "champion.json"), encoding="utf-8"))
+ctheta = cg["portfolio"]["genomes"][cg["portfolio"]["weights"][0][0]] if cg["type"] == "portfolio" else cg["genome"]
+ai.play_game(tc, thetas={"Rom": ctheta})
+check(tc.s["over"] and tc.s["winner"] == "Rom" and tc._roman_builtup_count() == 20 and tc.s["n"] == 456,
+      f"champion (Rom) vs baseline seed 970 reproduces the corpus game exactly: Rom win, built-up {tc._roman_builtup_count()}, {tc.s['n']} actions (corpus: 20 / 456)")
 
 sys.path.insert(0, os.path.join(ROOT, "ui"))
 import server

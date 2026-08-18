@@ -1,0 +1,100 @@
+{
+ "champion": "elite_0",
+ "theta": {
+  "sector": 0.3165647970832919,
+  "sector_width": 0.24308945743445412,
+  "escalade_share": 0.0006859988931573885,
+  "tower_commit": 0.015159063993083527,
+  "cav_flank": 0.1485746530404201,
+  "archer_stand": 1.0,
+  "stage_dist": 3.59257849655209,
+  "target_pref": 0.5921156290428474,
+  "protect_leader": 0.15748296464378242,
+  "jud_wall_share": 0.3364279382873965,
+  "jud_reserve_depth": 1.0,
+  "jud_react": 2.9509335217438126,
+  "jud_react_size": 12.669459964077271,
+  "sortie": 0.817236015538219
+ },
+ "games": [
+  {
+   "seed": 970,
+   "champion_seat": "Rom",
+   "turns": 5,
+   "over": true,
+   "winner": "Rom",
+   "roman_builtup": 20,
+   "actions": 456,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "455/455 entries verified: every verdict, every die, every state hash reproduced (35 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Rom_970.log.jsonl"
+  },
+  {
+   "seed": 970,
+   "champion_seat": "Jud",
+   "turns": 10,
+   "over": true,
+   "winner": "Jud",
+   "roman_builtup": 0,
+   "actions": 467,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "466/466 entries verified: every verdict, every die, every state hash reproduced (20 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Jud_970.log.jsonl"
+  },
+  {
+   "seed": 971,
+   "champion_seat": "Rom",
+   "turns": 6,
+   "over": true,
+   "winner": "Rom",
+   "roman_builtup": 24,
+   "actions": 465,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "464/464 entries verified: every verdict, every die, every state hash reproduced (31 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Rom_971.log.jsonl"
+  },
+  {
+   "seed": 971,
+   "champion_seat": "Jud",
+   "turns": 10,
+   "over": true,
+   "winner": "Jud",
+   "roman_builtup": 0,
+   "actions": 640,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "639/639 entries verified: every verdict, every die, every state hash reproduced (67 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Jud_971.log.jsonl"
+  },
+  {
+   "seed": 972,
+   "champion_seat": "Rom",
+   "turns": 5,
+   "over": true,
+   "winner": "Rom",
+   "roman_builtup": 26,
+   "actions": 428,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "427/427 entries verified: every verdict, every die, every state hash reproduced (22 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Rom_972.log.jsonl"
+  },
+  {
+   "seed": 972,
+   "champion_seat": "Jud",
+   "turns": 10,
+   "over": true,
+   "winner": "Jud",
+   "roman_builtup": 0,
+   "actions": 474,
+   "errors": 0,
+   "verified": true,
+   "verify_msg": "473/473 entries verified: every verdict, every die, every state hash reproduced (21 illegal proposals were rejected and provably never touched the game state)",
+   "log": "champ_Jud_972.log.jsonl"
+  }
+ ],
+ "note": "champion (elite_0) vs the shipped baseline, seeds 970-972, both seats; every log verified byte-exact by engine/verify_game.py before copying"
+}
