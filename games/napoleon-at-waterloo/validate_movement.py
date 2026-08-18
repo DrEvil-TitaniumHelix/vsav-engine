@@ -11,6 +11,8 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 import gamespec  # noqa: E402
 import verify_game  # noqa: E402
 from naw import NawGame  # noqa: E402
+sys.path.insert(0, HERE)
+import naw_drive as D  # noqa: E402
 
 G = gamespec.Game(HERE)
 SCEN = os.path.join(HERE, "scenario_2nd_ed.json")
@@ -88,7 +90,22 @@ def oracle_dests(gate, pid):
             q.append(nb)
     dist.pop(start)
     occ = {hn((v["col"], v["row"])): v["pid"] for v in gate.s["units"].values() if v["side"] == side and v["pid"] != pid}
-    return {h: c for h, c in dist.items() if h not in occ or (h not in ezoc and occ[h] not in gate.s["done"])}
+
+    def can_step_off(b, h):
+        if b in gate.s["done"] or h in ezoc:
+            return False
+        after = (friends - {start}) | {h}
+        for d, nb in HG[h]["neighbours"].items():
+            if not nb or nb in enemy or nb in after or HG[nb]["terrain"] == "woods":
+                continue
+            if HG[h]["terrain"] == "woods_road" and d not in HG[h]["road_sides"]:
+                continue
+            back = {"N": "S", "S": "N", "NE": "SW", "SW": "NE", "SE": "NW", "NW": "SE"}[d]
+            if HG[nb]["terrain"] == "woods_road" and back not in HG[nb]["road_sides"]:
+                continue
+            return True
+        return False
+    return {h: c for h, c in dist.items() if h not in occ or can_step_off(occ[h], h)}
 
 
 def bring_prussians(g):
@@ -112,12 +129,11 @@ r = g.submit("Fr", {"type": "end_movement"})
 check(r["verdict"]["legal"] and g.s["phase"] == "combat", "end_movement opens the French Combat Phase [SEQ-03]")
 r = g.submit("Fr", {"type": "move", "unit": "101", "dest": [6, 13]})
 check(not r["verdict"]["legal"] and "SEQ-07" in r["verdict"]["reasons"][0], "movement refused in the Combat Phase [SEQ-07]")
+D.discharge_combat(g)
 r = g.submit("Fr", {"type": "end_phase"})
 check(r["verdict"]["legal"] and g.s["mover"] == "Al" and g.s["phase"] == "movement" and g.s["turn"] == 1, "end_phase passes to the Allied Movement Phase of the same Game-Turn [SEQ-04]")
 for _ in range(19):
-    bring_prussians(g)
-    g.submit(g.s["mover"], {"type": "end_movement"})
-    g.submit(g.s["mover"], {"type": "end_phase"})
+    D.end_player_turn(g)
 check(g.s["over"] and g.s["winner"] == "draw" and g.s["turn"] == 11, "ten Game-Turns then the game ends [SEQ-01/SEQ-05]; with no losses it is a draw [VIC-04]")
 r = g.submit("Fr", {"type": "end_movement"})
 check(not r["verdict"]["legal"], "no action after the game is over")
@@ -329,6 +345,15 @@ place(g, "103", hx("1002"))
 opts = {hn(h): c for h, c in g.exit_options("103").items()}
 check(opts.get("1101") == 3 and opts.get("1001") == 2, "from 1002: 1101 only via 1102 along the road (3 MP), 1001 direct (2 MP) [MOV-17/VIC-09]")
 
+g = fresh()
+clear(g)
+place(g, "103", hx("0303"))
+place(g, "104", hx("0302"))
+g.s["done"].append("104")
+opts = {hn(h): c for h, c in g.exit_options("103").items()}
+check(opts.get("0301") == 3, f"exit path may pass THROUGH a friendly unit that has already moved (0303-0302-0301, 3 MP) {opts} [MOV-07/VIC-09]")
+check(hx("0302") not in g.dests("103"), "...though it may not END on that unit's hex [MOV-09]")
+
 print("== log replay ==")
 g = fresh(seed=5)
 live = os.path.dirname(g.log_path)
@@ -339,21 +364,16 @@ for _ in range(900):
         break
     side = g.s["mover"]
     if g.s["phase"] == "combat":
-        g.submit(side, {"type": "end_phase"})
+        D.discharge_combat(g, rng)
+        if not g.s["over"]:
+            g.submit(side, {"type": "end_phase"})
         continue
     mine = [p for p in g.s["units"] if g.unit(p)["side"] == side and p not in g.s["done"]]
     if not mine or rng.random() < 0.05:
         bring_prussians(g)
         r = g.submit(side, {"type": "end_movement"})
         if not r["verdict"]["legal"]:
-            for h, ps in list(g.stacked_hexes(side).items()):
-                for pp in ps:
-                    if pp not in g.s["done"]:
-                        lmx = g.legal_moves(pp)
-                        free = [dd for dd in lmx.get("dests", []) if (dd["col"], dd["row"]) not in {(v["col"], v["row"]) for v in g.s["units"].values()}]
-                        if free:
-                            g.submit(side, {"type": "move", "unit": pp, "dest": [free[0]["col"], free[0]["row"]]})
-                            break
+            D.unstack(g)
         continue
     pid = rng.choice(mine)
     lm = g.legal_moves(pid)
