@@ -49,7 +49,10 @@ demolition, engineers) and Avalon Hill's **Tobruk** (a tactical tank
 firefight). A fifth, GMT's **Austerlitz** (2000, Great Battles of the
 Napoleonic Wars — the chit-pull command system, reaction windows, cavalry
 charges, at full enforcement with an AI opponent), plays in the hosted
-browser demo bring-your-own-module. v1 (movement legality for ASL) is still
+browser demo bring-your-own-module, and a sixth, Avalon Hill's **The Siege
+of Jerusalem** (AD 70 — the Roman assault on the walls: siege towers, rams,
+escalade, testudo, breaches, with a trained champion AI available in either
+seat), plays there too. v1 (movement legality for ASL) is still
 here and still works. By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
@@ -203,6 +206,8 @@ are applied and appended to the JSONL log.
 | Blue & Gray: Chickamauga | `engine/bluegray.py` |
 | Westwall: Arnhem | `engine/westwall.py` |
 | Tobruk (tactical) | `engine/gamestate.py` |
+| Austerlitz | `engine/napoleonic.py` |
+| The Siege of Jerusalem | `engine/soj.py` |
 
 `engine/verify_game.py` replays any log through a fresh engine and re-derives
 every verdict, die and state hash.
