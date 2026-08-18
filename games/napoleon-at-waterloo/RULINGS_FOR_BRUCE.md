@@ -57,7 +57,14 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 - **A. UNDO is a declared platform affordance (already unavailable in mailed/LLM matches)** *(recommended: nothing changes).*
 - B. Opponent-consent prompt in two-player modes. C. Disable UNDO in Full rules for this game.
 
+## Sources checked 2026-08-17 evening (nothing further needed)
+- **spigames.net "Errata for SPI Games" storehouse** (Joe Beard, "central storehouse for all known official errata"): lists errata pages for ~80 SPI titles — **no Napoleon at Waterloo entry**. Strongest available evidence that SPI never published NaW errata. (It DOES carry official errata for Westwall/Arnhem and Blue & Gray — noted for those games.)
+- **MOVES #3** "The Bias Nobody Knows" (Simonsen; spigames M3BiasNAW.pdf): strategy essay, no rulings; confirms the 2nd Ed changes (Towns ×2, adjacent artillery suffers results, the 1-4 added in the Woods hex SW of Hougoumont = our 1014) and the victory logic (40 points beats exits).
+- **MOVES #28** "8,000 to 1" (spigames 8000To1NAWM28.pdf): Simonsen's own eight-line rules summary — "all Friendly units adjacent to Enemy units must participate in an attack", artillery bombards "a single target two hexes distant", combined attacks "against individual defenders", "Units may Advance after Combat (**one unit per vacated loser's hex**)". Consistent with everything encoded; nothing on OR-5/OR-6/OR-16.
+- **MOVES #30** results (8000To1NAWM30.pdf): narrative of the staff play; the panel's standing order "advance after combat only to surround units about to be attacked" shows advances used positionally mid-phase — consistent with sequential declaration and with OR-16 A, not decisive.
+- **Christian Holm Christensen's rules** (GitLab rules.tex): agrees on EX at-least/printed/attacker-picks, chain displacement, defender advance after Ar; his retreat chooser = owner (3rd Ed).
+- BGG needs a login (API and site) — untested; Decision Games 2014 = 3rd Ed text (not needed).
+
 ## Still worth downloading (nice-to-have, not blocking)
-- **MOVES #28 and #30** ("8,000 to 1" — Simonsen adjudicating readers' NaW moves; may speak to OR-5/OR-6) and any early MOVES errata page naming NaW.
 - **BGG** (boardgamegeek.com/boardgame/3573) rules-forum threads + Files section, in case an SPI errata sheet or a Rules Question Editor reply was ever posted.
 - Decision Games 2014 rules = 3rd Ed per Christian's edition history — **not needed**.
