@@ -249,6 +249,8 @@ def unit_view(u):
                          must_land=su.get("embark_turn", SG.s["turn"]) < SG.s["turn"])
         elif u["id"] in SG.s.get("dead", []):
             v.update(status="eliminated", onmap=False)
+        elif u["id"] in (SG.s.get("exited") or []):
+            v.update(status="exited", onmap=False)
         else:
             v["status"] = "reserve"    # OOA track / markers: outside the gate
             e = SG.schedule.get(u["id"])

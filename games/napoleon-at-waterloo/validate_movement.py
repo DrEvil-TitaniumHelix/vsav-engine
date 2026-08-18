@@ -87,7 +87,18 @@ def oracle_dests(gate, pid):
             dist[nb] = dist[cur] + 1
             q.append(nb)
     dist.pop(start)
-    return {h: c for h, c in dist.items() if h not in friends}
+    occ = {hn((v["col"], v["row"])): v["pid"] for v in gate.s["units"].values() if v["side"] == side and v["pid"] != pid}
+    return {h: c for h, c in dist.items() if h not in occ or (h not in ezoc and occ[h] not in gate.s["done"])}
+
+
+def bring_prussians(g):
+    n = 0
+    for pid in g.due_reserve(g.s["mover"]):
+        eh = g.entry_hexes(pid)
+        if eh:
+            r = g.submit(g.s["mover"], {"type": "reinforce", "unit": pid, "hex": list(sorted(eh)[0])})
+            n += r["verdict"]["legal"]
+    return n
 
 
 print("== turn structure ==")
@@ -104,6 +115,7 @@ check(not r["verdict"]["legal"] and "SEQ-07" in r["verdict"]["reasons"][0], "mov
 r = g.submit("Fr", {"type": "end_phase"})
 check(r["verdict"]["legal"] and g.s["mover"] == "Al" and g.s["phase"] == "movement" and g.s["turn"] == 1, "end_phase passes to the Allied Movement Phase of the same Game-Turn [SEQ-04]")
 for _ in range(19):
+    bring_prussians(g)
     g.submit(g.s["mover"], {"type": "end_movement"})
     g.submit(g.s["mover"], {"type": "end_phase"})
 check(g.s["over"] and g.s["winner"] == "draw" and g.s["turn"] == 11, "ten Game-Turns then the game ends [SEQ-01/SEQ-05]; with no losses it is a draw [VIC-04]")
@@ -204,10 +216,28 @@ clear(g)
 place(g, "103", hx("1010"))
 place(g, "104", hx("1110"))
 d = g.dests("103")
-check(hx("1110") not in d, "may not end the move on a friendly unit [MOV-09 reading B]")
-check(hx("1210") in d and d[hx("1210")] == 2 or hx("1209") in d, "moves THROUGH the friendly hex [MOV-07]")
+check(hx("1110") in d and d[hx("1110")] == 1, "may END its own move on a friendly unit mid-phase [MOV-09 reading A per SPI 1979 4.4; NAW2-OR-2]")
+check(hx("1210") in d and d[hx("1210")] == 2, "moves THROUGH the friendly hex [MOV-07]")
 r = g.submit("Fr", {"type": "move", "unit": "103", "dest": [11, 10]})
-check(not r["verdict"]["legal"] and "MOV-09" in r["verdict"]["reasons"][0], "gate refuses stacking with the citation")
+check(r["verdict"]["legal"], "gate accepts the mid-phase stack")
+r = g.submit("Fr", {"type": "end_movement"})
+check(not r["verdict"]["legal"] and "MOV-09" in r["verdict"]["reasons"][0] and "1110" in r["verdict"]["reasons"][0], "end_movement REFUSED while a hex holds two units, naming the hex [MOV-09]")
+r = g.submit("Fr", {"type": "move", "unit": "104", "dest": [12, 10]})
+check(r["verdict"]["legal"], "the other unit moves off")
+r = g.submit("Fr", {"type": "end_movement"})
+check(r["verdict"]["legal"], "un-stacked: end_movement accepted")
+g = fresh()
+clear(g)
+place(g, "103", hx("1010"))
+place(g, "104", hx("1110"))
+g.s["done"].append("104")
+check(hx("1110") not in g.dests("103"), "may NOT end on a friend that has already moved (it could never un-stack - wedge guard) [MOV-09/MOV-19]")
+g = fresh()
+clear(g)
+place(g, "103", hx("0810"))
+place(g, "104", hx("1010"))
+place(g, "201", hx("1110"))
+check(hx("1010") not in g.dests("103"), "may NOT end on a friend that sits in enemy ZOC (it may not move at all) [MOV-09/MOV-13]")
 g = fresh()
 clear(g)
 place(g, "103", hx("1010"))
@@ -313,7 +343,17 @@ for _ in range(900):
         continue
     mine = [p for p in g.s["units"] if g.unit(p)["side"] == side and p not in g.s["done"]]
     if not mine or rng.random() < 0.05:
-        g.submit(side, {"type": "end_movement"})
+        bring_prussians(g)
+        r = g.submit(side, {"type": "end_movement"})
+        if not r["verdict"]["legal"]:
+            for h, ps in list(g.stacked_hexes(side).items()):
+                for pp in ps:
+                    if pp not in g.s["done"]:
+                        lmx = g.legal_moves(pp)
+                        free = [dd for dd in lmx.get("dests", []) if (dd["col"], dd["row"]) not in {(v["col"], v["row"]) for v in g.s["units"].values()}]
+                        if free:
+                            g.submit(side, {"type": "move", "unit": pp, "dest": [free[0]["col"], free[0]["row"]]})
+                            break
         continue
     pid = rng.choice(mine)
     lm = g.legal_moves(pid)

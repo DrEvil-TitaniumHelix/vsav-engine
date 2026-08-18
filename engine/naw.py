@@ -9,7 +9,7 @@ except ImportError:
 
 class NawGame(GateGame):
     HASH_KEYS = ("turn", "phase", "mover", "over", "winner", "rng_calls", "units",
-                 "moved", "done", "pool", "exited", "dead", "losses", "demoralized",
+                 "moved", "done", "pool", "exited", "dead", "losses", "first_forty", "demoralized",
                  "fought", "defended", "advanced", "battle_no", "pending")
     TURN_NOUN = "Game-Turn"
 
@@ -23,7 +23,7 @@ class NawGame(GateGame):
         self.exit_side = game.spec["exit"]["side"]
         self.exit_cost = float(game.spec["exit"]["cost_mp"])
         self._resolve_tier(tier)
-        self._resume_or_new(seed, required=("losses", "moved"))
+        self._resume_or_new(seed, required=("losses", "moved", "first_forty"))
 
     def new_game(self, seed=None):
         seed = self._fresh_seed(seed)
@@ -39,6 +39,7 @@ class NawGame(GateGame):
             "exited": [],
             "dead": [],
             "losses": {s: 0 for s in self.game.side_order},
+            "first_forty": None,
             "demoralized": False,
             "fought": [], "defended": [], "advanced": [],
             "battle_no": 0,
@@ -65,6 +66,10 @@ class NawGame(GateGame):
 
     def cat(self, pid):
         return self.catalog[str(pid)]
+
+    def _nm(self, pid):
+        u = self.unit(pid)
+        return u.get("name") or u["slot"]
 
     def cls(self, pid):
         return self.cat(pid)["cls"]
@@ -95,7 +100,27 @@ class NawGame(GateGame):
         return (u["col"], u["row"]) in ezoc
 
     def budget(self, pid):
-        return float(self.stats(pid)["ma"])
+        return float(self.stats(pid)["ma"]) - float(self.s["moved"].get(str(pid), 0))
+
+    def entry_hexes(self, pid):
+        pid = str(pid)
+        e = self.reserve[pid]
+        side = e["side"]
+        _, epos, fpos, ezoc = self._board_sets(side)
+        col = self.game.spec["reinforcements"]["entry_column"]
+        out = {}
+        for r in range(1, 40):
+            h = (col, r)
+            if not self.game.on_map(*h):
+                continue
+            t = self.game.hex_terrain(*h)
+            if t == "woods" or h in epos or h in ezoc or h in fpos:
+                continue
+            out[h] = float(self.game.spec["reinforcements"]["entry_cost_mp"])
+        return out
+
+    def due_reserve(self, side):
+        return sorted(pid for pid, d in self.s["pool"].items() if d <= self.s["turn"] and self.reserve[pid]["side"] == side)
 
     def dests(self, pid):
         pid = str(pid)
@@ -125,7 +150,19 @@ class NawGame(GateGame):
                 best[nb] = nc
                 heapq.heappush(pq, (nc, nb))
         best.pop(start, None)
-        return {h: c for h, c in best.items() if h not in fpos}
+        occ = {(v["col"], v["row"]): v["pid"] for v in self._live(u["side"]) if v["pid"] != pid}
+        return {h: c for h, c in best.items()
+                if h not in occ or (h not in ezoc and occ[h] not in self.s["done"])}
+
+    def stacked_hexes(self, side):
+        seen, dup = {}, {}
+        for u in self._live(side):
+            h = (u["col"], u["row"])
+            if h in seen:
+                dup.setdefault(h, [seen[h]]).append(u["pid"])
+            else:
+                seen[h] = u["pid"]
+        return dup
 
     def exit_options(self, pid):
         pid = str(pid)
@@ -227,9 +264,90 @@ class NawGame(GateGame):
             bomb.append(p)
         a = self.attack_strength(atk_ids)
         d = self.defense_strength(def_ids)
-        col = self.odds_column(a, d)
-        return True, [f"attack {a} vs {d} = {col} [CBT-01/CBT-02 rounded in favour of the defender; clamp 1:5..6:1]"], {
-            "attack": a, "defense": d, "column": col, "melee": melee, "bombarding": bomb}
+        raw = self.odds_column(a, d)
+        col, shift_note = self.demoralization_shift(side, raw)
+        return True, [f"attack {a} vs {d} = {raw} [CBT-01/CBT-02 rounded in favour of the defender; clamp 1:5..6:1]" + shift_note], {
+            "attack": a, "defense": d, "column": col, "raw_column": raw, "melee": melee, "bombarding": bomb}
+
+    def shift_column(self, col, n):
+        cols = self._cbt()["crt"]["odds_columns"]
+        i = cols.index(col) + n
+        return cols[max(0, min(len(cols) - 1, i))]
+
+    def demoralization_shift(self, side, col):
+        if not self.s["demoralized"]:
+            return col, ""
+        dm = self.game.spec["demoralization"]
+        n = dm["effects"].get(f"{side}_attack_column_shift", 0)
+        if not n:
+            return col, ""
+        new = self.shift_column(col, n)
+        clamp = " (already at the table's end - no further shift, NAW2-OR-19)" if new == col else ""
+        return new, f"; Allied DEMORALIZED: {side} attack shifted {n:+d} column to {new} [DEM-06/DEM-07]" + clamp
+
+    def _eliminate(self, pids, why):
+        s = self.s
+        ev = []
+        for pid in pids:
+            pid = str(pid)
+            if pid not in s["units"]:
+                continue
+            u = self.unit(pid)
+            cs = self.stats(pid)["att"]
+            s["losses"][u["side"]] += cs
+            s["dead"].append(pid)
+            del s["units"][pid]
+            ev.append({"eliminated": self._nm_cat(pid), "side": u["side"], "cs": cs, "why": why,
+                       "losses": dict(s["losses"])})
+        ev += self._check_victory()
+        return ev
+
+    def _nm_cat(self, pid):
+        return self.cat(pid).get("name") or self.cat(pid)["slot"]
+
+    def _check_victory(self):
+        s = self.s
+        v = self.game.spec["victory"]
+        need = v["loss_threshold_cs"]
+        ex_need = v["french_exit_required"]
+        fr_side, al_side = self.exit_side, self.game.enemy(self.exit_side)
+        al_lost = s["losses"][al_side]
+        fr_lost = s["losses"][fr_side]
+        ev = []
+        if s.get("first_forty") is None:
+            if al_lost >= need and fr_lost >= need:
+                s["first_forty"] = "both"
+            elif al_lost >= need:
+                s["first_forty"] = fr_side
+            elif fr_lost >= need:
+                s["first_forty"] = al_side
+        ff = s.get("first_forty")
+        if s["over"]:
+            return ev
+        if ff == "both":
+            s["over"] = True
+            s["winner"] = fr_side if len(s["exited"]) >= ex_need else al_side
+            ev.append({"game_over": True, "winner": s["winner"],
+                       "why": f"both sides reached forty Strength Points at the same instant; French exited {len(s['exited'])}/{ex_need} [VIC-14]"})
+            return ev
+        if ff == al_side:
+            s["over"] = True
+            s["winner"] = al_side
+            ev.append({"game_over": True, "winner": al_side,
+                       "why": f"forty French Combat Strength Points destroyed first ({fr_lost}) [VIC-03/VIC-07]"})
+            return ev
+        if ff == fr_side:
+            if len(s["exited"]) >= ex_need:
+                s["over"] = True
+                s["winner"] = fr_side
+                ev.append({"game_over": True, "winner": fr_side,
+                           "why": f"forty Allied Combat Strength Points destroyed ({al_lost}) and {len(s['exited'])} French units exited [VIC-01/VIC-02/VIC-07]"})
+                return ev
+            if not s["demoralized"]:
+                s["demoralized"] = True
+                ev.append({"demoralized": al_side,
+                           "why": f"forty Allied Strength Points destroyed ({al_lost}) with only {len(s['exited'])} French units exited: the Allies are DEMORALIZED for the rest of the game - Allied attacks -1 column, French attacks +1 [DEM-01/DEM-02/DEM-03/DEM-06/DEM-07]"})
+        return ev
 
     def battle_preview(self, side, atk_ids, def_ids, bomb_ids=None):
         ok, reasons, meta = self.battle_check(side, atk_ids, def_ids)
@@ -254,12 +372,19 @@ class NawGame(GateGame):
                 return self._v(False, f"the {p['by']} player owns the pending {p['awaiting']}")
         elif side != s["mover"]:
             return self._v(False, f"not {side}'s Player-Turn [SEQ-02/SEQ-08: no Allied movement or attacking during the French Player-Turn and vice-versa]")
-        fn = {"move": self._propose_move, "exit": self._propose_exit}.get(t)
+        fn = {"move": self._propose_move, "exit": self._propose_exit, "reinforce": self._propose_reinforce}.get(t)
         if fn:
             return fn(side, action)
         if t == "end_movement":
             if s["phase"] != "movement":
                 return self._v(False, "not the Movement Phase [SEQ-03]")
+            owed = [pid for pid in self.due_reserve(side) if self.entry_hexes(pid)]
+            if owed:
+                return self._v(False, f"the Prussian reinforcements must enter now and may not be deliberately delayed: {', '.join(self._nm_cat(p) for p in owed)} can still enter on the East edge [REI-01/REI-06; entry hexes must be free of enemy units and enemy ZOC - SPI 1979 7.2, NAW2-OR-4]")
+            dup = self.stacked_hexes(side)
+            if dup:
+                names = "; ".join(f"{self.game.grid.hexnum(*h)}: " + ", ".join(self._nm(p) for p in ps) for h, ps in sorted(dup.items()))
+                return self._v(False, f"units may not finish their Movement Phase in the same hex - un-stack {names} [MOV-09; SPI 1979 4.4 'never end a Movement Phase stacked' - reading A, NAW2-OR-2]")
             return self._v(True, "Movement Phase complete; Combat Phase begins [SEQ-03/SEQ-04]")
         if t == "end_phase":
             return self._propose_end_phase(side)
@@ -289,7 +414,7 @@ class NawGame(GateGame):
         dest = tuple(action.get("dest", ()))
         dd = self.dests(pid)
         if dest not in dd:
-            return self._v(False, f"{self.game.grid.hexnum(*dest) if len(dest) == 2 else dest} is not a legal destination for {u['slot']} [MOV-05/MOV-15 one MP per hex within MA {self.stats(pid)['ma']}; MOV-06 consecutive hexes; MOV-08 never through or into enemy units; MOV-09 never end stacked; MOV-10/ZOC-04 stop on entering an enemy ZOC, MOV-11 never through one; MOV-16/17/18 Woods only via Woods/Road hexes along the road]")
+            return self._v(False, f"{self.game.grid.hexnum(*dest) if len(dest) == 2 else dest} is not a legal destination for {u['slot']} [MOV-05/MOV-15 one MP per hex within MA {self.stats(pid)['ma']}; MOV-06 consecutive hexes; MOV-08 never through or into enemy units; MOV-09 a friendly hex may be ended on mid-phase only if its occupant can still move off (not yet moved, not in enemy ZOC); MOV-10/ZOC-04 stop on entering an enemy ZOC, MOV-11 never through one; MOV-16/17/18 Woods only via Woods/Road hexes along the road]")
         return self._v(True, f"move {u['slot']} to {self.game.grid.hexnum(*dest)} for {dd[dest]:g} MP [MOV-02/MOV-05: one Movement Point per hex entered]")
 
     def _propose_exit(self, side, action):
@@ -311,6 +436,23 @@ class NawGame(GateGame):
                 return self._v(False, f"{self.game.grid.hexnum(*via) if len(via) == 2 else via} is not an arrowed exit hex - French units exit only from the eleven arrowed North-edge hexes 0101-1101 [VIC-08]")
             return self._v(False, f"{u['slot']} cannot reach {self.game.grid.hexnum(*via)} and still pay the exit: exiting expends one Movement Point [VIC-09], the exit hex must be reachable within MA {self.stats(pid)['ma']} and free of enemy ZOC [MOV-10/MOV-13: a unit in an enemy ZOC must stop / may not move]")
         return self._v(True, f"{u['slot']} exits the map via {self.game.grid.hexnum(*via)} for {opts[via]:g} MP [VIC-08/VIC-09; VIC-10 it may not return; VIC-06 not a French loss]")
+
+    def _propose_reinforce(self, side, action):
+        s = self.s
+        pid = str(action.get("unit"))
+        if s["phase"] != "movement":
+            return self._v(False, "reinforcements enter during the own Movement Phase [REI-01/REI-04]")
+        if pid not in self.reserve or self.reserve[pid]["side"] != side:
+            return self._v(False, f"{pid} is not a {side} reinforcement [REI-01]")
+        if pid not in s["pool"]:
+            return self._v(False, f"{self._nm_cat(pid)} has already entered [REI-01]")
+        if s["pool"][pid] > s["turn"]:
+            return self._v(False, f"{self._nm_cat(pid)} enters at the beginning of the Allied Player's second turn (Game-Turn {s['pool'][pid]}), not before [REI-01; printed Time Record 2 pm slot]")
+        h = tuple(action.get("hex", ()))
+        eh = self.entry_hexes(pid)
+        if h not in eh:
+            return self._v(False, f"{self.game.grid.hexnum(*h) if len(h) == 2 else h} is not a legal entry hex: the Prussians enter anywhere along the East edge (column 27), a non-Woods hex free of enemy units, enemy ZOC and friendly units [REI-02; MOV-08/MOV-16; SPI 1979 7.2 no entry into an enemy ZOC, NAW2-OR-4]")
+        return self._v(True, f"{self._nm_cat(pid)} enters at {self.game.grid.hexnum(*h)} for {eh[h]:g} MP; it may move and fight this turn [REI-02/REI-03 ('extends' = expends, NAW2-SD-1)/REI-04]")
 
     def _propose_end_phase(self, side):
         s = self.s
@@ -345,6 +487,16 @@ class NawGame(GateGame):
             del s["units"][pid]
             ev.append({"exit": u["slot"], "via": self.game.grid.hexnum(*via), "mp": cost,
                        "exited_total": len(s["exited"])})
+            ev += self._check_victory()
+        elif t == "reinforce":
+            pid = str(action["unit"])
+            e = self.reserve[pid]
+            h = tuple(action["hex"])
+            cost = self.entry_hexes(pid)[h]
+            s["units"][pid] = {"pid": pid, "slot": e["slot"], "name": e.get("name", e["slot"]), "side": side, "col": h[0], "row": h[1]}
+            s["pool"].pop(pid, None)
+            s["moved"][pid] = cost
+            ev.append({"reinforce": e.get("name", e["slot"]), "at": self.game.grid.hexnum(*h), "mp": cost, "remaining_ma": self.budget(pid)})
         elif t == "end_movement":
             s["phase"] = "combat"
             ev.append({"phase": "combat", "mover": s["mover"]})
@@ -374,10 +526,14 @@ class NawGame(GateGame):
 
     def _game_end(self):
         s = self.s
+        if s["over"]:
+            return []
         s["over"] = True
         s["winner"] = "draw"
-        return [{"game_over": True, "winner": "draw",
-                 "why": "tenth Game-Turn completed with neither side at forty Strength Points [SEQ-05/VIC-04]"}]
+        why = "tenth Game-Turn completed with neither side at forty Strength Points [SEQ-05/VIC-04]"
+        if s["demoralized"]:
+            why = f"tenth Game-Turn completed: the Allies were demoralized but the French exited only {len(s['exited'])} of {self.game.spec['victory']['french_exit_required']} units [VIC-04/DEM-04]"
+        return [{"game_over": True, "winner": "draw", "why": why}]
 
     def legal_moves(self, pid):
         pid = str(pid)
@@ -407,10 +563,13 @@ class NawGame(GateGame):
 
     def flow(self):
         s = self.s
-        due = sorted([{"pid": pid, "slot": self.reserve[pid]["slot"], "side": self.reserve[pid]["side"],
-                       "due": d, "arrival": self.reserve[pid].get("arrival")}
-                      for pid, d in s["pool"].items() if d <= s["turn"] and self.reserve[pid]["side"] == s["mover"]],
-                     key=lambda e: e["pid"])
+        due = []
+        if s["phase"] == "movement" and not s["over"]:
+            for pid in self.due_reserve(s["mover"]):
+                eh = self.entry_hexes(pid)
+                due.append({"pid": pid, "slot": self.reserve[pid]["slot"], "name": self.reserve[pid].get("name"),
+                            "side": self.reserve[pid]["side"], "due": s["pool"][pid], "arrival": "edge",
+                            "entry": [list(h) for h in sorted(eh)]})
         return {
             "mode": "naw", "turn": s["turn"], "turns": self.turns,
             "turn_label": self.turn_label(), "night": False,
@@ -420,6 +579,9 @@ class NawGame(GateGame):
             "moved": dict(s["moved"]),
             "combat": None,
             "naw": {"due": due, "exited": list(s["exited"]), "losses": dict(s["losses"]),
+                    "loss_threshold": self.game.spec["victory"]["loss_threshold_cs"],
+                    "exit_required": self.game.spec["victory"]["french_exit_required"],
+                    "first_forty": s.get("first_forty"),
                     "demoralized": s["demoralized"], "pending": None,
                     "exit_hexes": sorted(self.game.grid.hexnum(*h) for h in self.exit_hexes)},
             "exited": {pid: "north" for pid in s["exited"]},
