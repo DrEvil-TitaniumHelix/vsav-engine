@@ -343,6 +343,80 @@ const FRAME = (() => {
       else location.href = '/';
     });
   }
+  // ---------- seat model: one Mode button, two seat pickers ----------
+  const SEAT_DESC = {
+    human: 'you, at this screen (two Human seats = hot-seat)',
+    basic: "the shipped policy AI",
+    champion: 'the trained champion (self-play, graduation bar met)',
+    harness: 'an outside model, moving through the match folder' };
+  function seatsInfo() { const g = PH && PH.game(); return g && g.seats; }
+  function renderModeBtn() {
+    const B = $id('modebtn');
+    if (!B) return;
+    const S = seatsInfo();
+    if (!S) { show(B, false); return; }
+    show(B, true);
+    B.textContent = `Mode: ${S.pairing} ▾`;
+    B.title = 'Who sits in each seat — Human, Basic AI, Champion AI, Harness; '
+      + 'every pairing is legal, computer vs computer included';
+    B.classList.toggle('on', !!$id('seatsdlg'));
+  }
+  function closeSeatsDialog() {
+    const d = $id('seatsdlg');
+    if (d) d.remove();
+    renderModeBtn();
+  }
+  function openSeatsDialog() {
+    if ($id('seatsdlg')) { closeSeatsDialog(); return; }
+    const S = seatsInfo(), G = PH.game();
+    if (!S) return;
+    const ov = document.createElement('div');
+    ov.id = 'seatsdlg';
+    ov.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,.55);
+      z-index:70; display:flex; align-items:center; justify-content:center`;
+    const label = id => ((G.sides || []).find(x => x.id === id) || {label: id}).label;
+    const rows = S.order.map(sd => `
+      <div style="display:flex; align-items:center; gap:10px; margin:8px 0">
+        <b style="width:110px">${escp(label(sd))}</b>
+        <select data-side="${sd}" style="flex:1; background:#1a1d22; color:#dfe5ec;
+          border:1px solid #3a3f47; border-radius:6px; padding:5px 8px; font-size:13px">
+          ${S.available.map(k => `<option value="${k}" ${S.current[sd] === k ? 'selected' : ''}>
+             ${escp(S.labels[k])} — ${escp(SEAT_DESC[k] || '')}</option>`).join('')}
+        </select></div>`).join('');
+    ov.innerHTML = `<div style="width:560px; max-width:92vw; background:#23262c;
+        border:1px solid #3a3f47; border-radius:10px; padding:16px 18px;
+        font-size:13px; line-height:1.45; box-shadow:0 8px 30px rgba(0,0,0,.6)">
+      <div style="font-size:16px; font-weight:700; margin-bottom:4px">Mode — who plays each seat</div>
+      <div class="dim" style="margin-bottom:8px">The ${UMPIRE} checks every action whoever
+        sits in the seat. Any pairing is legal: Human vs Human is hot-seat, Human vs a
+        computer is a match, computer vs computer plays itself for you to watch.
+        Seats change immediately; the game continues from where it stands.</div>
+      ${rows}
+      <div id="seatsprev" style="margin:10px 0 6px; color:#8fb8d8; font-weight:600"></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px">
+        <button id="seatscancel" class="sidebtn">Cancel</button>
+        <button id="seatsapply" class="sidebtn" style="font-weight:700">Apply</button>
+      </div></div>`;
+    document.body.appendChild(ov);
+    const sels = [...ov.querySelectorAll('select')];
+    const preview = () => { $id('seatsprev').textContent =
+      sels.map(x => S.names[x.value]).join(' vs '); };
+    sels.forEach(x => x.onchange = preview);
+    preview();
+    ov.onclick = e => { if (e.target === ov) closeSeatsDialog(); };
+    $id('seatscancel').onclick = closeSeatsDialog;
+    $id('seatsapply').onclick = async () => {
+      const seats = {};
+      sels.forEach(x => seats[x.dataset.side] = x.value);
+      const r = await (await fetch('/api/seats', {method: 'POST',
+        body: JSON.stringify({seats})})).json();
+      if (r.error) { (PH.toast || alert)(r.error); return; }
+      if (G) G.seats = r.seats;
+      closeSeatsDialog();
+      if (PH.onSeats) PH.onSeats(r.seats);
+    };
+    renderModeBtn();
+  }
   let rulesQ = '', rulesBuilt = '', rulesBodies = [], rulesHits = [], rulesCur = 0;
   function rulesMark(el, q) {
     const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), ts = [];
@@ -392,6 +466,10 @@ const FRAME = (() => {
              padding:3px 9px; cursor:pointer">›</button></div>`;
     const GR = `The game's rules`, PL = `This platform`;
     top += ghdr(GR);
+    const SI = G && G.seats;
+    if (!M && SI) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${escp(SI.pairing)}
+                 — the ${UMPIRE} checks every action, whoever sits in the seat
+                 (Mode button changes the seats).</div>`;
     if (M) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
                  mode — ${M.active === 'sandbox' ? 'nothing is enforced'
                                                  : `the ${UMPIRE} checks every action`}
@@ -402,7 +480,7 @@ const FRAME = (() => {
       top += `<div style="margin:6px 0; padding:5px 8px; border-radius:4px; font-weight:600;
               ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
                                             : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
-    if (!rs)
+    if (!rs && !SI)
       top += (T && T.earned > 0)
         ? `<div class="dim" style="margin-top:6px">You selected Sandbox — free play by
            choice. NOTHING is enforced: move any piece anywhere, including the printed
@@ -480,6 +558,10 @@ const FRAME = (() => {
     if (M && M.modes.length > 1)
       ci.push(`<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
             (the validated gate). Switching starts a new game.</li>`);
+    if (!M && SI)
+      ci.push(`<li><b>Mode</b> — who sits in each seat: ${SI.available.map(k => SI.labels[k]).join(' / ')}.
+            Every pairing is legal (hot-seat, you vs a computer, computer vs computer);
+            seats change at once, the game continues.</li>`);
     ci.push(`<li><b>Reset game</b> — restarts the scenario from its setup.</li>`);
     ci.push(`<li><b>VASSAL interop</b> — the live save (live\\game_*.vsav) is a real
           VASSAL save you can open in the desktop app at any time.</li>`);
@@ -669,7 +751,7 @@ const FRAME = (() => {
   function guideSections() {
     const G = PH.game(), FLOW = PH.flow();
     const gd = (G && G.guide) || {};
-    const tierOn = G && G.tier && G.tier.active > 0;
+    const tierOn = !!(G && ((G.seats && !G.tier) || (G.tier && G.tier.active > 0)));
     const mode = !FLOW ? 'free'
       : FLOW.mode === 'napoleonic' ? 'napoleonic'
       : FLOW.segment !== undefined ? 'tactical' : 'strategic';
@@ -682,7 +764,10 @@ const FRAME = (() => {
        ${G.tier ? `<p>${tierOn ? `Full rules — the ${UMPIRE} checks every action`
           : 'Sandbox — free play, you are the umpire'}${
           modeInfo(G.tier).modes.length > 1
-          ? ' — switch on the Mode button.' : '.'}</p>` : ''}`]);
+          ? ' — switch on the Mode button.' : '.'}</p>`
+        : G.seats ? `<p>${escp(G.seats.pairing)} — the ${UMPIRE} checks every action
+          whoever sits in a seat; the <b>Mode</b> button changes the seats
+          (${G.seats.available.map(k => G.seats.labels[k]).join(' / ')}; any pairing).</p>` : ''}`]);
     S.push(['How a turn works', TURN_GUIDE[tierOn ? mode : 'free']]);
     if (gd.victory)
       S.push(['How to win', `<h2>How to win</h2><p>${gd.victory}</p>`]);
@@ -754,6 +839,8 @@ const FRAME = (() => {
       if (soloPanel('guidepanel')) renderGuidePanel();
       renderTierBtn();
     };
+    const mb = $id('modebtn');
+    if (mb) mb.onclick = openSeatsDialog;
     const tb = $id('tierbtn');
     if (tb) tb.onclick = () => {
       const opened = soloPanel('tierpanel');
@@ -853,6 +940,7 @@ const FRAME = (() => {
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
            show, setGuide, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
-           initPanels, soloPanel, renderTierBtn, renderRules, renderTables,
+           initPanels, soloPanel, renderTierBtn, renderModeBtn, openSeatsDialog,
+           renderRules, renderTables,
            refusal, UMPIRE };
 })();

@@ -81,11 +81,11 @@ class SoJGame(GateGame):
     PHASES = ["rom_rally", "rom_fire", "rom_move", "rom_melee",
               "jud_rally", "jud_fire", "jud_move", "jud_melee"]
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None):
         self._memo = None
         self._nbc = {}
         super().__init__(game, scenario_path, live_dir)
-        self._resolve_tier(tier)
+        self.combat = game.spec.get("combat")
         self.types = game.spec["unit_types"]
         self.terr = game.terrain
         self._index_terrain()
@@ -103,31 +103,17 @@ class SoJGame(GateGame):
             self._cc_snapshot()
 
     def rules_scope(self):
-        """Matrix-regime composition (spec #13 as amended 2026-08-09),
-        shadowing the tiered base: the scenario declares `enforced` /
-        `enforced_tier2` (true claims only) and `build_open` — the open
-        coverage-matrix rows, presented as not-enforced DEFECTS that block
-        playability, never as umpired corners. Sandbox (tier < 2) makes no
-        combat enforcement claims at all."""
         sc = self.scenario.get("rules_scope", {})
-        rulings = sc.get("rulings", [])
-        if self.tier >= 2:
-            open_rows = sc.get("build_open", [])
-            return {"enforced": (sc.get("enforced", []) +
-                                 sc.get("enforced_tier2", [])),
-                    "not_enforced": open_rows,
-                    "rulings": rulings,
-                    "banner": ("PLAYABLE - every coverage-matrix row "
-                               "enforced or unreachable (validated; E2E "
-                               "playthrough replay-verified)" if not open_rows
-                               else "BUILD IN PROGRESS - NOT PLAYABLE by the "
-                               "coverage-matrix standard (open rows below)")}
-        return {"enforced": sc.get("enforced", []),
-                "not_enforced": (sc.get("enforced_tier2", []) +
-                                 sc.get("build_open", [])),
-                "rulings": rulings,
-                "banner": "SANDBOX MODE - combat is not gated and no "
-                          "enforcement claim is made for it"}
+        open_rows = sc.get("build_open", [])
+        return {"enforced": (sc.get("enforced", []) +
+                             sc.get("enforced_combat", [])),
+                "not_enforced": open_rows,
+                "rulings": sc.get("rulings", []),
+                "banner": ("PLAYABLE - every coverage-matrix row "
+                           "enforced or unreachable (validated; E2E "
+                           "playthrough replay-verified)" if not open_rows
+                           else "BUILD IN PROGRESS - NOT PLAYABLE by the "
+                           "coverage-matrix standard (open rows below)")}
 
     # ------------------------------------------------------------ terrain
     def _index_terrain(self):
@@ -337,7 +323,7 @@ class SoJGame(GateGame):
         for h in sorted(self.playable):
             control[h] = "Rom" if h in self.outside else "Jud"
         self.s = {
-            "schema": 2, "tier": self.tier, "seed": seed, "rng_calls": 0,
+            "schema": 2, "seed": seed, "rng_calls": 0,
             "n": 0, "turn": 0, "phase": "deploy_jud", "seg": None,
             "units": units, "pool": pool, "entry_queue": [],
             "control": control, "deploy_done": {"Jud": False, "Rom": False},
@@ -349,7 +335,7 @@ class SoJGame(GateGame):
         }
         self._reset_log()
         self._log({"event": "init", "mode": "soj",
-                   "scenario": self.scenario["name"], "tier": self.tier,
+                   "scenario": self.scenario["name"],
                    "seed": seed,
                    "units": [{"pid": u["pid"], "slot": u["slot"],
                               "side": u["side"], "hex": u["hex"]}
@@ -3128,23 +3114,17 @@ class SoJGame(GateGame):
         if a == "flip":
             return self._flip_verdict(side, action)
         if a == "fire":
-            if self.tier < 2:
-                return self._v(False, "combat is not gated in sandbox mode")
             return self._fire_verdict(side, action)
         if a == "breach_attack":
-            if self.tier < 2:
-                return self._v(False, "combat is not gated in sandbox mode")
             return self._breach_verdict(side, action)
         if a == "melee":
-            if self.tier < 2:
-                return self._v(False, "combat is not gated in sandbox mode")
             return self._melee_verdict(side, action)
         if a == "end_phase":
             if phase in ("deploy_jud", "deploy_rom"):
                 return self._v(False, "finish deployment with deploy_done")
             if side != self.side_to_move():
                 return self._v(False, "not your phase")
-            if phase.endswith("_move") and self.tier >= 2:
+            if phase.endswith("_move"):
                 lag = self._refuge_laggards(side)
                 if lag:
                     return self._v(False, "Routed/Panicked units must move towards Refuge using all available MF before the phase ends [15.3/17.21/8.1]: " + ", ".join(lag))
@@ -3839,7 +3819,7 @@ class SoJGame(GateGame):
                 result["seg"] = phasing
                 return result
             self.s["seg"] = None
-        if p.endswith("_rally") and self.tier >= 2:
+        if p.endswith("_rally"):
             side = "Rom" if p.startswith("rom_") else "Jud"
             result["rally"] = self._rally_side(
                 side, [str(x) for x in ((action or {}).get("artillery") or [])])

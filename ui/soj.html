@@ -115,7 +115,7 @@
     <span class="chip fixw" id="turnchip" style="width:120px; text-align:center">…</span>
     <span class="chip fixw" id="vpchip" style="width:150px; text-align:center" title="Roman victory: control ten Built-up hexes at the end of any Judaean Melee Phase [special rule 3 / 18.3]">…</span>
     <span class="chip night fixw holdspace" id="nightchip" style="width:70px; text-align:center">NIGHT</span>
-    <button class="sidebtn holdspace fixw" id="tierbtn" style="margin-left:auto; width:170px"></button>
+    <button class="sidebtn holdspace" id="modebtn" style="margin-left:auto; max-width:420px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap"></button>
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
@@ -129,10 +129,10 @@
     <button class="sidebtn fixw" id="endphasebtn" style="width:150px">End phase</button>
     <button class="sidebtn holdspace fixw" id="deploydonebtn" style="width:170px">✓ Deployment done</button>
     <span id="aictl" style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap">
-      <span style="color:#9fc27f; font-weight:600">AI</span>
+      <span style="color:#9fc27f; font-weight:600">Computer seats</span>
       <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
-        <option value="step" selected>stepped (SPACE)</option>
-        <option value="auto">auto play</option>
+        <option value="auto" selected>play on their own</option>
+        <option value="step">stepped (SPACE)</option>
       </select>
       <span style="font-size:12px">pace</span>
       <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
@@ -140,7 +140,7 @@
         <option value="600" selected>medium</option>
         <option value="250">fast</option>
       </select>
-      <button class="sidebtn fixw" id="aiplaybtn" style="width:190px">▶ AI decides</button>
+      <button class="sidebtn fixw" id="aiplaybtn" style="width:150px">⏸ Pause</button>
       <span id="aithinking" class="holdspace" style="color:#ffd75e; white-space:nowrap">⏳ thinking…</span>
     </span>
     <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
@@ -260,14 +260,26 @@ function bootGame(g){
 async function refresh(){
   const s=await(await fetch('/api/state')).json();
   const first=!GAME;
-  if(first)bootGame(s.game); else GAME.tier=s.game.tier;
+  if(first)bootGame(s.game); else GAME.seats=s.game.seats;
   UNITS=s.units; MARKERS=s.markers||[]; FLOW=s.flow; UNDO=s.undo;
   if(first){ BOARD=await(await fetch('/api/soj/board')).json(); fitBattle(); }
   OV.setAttribute('width',MAPW); OV.setAttribute('height',MAPH);
   if (FRAME.renderUndo) FRAME.renderUndo(UNDO);
-  FRAME.renderTierBtn(); FRAME.renderRules();
+  FRAME.renderModeBtn(); FRAME.renderRules();
   document.getElementById('scen').textContent=FLOW.scenario+`  ·  seed ${FLOW.seed}`;
   render(); renderLog();
+  driveAI();
+}
+function seatOf(side){ return (GAME&&GAME.seats&&GAME.seats.current[side])||'human'; }
+function computerSeat(side){ const k=seatOf(side); return k==='basic'||k==='champion'; }
+function seatName(side){ const k=seatOf(side); return GAME.seats&&GAME.seats.names[k]||k; }
+let aiPaused=false;
+function driveAI(){
+  if(!GAME||!FLOW||FLOW.over||aiPaused||aiActive||aiBusy||busy)return;
+  if(!computerSeat(actingSide()))return;
+  aiActive=true; render();
+  if(document.getElementById('aimode').value==='auto')aiAutoLoop();
+  else aiStepOnce().then(r=>{ if(r.done){ aiActive=false; aiNext=null; render(); driveAI(); } });
 }
 
 async function post(action, side){
@@ -716,13 +728,19 @@ function renderChips(){
 // ---------- guidance (engine rule: every state says what to do) ----------
 function renderGuide(){
   const AB=document.getElementById('aiplaybtn');
-  AB.textContent=aiActive?'■ Stop AI':`▶ AI decides for ${FLOW.over?'…':sideLabel(actingSide())}`;
+  const anyComputer=!!(GAME.seats&&GAME.seats.order.some(computerSeat));
+  FRAME.show('aictl', anyComputer);
+  AB.textContent=aiPaused?'▶ Resume':'⏸ Pause';
   AB.disabled=!!FLOW.over;
-  if(!FLOW.over&&aiActive){
-    FRAME.setGuide(`The AI is deciding for <b>${sideLabel(actingSide())}</b>`
+  if(!FLOW.over&&computerSeat(actingSide())){
+    if(aiPaused){
+      FRAME.setGuide(`<b>${seatName(actingSide())}</b> plays <b>${sideLabel(actingSide())}</b> — paused. Press <b>▶ Resume</b> to let it continue, or change the seats under <b>Mode</b>.`);
+      FRAME.soleNext('aiplaybtn'); return;
+    }
+    FRAME.setGuide(`<b>${seatName(actingSide())}</b> is deciding for <b>${sideLabel(actingSide())}</b>`
       +(document.getElementById('aimode').value==='step'
         ?' — press <b>SPACE</b> to execute each highlighted proposal (yellow = acting unit, green = destination, red = target).'
-        :' — every proposal animates on its own. It stops when the decision passes to the other seat.'));
+        :' — every proposal animates on its own; every one goes through the Umpire and is logged with its verdict.'));
     FRAME.soleNext(null); return;
   }
   if(FLOW.over){
@@ -1032,12 +1050,14 @@ FRAME.initPanels({
     `<li><b>Modals</b> — when the Umpire needs a decision (losses, retreats, errant
      fire, advances, escalade move-ups, sorties) a modal takes the screen: the
      game is blocked until you answer it.</li>`,
-    `<li><b>Hotseat or AI</b> — both seats play at this screen; the turn chip names
-     whose decision the game is waiting on. <b>▶ AI decides</b> lets the engine's policy AI
-     answer for whichever seat is deciding (deployment, fire, movement, melee, every modal),
-     one proposal at a time (SPACE) or auto-played; every proposal goes through the same
-     Umpire and is logged with its verdict. Press it again to stop and take the seat back.</li>`,
+    `<li><b>Seats</b> — the <b>Mode</b> button (top bar) says who plays each side:
+     Human, Basic AI or Champion AI, any pairing. Human seats play at this screen (two Humans =
+     hot-seat; the turn chip names whose decision the game is waiting on). Computer seats answer
+     for themselves (deployment, fire, movement, melee, every modal) — on their own at the chosen
+     pace, or one proposal per SPACE; every proposal goes through the same Umpire and is logged
+     with its verdict. <b>⏸ Pause</b> holds a computer seat so you can study the board.</li>`,
   ],
+  onSeats: async () => { aiPaused=false; aiActive=false; aiNext=null; await refresh(); },
 });
 async function aiStepOnce(){
   if(aiBusy)return {done:true};
@@ -1061,30 +1081,30 @@ async function aiStepOnce(){
   return r;
 }
 async function aiAutoLoop(){
-  if(!aiActive)return;
+  if(!aiActive||aiPaused)return;
   const r=await aiStepOnce();
-  if(r.done||!aiActive){ aiActive=false; aiNext=null; render(); return; }
+  if(r.done||!aiActive||aiPaused){ aiActive=false; aiNext=null; render(); if(!aiPaused)driveAI(); return; }
   setTimeout(aiAutoLoop, r.step?parseInt(document.getElementById('aipace').value):0);
 }
-async function startAI(){
-  if(aiActive){ aiActive=false; aiNext=null; render(); return; }
-  aiActive=true; render();
+function pauseAI(){
+  aiPaused=!aiPaused;
   document.getElementById('aiplaybtn').blur();
-  if(document.getElementById('aimode').value==='auto')aiAutoLoop();
-  else{ const r=await aiStepOnce(); if(r.done){ aiActive=false; render(); } }
+  if(aiPaused){ aiActive=false; aiNext=null; render(); }
+  else driveAI();
 }
-document.getElementById('aiplaybtn').onclick=startAI;
+document.getElementById('aiplaybtn').onclick=pauseAI;
 document.getElementById('aimode').onchange=()=>{ if(aiActive&&document.getElementById('aimode').value==='auto')aiAutoLoop(); };
 document.addEventListener('keydown',e=>{
-  if(e.code!=='Space'||!aiActive||aiBusy)return;
+  if(e.code!=='Space'||!aiActive||aiBusy||aiPaused)return;
   if(document.getElementById('aimode').value!=='step')return;
   e.preventDefault();
-  aiStepOnce().then(r=>{ if(r.done){ aiActive=false; aiNext=null; render(); } });
+  aiStepOnce().then(r=>{ if(r.done){ aiActive=false; aiNext=null; render(); driveAI(); } });
 });
 document.getElementById('endphasebtn').onclick=endPhase;
 document.getElementById('deploydonebtn').onclick=()=>post({type:'deploy_done'}, FLOW.side_to_move);
 document.getElementById('resetbtn').onclick=async()=>{
   if(!confirm('Start a fresh game? The current log is replaced.'))return;
+  aiActive=false; aiNext=null;
   await fetch('/api/reset',{method:'POST',body:'{}'});
   deploySel=null; deselect(); await refresh(); fitBattle();
 };

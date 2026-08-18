@@ -416,7 +416,7 @@ def main():
         client_desc = ("soj" if soj else
                        "tactical+board" if tactical else "board")
         print(f"{slug}: client={client_desc}, "
-              f"earned tier {meta['tier']['earned']}, {n_req} module req(s)")
+              f"{'seat model' if meta['tier'] is None else 'earned tier %s' % meta['tier']['earned']}, {n_req} module req(s)")
 
     covers = os.path.join(ROOT, "web", "covers")
     n_rot = 0

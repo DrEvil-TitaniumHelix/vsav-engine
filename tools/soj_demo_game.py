@@ -51,7 +51,7 @@ def main():
             s = json.load(open(os.path.join(GAME, c), encoding="utf-8"))
             if "Gallus" in s.get("name", ""):
                 scen = os.path.join(GAME, c)
-    tg = soj.SoJGame(game, scen, WORK, seed=SEED, tier=2)
+    tg = soj.SoJGame(game, scen, WORK, seed=SEED)
 
     def sub(side, action, quiet=False):
         r = tg.submit(side, action)

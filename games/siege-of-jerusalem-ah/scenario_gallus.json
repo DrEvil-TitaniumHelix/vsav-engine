@@ -386,7 +386,7 @@
    "Reinforcement: Giora faction dice-rolled entry from turn 4 at OO33/Q49 (two-dice count by declared ruling - see source_defects)",
    "[18.3] hex control tracking + the ten-Built-up-hex Roman victory check at the end of each Judaean Melee Phase"
   ],
-  "enforced_tier2": [
+  "enforced_combat": [
    "[11.x, 14.x] Melee Table: drm/strength modifiers, odds and extreme-odds clamps, defender loss choice, core retreats, continuous combat, cohort/faction drm, flank attacks",
    "[9.x, 13.x] Missile Table: fire concentration, attack multiples, core LOF (4x4 obstacle matrix + closer-to tiebreaks, cell-exact per decode-prep 6), adjacent mandatory targets, extreme odds, rocks, night/out-of-CC fire limits",
    "[10.1, 12.x] Ram breach attacks: cumulative damage, breach as dynamic terrain, gate ring-class defense with entrance-side doubling, occupant elimination at breach instant",
