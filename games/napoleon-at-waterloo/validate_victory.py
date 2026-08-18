@@ -9,6 +9,8 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 import gamespec  # noqa: E402
 import verify_game  # noqa: E402
 from naw import NawGame  # noqa: E402
+sys.path.insert(0, HERE)
+import naw_drive as D  # noqa: E402
 
 G = gamespec.Game(HERE)
 SCEN = os.path.join(HERE, "scenario_2nd_ed.json")
@@ -42,12 +44,7 @@ def place(g, pid, h):
 
 def to_allied_turn(g, turn):
     while not (g.s["turn"] == turn and g.s["mover"] == "Al" and g.s["phase"] == "movement"):
-        for pid in g.due_reserve(g.s["mover"]):
-            eh = g.entry_hexes(pid)
-            if eh:
-                g.submit(g.s["mover"], {"type": "reinforce", "unit": pid, "hex": list(sorted(eh)[0])})
-        g.submit(g.s["mover"], {"type": "end_movement"})
-        g.submit(g.s["mover"], {"type": "end_phase"})
+        D.end_player_turn(g)
 
 
 PR = [u["id"] for u in CAT["reserve"]]
@@ -60,15 +57,14 @@ check(set(g.s["pool"]) == set(PR) and all(g.s["pool"][p] == 2 for p in PR) and n
       "nine Prussians staged OFF the map, due Game-Turn 2 [REI-01; NAW2-OR-1 off-map staging]")
 r = g.submit("Fr", {"type": "reinforce", "unit": PR[0], "hex": [27, 5]})
 check(not r["verdict"]["legal"], "French cannot bring on Prussians [REI-01]")
-g.submit("Fr", {"type": "end_movement"})
-g.submit("Fr", {"type": "end_phase"})
+D.end_player_turn(g)
 r = g.submit("Al", {"type": "reinforce", "unit": PR[0], "hex": [27, 5]})
 check(not r["verdict"]["legal"] and "REI-01" in r["verdict"]["reasons"][0], "Game-Turn 1: Prussians may not enter yet [REI-01]")
 r = g.submit("Al", {"type": "end_movement"})
 check(r["verdict"]["legal"], "Game-Turn 1 Allied movement closes without Prussians")
+D.discharge_combat(g)
 g.submit("Al", {"type": "end_phase"})
-g.submit("Fr", {"type": "end_movement"})
-g.submit("Fr", {"type": "end_phase"})
+D.end_player_turn(g)
 check(g.s["turn"] == 2 and g.s["mover"] == "Al", "at the Allied Movement Phase of Game-Turn 2")
 r = g.submit("Al", {"type": "end_movement"})
 check(not r["verdict"]["legal"] and "REI-06" in r["verdict"]["reasons"][0], "end_movement REFUSED while due Prussians can still enter [REI-06]")
@@ -101,9 +97,9 @@ for pid in PR[2:]:
 r = g.submit("Al", {"type": "end_movement"})
 check(r["verdict"]["legal"] and not g.s["pool"], "all nine on: Allied movement closes; pool empty")
 lm = g.legal_moves(PR[0])
+D.discharge_combat(g)
 g.submit("Al", {"type": "end_phase"})
-g.submit("Fr", {"type": "end_movement"})
-g.submit("Fr", {"type": "end_phase"})
+D.end_player_turn(g)
 r = g.submit("Al", {"type": "exit", "unit": PR[0], "via": [3, 1]})
 check(not r["verdict"]["legal"], "Prussians may never leave the map [REI-07/VIC-12]")
 
@@ -116,6 +112,15 @@ check(all(g.entry_hexes(p) == {} for p in PR), "every East-edge hex enemy-occupi
 r = g.submit("Al", {"type": "end_movement"})
 check(r["verdict"]["legal"], "entry physically impossible: end_movement accepted, Prussians wait [REI-06 read with NAW2-OR-4 A]")
 check(all(g.s["pool"][p] == 2 for p in PR), "they stay due (enter at the first later phase they can)")
+
+g = fresh()
+to_allied_turn(g, 2)
+g.s["units"] = {}
+r = g.submit("Al", {"type": "reinforce", "unit": PR[0], "hex": [27, 5]})
+lm = g.legal_moves(PR[0])
+d0 = lm["dests"][0]
+r = g.submit("Al", {"type": "move", "unit": PR[0], "dest": [d0["col"], d0["row"]]})
+check(r["verdict"]["legal"] and g.s["moved"][PR[0]] == 1 + d0["cost"] and PR[0] in g.s["done"], f"entry MP + move MP accumulate on the ledger ({g.s['moved'][PR[0]]}) [REI-03/MOV-05]")
 
 print("== loss ledgers, victory, demoralization ==")
 g = fresh()

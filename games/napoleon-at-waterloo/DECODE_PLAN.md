@@ -1,5 +1,7 @@
 # NAPOLEON AT WATERLOO (SPI, 2nd Edition 1971) — DECODE PLAN
 
+**STATUS 2026-08-18: all seven bites DONE (engine/naw.py + validate_data/movement/combat/battle/victory). COVERAGE_MATRIX.md 109/111 ENFORCED + 1 UNREACHABLE + 1 OPEN (M.13 = platform UNDO policy NAW2-OR-3, Bruce). The plan below is the historical work order.**
+
 **Written 2026-08-14 at the close of the decode-prep phase (PREP-1 … PREP-7).**
 Audience: Fable, who writes the encoding. Everything here is backed by a committed, machine-readable
 artefact; nothing asks you to re-derive a reading.

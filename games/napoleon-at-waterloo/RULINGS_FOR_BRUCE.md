@@ -1,4 +1,9 @@
-# Napoleon at Waterloo (2nd Ed) — open rulings, DISTILLED (v2, 2026-08-17 evening)
+# Napoleon at Waterloo (2nd Ed) — open rulings, DISTILLED (v3, 2026-08-18)
+
+**STATE 2026-08-18 (Fable): the encoding is COMPLETE — bites 4, 5 and 7 landed on top of the reviewed bites 1-3/6.** Every ruling below is now ENFORCED in `engine/naw.py` and proved by `validate_battle.py` (102 checks incl. six full random games replayed by verify_game) except ONE: **NAW2-OR-3 (M.13) — the platform UNDO question — is yours.** Recommendation A: UNDO is a declared platform affordance (already unavailable in mailed/LLM matches); nothing changes in any game. COVERAGE_MATRIX.md: 109/111 ENFORCED, 1 UNREACHABLE, 1 OPEN (M.13). Review of the Opus-era work found four real bugs, all fixed + validator-pinned: exit paths were refused through a friendly unit that had already moved (MOV-07); the MP ledger of a Prussian that entered then moved was overwritten instead of accumulated; game.json's VIC-14 text said "DRAW" where the print says the ALLIED player wins (the code was right); the stacking wedge guard could still be boxed in by later moves (now a matching-based check that every stacked hex stays un-stackable after every move). Bruce's rulings (OR-6 A, OR-5 by proof, OR-16 A, D4) stand exactly as given; OR-5's proof is now constructive (star partition of the fixed contact graph, `complete_assignment()`).
+
+---
+
 
 **What changed since v1:** I ran every open item against **SPI's own 1979 Third Edition text** (same publisher, same designer, rules rewritten by Simonsen — the printed booklet scan we hold, plus the 1979 map-sheet Terrain Key). Where the 1979 text answers a 2nd Ed gap in so many words, that is a **publisher clarification** — a real rung on the authority ladder, above a declared ruling. Christian Holm Christensen's community rules (GitLab) were read as a second opinion only.
 

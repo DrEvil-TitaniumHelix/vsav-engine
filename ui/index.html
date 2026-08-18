@@ -1178,6 +1178,7 @@ function bgCombatant(u) {
   if (!FLOW) return !u.cls;
   if (FLOW.mode === 'bluegray') return u.cls !== 'train';
   if (FLOW.mode === 'westwall') return u.cls !== 'dz';
+  if (FLOW.mode === 'naw') return true;
   return !u.cls;
 }
 function toggleBattle(u, stack) {
@@ -1217,8 +1218,9 @@ function renderCombat() {
                         || (C.av_offers && C.av_offers.length) || (C.av && C.av.length);
     if (!obligations) { box.style.display = 'none'; return; }
     let hm = `<b>${sideLabel(FLOW.mover)} — combat is coming</b><br>
-      <span class="dim">moving into an enemy ZOC causes combat [7.2]; battles resolve
-      after ALL movement [5.3]</span><br>
+      <span class="dim">${FLOW.mode === 'naw'
+        ? 'every unit adjacent to an enemy when the Combat Phase opens MUST attack, and every such enemy MUST be attacked; the obligations are fixed the moment movement ends [CBT-06/CBT-07]'
+        : 'moving into an enemy ZOC causes combat [7.2]; battles resolve after ALL movement [5.3]'}</span><br>
       must attack: ${C.must_attack.map(u=>u.slot).join(', ') || '—'}<br>
       must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '—'}<br>`;
     if (C.av && C.av.length)
@@ -1233,7 +1235,7 @@ function renderCombat() {
     box.innerHTML = hm; box.style.display = ''; return;
   }
   let h = C.phase === 'combat'
-    ? `<b>${sideLabel(FLOW.mover)} — combat [3.2/3.4]</b><br>`
+    ? `<b>${sideLabel(FLOW.mover)} — ${FLOW.mode === 'naw' ? 'Combat Phase [SEQ-04]' : 'combat [3.2/3.4]'}</b><br>`
     : `<b>Decision required</b><br>`;
   if (C.pending_rommel) {
     const pr = C.pending_rommel, u = unitById(pr.unit);
@@ -1282,6 +1284,18 @@ function renderCombat() {
               <button class="sidebtn" onclick='sgAction({type:"retreat",unit:"${u.pid}",eliminate:true}, "${P.chooser}")'>Eliminate [7.74]</button>`;
       h += `</div>`;
     });
+  } else if (P && P.kind === 'retreat' && FLOW.mode === 'naw') {
+    h += `<div style="margin-top:6px"><b>${P.voluntary ? 'Voluntary retreat' : 'Retreats'}</b> — the <b>${sideLabel(P.chooser)}</b> player
+          ${P.voluntary ? 'may pull each bombarding gun back one hex, or stand fast [ART-11]' : '(the victor) chooses where each unit retreats, one hex [RETREAT AND ADVANCE p.5]'}:</div>`;
+    P.units.forEach(u => {
+      h += `<div style="margin:4px 0"><b>${u.slot}</b>${u.displaced ? ' <span class="dim">(disrupted — pushed out, moves back)</span>' : ''}<br>`;
+      u.options.forEach(o => {
+        h += `<button class="sidebtn" onclick='sgAction({type:"retreat",unit:"${u.pid}",path:${JSON.stringify(o.path)}}, "${P.chooser}")'>→ ${o.name}</button> `;
+      });
+      h += `</div>`;
+    });
+    if (P.can_decline)
+      h += `<button class="sidebtn" onclick='sgAction({type:"retreat",decline:true}, "${P.chooser}")'>Stand fast (no retreat)</button>`;
   } else if (P && P.kind === 'retreat') {
     h += `<div style="margin-top:6px"><b>Retreats</b> — the <b>${sideLabel(P.chooser)}</b> player
           (the winner) retreats each losing unit two hexes [7.5, 7.6]:</div>`;
@@ -1298,7 +1312,7 @@ function renderCombat() {
     });
   } else if (P && P.kind === 'exchange') {
     h += `<div style="margin-top:6px"><b>Exchange</b> — the <b>${sideLabel(P.winner)}</b> player removes
-          involved units totaling at least <b>${P.owe}</b> factors [7.5]:<br>`;
+          involved units totaling at least <b>${P.owe}</b> factors ${FLOW.mode === 'naw' ? '(whole adjacent units, at least the defender\'s printed strength) [EX]' : '[7.5]'}:<br>`;
     P.involved.forEach(u => {
       h += `<label style="display:block"><input type="checkbox" class="exch" value="${u.pid}">
             ${u.slot} <span class="dim">(${u.factor})</span></label>`;
@@ -1306,8 +1320,12 @@ function renderCombat() {
     h += `<button class="sidebtn" onclick='submitExchange("${P.winner}")'>Remove selected</button></div>`;
   } else if (P && P.kind === 'advance') {
     h += `<div style="margin-top:6px"><b>Advance after combat</b> — optional, before the next
-          battle [${FLOW.mode === 'bluegray' ? '7.75' : '16.1'}]: vacated ${P.hex_names.join(', ')}<br>`;
-    P.advancers.forEach(u => {
+          battle [${FLOW.mode === 'bluegray' ? '7.75' : FLOW.mode === 'naw' ? 'CBT-14, one unit per vacated hex' : '16.1'}]: vacated ${P.hex_names.join(', ')}<br>`;
+    if (P.pairs) {
+      P.pairs.forEach(pr => {
+        h += `<button class="sidebtn" onclick='sgAction({type:"advance",unit:"${pr.pid}",hex:[${pr.hex}]}, "${P.chooser || FLOW.mover}")'>${pr.slot} → ${pr.name}</button> `;
+      });
+    } else P.advancers.forEach(u => {
       P.hexes.forEach((hx, i) => {
         h += `<button class="sidebtn" onclick='sgAction({type:"advance",unit:"${u.pid}",hex:[${hx}]}, "${P.chooser || FLOW.mover}")'>${u.slot} → ${P.hex_names[i]}</button> `;
       });
@@ -1352,7 +1370,7 @@ function renderCombat() {
     }
     h += `<div style="margin-top:6px">must attack: ${C.must_attack.map(u=>u.slot).join(', ') || '<span class="dim">all done</span>'}<br>
           must be attacked: ${C.must_be_attacked.map(u=>u.slot).join(', ') || '<span class="dim">all done</span>'}</div>`;
-    if (C.must_attack.length && !C.battles_fought)
+    if (C.must_attack.length && !C.battles_fought && FLOW.mode !== 'naw')
       h += `<div style="margin-top:4px" class="dim">a unit with NO legal attack (worse than 1-6
             even alone) is eliminated before any battle:</div>` +
            C.must_attack.map(u =>
