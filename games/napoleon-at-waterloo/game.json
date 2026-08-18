@@ -892,10 +892,10 @@
      "DIS-01"
     ],
     "defect": "The retreat bar forbids retreating 'into non-Road Woods'; the DISRUPTION paragraph two paragraphs later forbids forcing the displaced unit 'into Enemy units or Zones of Control or woods' - bare 'woods', and it also omits the retreat bar's 'off the map'. Whether a disrupted unit may be pushed into one of the five Woods/Road hexes is undefined; NAW2-D4 makes those hexes defensively valuable, sharpening the question.",
-    "resolution": "OPEN - awaiting Bruce's ruling. Options: (a) read 'woods' as the same 'non-Road Woods' the retreat bar defines; (b) read it literally - disruption is barred from ALL woods including Woods/Road. The gate is not written past this cell (bite 5).",
-    "authority": "PENDING - Bruce. No errata, no publisher, no module question.",
+    "resolution": "RESOLVED (reading A): a displaced unit is barred exactly where a retreating unit is barred - enemy units, enemy ZOC, off the map, non-Road Woods; a Woods/Road hex is allowed across its road hexside. Lands in bite 5.",
+    "authority": "PUBLISHER CLARIFICATION - SPI's 1979 3rd Edition [6.4] (safe hex = a traversable hex not in an enemy ZOC), [4.2] (Woods entered/left only via road hexsides 'even when advancing or retreating due to combat'), [6.5] (displaced units retreat to safe hexes). Same designer, same publisher, same rule rewritten.",
     "enforced": false,
-    "lands_in": "bite 5 (result application) - BLOCKED until ruled"
+    "lands_in": "bite 5 (result application) - UNBLOCKED"
    },
    {
     "id": "NAW2-C7-mandatory-attack-timing",
