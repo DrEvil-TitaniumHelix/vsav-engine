@@ -2,7 +2,7 @@
 
 **What changed since v1:** I ran every open item against **SPI's own 1979 Third Edition text** (same publisher, same designer, rules rewritten by Simonsen — the printed booklet scan we hold, plus the 1979 map-sheet Terrain Key). Where the 1979 text answers a 2nd Ed gap in so many words, that is a **publisher clarification** — a real rung on the authority ladder, above a declared ruling. Christian Holm Christensen's community rules (GitLab) were read as a second opinion only.
 
-Result: **14 of 21 items are answered by SPI's own later text. 5 remain for you. 1 is platform policy. 1 (D4) was already ruled.**
+Result: **14 of 21 items are answered by SPI's own later text. 3 remain for you (OR-6, OR-5, OR-16) and block bites 4–5; 2 more (OR-4, OR-19) are encoded per my recommendation pending your objection; 1 is platform policy; D4 was already ruled.**
 
 Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the printed scan (RULEBOOK_VERIFIED §4, ed3 OCR pages 4–5 cross-checked); 1979 Terrain Key read by OCR at 2× off the map sheet scan (`Nap_Waterloo_1979_Map.pdf` p.1, rotated 90°).
 
@@ -23,12 +23,12 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 | **OR-7** | all-bombardment EX kills for free? | [6.8] *"Even in the case of an Ee result, the defender is destroyed but the artillery unit is unaffected."* | **A** — literal; SPI confirmed it, not an oversight we may fix. (PREP-7's note that the 3rd Ed "closes" this was wrong.) |
 | **OR-8** | voluntary Ar by a bombarding gun — who picks direction | [6.8] *"Bombarding artillery units may voluntarily retreat after combat"* — the owner's option | **A** — owner chooses hex |
 | **OR-10** | disrupted artillery already fired / still counts for obligations | 3rd Ed instead forbids displacing artillery that still owes a bombardment | **A** — forward-looking; disrupted gun still counts as adjacent |
-| **OR-2** | stacking reading | [4.4] units may never **END a Movement Phase** stacked (penalty if inadvertent) | **A** — a unit may end its own move on a friend mid-phase; end_movement refused while any hex holds two. **Currently encoded B — I will switch to A next session unless you say no.** |
+| **OR-2** | stacking reading | [4.4] units may never **END a Movement Phase** stacked (penalty if inadvertent) | **A — DONE (bite 6):** a unit may end its own move on a friend mid-phase (only if that friend can still move off), end_movement refused while any hex holds two. |
 | **OR-18** | exit through Woods/Road hex 1101 | [4.2] woods entered/left only via road hexsides — the north hexside IS the road | **legal** (as encoded) |
 | **OR-1** | Prussian staging | [7.0] reinforcements ENTER during the Movement Phase | **off-map pool** (as encoded) |
 | (C.10/11) | several-on-several attack geometry | [5.4] *"provided each attacker could have attacked each defender separately"* | every attacker adjacent to every defender (as encoded) |
 
-## STILL YOURS — 5 items
+## STILL YOURS — 3 items block bites 4–5 (OR-4 and OR-19 below are already encoded per my recommendation; object if you disagree)
 
 **OR-6 (C.7) — when are the must-attack obligations evaluated?** 3rd Ed [5.1]/[6.1] repeats the same words (per-attack announcement, any order, results immediate) and does not say.
 - **A. Fixed at the start of the Combat Phase** *(recommended — computable once; matches the printed battle-line examples).*
@@ -43,11 +43,11 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 - **A. Advanced unit leaves the obligation set; may not be named again** *(recommended).*
 - B. Refuse advances that create new contact.
 
-**OR-4 (R.5) — Prussians "may not be delayed" but no legal entry hex.** 3rd Ed [7.2]: no entry into an enemy-occupied hex or an enemy ZOC; [7.3] made delay legal (a deliberate 2nd→3rd change, so it does not bind).
+**OR-4 (R.5) — ENCODED A in bite 6 — Prussians "may not be delayed" but no legal entry hex.** 3rd Ed [7.2]: no entry into an enemy-occupied hex or an enemy ZOC; [7.3] made delay legal (a deliberate 2nd→3rd change, so it does not bind).
 - **A. Entry hex must be free of enemy units and enemy ZOC (per [7.2]); a unit with no legal entry hex enters at the first later Movement Phase it can, reason logged; a unit that CAN enter must** *(recommended).*
 - B. Entry into an EZOC hex allowed (unit just stops); refuse end_movement only if literally no hex exists.
 
-**OR-19 (D.6) — demoralization shift at the table's ends.** 3rd Ed [6.2] *"ratios beyond the table's ends are treated as the end column"* — arguably covers it.
+**OR-19 (D.6) — ENCODED A in bite 6 — demoralization shift at the table's ends.** 3rd Ed [6.2] *"ratios beyond the table's ends are treated as the end column"* — arguably covers it.
 - **A. Clamp at the printed end** *(recommended, low stakes).*
 - B. Shift is void when at the end.
 
