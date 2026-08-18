@@ -270,6 +270,13 @@ def save_facing():
 
 
 def png_size(path):
+    # The map is a BYO asset (module art, never in the repo): on a clean
+    # checkout it is absent, and nothing engine-side may depend on it. The
+    # descriptor then ships map_w/map_h = 0 and the client sizes the board
+    # from the module image it loads itself. (CI 2026-08-18: SoJ has no
+    # games_bundled fallback, so this was the only game to trip.)
+    if not path or not os.path.exists(path):
+        return 0, 0
     with open(path, "rb") as f:
         head = f.read(24)
         if head[:2] == b"\xff\xd8":          # JPEG: walk to the SOF marker
