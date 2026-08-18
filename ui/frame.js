@@ -375,13 +375,16 @@ const FRAME = (() => {
     ov.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,.55);
       z-index:70; display:flex; align-items:center; justify-content:center`;
     const label = id => ((G.sides || []).find(x => x.id === id) || {label: id}).label;
+    const gs = S.generalship;
+    const seatDesc = k => (k === 'champion' && gs)
+      ? `the trained champion — Generalship ${gs.rung}/10, ${gs.general}` : (SEAT_DESC[k] || '');
     const rows = S.order.map(sd => `
       <div style="display:flex; align-items:center; gap:14px; margin:12px 0">
         <b style="width:130px; font-size:18px">${escp(label(sd))}</b>
         <select data-side="${sd}" style="flex:1; background:#1a1d22; color:#f0f4f8;
           border:1px solid #4a5058; border-radius:8px; padding:9px 12px; font-size:17px">
           ${S.available.map(k => `<option value="${k}" style="color:#f0f4f8; background:#1a1d22" ${S.current[sd] === k ? 'selected' : ''}>
-             ${escp(S.labels[k])} — ${escp(SEAT_DESC[k] || '')}</option>`).join('')}
+             ${escp(S.labels[k])} — ${escp(seatDesc(k))}</option>`).join('')}
         </select></div>`).join('');
     ov.innerHTML = `<div style="width:760px; max-width:94vw; background:#23262c;
         border:1px solid #3a3f47; border-radius:12px; padding:22px 26px;
@@ -392,6 +395,11 @@ const FRAME = (() => {
         computer is a match, computer vs computer plays itself for you to watch.
         Seats change immediately; the game continues from where it stands.</div>
       ${rows}
+      ${gs ? `<div style="margin:6px 0 2px; padding:10px 12px; background:#1a1d22; border:1px solid #3a3f47;
+        border-radius:8px; color:#c9d3dd; font-size:15px; line-height:1.45">
+        <b style="color:#f0f4f8">Generalship ${gs.rung}/10 — ${escp(gs.general)}.</b>
+        ${escp(gs.meaning)}.<br><span style="color:#98a3ae">Record: ${escp(gs.evidence)}. The scale is
+        the training record; a rung the record does not prove is never shown.</span></div>` : ''}
       <div id="seatsprev" style="margin:14px 0 8px; color:#9cc4ee; font-weight:700; font-size:19px"></div>
       <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px">
         <button id="seatscancel" class="sidebtn" style="font-size:16px; padding:8px 18px; color:#e6ebf0">Cancel</button>

@@ -291,7 +291,7 @@ for (const g of GAMES){
   const card = document.createElement('div');
   card.className = 'card';
   const tags = (g.tags || []).map(t =>
-    `<span class="tag ${t.kind}">${t.label}</span>`).join('');
+    `<span class="tag ${t.kind}"${t.title ? ` title="${t.title.replace(/"/g,'&quot;')}"` : ''}>${t.label}</span>`).join('');
   card.innerHTML =
     `${coverImg('covers/' + g.slug + '.jpg')}
      <h2>${g.name}</h2>

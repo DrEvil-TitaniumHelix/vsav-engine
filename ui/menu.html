@@ -77,7 +77,7 @@ async function load(){
       cards.appendChild(card); continue;
     }
     const tags = (g.tags || []).map(t =>
-      `<span class="tag ${t.kind}">${t.label}</span>`).join('');
+      `<span class="tag ${t.kind}"${t.title ? ` title="${t.title.replace(/"/g,'&quot;')}"` : ''}>${t.label}</span>`).join('');
     card.innerHTML =
       `<img class="art" src="/gasset/menu_art/${encodeURIComponent(g.slug)}"
             onerror="this.remove()" alt="">

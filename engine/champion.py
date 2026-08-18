@@ -72,6 +72,72 @@ def graduated(game_dir):
     return bar if "MET" in str(bar.get("result", "")).upper() else None
 
 
+GENERALSHIP = [
+    (1, "Benedict Arnold", "cannot finish a legal game, or loses to random play"),
+    (2, "Ambrose Burnside", "beats random play; loses to the scripted baseline every time"),
+    (3, "George McClellan", "trades with the baseline - the training run kept the baseline as its champion"),
+    (4, "Joseph Hooker", "won its own training run's gauntlet; never faced the graduation bar"),
+    (5, "George Meade", "graduation bar MET - held-out pairs vs the baseline and fresh random genomes all won"),
+    (6, "George Thomas", "bar met AND the genome held an unbeaten self-play streak (defended its title to the run's target)"),
+    (7, "William Sherman", "bar + streak met, and beats every other genome of its own hall of fame in round-robin"),
+    (8, "Ulysses Grant", "all of that, in both seats, across two independent training runs"),
+    (9, "Erwin Rommel", "beats a graduated champion of a different training family (cross-family gauntlet)"),
+    (10, "George Patton", "reserved - earned only against a human commander or a foreign champion, on a verified log"),
+]
+
+
+def _manifest(game_dir):
+    path = os.path.join(game_dir, "playbook", "manifest.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        return json.load(open(path, encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def generalship(game_dir):
+    """The 1-10 generalship rung of the game's shipped AI, computed from the
+    training record and nothing else (Bruce 2026-08-18: the data is whether
+    the genome graduated correctly and what streaks it ran). Returns
+    {rung, general, meaning, evidence} or None when the game ships no
+    playbook (a scripted policy alone is not rated). Every rung above 4
+    requires a record in playbook/manifest.json earned_by; a rung the record
+    does not prove is never printed."""
+    m = _manifest(game_dir)
+    if m is None:
+        return None
+    eb = m.get("earned_by") or {}
+    grad = eb.get("graduation") or {}
+    bar = graduated(game_dir)
+    has_genome = genome(game_dir) is not None
+    wins, of = grad.get("wins"), grad.get("of")
+    streak, target = grad.get("streak", 0), grad.get("target")
+    unbeaten = bool(grad.get("unbeaten"))
+    ev = []
+    if wins is not None and of:
+        ev.append(f"self-play gauntlet {wins:g}/{of}")
+    if target:
+        ev.append(f"title streak {streak}/{target}" + (" unbeaten" if unbeaten else ""))
+    if not has_genome:
+        rung = 3
+        ev.append("training kept the baseline as champion")
+    elif not bar:
+        rung = 4
+        ev.append("graduation bar not run")
+    else:
+        rung = 5
+        ev.append(f"graduation bar MET ({bar.get('held_out_pairs_vs_baseline', '')}; randoms {bar.get('fresh_random_pairs', '')})")
+        if unbeaten and target and streak >= target:
+            rung = 6
+            rr = eb.get("portfolio_round_robin")
+            if rr and eb.get("round_robin_swept"):
+                rung = 7
+    r, name, meaning = GENERALSHIP[rung - 1]
+    return dict(rung=r, of=10, general=name, meaning=meaning,
+                evidence="; ".join(ev), label=f"Generalship {r}/10 - {name}")
+
+
 def validated(game_dir):
     """True when the game ships a playbook at all - the self-play
     certificate exists even where the equilibrium kept the baseline."""

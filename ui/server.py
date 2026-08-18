@@ -194,7 +194,8 @@ def seat_pairing():
 def seats_view():
     return dict(current=dict(SEATS), available=seat_kinds(),
                 labels=SEAT_LABEL, names=SEAT_NAME, pairing=seat_pairing(),
-                order=list(GAME_OBJ.side_order))
+                order=list(GAME_OBJ.side_order),
+                generalship=champ_mod.generalship(GAME_OBJ.dir))
 
 
 def api_seats(body):
@@ -634,12 +635,19 @@ def game_tags(gdir, spec, scen_mode, earned):
     tags = [] if earned is None else [
         dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
     if earned is None or earned >= 3:
-        tags.append(dict(
+        ai = dict(
             label="Champion AI" if champ_mod.graduated(gdir)
             else "Advanced AI" if champ_mod.genome(gdir) is not None
             else "Advanced AI pending" if champ_mod.validated(gdir)
             else "Basic AI",
-            kind="ai"))
+            kind="ai")
+        gs = champ_mod.generalship(gdir)
+        if gs:
+            ai["label"] += f" · {gs['rung']}/10"
+            ai["title"] = (f"{gs['label']}: {gs['meaning']}. Record: {gs['evidence']}. "
+                           "The scale is the training record - a rung the record does not prove is never shown.")
+            ai["generalship"] = gs
+        tags.append(ai)
     m = MODE_TAG.get(scen_mode or "free")
     if m and (earned is None or earned > 0):
         tags.append(dict(label=m, kind="mode"))
