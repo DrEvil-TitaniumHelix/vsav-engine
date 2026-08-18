@@ -91,6 +91,42 @@ Language knowledge first; the auto-distilled champion genome is appended by
   what the 14-gene strategy family (`engine/strategy_soj.py`) was built
   to grade.
 
+## Measured champion (trained 2026-08-17, run `runs/2026-08-17_soj_optimizer`)
+
+- Optimizer: 150 generations, 43,396 verified games, population 16,
+  hall of fame 8, seat-alternating gauntlet vs the hall (16 games/gen).
+  The self-play gauntlet never held an unbeaten streak past 1 of 3, so
+  the run did NOT graduate by its own streak rule; the champion is the
+  equilibrium of the final elite (`portfolio.json`: one genome, elite_0,
+  100%).
+- Round-robin vs the shipped baseline (10 seeds × 2 seatings, 20 games):
+  mean pair margin **+32.8** for elite_0.
+- Graduation bar (`grad_bar.py`, westwall pattern, held-out seeds
+  960–984): **20/20** home-away pairs vs the baseline, total margin
+  +1350.4 (mean +67.5 per pair); **5/5** pairs vs five fresh random
+  genomes. **GRADUATION MET** — the second champion to clear the bar
+  (Westwall was the first).
+- Corpus (`playbook/corpus/`, seeds 970–972, champion vs baseline both
+  seats, every log replayed byte-exact by verify_game): champion **6/6**.
+  As Roman it wins on turn 5–6 with 20, 24, 26 built-up hexes (need 10);
+  as Judaean it holds the baseline Romans to **0** built-up hexes through
+  turn 10 in all three games. Against the same baseline the shipped
+  policy managed Rom 2/10 on seeds 900–909 (previous section).
+- What the genome does (see the auto-distilled reading appended to the
+  playbook copy of this file): concentrates the assault sector
+  (sector≈0.32, width≈0.24), stages the second line closer than the
+  baseline (stage_dist≈3.6), commits almost nothing to escalade
+  (≈0.001) or towers (≈0.015), uses the cavalry flank (≈0.15) and a
+  target preference (≈0.59); on the Judaean seat it holds a third of the
+  force on the walls (jud_wall_share≈0.34), keeps a full reserve depth
+  (1.0), reacts strongly and in size (jud_react≈2.95, size≈12.7) and
+  sorties freely (≈0.82).
+- Caveat stated plainly: both seats are graded against the SAME
+  baseline family; a champion that beats the baseline 6/6 both ways is
+  strong evidence, not proof, of good play against a human — the
+  Judaean seat's dominance says as much about the baseline Roman's
+  weakness (its assault dissipates) as about the champion.
+
 ## Doctrine the encoded rules force (before any training)
 
 - **Concentrate the sector.** Breach defense is per hex; two rams on two

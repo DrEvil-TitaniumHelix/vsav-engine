@@ -1,0 +1,45 @@
+{
+ "playbook_version": 1,
+ "game": "siege-of-jerusalem-ah",
+ "earned_by": {
+  "games_played": 43396,
+  "generations": 149,
+  "graduation": {
+   "wins": 12.0,
+   "of": 16,
+   "unbeaten": false,
+   "streak": 0,
+   "target": 3,
+   "note": "the run's own self-play streak rule (3 straight unbeaten gauntlets vs the hall of fame) was never met; the champion is the equilibrium of the final elite"
+  },
+  "champion_fitness": {
+   "wins": 6.0,
+   "of": 8,
+   "margin": 151.5
+  },
+  "matrix_evidence": "matrix.json",
+  "graduation_bar": {
+   "script": "games/siege-of-jerusalem-ah/grad_bar.py (westwall pattern)",
+   "held_out_pairs_vs_baseline": "20/20 (seeds 960-979), total margin +1350.4, mean +67.5",
+   "fresh_random_pairs": "5/5 (seeds 980-984), margin +273.4",
+   "result": "GRADUATION MET 2026-08-18",
+   "record": "runs/2026-08-17_soj_optimizer/grad_bar.json"
+  },
+  "portfolio_round_robin": "elite_0 vs baseline, 10 seeds x 2 seatings: mean pair margin +32.8 (portfolio.json)",
+  "corpus": "champion vs baseline both seats, seeds 970-972: 6/6, all verified (corpus/corpus_manifest.json)"
+ },
+ "contents": {
+  "champion.json": "portfolio",
+  "doctrine.md": "evidence-cited knowledge + auto-distilled genome",
+  "corpus/": [
+   "champ_Jud_970.log.jsonl",
+   "champ_Jud_971.log.jsonl",
+   "champ_Jud_972.log.jsonl",
+   "champ_Rom_970.log.jsonl",
+   "champ_Rom_971.log.jsonl",
+   "champ_Rom_972.log.jsonl",
+   "corpus_manifest.json"
+  ]
+ },
+ "verification": "every corpus log replays byte-exact through engine/verify_game.py; optimization games used seeded dice through the same gate"
+}

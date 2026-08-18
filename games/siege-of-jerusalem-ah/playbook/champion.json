@@ -1,0 +1,36 @@
+{
+ "type": "portfolio",
+ "strategy_family": "engine/strategy_soj.py",
+ "consume": {
+  "execute": "strategy_soj.StrategyPlanner(genome) parameterizes the sector-template and doctrine knobs of the per-action policy (ai_soj.DEFAULTS) - siege decisions interleave (pendings, fire segments), so there is no turn-plan DSL; every pick still enters through the legality gate",
+  "retrieve": "load doctrine.md + corpus logs into any LLM context; plans are written in the DSL documented in engine/plans.py",
+  "train": "corpus logs are verified, seeded, replayable (engine/verify_game.py) - clean RL/fine-tune trajectories"
+ },
+ "portfolio": {
+  "weights": [
+   [
+    "elite_0",
+    1.0
+   ]
+  ],
+  "worst_case_mean_margin_for_mixture": -0.0,
+  "genomes": {
+   "elite_0": {
+    "sector": 0.3165647970832919,
+    "sector_width": 0.24308945743445412,
+    "escalade_share": 0.0006859988931573885,
+    "tower_commit": 0.015159063993083527,
+    "cav_flank": 0.1485746530404201,
+    "archer_stand": 1.0,
+    "stage_dist": 3.59257849655209,
+    "target_pref": 0.5921156290428474,
+    "protect_leader": 0.15748296464378242,
+    "jud_wall_share": 0.3364279382873965,
+    "jud_reserve_depth": 1.0,
+    "jud_react": 2.9509335217438126,
+    "jud_react_size": 12.669459964077271,
+    "sortie": 0.817236015538219
+   }
+  }
+ }
+}
