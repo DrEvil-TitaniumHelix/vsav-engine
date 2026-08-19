@@ -507,9 +507,10 @@ def api_ai_turn(body):
 
 def api_log_tail(qs):
     n = int(qs.get("n", ["40"])[0])
-    if not os.path.exists(TG.log_path):
+    g = TG or SG or SJ
+    if g is None or not os.path.exists(g.log_path):
         return dict(entries=[])
-    lines = open(TG.log_path, encoding="utf-8").read().splitlines()
+    lines = open(g.log_path, encoding="utf-8").read().splitlines()
     return dict(entries=[json.loads(l) for l in lines[-n:]])
 
 
@@ -1955,7 +1956,7 @@ def route_get(path, qs):
         col = int(qs["col"][0]) if "col" in qs else None
         row = int(qs["row"][0]) if "row" in qs else None
         return TG.range_info(qs["id"][0], col, row)
-    if TG and path == "/api/log":
+    if (TG or SG) and path == "/api/log":
         return api_log_tail(qs)
     if TG and path == "/api/ai_plan":
         p = ai_mod.plan_next(TG, qs["side"][0])

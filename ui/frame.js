@@ -96,7 +96,7 @@ const FRAME = (() => {
     let left = 0, right = (H && H.guideRight) || 0;
     const W = window.innerWidth;
     const ids = (H.guideAvoid || ['arrivals', 'tierpanel'])
-      .concat(['combat', 'pbmpanel', 'rulespanel', 'tablespanel', 'guidepanel']);
+      .concat(['combat', 'pbmpanel', 'rulespanel', 'tablespanel', 'guidepanel', 'logdock']);
     ids.forEach(id => {
       const el = document.getElementById(id);
       // NOTE: these panels are position:fixed — offsetParent is always
