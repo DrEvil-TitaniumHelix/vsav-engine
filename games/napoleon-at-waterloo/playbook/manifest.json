@@ -1,0 +1,55 @@
+{
+ "playbook_version": 1,
+ "game": "napoleon-at-waterloo",
+ "earned_by": {
+  "games_played": 43408,
+  "generations": 149,
+  "graduation": {
+   "wins": 11.0,
+   "of": 16,
+   "unbeaten": false,
+   "streak": 0,
+   "target": 3,
+   "note": "the run's own self-play streak rule (3 straight unbeaten gauntlets vs the hall of fame) was never met; the elite is intransitive (portfolio.py round-robin)"
+  },
+  "champion_fitness": {
+   "wins": 6.5,
+   "of": 8,
+   "margin": 445.0
+  },
+  "matrix_evidence": "matrix.json",
+  "graduation_bar": {
+   "script": "games/napoleon-at-waterloo/grad_bar.py (westwall pattern)",
+   "candidates": {
+    "elite_0 (equilibrium 50.4%)": "held-out pairs vs baseline 9/20 (seeds 960-979), total margin +115.0; fresh randoms 4/5 (seeds 980-984), margin +846.0",
+    "elite_1 (equilibrium 47.7%)": "held-out pairs vs baseline 9.5/20, total margin +513.0; fresh randoms 1/5, margin -100.0"
+   },
+   "held_out_pairs_vs_baseline": "9/20 (elite_0) and 9.5/20 (elite_1) - bar is >=15/20",
+   "fresh_random_pairs": "4/5 (elite_0), 1/5 (elite_1) - bar is >=4/5",
+   "result": "GRADUATION NOT MET 2026-08-19 - baseline retained as the shipped AI, no genome promoted",
+   "records": [
+    "playbook/grad_bar_elite_0.json",
+    "playbook/grad_bar_elite_1.json"
+   ]
+  },
+  "portfolio_round_robin": "elite_0 50.4% / elite_1 47.7% / baseline 1.9%; elite_0 vs baseline mean pair margin -30.5, elite_1 vs baseline +32.5 (runs/2026-08-18_naw_optimizer/portfolio.json, copied into champion.json 'equilibrium')",
+  "corpus": "baseline self-play seeds 970-972 + elite_0 vs baseline both seats seeds 970-971: 7/7 verified (corpus/corpus_manifest.json)"
+ },
+ "contents": {
+  "champion.json": "portfolio - baseline retained (weights [[baseline,1.0]]); the run's equilibrium and both graduation-bar verdicts are recorded inside",
+  "doctrine.md": "evidence-cited knowledge + auto-distilled genome",
+  "corpus/": [
+   "baseline_selfplay_s970.log.jsonl",
+   "baseline_selfplay_s971.log.jsonl",
+   "baseline_selfplay_s972.log.jsonl",
+   "corpus_manifest.json",
+   "elite_0_Al_vs_baseline_s970.log.jsonl",
+   "elite_0_Al_vs_baseline_s971.log.jsonl",
+   "elite_0_Fr_vs_baseline_s970.log.jsonl",
+   "elite_0_Fr_vs_baseline_s971.log.jsonl"
+  ],
+  "grad_bar_elite_0.json": "graduation bar record, elite_0",
+  "grad_bar_elite_1.json": "graduation bar record, elite_1"
+ },
+ "verification": "every corpus log replays byte-exact through engine/verify_game.py; optimization games used seeded dice through the same gate"
+}

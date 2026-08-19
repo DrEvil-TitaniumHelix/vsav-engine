@@ -610,6 +610,7 @@ def game_dir(slug):
 MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter",
             "bluegray": "Strategic hex & counter", "westwall": "Strategic hex & counter",
             "napoleonic": "Napoleonic command", "soj": "Siege assault",
+            "naw": "Strategic hex & counter",
             "free": "Free play"}
 TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
             3: "Full rules"}
@@ -675,11 +676,11 @@ def game_meta(slug):
         has_scen = True
         scen_mode = json.load(open(os.path.join(gdir, scen),
                                    encoding="utf-8")).get("mode")
-        if scen_mode in SG_FAMILY:
+        if scen_mode in SEAT_MODEL:
+            earned, choices = None, []
+        elif scen_mode in SG_FAMILY:
             earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
-        elif scen_mode in SEAT_MODEL:
-            earned, choices = None, []
         else:
             earned, choices = 3, [0, 3]
     mode = scen_mode or ("tactical" if has_scen else "free")
