@@ -139,7 +139,7 @@ check(set(strat.GENE_PROSE) == set(lo), "GENE_PROSE covers every gene")
 rng = random.Random(7)
 pop = strat.corners() + [strat.random_theta(rng) for _ in range(5)]
 pop += [strat.mutate(t, rng) for t in pop] + [strat.crossover(pop[0], pop[1], rng)]
-check(all(lo[n] <= t[n] <= hi[n] for t in pop for n in lo) and len(strat.corners()) == 5,
+check(all(lo[n] <= t[n] <= hi[n] for t in pop for n in lo) and len(strat.corners()) == 8,
       f"corners/random/mutate/crossover stay inside gene ranges ({len(pop)} thetas)")
 tp = NawGame(G, SCEN, tempfile.mkdtemp(), seed=2)
 plans.play_game(tp, {sd: strat.StrategyPlanner(strat.baseline()) for sd in ("Fr", "Al")}, max_turns=2)

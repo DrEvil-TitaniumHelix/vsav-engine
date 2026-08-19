@@ -15,14 +15,37 @@ DEFAULTS = {
     "bombard_min": 5.0,
     "prussian_target": 0.6,
     "concentrate": 1.0,
+    "pocket": 0.0,
+    "pocket_risk": 0.0,
+    "race_push": 0.0,
+    "race_guard": 0.0,
+    "runners": 0.0,
+    "runner_turn": 5.0,
+    "dr_w": 0.15,
+    "ar_w": 0.15,
+    "ex_w": 0.15,
+    "al_aggression": 0.6,
+    "al_risk": 0.7,
+    "al_terrain": 0.5,
+    "al_cohesion": 0.4,
+    "al_advance": 0.5,
+    "al_bombard_min": 5.0,
+    "al_pocket": 0.0,
+    "al_pocket_risk": 0.0,
 }
 
 RES_W = {"Dr": 0.15, "Ar": -0.15}
+SIDE_PFX = {"Fr": "fr_", "Al": "al_"}
 
 
-def _th(theta, key):
-    if theta and key in theta:
-        return float(theta[key])
+def _th(theta, key, side=None):
+    if theta:
+        if side is not None:
+            k2 = SIDE_PFX.get(side, "") + key
+            if k2 in theta and theta[k2] is not None:
+                return float(theta[k2])
+        if key in theta:
+            return float(theta[key])
     return float(DEFAULTS[key])
 
 
@@ -52,15 +75,27 @@ def _col_index(g, col):
     return g._cbt()["crt"]["odds_columns"].index(col)
 
 
-def _ev(g, side, a, d, a_melee=None):
+def _ev(g, side, a, d, a_melee=None, theta=None, kill=0.0):
     if d <= 0 or a <= 0:
         return 0.0
     col, _ = g.demoralization_shift(side, g.odds_column(a, d))
     p = _crt(g)[col]
     am = a if a_melee is None else a_melee
-    return (p.get("DE", 0) * d + p.get("Dr", 0) * RES_W["Dr"] * d
-            + p.get("Ar", 0) * RES_W["Ar"] * am - p.get("AE", 0) * am
-            - p.get("EX", 0) * 0.15 * am)
+    return (p.get("DE", 0) * d + p.get("Dr", 0) * _th(theta, "dr_w", side) * d
+            - p.get("Ar", 0) * _th(theta, "ar_w", side) * am - p.get("AE", 0) * am
+            - p.get("EX", 0) * _th(theta, "ex_w", side) * am
+            + p.get("Dr", 0) * d * kill)
+
+
+def _p_dr(g, side, a, d):
+    if d <= 0 or a <= 0:
+        return 0.0
+    col, _ = g.demoralization_shift(side, g.odds_column(a, d))
+    return _crt(g)[col].get("Dr", 0)
+
+
+def _clamp01(x):
+    return max(0.0, min(1.0, x))
 
 
 def _mult(g, h):
@@ -97,6 +132,13 @@ class _Ctx:
         self.ecent = _centroid(_live(g, self.enemy))
         self.fcent = _centroid(_live(g, side))
         self._threat = {}
+        s = g.s
+        self.aggr = _clamp01(_th(theta, "aggression", side)
+                             + _th(theta, "race_push", side) * _clamp01((s["losses"][self.enemy] - 25) / 15.0)
+                             - _th(theta, "race_guard", side) * _clamp01((s["losses"][side] - 25) / 15.0))
+        self.pocket = _th(theta, "pocket", side)
+        self.pocket_risk = _th(theta, "pocket_risk", side)
+        self.runners = set()
 
     def att(self, pid):
         return self.g.stats(pid)["att"]
@@ -116,6 +158,44 @@ class _Ctx:
         self._threat[h] = tot
         return tot
 
+    def retreat_safe(self, eh, att_hexes):
+        g = self.g
+        zoc = set(att_hexes)
+        for a in att_hexes:
+            zoc.update(g.game.neighbors(*a))
+        epv = set(self.epos.values())
+        fpv = set(self.fpos.values())
+        empties, friends = 0, 0
+        for n in g.game.neighbors(*eh):
+            if not g.game.on_map(*n) or g.game.hex_terrain(*n) == "woods" or g.game.move_cost(eh, n) is None:
+                continue
+            if n in zoc or n in fpv:
+                continue
+            if n in epv:
+                friends += 1
+            else:
+                empties += 1
+        return empties, friends
+
+    def kill_p(self, eh, att_hexes):
+        e, f = self.retreat_safe(eh, att_hexes)
+        if e:
+            return 0.0
+        return 0.35 if f else 1.0
+
+    def open_neighbors(self, h, pid):
+        g = self.g
+        epv = set(self.epos.values())
+        fpv = {q for p, q in self.fpos.items() if p != pid}
+        n_open = 0
+        for n in g.game.neighbors(*h):
+            if not g.game.on_map(*n) or g.game.hex_terrain(*n) == "woods" or g.game.move_cost(h, n) is None:
+                continue
+            if n in epv or n in fpv:
+                continue
+            n_open += 1
+        return n_open
+
 
 def _hex_score(cx, pid, h, moving=True, targets=None):
     g, th, side = cx.g, cx.theta, cx.side
@@ -124,7 +204,8 @@ def _hex_score(cx, pid, h, moving=True, targets=None):
     score = 0.0
     adj_e = _adj(g, h, cx.epos)
     fpos = {p: q for p, q in cx.fpos.items() if p != pid}
-    if adj_e:
+    runner = pid in cx.runners
+    if adj_e and not runner:
         tg = targets or {}
         best = -99.0
         for e in adj_e:
@@ -132,33 +213,43 @@ def _hex_score(cx, pid, h, moving=True, targets=None):
             friends = _adj(g, eh, fpos)
             a = st["att"] + sum(cx.att(f) for f in friends)
             if e in tg:
-                a += tg[e] * _th(th, "concentrate")
+                a += tg[e] * _th(th, "concentrate", side)
             d = cx.dfn(e) * _mult(g, eh)
-            best = max(best, _ev(g, side, a, d))
+            kill = 0.0
+            if cx.pocket > 0:
+                kill = cx.pocket * cx.kill_p(eh, [h] + [fpos[f] for f in friends])
+            best = max(best, _ev(g, side, a, d, theta=th, kill=kill))
         if len(adj_e) > 1:
             best -= 0.5 * (len(adj_e) - 1)
-        score += _th(th, "aggression") * 2.0 * best - (0.0 if targets is None else 2.0)
+        score += cx.aggr * 2.0 * best - (0.0 if targets is None else 2.0)
+    elif adj_e:
+        score -= 3.0 * len(adj_e)
     thr = cx.threat_at(h)
     if thr:
-        score -= _th(th, "risk") * max(0.0, _ev(g, cx.enemy, thr, st["def"] * mult))
+        score -= _th(th, "risk", side) * (2.0 if runner else 1.0) * max(0.0, _ev(g, cx.enemy, thr, st["def"] * mult, theta=th))
+        if cx.pocket_risk > 0:
+            n_open = cx.open_neighbors(h, pid)
+            score -= cx.pocket_risk * st["def"] * mult * 0.5 * max(0, 3 - n_open) / 3.0
     if mult > 1:
-        score += _th(th, "terrain") * st["def"] * 0.5
+        score += _th(th, "terrain", side) * st["def"] * 0.5
     friends_adj = len(_adj(g, h, fpos))
-    score += _th(th, "cohesion") * 0.4 * min(friends_adj, 3)
+    score += _th(th, "cohesion", side) * 0.4 * min(friends_adj, 3)
     if h in fpos.values():
         score -= 6.0
     if side == g.exit_side:
-        drive = _th(th, "north_drive") * (2.5 if g.s["demoralized"] else 1.0)
+        drive = _th(th, "north_drive", side) * (2.5 if g.s["demoralized"] else 1.0)
+        if runner:
+            drive = max(drive, 3.0)
         score -= drive * 0.35 * _exit_dist(g, h)
     else:
-        score -= _th(th, "block") * 0.35 * g.game.hex_distance(h, _allied_target(cx))
+        score -= _th(th, "block", side) * 0.35 * g.game.hex_distance(h, _allied_target(cx))
     return score
 
 
 def _allied_target(cx):
     g, th = cx.g, cx.theta
     fc = cx.ecent if cx.side != g.exit_side else cx.fcent
-    row = int(round(_th(th, "hold_row")))
+    row = int(round(_th(th, "hold_row", cx.side)))
     if fc is None:
         return (6, max(1, min(22, row)))
     col = int(round(6.0 + (fc[0] - 6.0) * 0.5))
@@ -173,17 +264,33 @@ def _want_exit(cx, pid):
     need = g.game.spec["victory"]["french_exit_required"]
     if len(s["exited"]) >= need:
         return False
-    if s["demoralized"] or s["turn"] >= g.turns - 1:
+    if s["demoralized"] or s["turn"] >= g.turns - 1 or pid in cx.runners:
         return True
     st = g.stats(pid)
-    late = s["turn"] >= _th(th, "exit_turn")
-    weak = st["att"] <= _th(th, "exit_weak")
+    late = s["turn"] >= _th(th, "exit_turn", cx.side)
+    weak = st["att"] <= _th(th, "exit_weak", cx.side)
     return (late and weak) or (s["losses"][cx.enemy] >= 30 and weak)
 
 
-def _min_col(g, theta):
+def _min_col(g, cx):
     n = len(g._cbt()["crt"]["odds_columns"])
-    return max(0, min(n - 1, int(round(8 - 4 * _th(theta, "aggression")))))
+    return max(0, min(n - 1, int(round(8 - 4 * cx.aggr))))
+
+
+def _pick_runners(cx, lms):
+    g, th, s = cx.g, cx.theta, cx.g.s
+    if cx.side != g.exit_side or s["demoralized"]:
+        return set()
+    k = int(round(_th(th, "runners", cx.side)))
+    if k <= 0 or s["turn"] < _th(th, "runner_turn", cx.side):
+        return set()
+    need = g.game.spec["victory"]["french_exit_required"] - len(s["exited"])
+    if need <= 0:
+        return set()
+    k = min(k, need)
+    cands = [p for p, lm in lms.items() if lm["can_act"]]
+    cands.sort(key=lambda p: (cx.att(p), _exit_dist(g, cx.fpos[p]), p))
+    return set(cands[:k])
 
 
 def _plan_attacks(cx, lms):
@@ -200,11 +307,13 @@ def _plan_attacks(cx, lms):
     for pid in locked:
         for e in _adj(g, cx.fpos[pid], cx.epos):
             fixed_att[e] = fixed_att.get(e, 0) + cx.att(pid)
-    min_col = _min_col(g, th)
+    min_col = _min_col(g, cx)
+    pocket = cx.pocket
     order = sorted(cx.epos, key=lambda e: (cx.dfn(e) * _mult(g, cx.epos[e]), e))
     for e in order:
         eh = cx.epos[e]
         d = cx.dfn(e) * _mult(g, eh)
+        base_att = [cx.fpos[p] for p in locked if eh in g.game.neighbors(*cx.fpos[p])]
         hexes = []
         for h in g.game.neighbors(*eh):
             if not g.game.on_map(*h) or h in cx.epos.values() or h in taken:
@@ -222,19 +331,48 @@ def _plan_attacks(cx, lms):
         a = fixed_att.get(e, 0)
         assign = {}
         free = list(hexes)
+
+        def cover(x):
+            if pocket <= 0:
+                return 0.0
+            e0, f0 = cx.retreat_safe(eh, base_att + list(assign.values()))
+            e1, f1 = cx.retreat_safe(eh, base_att + list(assign.values()) + [x])
+            return (e0 - e1) + 0.35 * (f0 - f1)
         for p in pool:
             if not free:
                 break
             opts = [h for h in free if h in reach[p]]
             if not opts:
                 continue
-            h = min(opts, key=lambda x: (len(_adj(g, x, cx.epos)), -_mult(g, x), x))
+            h = min(opts, key=lambda x: (len(_adj(g, x, cx.epos)), -_mult(g, x), -pocket * cover(x), x))
             assign[p] = h
             free.remove(h)
             a += cx.att(p)
             col = g.odds_column(a, d)
             if _col_index(g, col) >= min_col + 1:
                 break
+        if pocket > 0 and assign:
+            while free:
+                kp0 = cx.kill_p(eh, base_att + list(assign.values()))
+                if kp0 >= 1.0:
+                    break
+                best = None
+                for p in pool:
+                    if p in assign or p in committed:
+                        continue
+                    for h in free:
+                        if h not in reach[p]:
+                            continue
+                        kp1 = cx.kill_p(eh, base_att + list(assign.values()) + [h])
+                        gain = pocket * _p_dr(g, side, a + cx.att(p), d) * d * (kp1 - kp0)
+                        if best is None or gain > best[0]:
+                            best = (gain, p, h)
+                if best is None or best[0] <= 0.6:
+                    break
+                _, p, h = best
+                assign[p] = h
+                free.remove(h)
+                a += cx.att(p)
         bombers = {}
         for p in reach:
             if p in committed or p in assign or p in locked or g.cls(p) != "artillery":
@@ -251,7 +389,8 @@ def _plan_attacks(cx, lms):
         if not assign and not bombers:
             continue
         col, _ = g.demoralization_shift(side, g.odds_column(a, d))
-        ev = _ev(g, side, a, d, a_melee=sum(cx.att(p) for p in assign) + fixed_att.get(e, 0))
+        kill = pocket * cx.kill_p(eh, base_att + list(assign.values())) if pocket > 0 else 0.0
+        ev = _ev(g, side, a, d, a_melee=sum(cx.att(p) for p in assign) + fixed_att.get(e, 0), theta=th, kill=kill)
         if _col_index(g, col) < min_col and ev <= 0.5:
             continue
         for p, h in list(assign.items()) + list(bombers.items()):
@@ -267,19 +406,22 @@ def _movement(g, side, theta):
         eh = g.entry_hexes(pid)
         if not eh:
             continue
-        pt = _th(theta, "prussian_target")
+        pt = _th(theta, "prussian_target", side)
         best = min(eh, key=lambda h: pt * min([g.game.hex_distance(h, q) for q in cx.epos.values()] or [0])
                    + (1 - pt) * h[1] * 0.5)
         yield (side, {"type": "reinforce", "unit": pid, "hex": list(best)},
                f"Prussian {g._nm_cat(pid)} enters at {g._hn(best)}")
         cx = _Ctx(g, side, theta)
     lms = {pid: g.legal_moves(pid) for pid in cx.fpos}
+    cx.runners = _pick_runners(cx, lms)
     exiting = []
     if side == g.exit_side:
         for pid, lm in lms.items():
             if lm["can_act"] and lm["exits"] and _want_exit(cx, pid):
                 exiting.append(pid)
     for pid in exiting:
+        lms.pop(pid, None)
+    for pid in cx.runners:
         lms.pop(pid, None)
     if side == g.exit_side and g.s["demoralized"]:
         committed, targets = {}, {}
@@ -312,6 +454,7 @@ def _movement(g, side, theta):
             todo = left
             break
         todo = left
+    runners = cx.runners
     order = sorted(cx.fpos, key=lambda p: (g.cls(p) == "artillery", -g.stats(p)["ma"], p))
     for pid in order:
         if _over(g) or pid not in g.s["units"] or pid in g.s["done"] or (pid in committed and pid not in todo):
@@ -320,6 +463,7 @@ def _movement(g, side, theta):
         if not lm["can_act"]:
             continue
         cx = _Ctx(g, side, theta)
+        cx.runners = runners
         cur = cx.fpos[pid]
         best_h, best_s = None, _hex_score(cx, pid, cur, targets=targets)
         for d in lm["dests"]:
@@ -345,6 +489,7 @@ def _movement(g, side, theta):
                 dd = [d for d in g.dests(pp) if d not in occ]
                 if dd:
                     cx = _Ctx(g, side, theta)
+                    cx.runners = runners
                     h2 = max(dd, key=lambda x: _hex_score(cx, pp, x, targets=targets))
                     ok = yield (side, {"type": "move", "unit": pp, "dest": list(h2)},
                                 f"un-stack {g._nm(pp)} to {g._hn(h2)}")
@@ -360,7 +505,7 @@ def _movement(g, side, theta):
             return
 
 
-def _attack_candidates(g, side):
+def _attack_candidates(g, side, theta=None):
     s = g.s
     enemy = g.game.enemy(side)
     fs, es = g.obligations()
@@ -383,7 +528,7 @@ def _attack_candidates(g, side):
         atk = melee + bomb
         d = g.defense_strength([e["pid"]])
         a = g.attack_strength(atk)
-        ev = _ev(g, side, a, d, a_melee=g.attack_strength(melee))
+        ev = _ev(g, side, a, d, a_melee=g.attack_strength(melee), theta=theta)
         obl = e["pid"] in es or any(p in fs for p in melee)
         out.append((ev, obl, atk, [e["pid"]], melee, bomb))
     out.sort(key=lambda x: (-x[0], x[3]))
@@ -396,9 +541,9 @@ def _combat(g, side, theta):
         guard += 1
         if g.s["pending"]:
             return
-        cands, fs, es = _attack_candidates(g, side)
+        cands, fs, es = _attack_candidates(g, side, theta)
         if not fs and not es:
-            bmin = int(round(_th(theta, "bombard_min")))
+            bmin = int(round(_th(theta, "bombard_min", side)))
             fired = False
             for ev, obl, atk, dfd, melee, bomb in cands:
                 if melee or not bomb:
@@ -444,7 +589,7 @@ def _pending(g, side, theta):
     p = g.s["pending"]
     view = g._pending_view()
     if p["awaiting"] == "retreat":
-        if view["voluntary"] and _th(theta, "art_stand") > 0.5:
+        if view["voluntary"] and _th(theta, "art_stand", side) > 0.5:
             yield (side, {"type": "retreat", "decline": True}, "bombarding artillery stands fast")
             return
         us = [u for u in view["units"] if u["options"]]
@@ -490,7 +635,7 @@ def _pending(g, side, theta):
             pid, h = pr["pid"], tuple(pr["hex"])
             cur = (g.unit(pid)["col"], g.unit(pid)["row"])
             gain = _hex_score(cx, pid, h, moving=False) - _hex_score(cx, pid, cur, moving=False)
-            gain += (_th(theta, "advance") - 0.5) * 2.0
+            gain += (_th(theta, "advance", side) - 0.5) * 2.0
             if gain > best_gain:
                 best, best_gain = pr, gain
         if best:
