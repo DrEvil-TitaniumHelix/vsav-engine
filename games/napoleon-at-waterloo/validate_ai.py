@@ -155,8 +155,27 @@ mloss = fam["margin"]({"Fr": {"cs": 10, "exited": 0, "won": False}, "Al": {"cs":
 mdraw = fam["margin"]({"Fr": {"cs": 30, "exited": 2, "won": False}, "Al": {"cs": 30, "won": False}}, G.side_order)
 check(mwin > 100 > mdraw > 0 > -100 > mloss,
       f"margin fn: French win {mwin:+.1f}, even race with exits {mdraw:+.1f}, Allied win {mloss:+.1f}")
-check(champion.plan_for(tp) is None or champion.validated(HERE),
-      "champion.plan_for: no playbook yet -> None (the AI seat plays the shipped policy) or a real playbook")
+check(champion.validated(HERE) and champion.genome(HERE) is None and champion.plan_for(tp) is None,
+      "playbook present, baseline retained: champion.genome None, plan_for None -> the AI seat plays the shipped policy")
+_man = json.load(open(os.path.join(HERE, "playbook", "manifest.json"), encoding="utf-8"))
+_bar = _man["earned_by"]["graduation_bar"]
+check("NOT MET" in _bar["result"] and champion.graduated(HERE) is None,
+      f"graduation bar on record as NOT MET and graduated() refuses it: {_bar['result'][:60]}")
+_gs = champion.generalship(HERE)
+check(_gs["rung"] == 3 and "graduation bar NOT MET" in _gs["evidence"],
+      f"generalship 3/10 with the bar verdict in the evidence: {_gs['evidence'][:90]}...")
+_cg = json.load(open(os.path.join(HERE, "playbook", "champion.json"), encoding="utf-8"))["portfolio"]
+check(_cg["weights"] == [["baseline", 1.0]] and _cg["equilibrium"]["weights"][0][0] == "elite_0"
+      and all(not v["met"] for k, v in _cg["graduation_bar"].items() if k.startswith("elite")),
+      "champion.json: shipped weights = baseline 1.0, the run's equilibrium + both failed bar candidates recorded inside")
+_cm = json.load(open(os.path.join(HERE, "playbook", "corpus", "corpus_manifest.json"), encoding="utf-8"))
+_rep = [g for g in _cm["games"] if g["label"] == "baseline_selfplay" and g["seed"] == 970][0]
+tc = NawGame(G, SCEN, tempfile.mkdtemp(), seed=970)
+ai.play_game(tc)
+check(tc.s["n"] == _rep["actions"] and tc.s["winner"] == _rep["winner"] and dict(tc.s["losses"]) == _rep["losses"],
+      f"baseline self-play seed 970 reproduces the corpus game exactly: {tc.s['winner']}, {tc.s['n']} actions, losses {dict(tc.s['losses'])}")
+_okc, _mc = verify_game.verify(HERE, os.path.join(HERE, "playbook", "corpus", "baseline_selfplay_s970.log.jsonl"))
+check(_okc, f"corpus log replays byte-exact through verify_game: {_mc[:70]}")
 
 sys.path.insert(0, os.path.join(ROOT, "ui"))
 import server  # noqa: E402

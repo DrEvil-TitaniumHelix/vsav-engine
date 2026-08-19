@@ -1,0 +1,884 @@
+{
+ "champion": "elite_0",
+ "genome": {
+  "aggression": 1.0,
+  "risk": 0.0,
+  "terrain": 0.15076093025764986,
+  "cohesion": 0.1634622367489279,
+  "exit_turn": 7.294743844366662,
+  "exit_weak": 3.0825732212174635,
+  "north_drive": 0.7781110254260418,
+  "hold_row": 10.815949601606118,
+  "block": 1.3201150529129098,
+  "advance": 0.5330199736293814,
+  "art_stand": 0.414207459970608,
+  "bombard_min": 5.811509039188662,
+  "prussian_target": 0.914869599578694,
+  "concentrate": 1.0
+ },
+ "vs_baseline": {
+  "pair_wins": 9.0,
+  "of": 20,
+  "total_margin": 115.0,
+  "games": [
+   {
+    "vp": {
+     "Fr": {
+      "cs": 37,
+      "exited": 1,
+      "won": false
+     },
+     "Al": {
+      "cs": 43,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 960,
+    "margin_a": -104.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 49,
+      "exited": 6,
+      "won": false
+     },
+     "Al": {
+      "cs": 50,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 960,
+    "margin_a": 11.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 61,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 34,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 961,
+    "margin_a": 141.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 75,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 26,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 961,
+    "margin_a": 163.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 30,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 43,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 962,
+    "margin_a": -113.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 54,
+      "exited": 4,
+      "won": false
+     },
+     "Al": {
+      "cs": 58,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 962,
+    "margin_a": 4.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 42,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 37,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 963,
+    "margin_a": 119.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 54,
+      "exited": 2,
+      "won": false
+     },
+     "Al": {
+      "cs": 60,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 963,
+    "margin_a": -2.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 51,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 38,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 964,
+    "margin_a": 127.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 59,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 10,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 964,
+    "margin_a": 163.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 47,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 19,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 965,
+    "margin_a": 142.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 64,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 48,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 965,
+    "margin_a": 130.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 36,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 46,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 966,
+    "margin_a": -110.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 63,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 28,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 966,
+    "margin_a": 149.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 41,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 31,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 967,
+    "margin_a": 124.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 56,
+      "exited": 6,
+      "won": false
+     },
+     "Al": {
+      "cs": 49,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 967,
+    "margin_a": 19.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 46,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 32,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 968,
+    "margin_a": 128.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 52,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 25,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 968,
+    "margin_a": 141.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 48,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 33,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 969,
+    "margin_a": 129.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 37,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 40,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 969,
+    "margin_a": -103.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 30,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 40,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 970,
+    "margin_a": -110.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 47,
+      "exited": 4,
+      "won": false
+     },
+     "Al": {
+      "cs": 51,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 970,
+    "margin_a": 4.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 48,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 16,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 971,
+    "margin_a": 146.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 37,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 40,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 971,
+    "margin_a": -103.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 45,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 31,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 972,
+    "margin_a": 128.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 52,
+      "exited": 3,
+      "won": false
+     },
+     "Al": {
+      "cs": 52,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 972,
+    "margin_a": 6.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 43,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 13,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 973,
+    "margin_a": 144.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 57,
+      "exited": 6,
+      "won": false
+     },
+     "Al": {
+      "cs": 41,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 973,
+    "margin_a": 28.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 53,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 56,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 974,
+    "margin_a": 111.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 64,
+      "exited": 4,
+      "won": false
+     },
+     "Al": {
+      "cs": 52,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 974,
+    "margin_a": 20.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 39,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 40,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 975,
+    "margin_a": -101.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 64,
+      "exited": 5,
+      "won": false
+     },
+     "Al": {
+      "cs": 46,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 975,
+    "margin_a": 28.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 35,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 40,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 976,
+    "margin_a": -105.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 53,
+      "exited": 6,
+      "won": false
+     },
+     "Al": {
+      "cs": 41,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 976,
+    "margin_a": 24.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 39,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 43,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 977,
+    "margin_a": -104.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 50,
+      "exited": 3,
+      "won": false
+     },
+     "Al": {
+      "cs": 57,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 977,
+    "margin_a": -1.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 39,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 41,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 978,
+    "margin_a": -102.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 60,
+      "exited": 4,
+      "won": false
+     },
+     "Al": {
+      "cs": 44,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 978,
+    "margin_a": 24.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 49,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 39,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 979,
+    "margin_a": 124.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 36,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 42,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 979,
+    "margin_a": -106.0
+   }
+  ]
+ },
+ "vs_randoms": {
+  "pair_wins": 4.0,
+  "of": 5,
+  "total_margin": 846.0,
+  "games": [
+   {
+    "vp": {
+     "Fr": {
+      "cs": 54,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 31,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 980,
+    "margin_a": 137.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 21,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 42,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 980,
+    "margin_a": -121.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 45,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 39,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 981,
+    "margin_a": 120.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 38,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 42,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 981,
+    "margin_a": -104.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 49,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 21,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 982,
+    "margin_a": 142.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 35,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 41,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 982,
+    "margin_a": -106.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 56,
+      "exited": 7,
+      "won": true
+     },
+     "Al": {
+      "cs": 45,
+      "won": false
+     }
+    },
+    "winner": "Fr",
+    "over": true,
+    "seed": 983,
+    "margin_a": 125.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 34,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 43,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 983,
+    "margin_a": -109.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 37,
+      "exited": 0,
+      "won": false
+     },
+     "Al": {
+      "cs": 43,
+      "won": true
+     }
+    },
+    "winner": "Al",
+    "over": true,
+    "seed": 984,
+    "margin_a": -106.0
+   },
+   {
+    "vp": {
+     "Fr": {
+      "cs": 67,
+      "exited": 1,
+      "won": false
+     },
+     "Al": {
+      "cs": 57,
+      "won": false
+     }
+    },
+    "winner": "draw",
+    "over": true,
+    "seed": 984,
+    "margin_a": 12.0
+   }
+  ]
+ },
+ "met": false
+}

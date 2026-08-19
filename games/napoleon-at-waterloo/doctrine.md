@@ -122,3 +122,30 @@ Language knowledge first; the auto-distilled champion genome is appended by
   prefer disrupting chains; exchanges pay the cheapest whole units; advances
   only into hexes that score higher.
 - Full games run in ~3 s; every log replays byte-exact (`verify_game`).
+
+## Measured champion run (2026-08-18/19, `runs/2026-08-18_naw_optimizer`)
+
+- 150 generations, 43,408 games, 16 workers, ~2 h wall clock. Every
+  generation's champion beat the shipped baseline in the in-run fitness
+  (6–8 of 8 pairs, margins +180 to +1573), but the self-play title streak
+  never held (streak 0 of 3; gauntlet 9–14 of 16) — the elite is
+  intransitive, as it was for Siege of Jerusalem.
+- Equilibrium portfolio (`engine/portfolio.py`, 4 entrants × 10 seeds × 2
+  seatings): elite_0 50.4 %, elite_1 47.7 %, baseline 1.9 %. In that
+  round-robin elite_0 LOST to the baseline (mean pair margin −30.5) while
+  beating elite_2 (+51.8); elite_1 beat the baseline (+32.5). Rock-paper-
+  scissors, not dominance.
+- Graduation bar (`grad_bar.py`: ≥15/20 held-out pairs vs the baseline, seeds
+  960–979, with positive margin, AND ≥4/5 pairs vs fresh random genomes,
+  seeds 980–984): **elite_0 9/20 (+115) and 4/5 randoms (+846) — NOT MET;
+  elite_1 9.5/20 (+513) and 1/5 randoms (−100) — NOT MET.** Both genomes
+  trade with the baseline on seeds they never trained on.
+- Verdict: **the baseline policy stays the shipped AI — no genome promoted**
+  (the Austerlitz precedent). Against the shipped policy the trained elite is
+  at parity, which is itself the measurement: the 14-gene family's
+  optimum sits where the hand-written policy already is, and a stronger
+  Napoleon needs a richer family (timing of the Prussian-facing screen,
+  multi-turn exit planning), not more generations of this one.
+- Reproducible: the bar records are `grad_bar.json` / `grad_bar_elite_1.json`
+  in the run dir; the corpus (7 games, baseline self-play + elite_0 vs
+  baseline both seats, all verified byte-exact) is `corpus_games/`.

@@ -69,7 +69,8 @@ def graduated(game_dir):
     bar = (m.get("earned_by") or {}).get("graduation_bar")
     if not isinstance(bar, dict):
         return None
-    return bar if "MET" in str(bar.get("result", "")).upper() else None
+    res = str(bar.get("result", "")).upper()
+    return bar if "MET" in res and "NOT MET" not in res else None
 
 
 GENERALSHIP = [
@@ -121,7 +122,12 @@ def generalship(game_dir):
         ev.append(f"title streak {streak}/{target}" + (" unbeaten" if unbeaten else ""))
     if not has_genome:
         rung = 3
-        ev.append("training kept the baseline as champion")
+        bar_rec = eb.get("graduation_bar")
+        if isinstance(bar_rec, dict) and "NOT MET" in str(bar_rec.get("result", "")).upper():
+            ev.append(f"graduation bar NOT MET ({bar_rec.get('held_out_pairs_vs_baseline', '')}; randoms "
+                      f"{bar_rec.get('fresh_random_pairs', '')}) - baseline retained as the shipped AI")
+        else:
+            ev.append("training kept the baseline as champion")
     elif not bar:
         rung = 4
         ev.append("graduation bar not run")

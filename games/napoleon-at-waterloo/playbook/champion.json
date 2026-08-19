@@ -1,0 +1,89 @@
+{
+ "type": "portfolio",
+ "strategy_family": "engine/strategy_naw.py",
+ "consume": {
+  "execute": "strategy_naw.StrategyPlanner(genome) parameterizes the attack planner and doctrine knobs of the per-action policy (ai_naw.DEFAULTS) - movement plans mass attackers on chosen targets, the Combat Phase resolves the fixed obligations best-first, pendings (victor-chosen retreats, exchanges, advances) interleave; every pick enters through the legality gate",
+  "retrieve": "load doctrine.md + corpus logs into any LLM context; plans are written in the DSL documented in engine/plans.py",
+  "train": "corpus logs are verified, seeded, replayable (engine/verify_game.py) - clean RL/fine-tune trajectories"
+ },
+ "portfolio": {
+  "weights": [
+   [
+    "baseline",
+    1.0
+   ]
+  ],
+  "genomes": {},
+  "verdict": "baseline retained: the graduation bar (games/napoleon-at-waterloo/grad_bar.py) rejected both equilibrium genomes; no genome promoted (Austerlitz precedent)",
+  "equilibrium": {
+   "weights": [
+    [
+     "elite_0",
+     0.5039
+    ],
+    [
+     "elite_1",
+     0.4771
+    ],
+    [
+     "baseline",
+     0.0189
+    ]
+   ],
+   "worst_case_mean_margin_for_mixture": -0.01,
+   "genomes": {
+    "elite_0": {
+     "aggression": 1.0,
+     "risk": 0.0,
+     "terrain": 0.15076093025764986,
+     "cohesion": 0.1634622367489279,
+     "exit_turn": 7.294743844366662,
+     "exit_weak": 3.0825732212174635,
+     "north_drive": 0.7781110254260418,
+     "hold_row": 10.815949601606118,
+     "block": 1.3201150529129098,
+     "advance": 0.5330199736293814,
+     "art_stand": 0.414207459970608,
+     "bombard_min": 5.811509039188662,
+     "prussian_target": 0.914869599578694,
+     "concentrate": 1.0
+    },
+    "elite_1": {
+     "aggression": 0.889405152303085,
+     "risk": 0.0,
+     "terrain": 0.15076093025764986,
+     "cohesion": 0.0,
+     "exit_turn": 3.9156061677343783,
+     "exit_weak": 2.0645988436672957,
+     "north_drive": 0.7587987956557017,
+     "hold_row": 12.0,
+     "block": 1.5,
+     "advance": 0.4745094469680906,
+     "art_stand": 0.5666156482806539,
+     "bombard_min": 5.811509039188662,
+     "prussian_target": 1.0,
+     "concentrate": 1.0
+    }
+   }
+  },
+  "graduation_bar": {
+   "elite_0": {
+    "champion": "elite_0",
+    "met": false,
+    "vs_baseline": "9/20 pairs, total margin +115.0",
+    "vs_randoms": "4/5 pairs, total margin +846.0"
+   },
+   "elite_1": {
+    "champion": "elite_1",
+    "met": false,
+    "vs_baseline": "9.5/20 pairs, total margin +513.0",
+    "vs_randoms": "1/5 pairs, total margin -100.0"
+   },
+   "bar": ">=15/20 held-out pairs vs baseline (seeds 960-979) with positive margin AND >=4/5 pairs vs fresh random genomes (seeds 980-984)",
+   "records": [
+    "grad_bar.json",
+    "grad_bar_elite_1.json"
+   ]
+  }
+ }
+}
