@@ -149,3 +149,53 @@ Language knowledge first; the auto-distilled champion genome is appended by
 - Reproducible: the bar records are `grad_bar.json` / `grad_bar_elite_1.json`
   in the run dir; the corpus (7 games, baseline self-play + elite_0 vs
   baseline both seats, all verified byte-exact) is `corpus_games/`.
+
+## Measured champion run 2 — the richer family (2026-08-19, `runs/2026-08-19_naw_v2_optimizer`)
+
+- The 14-gene family could only re-weight a fixed one-phase planner, so the
+  family was widened to 31 genes (`engine/ai_naw.py` / `strategy_naw.py`),
+  every default reproducing the shipped policy byte-exact (the seed-970
+  corpus game replays identically). What was added is structure, not
+  weights: **pocket** — attack posts are chosen to cover the defender's safe
+  retreat hexes, because a unit with no legal retreat hex is ELIMINATED on a
+  Dr [RETREAT AND ADVANCE p.5; DISRUPTION S4] and Dr is the commonest result
+  from 1:1 to 3:1 (two attackers on opposite sides close all six hexes);
+  **pocket_risk** (do not stand where a Dr kills); per-seat Allied overrides
+  (`al_*`, one genome plays both seats); demoralization-race switches
+  (`race_push`/`race_guard` move aggression as either ledger nears forty
+  [VIC-01/VIC-03]); runner designation for the exits; CRT result weights.
+- Before training, a hand-set `pocket = 1.0` alone took 18/20 held-out pairs
+  off the shipped baseline (+48 mean); the `wall` corner 17/20 (+127). The
+  family had a real gradient.
+- Run: 120 generations × 2 training seeds per generation (16 pairs/gen, twice
+  run 1's sample), 65,056 games, 14 workers, 3 h 7 min. The reigning champion
+  beat the training field every generation (12–16 of 16) while the self-play
+  title streak again never held (gauntlet 8.5–14/16) — the same intransitive
+  shape as run 1 and SoJ. Equilibrium portfolio: a single genome, **elite_0
+  100 %**, beating the baseline +87.4 mean pair margin in the round-robin.
+- **Graduation bar (`grad_bar.py`): [1] 18/20 held-out pairs vs the baseline
+  (seeds 960–979), total +3304, mean +165.2; [2] 18/20 pairs vs 20 fresh
+  random genomes (seeds 980–999), total +3793 — MET.** The bar's second rung
+  was amended this day by Bruce from 5 randoms (≥4) to 20 randoms (≥16): on
+  the original 5-random rung the champion scored 3/5 (losses −109 and −8, one
+  home-away pair each), and 16/20 on a first 20-random check (the baseline on
+  the same 20: 8/20, −60.5) — the 5-pair test was a coin flip once random
+  genomes of the richer family were pocket players themselves. Both records
+  ship: `playbook/grad_bar.json` (the bar) and
+  `playbook/grad_bar_5random_original.json`.
+- What the champion learned (genome, distilled below by `make_playbook.py`):
+  as French — full aggression (1.00) with the threat discount almost off
+  (risk 0.08) but pocket 1.21 / pocket_risk 1.44: it attacks everything it
+  can pocket and refuses to stand in corners; retreats valued 0.40 × Defense
+  (dr_w, 2.7× the hand-written 0.15), attacker retreats nearly free (ar_w
+  0.03), exchanges dear (ex_w 0.49); race_push 0.74 — it closes out the loss
+  race; no runners (0) and exits only from Game-Turn 9 for units of Attack 6
+  or less — it wins by destroying forty first, then runs; Prussians brought
+  in toward the French mass (0.99). As Allied — aggression 0.57, cohesion
+  1.11 (a line, not a swarm), no free bombardments (8.00), blocking line on
+  row 11 with block 1.50 (stands between the French and the exits and holds).
+- Corpus (`playbook/corpus/`): baseline self-play 970–972 + champion vs
+  baseline both seats 970–971, 7/7 verified byte-exact. Champion as French
+  seed 971: Allies demoralized, 7 exits, French win on Game-Turn 8.
+- Verdict: **graduated — the champion genome is the shipped AI (Champion AI
+  seat), generalship 5/10.** The Basic AI seat keeps the hand-written policy.

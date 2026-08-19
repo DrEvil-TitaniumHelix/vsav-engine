@@ -155,19 +155,24 @@ mloss = fam["margin"]({"Fr": {"cs": 10, "exited": 0, "won": False}, "Al": {"cs":
 mdraw = fam["margin"]({"Fr": {"cs": 30, "exited": 2, "won": False}, "Al": {"cs": 30, "won": False}}, G.side_order)
 check(mwin > 100 > mdraw > 0 > -100 > mloss,
       f"margin fn: French win {mwin:+.1f}, even race with exits {mdraw:+.1f}, Allied win {mloss:+.1f}")
-check(champion.validated(HERE) and champion.genome(HERE) is None and champion.plan_for(tp) is None,
-      "playbook present, baseline retained: champion.genome None, plan_for None -> the AI seat plays the shipped policy")
+_cgen = champion.genome(HERE)
+check(champion.validated(HERE) and _cgen is not None and _cgen.get("pocket", 0) > 1.0 and champion.plan_for(tp) is not None,
+      f"playbook present, champion promoted: genome pocket {_cgen and _cgen.get('pocket'):.2f}, plan_for -> the Champion seat plays it")
 _man = json.load(open(os.path.join(HERE, "playbook", "manifest.json"), encoding="utf-8"))
 _bar = _man["earned_by"]["graduation_bar"]
-check("NOT MET" in _bar["result"] and champion.graduated(HERE) is None,
-      f"graduation bar on record as NOT MET and graduated() refuses it: {_bar['result'][:60]}")
+check("MET" in _bar["result"] and "NOT MET" not in _bar["result"] and champion.graduated(HERE) is not None,
+      f"graduation bar on record as MET and graduated() accepts it: {_bar['result'][:60]}")
 _gs = champion.generalship(HERE)
-check(_gs["rung"] == 3 and "graduation bar NOT MET" in _gs["evidence"],
-      f"generalship 3/10 with the bar verdict in the evidence: {_gs['evidence'][:90]}...")
+check(_gs["rung"] == 5 and "graduation bar MET" in _gs["evidence"],
+      f"generalship 5/10 with the bar in the evidence: {_gs['evidence'][:90]}...")
 _cg = json.load(open(os.path.join(HERE, "playbook", "champion.json"), encoding="utf-8"))["portfolio"]
-check(_cg["weights"] == [["baseline", 1.0]] and _cg["equilibrium"]["weights"][0][0] == "elite_0"
-      and all(not v["met"] for k, v in _cg["graduation_bar"].items() if k.startswith("elite")),
-      "champion.json: shipped weights = baseline 1.0, the run's equilibrium + both failed bar candidates recorded inside")
+_gb = json.load(open(os.path.join(HERE, "playbook", "grad_bar.json"), encoding="utf-8"))
+check(_cg["weights"] == [["elite_0", 1.0]] and _gb["met"] and _gb["vs_baseline"]["pair_wins"] >= 15
+      and _gb["vs_randoms"]["of"] == 20 and _gb["vs_randoms"]["pair_wins"] >= 16 and _gb["genome"] == _cg["genomes"]["elite_0"],
+      f"champion.json: elite_0 1.0; grad_bar.json MET {_gb['vs_baseline']['pair_wins']}/20 + {_gb['vs_randoms']['pair_wins']}/20, genome == the shipped one")
+_gb5 = json.load(open(os.path.join(HERE, "playbook", "grad_bar_5random_original.json"), encoding="utf-8"))
+check(not _gb5["met"] and _gb5["vs_randoms"]["of"] == 5 and _gb5["genome"] == _gb["genome"],
+      f"pre-amendment 5-random rung on record: {_gb5['vs_randoms']['pair_wins']}/5 (NOT MET), same genome")
 _cm = json.load(open(os.path.join(HERE, "playbook", "corpus", "corpus_manifest.json"), encoding="utf-8"))
 _rep = [g for g in _cm["games"] if g["label"] == "baseline_selfplay" and g["seed"] == 970][0]
 tc = NawGame(G, SCEN, tempfile.mkdtemp(), seed=970)
@@ -183,7 +188,7 @@ server.LIVE = tempfile.mkdtemp()
 server.load_game(HERE)
 info = server.route_get("/api/state", {})
 avail = set(info["game"]["seats"]["available"])
-check(info["game"]["tier"] is None and {"human", "basic"} <= avail and "harness" not in avail,
+check(info["game"]["tier"] is None and {"human", "basic", "champion"} <= avail and "harness" not in avail,
       f"seat model: NaW offers {sorted(avail)}, no tier field ({info['game']['seats']['pairing']})")
 check(info["game"]["seats"]["current"] == {"Fr": "human", "Al": ("champion" if "champion" in avail else "basic")},
       f"default seats: Human French vs the computer Allies ({info['game']['seats']['current']})")

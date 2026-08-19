@@ -9,81 +9,45 @@
  "portfolio": {
   "weights": [
    [
-    "baseline",
+    "elite_0",
     1.0
    ]
   ],
-  "genomes": {},
-  "verdict": "baseline retained: the graduation bar (games/napoleon-at-waterloo/grad_bar.py) rejected both equilibrium genomes; no genome promoted (Austerlitz precedent)",
-  "equilibrium": {
-   "weights": [
-    [
-     "elite_0",
-     0.5039
-    ],
-    [
-     "elite_1",
-     0.4771
-    ],
-    [
-     "baseline",
-     0.0189
-    ]
-   ],
-   "worst_case_mean_margin_for_mixture": -0.01,
-   "genomes": {
-    "elite_0": {
-     "aggression": 1.0,
-     "risk": 0.0,
-     "terrain": 0.15076093025764986,
-     "cohesion": 0.1634622367489279,
-     "exit_turn": 7.294743844366662,
-     "exit_weak": 3.0825732212174635,
-     "north_drive": 0.7781110254260418,
-     "hold_row": 10.815949601606118,
-     "block": 1.3201150529129098,
-     "advance": 0.5330199736293814,
-     "art_stand": 0.414207459970608,
-     "bombard_min": 5.811509039188662,
-     "prussian_target": 0.914869599578694,
-     "concentrate": 1.0
-    },
-    "elite_1": {
-     "aggression": 0.889405152303085,
-     "risk": 0.0,
-     "terrain": 0.15076093025764986,
-     "cohesion": 0.0,
-     "exit_turn": 3.9156061677343783,
-     "exit_weak": 2.0645988436672957,
-     "north_drive": 0.7587987956557017,
-     "hold_row": 12.0,
-     "block": 1.5,
-     "advance": 0.4745094469680906,
-     "art_stand": 0.5666156482806539,
-     "bombard_min": 5.811509039188662,
-     "prussian_target": 1.0,
-     "concentrate": 1.0
-    }
-   }
-  },
-  "graduation_bar": {
+  "worst_case_mean_margin_for_mixture": -0.0,
+  "genomes": {
    "elite_0": {
-    "champion": "elite_0",
-    "met": false,
-    "vs_baseline": "9/20 pairs, total margin +115.0",
-    "vs_randoms": "4/5 pairs, total margin +846.0"
-   },
-   "elite_1": {
-    "champion": "elite_1",
-    "met": false,
-    "vs_baseline": "9.5/20 pairs, total margin +513.0",
-    "vs_randoms": "1/5 pairs, total margin -100.0"
-   },
-   "bar": ">=15/20 held-out pairs vs baseline (seeds 960-979) with positive margin AND >=4/5 pairs vs fresh random genomes (seeds 980-984)",
-   "records": [
-    "grad_bar.json",
-    "grad_bar_elite_1.json"
-   ]
+    "aggression": 1.0,
+    "risk": 0.08021494637827359,
+    "terrain": 0.0,
+    "cohesion": 0.0,
+    "exit_turn": 8.623605266792483,
+    "exit_weak": 6.369761811473771,
+    "north_drive": 0.36065261253911673,
+    "hold_row": 10.767556336945557,
+    "block": 1.5,
+    "advance": 0.49662829639773287,
+    "art_stand": 1.0,
+    "bombard_min": 5.358112056948533,
+    "prussian_target": 0.9937000669074836,
+    "concentrate": 0.46201702294453517,
+    "pocket": 1.209494038508099,
+    "pocket_risk": 1.4449447335330876,
+    "race_push": 0.7412436998197645,
+    "race_guard": 0.0029561192577657832,
+    "runners": 0.0,
+    "runner_turn": 10.0,
+    "dr_w": 0.4037831254241918,
+    "ar_w": 0.033419765216521326,
+    "ex_w": 0.49461124788721733,
+    "al_aggression": 0.5725563243845875,
+    "al_risk": 0.0,
+    "al_terrain": 0.0,
+    "al_cohesion": 1.1133035796013868,
+    "al_advance": 0.46513147909109986,
+    "al_bombard_min": 8.0,
+    "al_pocket": 0.04640266384455907,
+    "al_pocket_risk": 0.6034191735339074
+   }
   }
  }
 }
