@@ -57,7 +57,7 @@ def mail_loop(slug, mode, seed, human_first, max_exchanges=None):
     live = tempfile.mkdtemp(prefix="pbm_live_")
     mail = []
 
-    eng = pbm.build_engine(game_dir, scen, live, seed=seed, tier=None, mode=mode)
+    eng = pbm.build_engine(game_dir, scen, live, seed=seed, mode=mode)
     eng.new_game(seed=seed)
     order = eng.game.side_order
     human = eng.first_player if human_first else \
@@ -86,7 +86,7 @@ def mail_loop(slug, mode, seed, human_first, max_exchanges=None):
         rdoc = pbm.load_turn_file(json.loads(json.dumps(reply)))
         pbm.ensure_extends(entries, rdoc["log"])
         pbm.install(rdoc, live, REPO)
-        eng = pbm.build_engine(game_dir, scen, live, seed=seed, tier=None,
+        eng = pbm.build_engine(game_dir, scen, live, seed=seed,
                                mode=mode)
         if eng.s["n"] != len(rdoc["log"]):
             raise AssertionError("resumed state out of step with mailed log")

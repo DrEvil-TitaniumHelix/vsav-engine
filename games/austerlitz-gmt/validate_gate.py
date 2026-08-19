@@ -30,8 +30,7 @@ def fresh(seed=7):
     game = gamespec.load(HERE)
     g = NapoleonicGame(game, os.path.join(HERE,
                        "scenario_northern_flank.json"), live, seed=seed,
-                       command=False,   # mechanics harness: pre-command flow
-                       tier=1)          # pinned to the schema-2 subset
+                       command=False)   # mechanics harness: pre-command flow
     return g, live
 
 
@@ -48,7 +47,7 @@ print("== game start ==")
 check("30 units loaded", len(g.s["units"]) == 30)
 check("French move first (A15.1 initiative umpired; attacker leads)",
       g.s["mover"] == "French")
-check("tier is 1 (movement only)", g.s["tier"] == 1)
+check("schema-2 flow pinned (pre-command subset)", g.s["schema"] == 2)
 
 print("== turn order / activation discipline ==")
 rus = by_slot(g, "G/Arkh")

@@ -55,20 +55,17 @@ def make_gate(game, scen_path, workdir, init):
     if mode == "napoleonic":
         return nap_mod.NapoleonicGame(game, scen_path, workdir,
                                       seed=init["seed"],
-                                      tier=init.get("tier"),
-                                      command=init.get("schema", 2) >= 3)
+                                      command=init.get("schema", 2) >= 3,
+                                      phase4=init.get("schema", 2) >= 4)
     if mode == "westwall":
-        return ww_mod.WestwallGame(game, scen_path, workdir,
-                                   seed=init["seed"], tier=init.get("tier"))
+        return ww_mod.WestwallGame(game, scen_path, workdir, seed=init["seed"])
     if mode == "naw":
         return naw_mod.NawGame(game, scen_path, workdir, seed=init["seed"])
     if mode == "bluegray":
-        return bg_mod.BlueGrayGame(game, scen_path, workdir,
-                                   seed=init["seed"], tier=init.get("tier"))
+        return bg_mod.BlueGrayGame(game, scen_path, workdir, seed=init["seed"])
     if mode == "strategic":
         return strat_mod.StrategicGame(game, scen_path, workdir,
-                                       seed=init["seed"],
-                                       tier=init.get("tier"))
+                                       seed=init["seed"])
     return gs_mod.TacticalGame(game, scen_path, workdir, seed=init["seed"])
 
 

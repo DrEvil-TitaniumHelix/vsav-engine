@@ -113,7 +113,7 @@
     <span class="chip fixw" id="turnchip" style="width:90px; text-align:center">…</span>
     <span class="chip brit fixw" id="vpbrit" style="width:100px; text-align:center">…</span>
     <span class="chip axis fixw" id="vpaxis" style="width:90px; text-align:center">…</span>
-    <button class="sidebtn holdspace fixw" id="tierbtn" style="margin-left:auto; width:170px"></button>
+    <button class="sidebtn holdspace" id="modebtn" style="margin-left:auto"></button>
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
@@ -124,19 +124,18 @@
   <div class="tbrow"><!-- row 2: turn-state controls in FIXED slots -->
     <span class="chip hot fixw" id="segchip" style="width:300px">…</span>
     <span style="white-space:nowrap">you play:</span><span id="sidebtns" style="white-space:nowrap"></span>
-    <label style="font-size:12px; white-space:nowrap">AI <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
+    <span id="aictl" class="holdspace" style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap"><label style="font-size:12px; white-space:nowrap">AI <select id="aimode" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
       <option value="step" selected>stepped (SPACE)</option>
       <option value="auto">auto</option>
-      <option value="off">off</option>
     </select></label>
     <label style="font-size:12px; white-space:nowrap">pace <select id="aipace" style="background:#2c2f36;color:#ccc;border:1px solid #555;border-radius:4px">
       <option value="1200">slow</option>
       <option value="600" selected>medium</option>
       <option value="250">fast</option>
-    </select></label>
+    </select></label></span>
     <button class="sidebtn" id="endmove">End movement</button>
     <button class="sidebtn" id="passfire">Pass fire</button>
-    <button class="sidebtn" id="aibtn">AI acts</button>
+    <button class="sidebtn holdspace" id="aibtn">AI acts</button>
     <span id="unitnav" class="holdspace" style="margin-left:auto; white-space:nowrap">
       <button class="sidebtn" id="prevunit" title="previous unit to act (B)">◀ unit</button>
       <button class="sidebtn" id="nextunit" title="next unit to act (N)">unit ▶</button>
@@ -199,7 +198,7 @@ FRAME.initFrame({
     return mine.length>0&&mine.every(u=>u.moved);
   },
   followTop: [{id:'sidepanel',gap:0},{id:'tablespanel',gap:8},
-              {id:'rulespanel',gap:8},{id:'tierpanel',gap:8}],
+              {id:'rulespanel',gap:8}],
   guideRight: 340,   // the guidance banner centers over the map, not the log
 
 });
@@ -243,23 +242,44 @@ function bootGame(g){
 async function refresh(){
   const s=await(await fetch('/api/state')).json();
   const first=!GAME;
-  if(first)bootGame(s.game);
+  if(first)bootGame(s.game); else if(s.game.seats)GAME.seats=s.game.seats;
   units=s.units; FLOW=s.flow;
   OV.setAttribute('width',MAPW); OV.setAttribute('height',MAPH);
   if(first)fitBounds();
   document.getElementById('scen').textContent=FLOW.scenario+`  ·  seed ${FLOW.seed}`;
   if (FRAME.renderUndo) FRAME.renderUndo(s.undo);   // guard: stale-cached frame.js
-  FRAME.renderTierBtn(); FRAME.renderRules();   // shared chrome (engine-level)
+  FRAME.renderModeBtn(); FRAME.renderRules();   // shared chrome (engine-level)
+  followHumanSeat();
   render(); renderLog(); maybeAutoAI();
 }
 
-function aiSide(){ return GAME.sides.find(s=>s.id!==mySide).id; }
+// ---------- seat model: Human / Basic AI per seat (Mode button) ----------
+// The gate runs always; a computer seat plays its side itself (stepped on
+// SPACE or auto), a Human seat plays here; two Humans = hot-seat, the "you
+// play" side following whichever Human seat the game is waiting on.
+function seatOf(side){ return (GAME&&GAME.seats&&GAME.seats.current[side])||'human'; }
+function computerSeat(side){ const k=seatOf(side); return k==='basic'||k==='champion'; }
+function seatName(side){ const k=seatOf(side); return (GAME.seats&&GAME.seats.names[k])||k; }
+function actingSide(){
+  if(!FLOW||FLOW.over)return null;
+  if(FLOW.segment==='movement')return FLOW.mover;
+  return FLOW.fire_done.includes(FLOW.initiative)?null:FLOW.initiative;
+}
+function aiSide(){ return actingSide(); }
+function aiTurn(){ const a=actingSide(); return !!a&&computerSeat(a); }
+function followHumanSeat(){
+  const a=actingSide();
+  if(!a||computerSeat(a)||mySide===a||dragging)return;
+  mySide=a; deselect();
+  document.querySelectorAll('#sidebtns .sidebtn').forEach(x=>x.classList.remove('on'));
+  const sb=document.getElementById('side-'+mySide); if(sb)sb.classList.add('on');
+}
 function sideLabel(id){ const s=GAME.sides.find(s=>s.id===id); return s?s.label:id; }
 
 function myPhase(){
   if(FLOW.over)return false;
-  if(FLOW.segment==='movement')return FLOW.mover===mySide;
-  return FLOW.initiative===mySide && !FLOW.fire_done.includes(mySide);
+  const a=actingSide();
+  return a===mySide && !computerSeat(a);
 }
 
 function render(){
@@ -278,6 +298,7 @@ function render(){
       `GAME OVER — ${sideLabel(FLOW.winner)} WINS  (British ${FLOW.vp.scores.British} : Axis ${FLOW.vp.scores.Axis})`, true);
   } else {
     const stepMode=document.getElementById('aimode').value==='step';
+    const act=actingSide();
     FRAME.setGuide(myPhase() ? (FLOW.segment==='movement'
         ? `<b>YOUR MOVE — ${sideLabel(mySide)}</b>: ${FRAME.MOVE_HINT}, then pick its `
           +`facing. (<b>unit ▶</b> / N finds the next unmoved unit.) `
@@ -285,19 +306,23 @@ function render(){
         : `<b>YOUR SHOT</b> — click one of your units, then click the hit-chance ring on an `
           +`enemy to fire (one unit per volley; the enemy answers). No shot worth taking? `
           +`<b>Pass fire</b>.`)
-      : stepMode ? `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) — press <b>SPACE</b> to step its actions`
-                 : `${sideLabel(FLOW.segment==='movement'?FLOW.mover:FLOW.initiative)} (AI) is acting…`);
+      : !aiTurn() ? `It's <b>${sideLabel(act)}</b>'s turn — click <b>${sideLabel(act)}</b> next to “you play:” to play it yourself, or give that seat to a computer under <b>Mode</b>.`
+      : stepMode ? `<b>${seatName(act)}</b> plays <b>${sideLabel(act)}</b> — press <b>SPACE</b> to step its actions`
+                 : `<b>${seatName(act)}</b> plays <b>${sideLabel(act)}</b> — acting…`);
   }
   document.getElementById('endmove').disabled=!(myPhase()&&FLOW.segment==='movement');
   FRAME.onRender();   // engine frame: unit-nav visibility
   document.getElementById('passfire').disabled=!(myPhase()&&FLOW.segment==='combat');
-  document.getElementById('aibtn').disabled=FLOW.over||myPhase();
+  document.getElementById('aibtn').disabled=FLOW.over||!aiTurn();
+  const anyComputer=!!(GAME.seats&&GAME.seats.order.some(computerSeat));
+  FRAME.show('aictl', anyComputer); FRAME.show('aibtn', anyComputer);
   // sole-way-forward (engine rule): red border on THE button that advances the game
   const alive=units.filter(u=>u.side===mySide&&!u.K);
   const allMoved=alive.length>0&&alive.every(u=>u.moved);
   FRAME.soleNext(FLOW.over ? 'newgame'
     : (myPhase()&&FLOW.segment==='movement'&&allMoved) ? 'endmove'
-    : (!myPhase()&&document.getElementById('aimode').value==='step') ? 'aibtn'
+    : (aiTurn()&&document.getElementById('aimode').value==='step') ? 'aibtn'
+    : (!aiTurn()&&!myPhase()) ? 'side-'+actingSide()
     : null);
 
   const byhex={};
@@ -452,7 +477,7 @@ function aiNarrate(txt){
 }
 const STAGE_HINTS=['selected','intent'];
 async function advanceAIStep(){
-  if(aiBusy||FLOW.over||myPhase())return;
+  if(aiBusy||FLOW.over||!aiTurn())return;
   if(!aiStep){
     aiBusy=true;
     const p=await(await fetch('/api/ai_plan?side='+aiSide())).json();
@@ -492,7 +517,7 @@ async function advanceAIStep(){
 document.addEventListener('keydown',e=>{
   if(e.code!=='Space')return;
   if(document.getElementById('aimode').value!=='step')return;
-  if(!FLOW||FLOW.over||myPhase())return;
+  if(!FLOW||FLOW.over||!aiTurn())return;
   e.preventDefault(); advanceAIStep();
 });
 
@@ -799,7 +824,7 @@ async function renderLog(){
 
 // ---------- AI ----------
 async function runAI(){
-  if(aiBusy||FLOW.over||myPhase())return;
+  if(aiBusy||FLOW.over||!aiTurn())return;
   aiBusy=true;
   try{
     const r=await(await fetch('/api/ai_turn',{method:'POST',
@@ -815,14 +840,14 @@ async function runAI(){
 }
 function maybeAutoAI(){
   if(document.getElementById('aimode').value!=='auto'){ autoRunning=false; return; }
-  if(FLOW.over||myPhase()){ aiStep=null; autoRunning=false; return; }
+  if(FLOW.over||!aiTurn()){ aiStep=null; autoRunning=false; return; }
   if(autoRunning) return;          // already looping — don't stack timers
   autoRunning=true; autoTick();
 }
 async function autoTick(){
   // auto mode = the SAME single-action stepper the SPACE key uses, on a timer,
   // so every unit visibly moves one at a time (no jump-cut to the end state).
-  if(document.getElementById('aimode').value!=='auto' || FLOW.over || myPhase()){
+  if(document.getElementById('aimode').value!=='auto' || FLOW.over || !aiTurn()){
     autoRunning=false; aiStep=null; return;
   }
   const executing = !!aiStep && aiStep.stage>=1;   // this tick executes an action
@@ -838,27 +863,29 @@ document.addEventListener('DOMContentLoaded',()=>{
   const savedPace=localStorage.getItem('aipace');
   p.value=['1200','600','250'].includes(savedPace)?savedPace:'600';
   p.onchange=()=>localStorage.setItem('aipace',p.value);
-  m.value=localStorage.getItem('aimode')||'step';
+  m.value=['step','auto'].includes(localStorage.getItem('aimode'))?localStorage.getItem('aimode'):'step';
   m.onchange=()=>{ localStorage.setItem('aimode',m.value); aiStep=null; refresh(); };
 });
 
 // (the Guide panel is ENGINE-LEVEL now — ui/frame.js; Tobruk's guide
 // content lives in games/tobruk/game.json "guide".)
 
-// ---------- Tier / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
+// ---------- Mode / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
 FRAME.initUndo({ refresh, toast: (m) => toastReasons([m]) });  // engine-level undo
 FRAME.initPanels({
   game: () => GAME,
   flow: () => FLOW,
   toast: (m) => toastReasons([m]),
+  onSeats: async () => { aiStep=null; autoRunning=false; deselect(); await refresh(); },
   clientItems: (gated) => [
     `<li><b>Firing</b> — after the movement segment, select your unit then click an
      enemy in range: the engine answers the three questions (to-hit, aspect, damage)
      on the transcribed data cards with its own seeded dice.</li>`,
     `<li><b>End movement / Pass fire</b> — close your segment; the turn strip shows
      whose decision the game is waiting on.</li>`,
-    `<li><b>AI</b> — stepped (press SPACE per action) or auto; the AI proposes
-     through the same legality gate you play through.</li>`,
+    `<li><b>Computer seat</b> — stepped (press SPACE per action) or auto; it
+     proposes through the same legality gate you play through. <b>Mode</b>
+     decides who sits in each seat.</li>`,
   ],
 });
 FRAME.layoutBars();

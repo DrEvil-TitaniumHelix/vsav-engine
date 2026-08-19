@@ -46,7 +46,7 @@ class WestwallGame(GateGame):
                  "battle_no", "pending")
     TURN_NOUN = "GT"
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None):
         super().__init__(game, scenario_path, live_dir)
         cfg = self.scenario["game"]
         self.gsp_sched = {int(k): v for k, v in
@@ -58,7 +58,7 @@ class WestwallGame(GateGame):
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.catalog = {u["id"]: u for u in
                         self.scenario.get("units", []) + self.scenario.get("reserve", [])}
-        self._resolve_tier(tier)
+        self.combat = game.spec.get("combat")
         # pristine copies of demolishable/repairable sides (runtime mutation).
         # Captured ONCE per Game object - later gates on the same Game must
         # see the ORIGINAL terrain, not a previous game's demolitions.
@@ -78,7 +78,7 @@ class WestwallGame(GateGame):
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         self.s = {
-            "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
+            "seed": seed, "rng_calls": 0, "n": 0,
             "turn": 1, "phase": "movement", "mover": self.first_player,
             "over": False, "winner": None, "level": None,
             "units": units,
@@ -105,7 +105,7 @@ class WestwallGame(GateGame):
         }
         self._reset_log()
         self._log({"event": "init", "mode": "westwall",
-                   "scenario": self.scenario["name"], "tier": self.tier,
+                   "scenario": self.scenario["name"],
                    "rules_scope": self.rules_scope(), "seed": seed,
                    "turns": self.turns, "first_player": self.first_player,
                    "units": self._units_for_log(units)})
@@ -636,8 +636,6 @@ class WestwallGame(GateGame):
 
     def _propose_battle(self, side, action):
         s = self.s
-        if not self.combat:
-            return self._v(False, f"combat is not enforced at tier {self.tier}")
         if s["phase"] != "combat":
             return self._v(False, "battles happen in the Combat Phase [4.1]")
         atk_ids = [str(p) for p in action.get("attackers", [])]
@@ -1842,6 +1840,5 @@ class WestwallGame(GateGame):
                          "assault": s["assault"]},
             "exited": dict(s["exited"]),
             "scenario": self.scenario["name"],
-            "tier": self.tier, "tier_earned": self.tier_earned,
             "rules_scope": self.rules_scope(),
         }

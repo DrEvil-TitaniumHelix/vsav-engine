@@ -24,9 +24,8 @@ between games:
             proposal answer uses
   submit    submit() — the only door: validate, log EVERY proposal, apply
             legal ones via the subclass's _apply(side, action, verdict)
-  tiers     _resolve_tier() (spec #13) for the strategic gates
   resume    _resume_or_new(): reload the saved state file unless its schema
-            is stale or it was played at another tier
+            is stale
   queries   presentation/query defaults: unit(), turn_label()/TURN_NOUN,
             on_map(), rules_scope() (StrategicGame intentionally shadows
             it with a richer shape), _scenario_units()/_units_for_log()
@@ -66,37 +65,19 @@ class GateGame:
         self.turn_labels = cfg.get("turn_labels", [])
 
     # ------------------------------------------------------------ lifecycle
-    def _resolve_tier(self, tier):
-        """Tier selection (spec #13): a game may be RUN below the tier it
-        has EARNED. Tier 1 = movement/arrivals gate only — the entire combat
-        ruleset (and everything keyed on it) is switched off. Tier 2 = the
-        full validated combat gate. Tier 3 = tier 2 plus a validated policy
-        AI (declared in game.json `policy_ai`); the tier-3 gate is identical
-        to tier 2 — the AI is an opponent offered on top, and it submits
-        through the same door. Tier 0 never reaches a gate class (no gate at
-        all — the server serves free play)."""
-        self.combat = self.game.spec.get("combat")
-        self.tier_earned = (
-            (3 if self.game.spec.get("policy_ai") else 2) if self.combat else 1)
-        self.tier = self.tier_earned if tier is None \
-            else max(1, min(int(tier), self.tier_earned))
-        if self.tier < 2:
-            self.combat = None
-
     def _resume_or_new(self, seed, required=()):
         """Reload the saved state file if it is structurally current,
         otherwise start a fresh game. `required` lists state keys whose
-        absence marks an older schema; a tiered gate also resets when the
-        saved state was played at a different tier."""
+        absence marks an older schema; a state file written by the old
+        combat-off gate (pre-seat-model "tier" < 2) is stale too."""
         if not os.path.exists(self.state_path):
             self.new_game(seed)
             return
         self.s = json.load(open(self.state_path, encoding="utf-8"))
         if any(k not in self.s for k in required):
             self.new_game(seed)               # older-schema state file: reset
-        elif hasattr(self, "tier") \
-                and min(self.s.get("tier", self.tier_earned), 2) != min(self.tier, 2):
-            self.new_game(seed)               # state was played at another tier
+        elif self.s.get("tier", 2) < 2:
+            self.new_game(seed)
 
     @staticmethod
     def _fresh_seed(seed):
@@ -172,20 +153,12 @@ class GateGame:
         return True
 
     def rules_scope(self):
-        """The scenario's declared scope, composed for the ACTIVE tier
-        (requires _resolve_tier). Scenarios split their enforced list into
-        `enforced` (tier-1 systems) + `enforced_tier2` (combat systems); at
-        tier 1 the tier-2 items are presented honestly as not enforced."""
+        """The scenario's declared scope: `enforced` + `enforced_combat`
+        are one enforced list (the gate is always the whole gate)."""
         sc = self.scenario.get("rules_scope", {})
-        rulings = sc.get("rulings", [])
-        if self.tier >= 2:
-            return {"enforced": sc.get("enforced", []) + sc.get("enforced_tier2", []),
-                    "not_enforced": sc.get("umpired", []),
-                    "rulings": rulings}
-        return {"enforced": sc.get("enforced", []),
-                "not_enforced": sc.get("enforced_tier2", []) + sc.get("umpired", []),
-                "rulings": rulings,
-                "banner": f"TIER {self.tier} MODE selected - combat is umpired"}
+        return {"enforced": sc.get("enforced", []) + sc.get("enforced_combat", []),
+                "not_enforced": sc.get("umpired", []),
+                "rulings": sc.get("rulings", [])}
 
     # ------------------------------------------------------------ verdicts
     def _v(self, ok, *reasons):

@@ -141,7 +141,7 @@ scenario = {
             "Train: roads/trails only, never stacks, blocks its hex, no ZOC [18.2]",
             "Turn sequence: Union first player, movement then combat, 15 GTs [4.0/14.3/15.53]"
         ],
-        "enforced_tier2": [
+        "enforced_combat": [
             "Mandatory combat: every adjacent enemy attacked, every adjacent friendly participates [7.0/7.11/7.12/7.23]",
             "CRT 1d6, odds rounded down for the defender, >6-1 as 6-1, <1-5 as 1-5 [7.0/7.6]",
             "Voluntary odds reduction before the roll [7.9]",

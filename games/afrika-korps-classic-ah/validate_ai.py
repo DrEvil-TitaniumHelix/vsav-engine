@@ -57,9 +57,9 @@ MAXT = 5 if SMOKE else VAL_MAX_TURNS   # seed 1 fights a battle by ~turn 3
 MIN_MOVES = 10 if SMOKE else 50
 
 
-def run_one(seed, tier=None, max_turns=MAXT):
+def run_one(seed, max_turns=MAXT):
     tmp = tempfile.mkdtemp()
-    sg = strategic.StrategicGame(g, SCEN, tmp, seed=seed, tier=tier)
+    sg = strategic.StrategicGame(g, SCEN, tmp, seed=seed)
     turns, log = ai_strategic.play_game(sg, max_turns=max_turns)
     submitted = [e for e in log if "verdict" in e]
     illegal = [e for e in submitted if not e["verdict"]["legal"]]
@@ -112,13 +112,9 @@ check(all(r["verify_ok"] for r in results),
       f"all {len(SEEDS)} logs (incl. {len(allbad)} gate rejections) reproduce "
       f"under replay")
 
-print("\n=== Tier-1 mode: the same AI plays a legal reduced game (no combat) ===")
-r1 = run_one(1 if SMOKE else 7, tier=1)
-check(r1["sg"].tier == 1, "runs at the selected Tier 1")
-check(r1["verify_ok"],
-      f"Tier-1 AI game replays exactly -> {r1['verify_msg'][:70]}")
-check(not r1["errors"], "Tier-1 AI ran without stalling")
-check(len(r1["battles"]) == 0, "no combat is attempted at Tier 1 (gate off)")
+print("\n=== seat model: the gate is always the whole gate ===")
+check(not hasattr(results[0]["sg"], "tier") and results[0]["sg"].combat,
+      "gate is tier-free and runs the validated combat block")
 
 print()
 if fails:

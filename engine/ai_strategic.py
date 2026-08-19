@@ -271,7 +271,7 @@ def _do_movement(sg, side, dist):
             touch = [fh for fh in foes if sg._engageable(dh, fh)]
             dd = dist(dh, obj)
             if not touch or not sg.combat:
-                # no adjacent enemy — or no combat gate at all (Tier 1): the AI
+                # no adjacent enemy (combat gate always on now): the AI
                 # never voluntarily ends in a ZOC it would be forced to attack
                 if not touch:
                     cand = (dd, d["cost"], dh)

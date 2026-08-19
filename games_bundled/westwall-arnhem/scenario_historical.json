@@ -3408,7 +3408,7 @@
    "Engineer: canal-bridge repair [13.1]; airborne/glider river crossing [13.2]; assault stack on the Stream CRT line [13.24]; no Allied retreat across rivers / out of the Engineer hex, no German advance across rivers [13.25]; replacement at 0105/0106 [13.3]",
    "Turn sequence: Allied first player, movement then combat, 10 GTs [4.1/18.17]"
   ],
-  "enforced_tier2": [
+  "enforced_combat": [
    "Mandatory combat: every adjacent enemy attacked, every adjacent friendly attacks [7.0/7.11/7.12/7.21]; multi-hex adjacency [7.23]; once per phase each way [7.14]",
    "Integrated differential CRT: attack+barrage+GSP minus defense+FPF, defender's terrain row, die 1-6 [7.0/7.61]; bounds clamp [7.61 notes]",
    "Never voluntarily reduce a differential [7.52]",

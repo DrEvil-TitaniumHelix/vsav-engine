@@ -1,4 +1,4 @@
-"""Afrika Korps Tier-2 COMPLETION validation: supply capture (15),
+"""Afrika Korps combat-system COMPLETION validation: supply capture (15),
 isolation (24), replacements (20), substitutes (21), Automatic Victory (9).
 
 Every case is a rulebook- or clarification-cited legal action or illegal
@@ -7,7 +7,7 @@ through engine/verify_game.py. Worked material: tournament clarifications
 sections 3-5, 8, 10 (figs 1-4, 7, 11); rules 9.1-9.7, 14.5, 15.1-15.4,
 20.1-20.6, 21.1-21.7, 24.1-24.5.
 
-Run:  python games/afrika-korps-classic-ah/validate_tier2.py
+Run:  python games/afrika-korps-classic-ah/validate_completion.py
 """
 import json
 import os
@@ -93,8 +93,8 @@ FAR = roomy(bfs_ring(BASE, 8))
 FAR2 = roomy(bfs_ring(BASE, 12))
 FARN = ring(FAR)
 
-SCEN = os.path.join(HERE, "scenario_validate_tier2_tmp.json")
-SCEN_NAME = "AK tier2 validation (temp stage)"
+SCEN = os.path.join(HERE, "scenario_validate_completion_tmp.json")
+SCEN_NAME = "AK completion validation (temp stage)"
 tmpdirs = []
 
 

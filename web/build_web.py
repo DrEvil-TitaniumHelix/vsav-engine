@@ -79,9 +79,6 @@ def bake(game_key):
         name=g.name,
         map_url="", map_w=w, map_h=h,     # map_url is set by byo.js at runtime
         counters_url="",
-        # movement IS enforced in this build (JS legality port) — tier 1 keeps
-        # the guide banner honest; single choice hides the tier switcher
-        tier=dict(active=1, earned=1, choices=[1]),
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
         grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient),
         sides=[dict(id=s, label=g.spec["sides"].get("labels", {}).get(s, s))

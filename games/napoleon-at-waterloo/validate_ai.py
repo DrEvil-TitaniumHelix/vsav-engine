@@ -188,7 +188,7 @@ server.LIVE = tempfile.mkdtemp()
 server.load_game(HERE)
 info = server.route_get("/api/state", {})
 avail = set(info["game"]["seats"]["available"])
-check(info["game"]["tier"] is None and {"human", "basic", "champion"} <= avail and "harness" not in avail,
+check("tier" not in info["game"] and {"human", "basic", "champion"} <= avail and "harness" not in avail,
       f"seat model: NaW offers {sorted(avail)}, no tier field ({info['game']['seats']['pairing']})")
 check(info["game"]["seats"]["current"] == {"Fr": "human", "Al": ("champion" if "champion" in avail else "basic")},
       f"default seats: Human French vs the computer Allies ({info['game']['seats']['current']})")

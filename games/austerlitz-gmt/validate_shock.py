@@ -1,6 +1,6 @@
 """
 validate_shock.py - phase-4 shock-combat / reaction / strategic-movement
-validation (schema 4, tier 2).
+validation (schema 4).
 
 Exercises the phase-4 machinery through the REAL gate (submit() only, no
 private resolver calls for outcomes): melee legality gates [6.4.1/9.2.3/
@@ -49,7 +49,7 @@ def fresh(seed):
     live = tempfile.mkdtemp(prefix="aus_shock_")
     g = NapoleonicGame(gamespec.load(HERE),
                        os.path.join(HERE, "scenario_northern_flank.json"),
-                       live, seed=seed, tier=2)
+                       live, seed=seed)
     return g, live
 
 
@@ -202,18 +202,18 @@ def open_full(want_div, seeds=range(1, 500), setup=None, extra_lim=None):
 
 GAME = gamespec.load(HERE)
 
-print("== schema 4 / tier 2 boots ==")
+print("== schema 4 boots ==")
 g, live = fresh(7)
-check("tier 2 game runs state schema 4 (phase-4 flow on)",
-      g.s["schema"] == 4 and g.s["tier"] == 2 and g._p4)
+check("game runs state schema 4 (phase-4 flow on)",
+      g.s["schema"] == 4 and g._p4)
 check("phase-4 unit fields present: blown/recovery [8.4.4/8.4.5]",
       all("blown" in u and "recovery" in u
           for u in g.s["units"].values()))
-check("tier 1 still pins schema 3 (phase-3 flow untouched)",
+check("phase4=False still pins schema 3 (phase-3 flow untouched)",
       NapoleonicGame(gamespec.load(HERE),
                      os.path.join(HERE, "scenario_northern_flank.json"),
                      tempfile.mkdtemp(prefix="aus_t1_"), seed=7,
-                     tier=1).s["schema"] == 3)
+                     phase4=False).s["schema"] == 3)
 check("A15.1 roster has NO Allied cavalry: countercharge [8.4.2#3] is "
       "scenario-unreachable (validated at table level, validate_melee)",
       not any(u["arm"] == "cavalry" and u["side"] == "Allied"

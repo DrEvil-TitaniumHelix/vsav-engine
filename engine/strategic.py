@@ -1,6 +1,6 @@
 """
 strategic.py - The legality gate for strategic (player-turn) games: Afrika
-Korps campaign movement, Tier 1 scope.
+Korps campaign movement, movement + combat scope.
 
 EVERY action enters through propose()/submit(). propose() returns a verdict
 with rulebook-cited reasons; submit() applies legal actions and LOGS EVERY
@@ -53,7 +53,7 @@ class StrategicGame(GateGame):
                  "iso", "iso_start", "nosup", "nosup_start",
                  "repl", "av", "sub_stock", "sub_comp")
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None):
         super().__init__(game, scenario_path, live_dir)
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.schedule = {u["id"]: u for u in self.scenario.get("reserve", [])
@@ -68,7 +68,7 @@ class StrategicGame(GateGame):
         self.supply_max = self.scenario.get("supply_max_on_board", {})
         p = (game.spec.get("ports") or {}).get("list", [])
         self.ports = {tuple(e["hex"]): e for e in p}
-        self._resolve_tier(tier)
+        self.combat = game.spec.get("combat")
         self.repl_cfg = self.scenario.get("replacements")
         self.sub_cfg = self.scenario.get("substitutes")
         # 4.1/4.2 control-victory objectives: every fortress + home base hex
@@ -88,7 +88,7 @@ class StrategicGame(GateGame):
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         self.s = {
-            "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
+            "seed": seed, "rng_calls": 0, "n": 0,
             "turn": 1, "phase": "movement", "mover": self.first_player,
             "moved": {}, "over": False, "winner": None,
             "units": units,
@@ -103,7 +103,7 @@ class StrategicGame(GateGame):
             "attacked": {}, "defended": {}, "fought": [],
             "supplies_used": [], "pending": None, "pending_rommel": None,
             "vic_start_ok": False, "vic_streak": {}, "dead": [],
-            # Tier-2 completion: supply capture 15, isolation 24,
+            # combat-system completion: supply capture 15, isolation 24,
             # replacements 20, substitutes 21, Automatic Victory 9
             "cap_pool": {}, "no_sustain": [], "cap_attacks": [],
             "cap_move": {},
@@ -125,7 +125,6 @@ class StrategicGame(GateGame):
         self._reset_log()
         self._log({"event": "init", "mode": "strategic",
                    "scenario": self.scenario["name"],
-                   "tier": self.tier,
                    "rules_scope": self.rules_scope(),
                    "seed": seed, "turns": self.turns,
                    "first_player": self.first_player,
@@ -1828,7 +1827,7 @@ class StrategicGame(GateGame):
         if pid in self.reserve and pid not in self.s["units"]:
             return None, self._v(False,
                 "reserve piece (substitute/captured-supply/marker) — "
-                "outside this scenario's Tier-1 scope [20/21/15]")
+                "outside this scenario's scope [20/21/15]")
         u = self.s["units"].get(pid)
         if not u:
             return None, self._v(False, "no such unit in the gated scenario")
@@ -2259,8 +2258,8 @@ class StrategicGame(GateGame):
                         "the last October 1942 turn [4.2].")
             else:
                 note = ("GAME OVER — final turn complete. Victory conditions "
-                        "(4.1/4.2) require combat resolution: not in Tier-1 "
-                        "scope, no winner adjudicated.")
+                        "(4.1/4.2) require combat resolution: not in this "
+                        "scenario's scope, no winner adjudicated.")
             return {"note": note, "turn": s["turn"], "over": True,
                     "winner": s.get("winner"), "events": notes}
         return {"note": f"game turn complete — {self.turn_label()} begins, "
@@ -2677,28 +2676,17 @@ class StrategicGame(GateGame):
         return out
 
     def rules_scope(self):
-        """The scenario's declared scope, composed for the ACTIVE tier.
-        Intentionally SHADOWS gate.GateGame.rules_scope with a richer
-        shape (preserves the scenario's full rules_scope dict) that the
-        strategic UI renders — do not 'deduplicate' into the base form.
-        Scenarios may split their enforced list into `enforced` (tier-1
-        systems) + `enforced_tier2` (combat systems); at tier 1 the tier-2
-        items are presented honestly as not-enforced-in-this-mode."""
+        """The scenario's declared scope. Intentionally SHADOWS
+        gate.GateGame.rules_scope with a richer shape (preserves the
+        scenario's full rules_scope dict) that the strategic UI renders -
+        do not 'deduplicate' into the base form. `enforced` +
+        `enforced_combat` are one enforced list (the gate is always the
+        whole gate)."""
         rs = self.scenario.get("rules_scope")
         if not rs:
             return None
-        t2 = rs.get("enforced_tier2", [])
-        if self.tier >= 2:
-            return dict(rs, enforced=rs.get("enforced", []) + t2,
-                        enforced_tier2=None)
-        note = ("TIER 1 MODE selected (this game has earned Tier "
-                f"{self.tier_earned}) — the validated combat systems below "
-                "are switched OFF; resolve combat yourself, umpire-style:")
-        return dict(rs,
-                    enforced=rs.get("enforced", []),
-                    enforced_tier2=None,
-                    not_enforced=([note] + t2 if t2 else [])
-                    + rs.get("not_enforced", []))
+        return dict(rs, enforced=rs.get("enforced", []) + rs.get("enforced_combat", []),
+                    enforced_combat=None)
 
     def flow(self):
         """The client's one-call game snapshot: turn/phase/mover, arrivals,
@@ -2711,7 +2699,6 @@ class StrategicGame(GateGame):
                     overstacked=[self.game.grid.display_name(*h)
                                  for h in self.overstacked_hexes(s["mover"])],
                     seed=s["seed"], n=s["n"],
-                    tier=self.tier, tier_earned=self.tier_earned,
                     first_player=self.first_player,
                     scenario=self.scenario["name"],
                     rules_scope=self.rules_scope(),

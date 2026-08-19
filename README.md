@@ -43,7 +43,7 @@ https://drive.google.com/file/d/1FuJlt54Mb2FIAunbKrEXBKCpHCOngCpH/view
 **Four complete games ship in this repo, playable out of the box:** Avalon
 Hill's **Afrika Korps** (the flagship — the full strategic campaign), SPI's
 **Blue & Gray: Chickamauga** (the classic 1975 Civil War hex battle, encoded
-overnight as the platform's second full Tier-3 game), SPI's **Westwall:
+overnight as the platform's second fully encoded game), SPI's **Westwall:
 Arnhem** (the 1976 Market-Garden operational battle — airborne drops, bridge
 demolition, engineers) and Avalon Hill's **Tobruk** (a tactical tank
 firefight). A fifth, GMT's **Austerlitz** (2000, Great Battles of the
@@ -68,20 +68,21 @@ substitutes, Rommel — and the CRT transcribed cell by cell and validated
 66/66 against two independent sources plus the rulebook's own worked
 examples.
 
-- **Tier system** — play it your way: Tier 0 free play (you're the umpire),
-  Tier 1 movement enforced, Tier 2 full combat gate, **Tier 3 with an AI
-  opponent** that plays whole campaign turns — stepped action-by-action with
-  the spacebar or animated auto-play.
+- **Seats, not modes** — the rules gate is always on; the only choice is who
+  sits in each seat: Human, Basic AI, Champion AI (where one graduated) or an
+  outside Harness. Every pairing is legal — hot-seat, you vs the computer, or
+  computer vs computer — and a computer seat plays its turns stepped
+  action-by-action with the spacebar or as animated auto-play.
 - **Seven validators** (`games/afrika-korps-classic-ah/validate_*.py`) are the
-  evidence chain: grid, movement, tier 1, combat, tier 2, arrivals, AI —
-  every one green before any tier badge. `VALIDATION.md` documents it.
+  evidence chain: grid, movement, full scope, combat, completion, arrivals,
+  AI — every one green before the game is offered. `VALIDATION.md` documents it.
 - **A source-defect register**: encoding surfaced eight defects in the
   *printed* game — editing errors, contradictions, undefined cases, a broken
   cross-reference, map errata — each recorded in `game.json` with quoted
   evidence, the enforced resolution, and its authority. The in-game Rules
   panel renders the register.
 
-## Game 2: Blue & Gray — Chickamauga (SPI, 1975) — Tier 3
+## Game 2: Blue & Gray — Chickamauga (SPI, 1975)
 
 **The Last Victory, 20 September 1863** — the complete campaign game from
 SPI's classic quad: the full battlefield map (creek crossings, the four named
@@ -94,7 +95,7 @@ artillery bombardment with line of sight, night turns, map exits, the Union
 Train, and the full Victory Point schedule with both lines-of-communication
 checks.
 
-- **Tier 3**: policy AI opponent through the same gate — five AI-vs-AI
+- **AI seat**: policy AI opponent through the same gate — five AI-vs-AI
   campaigns complete all 15 game turns and replay byte-exact.
 - **Five validators** (`games/blue-and-gray-chickamauga/validate_*.py`):
   grid, movement, gate, combat, AI — the same evidence chain as Afrika Korps.
@@ -103,7 +104,7 @@ checks.
   defect, the map evidence and the official correction are recorded in
   `game.json` and rendered in the Rules panel.
 
-## Game 3: Westwall — Arnhem (SPI, 1976) — Tier 3
+## Game 3: Westwall — Arnhem (SPI, 1976)
 
 **The Historical Scenario** from SPI's *Westwall* quadrigame — Operation
 Market-Garden at the Arnhem end of the corridor: the full operational map with
@@ -119,7 +120,7 @@ engineers (canal repair, river crossing) [13.x], the Allied ground-supply pool
 [14.11] and lines-of-communication trace [17.3x], and the full Victory-Point
 schedule with the Waal and Rijn zones and the German:Allied victory ratio.
 
-- **Tier 3**: policy AI opponent through the same gate — five AI-vs-AI
+- **AI seat**: policy AI opponent through the same gate — five AI-vs-AI
   campaigns run to term and replay byte-exact.
 - **Five validators** (`games/westwall-arnhem/validate_*.py`): grid (18/18
   printed anchors), movement (the vehicle classes and river-ZOC step rules),
@@ -322,7 +323,7 @@ python run_all.py --game westwall-arnhem   # one game only
 
 The suite *is* the validators: each `games/<name>/validate_*.py` is a standalone
 evidence script (grid, movement, gate, combat, AI) that exits non-zero on any
-discrepancy — the same checks that gate a game's tier badge, documented per game
+discrepancy — the same checks that gate a game's release, documented per game
 in its `VALIDATION.md`. The engine is stdlib-only, so no install step is needed
 to run them. A few validators cross-check against private decode material that
 isn't in this public repo; those **skip cleanly** when it's absent (as in CI),

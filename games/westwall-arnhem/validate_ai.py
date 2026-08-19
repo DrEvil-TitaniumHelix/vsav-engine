@@ -46,14 +46,10 @@ for seed in SEEDS:
     okv, msg = verify_game.verify(HERE, os.path.join(tmp, "game_westwall-arnhem.log.jsonl"))
     check(okv, f"seed {seed}: {msg}")
 
-# Tier-1 game (no combat enforced)
 tmp = tempfile.mkdtemp()
-ww1 = WestwallGame(G, SCEN, tmp, seed=5, tier=1)
-turns, log = ai.play_game(ww1, max_turns=4)
-check(not any(e.get("error") for e in log),
-      f"tier-1 game runs without stalls ({turns} GTs reached)")
-okv, msg = verify_game.verify(HERE, os.path.join(tmp, "game_westwall-arnhem.log.jsonl"))
-check(okv, f"tier-1 replay: {msg}")
+ww1 = WestwallGame(G, SCEN, tmp, seed=5)
+check(not hasattr(ww1, "tier") and ww1.combat,
+      "gate is tier-free and runs the validated combat block (seat model)")
 
 # TurnStepper == take_turn (identical action stream)
 tmp_a = tempfile.mkdtemp()
