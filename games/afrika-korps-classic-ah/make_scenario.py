@@ -93,7 +93,7 @@ scenario = {
         ],
         # Tier-2 systems: enforced when the game runs at tier 2 (the default);
         # switched off — and declared so — when the player selects tier 1.
-        "enforced_tier2": [
+        "enforced_combat": [
             "COMBAT on the two-source-validated CRT (back of rulebook == printed map, 66 cells): odds rounded in the defender's favor (7.3), >6-1 automatic elimination without a roll, no voluntary attack worse than 1-6 (7.4, 9.1), engine-owned seeded die",
             "mandatory combat: every unit in enemy ZOC attacks, every enemy with units in its ZOC is attacked, attacker adjacency, no splitting, one battle per unit per turn, legal partitions only (7.2, 8.4-8.5, 11.3-11.8)",
             "defense doubled on fortress/escarpment (10.2); attack factors never terrain-affected (8.7)",

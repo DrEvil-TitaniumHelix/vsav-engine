@@ -167,7 +167,7 @@ scenario = {
             "[12.0-12.4]",
             "Victory conditions checked every turn [A15.1]",
         ],
-        "enforced_tier2": [
+        "enforced_combat": [
             "Melee: bayonet/assault/charge combat [8.2-8.5] (phase 4)",
         ],
         "umpired": [

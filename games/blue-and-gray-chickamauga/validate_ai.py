@@ -46,15 +46,10 @@ for seed in SEEDS:
         check(okv, f"seed {seed}: verify_game byte-exact replay"
                    + ("" if okv else f" - {msg}"))
 
-# Tier-1 game (no combat gate): must also complete
 with tempfile.TemporaryDirectory() as tmp:
-    bg = bluegray.BlueGrayGame(G, SCEN, tmp, seed=5, tier=1)
-    turns, log = ai_bluegray.play_game(bg, max_turns=3 if SMOKE else 6)
-    check(not any(e.get("error") for e in log), "tier-1 game: no stalls")
-    gkey = os.path.basename(os.path.normpath(G.dir))
-    okv, msg = verify_game.verify(HERE, os.path.join(tmp, f"game_{gkey}.log.jsonl"))
-    check(okv, "tier-1 game: verify_game byte-exact replay"
-               + ("" if okv else f" - {msg}"))
+    bg = bluegray.BlueGrayGame(G, SCEN, tmp, seed=5)
+    check(not hasattr(bg, "tier") and bg.combat,
+          "gate is tier-free and runs the validated combat block (seat model)")
 
 # TurnStepper == take_turn: identical action stream
 with tempfile.TemporaryDirectory() as tA, tempfile.TemporaryDirectory() as tB:

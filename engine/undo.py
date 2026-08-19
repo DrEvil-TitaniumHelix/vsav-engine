@@ -59,7 +59,7 @@ def save_marks(live_dir, slug, marks):
 
 
 def clear(live_dir, slug):
-    """A new game (reset, tier change, match start) voids the undo window.
+    """A new game (reset, match start) voids the undo window.
     The archive file is per-session audit trail and goes with it."""
     for p in (sidecar_path(live_dir, slug), archive_path(live_dir, slug)):
         if os.path.exists(p):

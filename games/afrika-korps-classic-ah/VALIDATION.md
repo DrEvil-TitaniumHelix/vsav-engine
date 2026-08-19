@@ -93,7 +93,7 @@ turn-track/holding-box rows (phase-coherence peak at dy≈67.45 is the track
 spacing, not the grid). The printed map grid is the ground truth.
 
 ## TIER 2 COMPLETE 2026-07-09 (late): supply capture + isolation + replacements + substitutes + AV
-## (re-run `python validate_tier2.py` — ALL PASS; every session replays through verify_game.py)
+## (re-run `python validate_completion.py` — ALL PASS; every session replays through verify_game.py)
 
 The last five subsystems are enforced. Evidence highlights:
 
@@ -264,7 +264,7 @@ identical rebuild, Tobruk 17/17, ASL/Arnhem/Tobruk load, all six AK
 validators ALL PASS.
 
 ## TIER 1 COMPLETE 2026-07-09 (late): arrivals + sea movement + Rommel bonus
-## (re-run `python validate_arrivals.py` and `python validate_tier1.py`)
+## (re-run `python validate_arrivals.py` and `python validate_full_scope.py`)
 
 The three items Bruce gated the badge on are now enforced through the gate,
 each with independent validation:
@@ -281,7 +281,7 @@ group), (4) game.json stats. TRANSCRIPTION DEFECT found + corrected: the
 identical, no gate impact. The track's supply wedges (15 Apr 41: 1,2 "to
 end of June"; 1 Jul 41: 1,2,3 "to end of November"; 1 Dec 41: 1 "to end of
 game") are exactly the rulebook 12.2 SUPPLY TABLE columns — two-source
-match. Gate enforcement (validate_tier1.py): due turns (19.1), controlled
+match. Gate enforcement (validate_full_scope.py): due turns (19.1), controlled
 ports only, Tobruch/own home base (19.2/19.7/4.3 — the OPPONENT's home
 base and Bengasi rejected), later landing allowed (19.3), full move on
 arrival (19.2/13.1), placements strictly before movement (3.1/3.3), own
@@ -325,7 +325,7 @@ outcome-equivalent, and every legal outcome remains expressible.
 ZOC immunity (19.5/23.1)** — "adjacent units do not exert a ZOC over a
 fortress hex" was not encoded; enemy ZOC wrongly stopped/pinned movement
 into and out of Tobruch/Bengasi. Fixed spec-gated (`zoc.immune_terrain:
-["fortress"]`), validated (validate_tier1.py: H25 unit exerts no ZOC over
+["fortress"]`), validated (validate_full_scope.py: H25 unit exerts no ZOC over
 G25, garrison not ZOC-locked), Arnhem/Tobruk semantics untouched (no
 immune_terrain in their specs — SHA/verify regressions identical).
 

@@ -60,7 +60,7 @@ def mkscen(units, turns=1):
                    "exit_per_csp": {"Union": 1, "Confederate": 10},
                    "confederate_train_fail": 10,
                    "occupation": {}, "start_occupation": {}},
-            "rules_scope": {"enforced": ["t"], "enforced_tier2": ["t"], "umpired": []}}
+            "rules_scope": {"enforced": ["t"], "enforced_combat": ["t"], "umpired": []}}
     p = os.path.join(TMP, f"scenario_c{N[0]}.json")
     json.dump(scen, open(p, "w"), indent=1)
     return p

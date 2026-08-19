@@ -94,8 +94,7 @@ def replay(game_dir, ref_log, visit):
     scen = find_scenario(game_dir, init["scenario"])
     points = []
     with tempfile.TemporaryDirectory() as tmp:
-        tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"],
-                                 tier=init.get("tier"))
+        tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"])
         seen = set()
         for e in lines[1:]:
             if e.get("event") != "action":

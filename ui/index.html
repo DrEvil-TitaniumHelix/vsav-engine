@@ -132,7 +132,6 @@
     <span id="sidebtns" style="white-space:nowrap"></span>
     <span id="note" class="fixw"></span>
     <span id="progress" class="fixw"></span>
-    <button class="sidebtn holdspace fixw" id="tierbtn" style="width:170px"></button>
     <button class="sidebtn holdspace" id="modebtn"></button>
     <button class="sidebtn" id="pbmbtn">⚔ Matches</button>
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
@@ -167,9 +166,6 @@
     </span>
   </div>
 </div>
-<div id="tierpanel" style="display:none; position:fixed; top:52px; right:8px; width:360px;
-     background:#23262cee; color:#dde3ea; font-size:13px; border:1px solid #3a3f47;
-     border-radius:8px; padding:10px 14px; z-index:46; box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
 <div id="pbmpanel" style="display:none; position:fixed; top:52px; right:8px; width:400px;
      max-height:82vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 14px; z-index:46;
@@ -252,7 +248,7 @@ FRAME.initFrame({
                                    && u.status !== 'reserve');
     return mine.length > 0 && mine.every(u => u.status);
   },
-  followTop: ['tierpanel','arrivals','combat','rulespanel','tablespanel','pbmpanel']
+  followTop: ['arrivals','combat','rulespanel','tablespanel','pbmpanel']
              .map(id => ({ id, gap: 8 })).concat([{ id: 'logdock', gap: 0 }]),
 });
 const DOCK_W = 300;
@@ -262,7 +258,7 @@ function applyLogDock() {
   document.getElementById('logdock').classList.toggle('on', on);
   const b = document.getElementById('logbtn'); if (b) b.classList.toggle('on', on);
   const off = on ? DOCK_W : 0;
-  [['combat', 8], ['tierpanel', 8], ['rulespanel', 8], ['tablespanel', 8], ['pbmpanel', 8],
+  [['combat', 8], ['rulespanel', 8], ['tablespanel', 8], ['pbmpanel', 8],
    ['guidepanel', 8], ['zoomctl', 14], ['selbox', 14]].forEach(([id, base]) => {
     const el = document.getElementById(id); if (el) el.style.right = (base + off) + 'px'; });
   if (FRAME.guideAvoidPanels) FRAME.guideAvoidPanels();
@@ -391,7 +387,7 @@ function bootGame(g) {
   });
   if (!mySide) { mySide = g.sides[0].id; }
   document.getElementById('side-' + mySide).classList.add('on');
-  if (g.seats && !g.tier) document.getElementById('aimode').value = 'auto';
+  document.getElementById('aimode').value = 'auto';
   if (window.SALVO) SALVO.init({
     slug: g.slug || window.DEMO_SLUG || 'game',
     onUpdate: () => { refresh(); },
@@ -403,7 +399,7 @@ function bootGame(g) {
 async function refresh() {
   const s = await (await fetch('/api/state')).json();
   if (!GAME) bootGame(s.game);
-  else GAME.tier = s.game.tier;      // active tier can change on reset
+  else if (s.game.seats) GAME.seats = s.game.seats;
   units = s.units;
   FLOW = s.flow || null;
   PBM = s.pbm || null;
@@ -420,9 +416,8 @@ async function refresh() {
   renderPBMBtn();
   if (document.getElementById('pbmpanel').style.display === 'block') renderPBMPanel();
   if (FRAME.renderUndo) FRAME.renderUndo(s.undo);   // guard: stale-cached frame.js
-  renderTierBtn();
-  if (seatModel()) { FRAME.renderModeBtn(); followHumanSeat(); }
-  else FRAME.show('modebtn', false);
+  FRAME.renderModeBtn();
+  followHumanSeat();
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   if (!combatActive()) clearBattleSel();
@@ -437,11 +432,11 @@ async function refresh() {
 }
 
 // ---------- seat model (Mode button: Human / Basic AI / Champion AI per seat) ----------
-// A game whose descriptor carries seats and no tier runs the gate always; the only
-// dimension is who sits in each seat. Computer seats drive themselves through
-// /api/ai_step; Human seats play at this screen (two Humans = hot-seat, the "play as"
-// side follows whichever Human seat the game is waiting on).
-function seatModel() { return !!(GAME && GAME.seats && !GAME.tier); }
+// The gate runs always; the only dimension is who sits in each seat. Computer
+// seats drive themselves through /api/ai_step; Human seats play at this screen
+// (two Humans = hot-seat, the "play as" side follows whichever Human seat the
+// game is waiting on). A mailed or LLM-harnessed seat is driven by its own
+// channel, never from here.
 function seatOf(side) { return (GAME && GAME.seats && GAME.seats.current[side]) || 'human'; }
 function computerSeat(side) { const k = seatOf(side); return k === 'basic' || k === 'champion'; }
 function seatName(side) { const k = seatOf(side); return (GAME.seats && GAME.seats.names[k]) || k; }
@@ -460,9 +455,12 @@ function followHumanSeat() {
   if (sb) sb.classList.add('on');
 }
 let aiPaused = false;
+function remoteSeat(side) {
+  return !!((PBM && PBM.ai_side === side) || (SALVO_ST && SALVO_ST.llm_side === side));
+}
 function driveAI() {
-  if (!seatModel() || !FLOW || FLOW.over || aiPaused || aiActive || aiBusy) return;
-  if (!computerSeat(actingSide())) return;
+  if (!FLOW || FLOW.over || aiPaused || aiActive || aiBusy) return;
+  if (!computerSeat(actingSide()) || remoteSeat(actingSide())) return;
   aiActive = true; renderFlow();
   if (document.getElementById('aimode').value === 'auto') aiAutoLoop();
   else aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); driveAI(); } });
@@ -503,10 +501,7 @@ function renderGuide() {
     FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
                          ? cmdStepper() : '');
   if (!FLOW) {
-    const t = GAME && GAME.tier ? GAME.tier.active : 0;
-    FRAME.setGuide(t > 0
-      ? 'Drag a counter to move it — the gate checks each move. No turn sequence is enforced here.'
-      : 'Sandbox — no rules gate: drag any counter anywhere. You are the umpire.');
+    FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
     FRAME.soleNext(null);
     return;
   }
@@ -521,7 +516,7 @@ function renderGuide() {
     FRAME.soleNext('resetbtn');
     return;
   }
-  if (seatModel() && computerSeat(actingSide())) {
+  if (computerSeat(actingSide()) && !remoteSeat(actingSide())) {
     const who = actingSide();
     if (aiPaused) {
       FRAME.setGuide(`<b>${seatName(who)}</b> plays <b>${sideLabel(who)}</b> — paused. Press <b>▶ Resume</b> to let it continue, or change the seats under <b>Mode</b>.`);
@@ -570,12 +565,10 @@ function renderGuide() {
         : `The AI is playing <b>${mv}</b> — sit back, every action animates on its own.`);
       FRAME.soleNext(null);
     } else {
-      const ai = GAME && GAME.tier && GAME.tier.active >= 3;
       FRAME.setGuide(`It's <b>${mv}</b>'s turn, not yours. `
-        + (ai ? `Press <b>▶ Play ${mv}’s turn</b> in the top bar to let the AI play it — or `
-              : ``)
-        + `click <b>${mv}</b> next to “play as:” to play that side yourself.`);
-      FRAME.soleNext(ai ? 'aiplaybtn' : 'side-' + FLOW.mover);
+        + `Click <b>${mv}</b> next to “play as:” to play that side yourself, `
+        + `or give that seat to a computer under <b>Mode</b>.`);
+      FRAME.soleNext('side-' + FLOW.mover);
     }
     return;
   }
@@ -632,10 +625,8 @@ function renderGuide() {
 // otherwise). The return-fire window overrides everything: the DEFENDER
 // owns the decision even during the enemy activation [8.1.2].
 function napGuide() {
-  // "the other side must decide" helper: at tier 3 the AI can answer
-  // any decision (sole-next = the AI button, engine rule); below tier 3
-  // it's the hotseat side-switch
-  const ai3 = !PBM && GAME && GAME.tier && GAME.tier.active >= 3;
+  // "the other side must decide" helper: a Human seat answers by the
+  // hotseat side-switch; a computer seat answers itself (driveAI)
   const waitOther = (who, what) => {
     if (aiActive) {
       FRAME.setGuide(`The AI is answering for <b>${sideShort(who)}</b>`
@@ -646,12 +637,9 @@ function napGuide() {
       return true;
     }
     FRAME.setGuide(`${what} — it's <b>${sideShort(who)}</b>'s decision. `
-      + (ai3
-         ? `Press <b>▶ AI: ${sideShort(who)}</b> in the top bar to let `
-           + `the AI answer — or click <b>${who}</b> next to “play as:” `
-           + `to answer it yourself.`
-         : `Click <b>${who}</b> next to “play as:” (hotseat).`));
-    FRAME.soleNext(ai3 ? 'aiplaybtn' : 'side-' + who);
+      + `Click <b>${who}</b> next to “play as:” to answer it yourself, or give `
+      + `that seat to a computer under <b>Mode</b>.`);
+    FRAME.soleNext('side-' + who);
     return true;
   };
   // phase-4 windows own the flow completely [6.2/8.2-8.5]
@@ -826,45 +814,13 @@ function renderFlow() {
       FLOW.phase === 'rally' ? 'End rally' : 'End player turn';
   }
   FRAME.show('endphasebtn', showEnd);
-  // the AI opponent is a Tier-3 feature. Strategic family: offered at the
-  // start of a player turn. Napoleonic: decisions interleave (LIM draws,
-  // reaction/shock windows), so the AI is offered whenever the game is
-  // waiting on a side you are NOT playing — it answers exactly that
-  // side's decisions and stops when the flow returns to you.
-  // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
-  if (seatModel()) {
-    const anyComputer = GAME.seats.order.some(computerSeat);
-    FRAME.show('aictl', anyComputer);
-    const AB2 = document.getElementById('aiplaybtn');
-    AB2.disabled = !!FLOW.over;
-    AB2.textContent = aiPaused ? '▶ Resume' : '⏸ Pause';
-    fb.textContent = FLOW.over
-      ? `GAME OVER after ${FLOW.turn - 1} turns`
-      : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideShort(FLOW.mover)} moves`;
-    return;
-  }
-  const tier3 = !PBM && !FLOW.over && GAME && GAME.tier && GAME.tier.active >= 3;
-  const aiOK = (tier3
-    && (FLOW.mode === 'napoleonic'
-        ? FLOW.decider !== mySide
-        : (FLOW.phase === 'movement'
-           && (FLOW.arrivals || FLOW.bluegray || FLOW.westwall || FLOW.naw))));
-  // napoleonic: the cluster stays VISIBLE whenever the game has an AI —
-  // vanishing controls read as broken (Bruce 2026-07-17). When the decision
-  // is yours the button just waits, disabled.
-  const napAI = tier3 && FLOW.mode === 'napoleonic';
-  FRAME.show('aictl', aiOK || napAI);
-  const AB = document.getElementById('aiplaybtn');
-  AB.disabled = !aiOK;
-  if (aiOK) AB.textContent =
-    aiActive ? '■ stop'
-    : (FLOW.mode === 'napoleonic'
-       ? '▶ AI: ' + sideShort(FLOW.decider)
-       : '▶ Play ' + sideShort(FLOW.mover) + '’s turn');
-  else if (napAI) AB.textContent = 'AI waits — your decision';
-  const PHASE_LBL = { command: 'Pool Placement', initiative: 'Initiative',
-                      activation: 'LIM Activation', non_lim: 'Non-LIM',
-                      rally: 'Rally' };
+  // Computer seats drive themselves (driveAI), stepped (SPACE) or animated;
+  // the cluster shows whenever a computer sits in a seat, with Pause/Resume.
+  const anyComputer = GAME.seats.order.some(sd => computerSeat(sd) && !remoteSeat(sd));
+  FRAME.show('aictl', anyComputer);
+  const AB2 = document.getElementById('aiplaybtn');
+  AB2.disabled = !!FLOW.over;
+  AB2.textContent = aiPaused ? '▶ Resume' : '⏸ Pause';
   fb.textContent = FLOW.over
     ? `GAME OVER after ${FLOW.turn - 1} turns`
     : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideShort(FLOW.mover)} moves`
@@ -1062,12 +1018,11 @@ function renderNapPanel(box) {
   }
   const canFire = !(FLOW.fired||[]).includes(u.id)
     && (u.arm === 'infantry' || (u.arm||'').startsWith('artillery'));
-  const tier2 = GAME.tier && GAME.tier.active >= 2;
   if (canFire)
     h += `<span class="dim">🔥 click an enemy counter to fire at it [8.1]${
-      tier2 && u.arm === 'infantry'
+      u.arm === 'infantry'
         ? ' — or melee an adjacent front enemy [8.2/8.3]' : ''}</span>`;
-  else if (tier2 && u.arm === 'cavalry')
+  else if (u.arm === 'cavalry')
     h += u.blown
       ? `<span class="dim">BLOWN ${u.blown} — no charging until recovered
          [8.4.4/8.4.5]</span>`
@@ -1159,8 +1114,7 @@ function napCmdPanel(box) {
         no combat or reactions, keep 3 hexes off the enemy, road-bound
         into village/woods/swamp [5.2]</span><br>`;
     else if (act.atype === 'full' && act.kind !== 'nonlim_unit'
-             && act.stage === 'move' && !(FLOW.moved || []).length
-             && GAME.tier && GAME.tier.active >= 2)
+             && act.stage === 'move' && !(FLOW.moved || []).length)
       hdr += `<button class="sidebtn" onclick='sgAction(
         {type:"declare_strategic"}, mySide)'>🥾 Strategic movement
         [5.2]</button><br>`;
@@ -1319,7 +1273,7 @@ function renderArrivals() {
   box.innerHTML = h; box.style.display = '';
 }
 
-// ---------- combat panel (Tier 2: battles through the gate) ----------
+// ---------- combat panel (battles through the gate) ----------
 let atkSel = new Set(), defSel = new Set(), PREV = null, supplySel = null;
 function combatActive() {
   return FLOW && FLOW.combat && FLOW.combat.phase === 'combat' && !FLOW.over;
@@ -1687,7 +1641,7 @@ const hexPts = (x,y) => hexCorners(x,y).map(p => p.join(',')).join(' ');
 function drawOverlay() {
   OV.innerHTML = '';
   if (!legal) return;
-  if (legal.free) return;   // free play: no gate, no highlights — drop anywhere
+  if (legal.free) return;   // no encoded scenario: no gate, no highlights — drop anywhere
   // dim everything except legal hexes + origin: evenodd path with hex holes
   let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
   const hole = (x,y) => 'M' + hexCorners(x,y).map(q=>q.join(' ')).join(' L ') + ' Z ';
@@ -1719,7 +1673,7 @@ function onCounterDown(ev, u, stackUnits) {
   if (combatActive()) { toggleBattle(u, stackUnits); return; }
   if (selected && selected.id === u.id && legal) { dragStart(ev, u); return; }
   // napoleonic: clicking an ENEMY while one of my units is selected =
-  // attack it — fire, or (tier 2) melee/charge; the gate answers with
+  // attack it — fire, melee or charge; the gate answers with
   // cited reasons if the pick isn't legal
   if (FLOW && FLOW.mode === 'napoleonic' && selected
       && selected.side === mySide && u.side !== mySide) {
@@ -1732,10 +1686,10 @@ function onCounterDown(ev, u, stackUnits) {
     sgAction({type:'rally', unit: u.id}, mySide);
     return;
   }
-  // free play (no gate): any of your pieces is draggable — markers, track
-  // pieces off the playable map, zero-MA units included (VASSAL parity)
+  // no encoded scenario (no gate): any of your pieces is draggable — markers,
+  // track pieces off the playable map, zero-MA units included (VASSAL parity)
   if (u.side !== mySide) return;
-  // napoleonic tier 2: a unit that moved ≤ half MA may still CHARGE
+  // napoleonic: a unit that moved ≤ half MA may still CHARGE
   // [5.1.2] — keep moved units selectable so the attack click works
   if (u.status && !(FLOW && FLOW.mode === 'napoleonic'
                     && u.status === 'moved')) return;
@@ -1746,19 +1700,18 @@ function onCounterDown(ev, u, stackUnits) {
   if (eligible.length > 1) showPicker(ev, eligible);
   else select(u, false, ev);
 }
-// tier-2 attack chooser [8.1/8.2-8.4]: every option submits through the
+// attack chooser [8.1/8.2-8.4]: every option submits through the
 // gate — illegal picks come back with the rule citation
 function napAttackMenu(ev, tgt) {
   const arm = selected.arm || '';
-  const tier2 = GAME.tier && GAME.tier.active >= 2;
   const opts = [];
   if (arm === 'infantry' || arm.startsWith('artillery'))
     opts.push([`🔥 Fire [8.1]`,
                {type:'fire', unit:selected.id, target:tgt.id}]);
-  if (tier2 && arm === 'infantry')
+  if (arm === 'infantry')
     opts.push([`⚔ Melee — bayonet/assault [8.2/8.3]`,
                {type:'melee', unit:selected.id, target:tgt.id}]);
-  if (tier2 && arm === 'cavalry')
+  if (arm === 'cavalry')
     opts.push([`🐎 Charge [8.4]`,
                {type:'charge', unit:selected.id, target:tgt.id}]);
   if (!opts.length) {
@@ -1808,8 +1761,8 @@ async function select(u, whole, ev) {
     A.innerHTML = `<b>${u.name}</b> — <span style="color:#e08c7c">${legal.reasons.join('; ')}</span>
                    <button class="sidebtn" onclick="deselect()">OK</button>`;
   } else if (legal.free) {
-    A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — free play:
-                   drag anywhere on the board (you are the umpire).
+    A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — no rules encoded:
+                   drag anywhere on the board.
                    <button class="sidebtn" onclick="passSel()">Pass</button>
                    <button class="sidebtn" onclick="deselect()">Cancel</button>`;
   } else {
@@ -1893,7 +1846,7 @@ async function dragEnd(e) {
   deselect(); refresh();
 }
 
-// ---------- Tier / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
+// ---------- Mode / Rules / Tables panels: ENGINE-LEVEL (ui/frame.js) ----------
 // One shared implementation for every client (index.html, tactical.html, …):
 // this screen only supplies the hooks.
 FRAME.initPanels({
@@ -1903,8 +1856,7 @@ FRAME.initPanels({
   onSeats: async () => { aiPaused = false; aiActive = false; aiNext = null; drawAIIntent(null); await refresh(); },
 });
 FRAME.initUndo({ refresh, toast });   // engine-level undo button (one decision per press)
-const renderTierBtn = FRAME.renderTierBtn,
-      renderRules   = FRAME.renderRules,
+const renderRules   = FRAME.renderRules,
       soloPanel     = FRAME.soloPanel;
 
 // ---------- play-by-mail (engine-level: any strategic-family game) ----------
@@ -1971,13 +1923,13 @@ function salvoCard() {
   return h;
 }
 function matchesIntro() {
-  const tier3 = GAME && GAME.tier && GAME.tier.earned >= 3;
+  const hasAI = GAME && GAME.seats && GAME.seats.available.includes('basic');
   const chrome = window.SALVO && SALVO.supported();
   let h = `<div class="dim" style="margin:4px 0 8px">Four ways to play — every one of them
         through the same rules gate, on the same verified log.</div>`;
   h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
-        <b>1 · You vs the built-in AI</b><div class="dim" style="margin-top:2px">${tier3
-          ? 'Close this panel, pick your side in the top bar, and press <b>▶ Play</b> when it is the other side’s turn.'
+        <b>1 · You vs the built-in AI</b><div class="dim" style="margin-top:2px">${hasAI
+          ? 'Close this panel and give the other seat to a computer under <b>Mode</b> — it plays its turns itself.'
           : 'This game has no AI opponent yet.'}</div></div>`;
   h += `<div style="margin:8px 0;padding:8px 10px;border:1px solid #3a3f47;border-radius:8px">
         <b>2 · Your LLM takes a seat</b> <span class="dim">(SALVO)</span>
@@ -2154,7 +2106,7 @@ async function pbmStop() {
 }
 document.getElementById('pbmbtn').onclick = () => {
   if (soloPanel('pbmpanel')) renderPBMPanel();
-  renderTierBtn(); renderPBMBtn();
+  renderPBMBtn();
 };
 
 // ---------- SALVO (Modes 2/3): your own LLM takes a seat ----------
@@ -2279,7 +2231,7 @@ async function aiStepOnce() {
   let r;
   try {
     r = await (await fetch('/api/ai_step', { method: 'POST',
-          body: JSON.stringify(seatModel() ? {side: actingSide()} : {}) })).json();
+          body: JSON.stringify({side: actingSide()}) })).json();
   } catch (e) { aiBusy = false; showThinking(false); toast('AI step failed: ' + e); return { done: true }; }
   aiBusy = false; showThinking(false);
   if (r.error) { toast('Gate: ' + r.error); return { done: true }; }
@@ -2302,22 +2254,12 @@ async function aiStepOnce() {
 async function aiAutoLoop() {
   if (!aiActive) return;
   const r = await aiStepOnce();
-  if (r.done || !aiActive) { aiActive = false; aiNext = null; renderFlow(); if (seatModel() && !aiPaused) driveAI(); return; }
+  if (r.done || !aiActive) { aiActive = false; aiNext = null; renderFlow(); if (!aiPaused) driveAI(); return; }
   const pace = parseInt(document.getElementById('aipace').value);
   // pace only between EXECUTED actions; the initial reveal advances immediately
   setTimeout(aiAutoLoop, r.step ? pace : 0);
 }
-async function startAI() {
-  if (aiActive) { aiActive = false; renderFlow(); return; }   // toggle: stop
-  aiActive = true; renderFlow();
-  document.getElementById('aiplaybtn').blur();   // so SPACE steps, not re-clicks the button
-  if (document.getElementById('aimode').value === 'auto') {
-    aiAutoLoop();
-  } else {
-    await aiStepOnce();                 // reveal the first intent; SPACE advances
-  }
-}
-document.getElementById('aiplaybtn').onclick = () => (seatModel() ? pauseAI() : startAI());
+document.getElementById('aiplaybtn').onclick = pauseAI;
 document.getElementById('aimode').onchange = () => {
   if (aiActive && document.getElementById('aimode').value === 'auto') aiAutoLoop();
 };
@@ -2326,7 +2268,7 @@ document.addEventListener('keydown', e => {
   if (!aiActive || aiBusy || aiPaused) return;
   if (document.getElementById('aimode').value !== 'step') return;
   e.preventDefault();
-  aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); if (seatModel() && !aiPaused) driveAI(); } });
+  aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); if (!aiPaused) driveAI(); } });
 });
 
 refresh();

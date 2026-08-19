@@ -30,7 +30,7 @@ HERE = os.path.join(ROOT, "ui")
 
 
 def _live_dir():
-    """Writable per-game state (work .vsav, JSONL logs, tier/facing sidecars).
+    """Writable per-game state (work .vsav, JSONL logs, seats/facing sidecars).
     Must survive app exit and NEVER live inside the read-only bundle, so a
     packaged build writes to %LOCALAPPDATA%\\TheVassal\\live; from source it
     stays live\\ in the repo (unchanged)."""
@@ -68,18 +68,6 @@ import salvo as salvo_mod  # noqa: E402
 import undo as undo_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic", "naw")
-SEAT_MODEL = ("soj", "naw")
-
-
-def sg_earned_tier(scen_mode, spec):
-    """Mirror of each SG-family engine's earned-tier logic (spec #13).
-    napoleonic: validated melee tables => tier 2, plus policy AI => 3
-    (napoleonic.py _resolve_tier); others: combat block => 2, plus
-    policy AI => 3."""
-    if scen_mode == "napoleonic":
-        melee = bool((spec.get("combat_tables") or {}).get("melee"))
-        return (3 if spec.get("policy_ai") else 2) if melee else 1
-    return (3 if spec.get("policy_ai") else 2) if spec.get("combat") else 1
 
 
 def sg_ai_module():
@@ -106,9 +94,6 @@ SJ = None         # soj.SoJGame when the scenario is mode=soj (own client,
 WORK = None       # working .vsav path
 SCEN_PATH = None  # scenario file (None = the game has no gate to offer)
 SCEN_MODE = None  # "strategic" | "tactical" | None
-TIER = 0          # tier the server is RUNNING at (engine-level selection)
-TIER_EARNED = 0   # highest tier the game has earned (spec #13)
-TIER_CHOICES = [0]
 AI_STEP = None    # sai_mod.TurnStepper — one AI action per /api/ai_step call
 done = {}         # piece id -> "moved" | "passed"   (per server run; POC scope)
 facing = {}       # piece id -> facing index (sidecar JSON next to the work save;
@@ -117,24 +102,6 @@ facing = {}       # piece id -> facing index (sidecar JSON next to the work save
 
 def facing_path():
     return WORK + ".facing.json"
-
-
-def tier_path():
-    return WORK + ".tier.json"
-
-
-def load_tier():
-    """Active tier: persisted sidecar, clamped to what the game has earned."""
-    if os.path.exists(tier_path()):
-        t = json.load(open(tier_path())).get("tier")
-        if t in TIER_CHOICES:
-            return t
-    return TIER_EARNED
-
-
-def save_tier():
-    with open(tier_path(), "w") as f:
-        json.dump({"tier": TIER}, f)
 
 
 SEATS = {}
@@ -150,15 +117,23 @@ def seats_path():
 
 def seat_kinds():
     kinds = ["human"]
-    if GAME_OBJ and (SCEN_MODE == "tactical"
-                     or (SCEN_PATH and SCEN_MODE not in SG_FAMILY and SCEN_MODE not in SEAT_MODEL)
-                     or GAME_OBJ.spec.get("policy_ai")):
+    if GAME_OBJ and SCEN_PATH and (
+            (SCEN_MODE not in SG_FAMILY and SCEN_MODE != "soj")
+            or GAME_OBJ.spec.get("policy_ai")):
         kinds.append("basic")
     if "basic" in kinds and champ_mod.genome(GAME_OBJ.dir) is not None:
         kinds.append("champion")
     if SCEN_MODE in salvo_mod.SALVO_MODES:
         kinds.append("harness")
     return kinds
+
+
+def seat_labels():
+    labels, names = dict(SEAT_LABEL), dict(SEAT_NAME)
+    if GAME_OBJ and not champ_mod.graduated(GAME_OBJ.dir):
+        labels["champion"] = "Advanced AI"
+        names["champion"] = "Computer (Advanced AI)"
+    return labels, names
 
 
 def default_seats():
@@ -189,13 +164,15 @@ def save_seats():
 
 
 def seat_pairing():
-    return " vs ".join(SEAT_NAME[SEATS.get(sd, "human")]
+    names = seat_labels()[1]
+    return " vs ".join(names[SEATS.get(sd, "human")]
                        for sd in GAME_OBJ.side_order)
 
 
 def seats_view():
+    labels, names = seat_labels()
     return dict(current=dict(SEATS), available=seat_kinds(),
-                labels=SEAT_LABEL, names=SEAT_NAME, pairing=seat_pairing(),
+                labels=labels, names=names, pairing=seat_pairing(),
                 order=list(GAME_OBJ.side_order),
                 generalship=champ_mod.generalship(GAME_OBJ.dir))
 
@@ -228,35 +205,30 @@ def seat_theta(side, body=None):
     if k not in seat_kinds():
         return dict(error=f"{k} is not available for this game")
     if k == "champion":
-        return dict(theta=champ_mod.plan_for(SJ or SG or TG, side=side))
-    return dict(theta=None)
+        return dict(theta=champ_mod.plan_for(SJ or SG or TG, side=side),
+                    kind=k)
+    return dict(theta=None, kind=k)
 
 
 def build_gate():
-    """(Re)build the legality gate for the ACTIVE tier — tier selection is an
-    engine-level function: tier 0 = no gate (V3-parity free play, the user is
-    the umpire), tier 1 = movement/arrivals gate, tier 2+ = full gate."""
+    """(Re)build the legality gate: every encoded game runs its whole
+    gate, always (the seat model's only dimension is who sits where)."""
     global TG, SG, SJ
     TG = SG = SJ = None
     if not SCEN_PATH:
         return
     if SCEN_MODE == "soj":
         SJ = soj_mod.SoJGame(GAME_OBJ, SCEN_PATH, LIVE)
-        return
-    if SCEN_MODE == "naw":
+    elif SCEN_MODE == "naw":
         SG = naw_mod.NawGame(GAME_OBJ, SCEN_PATH, LIVE)
-        return
-    if TIER == 0:
-        return
-    if SCEN_MODE == "strategic":
-        SG = strat_mod.StrategicGame(GAME_OBJ, SCEN_PATH,
-                                     LIVE, tier=TIER)
+    elif SCEN_MODE == "strategic":
+        SG = strat_mod.StrategicGame(GAME_OBJ, SCEN_PATH, LIVE)
     elif SCEN_MODE == "bluegray":
-        SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+        SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE)
     elif SCEN_MODE == "westwall":
-        SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+        SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE)
     elif SCEN_MODE == "napoleonic":
-        SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
+        SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE)
     else:
         TG = gs_mod.TacticalGame(GAME_OBJ, SCEN_PATH, LIVE)
 
@@ -493,6 +465,9 @@ def api_ai_turn(body):
     s = TG.s
     if s["over"]:
         return dict(error="game is over", flow=flow_view())
+    br = seat_theta(side, body)
+    if br.get("error"):
+        return dict(error=br["error"], flow=flow_view())
     steps = []
     if s["segment"] == "movement" and s["mover"] == side:
         steps = ai_mod.take_movement_segment(TG, side)
@@ -540,12 +515,6 @@ def game_descriptor():
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
-        tier=None if SCEN_MODE in SEAT_MODEL else dict(
-            active=TIER, earned=TIER_EARNED, choices=TIER_CHOICES,
-            labels={0: "Tier 0 — free play, you are the umpire",
-                    1: "Tier 1 — movement & arrivals enforced",
-                    2: "Tier 2 — combat enforced (full gate)",
-                    3: "Tier 3 — full gate + AI opponent"}),
         seats=seats_view(),
         source_defects=g.spec.get("source_defects"),
         credits=g.spec.get("credits"),
@@ -611,10 +580,7 @@ def game_dir(slug):
 MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter",
             "bluegray": "Strategic hex & counter", "westwall": "Strategic hex & counter",
             "napoleonic": "Napoleonic command", "soj": "Siege assault",
-            "naw": "Strategic hex & counter",
-            "free": "Free play"}
-TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
-            3: "Full rules"}
+            "naw": "Strategic hex & counter"}
 # Champion (trained) AIs are WIRED: the interactive AI seat and the PBM
 # responder play the playbook champion wherever one exists (engine/champion.py).
 # "Champion AI" is reserved for the ones that CLEARED the graduation bar
@@ -624,7 +590,7 @@ TIER_TAG = {0: "Free play", 1: "Movement rules", 2: "Movement + combat rules",
 CHAMPION_WIRED = True
 
 
-def game_tags(gdir, spec, scen_mode, earned):
+def game_tags(gdir, spec, scen_mode):
     """Capability tags for the selection pages — one implementation, both
     menus (app + browser demo). Every tag states something the build actually
     does, and the AI tag is a THREE-step ladder of evidence: 'Champion AI'
@@ -637,9 +603,8 @@ def game_tags(gdir, spec, scen_mode, earned):
     graduated — Bruce 2026-07-19). Honest news at every rung: a shipped
     policy is still the reigning champion of its own decision space, and the
     upgrade remains open."""
-    tags = [] if earned is None else [
-        dict(label=TIER_TAG.get(earned, f"Tier {earned}"), kind="tier")]
-    if earned is None or earned >= 3:
+    tags = []
+    if scen_mode:
         ai = dict(
             label="Champion AI" if champ_mod.graduated(gdir)
             else "Advanced AI" if champ_mod.genome(gdir) is not None
@@ -653,8 +618,8 @@ def game_tags(gdir, spec, scen_mode, earned):
                            "The scale is the training record - a rung the record does not prove is never shown.")
             ai["generalship"] = gs
         tags.append(ai)
-    m = MODE_TAG.get(scen_mode or "free")
-    if m and (earned is None or earned > 0):
+    m = MODE_TAG.get(scen_mode)
+    if m:
         tags.append(dict(label=m, kind="mode"))
     if scen_mode in pbm_mod.PBM_MODES:
         tags.append(dict(label="Play by mail", kind="feature"))
@@ -672,24 +637,15 @@ def game_meta(slug):
     spec = json.load(open(os.path.join(gdir, "game.json"), encoding="utf-8"))
     scen = spec.get("scenario")
     scen_mode = has_scen = None
-    earned, choices = 0, [0]
     if scen:
         has_scen = True
         scen_mode = json.load(open(os.path.join(gdir, scen),
                                    encoding="utf-8")).get("mode")
-        if scen_mode in SEAT_MODEL:
-            earned, choices = None, []
-        elif scen_mode in SG_FAMILY:
-            earned = sg_earned_tier(scen_mode, spec)
-            choices = list(range(earned + 1))
-        else:
-            earned, choices = 3, [0, 3]
-    mode = scen_mode or ("tactical" if has_scen else "free")
+    mode = scen_mode or ("tactical" if has_scen else None)
     return dict(slug=slug, name=spec.get("name", slug),
-                mode=mode,
+                mode=mode or "free",
                 client=game_client(scen_mode, has_scen),
-                tier=None if earned is None else dict(earned=earned, choices=choices),
-                tags=game_tags(gdir, spec, mode, earned),
+                tags=game_tags(gdir, spec, mode),
                 blurb=spec.get("blurb") or spec.get("description"))
 
 
@@ -743,11 +699,7 @@ def api_load_game(body):
     gdir = game_dir(slug) if slug else ""
     if not slug or not os.path.isfile(os.path.join(gdir, "game.json")):
         return dict(error=f"unknown game: {slug!r}")
-    tier = body.get("tier")
-    try:
-        load_game(gdir, tier=tier)
-    except ValueError as e:
-        return dict(error=str(e))
+    load_game(gdir)
     return dict(ok=True, slug=slug, client=game_client(SCEN_MODE, bool(SCEN_PATH)),
                 game=game_descriptor())
 
@@ -1206,10 +1158,9 @@ def api_legal_sg(qs):
 
 
 def api_legal_free(qs):
-    """Free play (tier 0 / no gate): every hex on the board image is a valid
-    drop — including off-map areas like printed turn/OOA tracks, exactly as
-    VASSAL itself plays. No costs, no terrain filtering; the user is the
-    umpire (spec #2 V3-parity floor)."""
+    """A game folder with no encoded scenario (dev-only, never in the menu):
+    every hex on the board image is a valid drop — including off-map areas
+    like printed turn/OOA tracks, exactly as VASSAL itself plays."""
     g = GAME_OBJ
     w, h = png_size(g.assets["map"])
     out = []
@@ -1359,6 +1310,9 @@ def api_sg_ai_turn(body):
         if SG.decider() != side:
             return dict(steps=[], flow=SG.flow(),
                         error=f"it is not {side}'s decision")
+        br = seat_theta(side, body)
+        if br.get("error"):
+            return dict(steps=[], flow=SG.flow(), error=br["error"])
         steps = sg_ai_module().take_turn(SG, side)
         sync_mirror()
         done.clear()
@@ -1367,7 +1321,10 @@ def api_sg_ai_turn(body):
     if SG.s["mover"] != side or SG.s["phase"] != "movement":
         return dict(steps=[], flow=SG.flow(),
                     error=f"it is not the start of the {side} player turn")
-    plan = champ_mod.plan_for(SG)      # trained champion where one exists
+    br = seat_theta(side, body)
+    if br.get("error"):
+        return dict(steps=[], flow=SG.flow(), error=br["error"])
+    plan = champ_mod.plan_for(SG) if br["kind"] == "champion" else None
     steps = (plans_mod.take_turn(SG, plan) if plan
              else sg_ai_module().take_turn(SG))
     sync_mirror()
@@ -1404,15 +1361,15 @@ def api_ai_step(body):
                 return dict(done=False, step=None, next=None,
                             flow=SG.flow(),
                             error=f"it is not {side}'s decision")
+            br = seat_theta(side, body)
+            if br.get("error"):
+                return dict(done=False, step=None, next=None,
+                            flow=SG.flow(), error=br["error"])
             if SCEN_MODE == "naw":
-                br = seat_theta(side, body)
-                if br.get("error"):
-                    return dict(done=False, step=None, next=None,
-                                flow=SG.flow(), error=br["error"])
                 AI_STEP = naw_ai_mod.TurnStepper(SG, side, br["theta"])
-                AI_STEP.brain = (body or {}).get("brain") or SEATS.get(side)
             else:
                 AI_STEP = sg_ai_module().TurnStepper(SG, side)
+            AI_STEP.brain = br["kind"]
             return dict(done=AI_STEP.done(), step=None,
                         next=AI_STEP.peek(), flow=SG.flow())
     else:
@@ -1426,7 +1383,11 @@ def api_ai_step(body):
                 return dict(done=False, step=None, next=None, flow=SG.flow(),
                             error=f"it is not the start of the {side} "
                                   "player turn")
-            plan = champ_mod.plan_for(SG)
+            br = seat_theta(side, body)
+            if br.get("error"):
+                return dict(done=False, step=None, next=None,
+                            flow=SG.flow(), error=br["error"])
+            plan = champ_mod.plan_for(SG) if br["kind"] == "champion" else None
             comp = plans_mod.COMPILERS.get(SCEN_MODE)
             if plan and plan.get("orders") and comp:
                 # champion stepping: same planned action stream the
@@ -1436,6 +1397,7 @@ def api_ai_step(body):
             else:
                 AI_STEP = sg_ai_module().TurnStepper(SG)
             AI_STEP._for = (SG.s["turn"], SG.s["mover"])
+            AI_STEP.brain = br["kind"]
             return dict(done=AI_STEP.done(), step=None, next=AI_STEP.peek(),
                         flow=SG.flow())      # reveal the first intent, execute nothing
     entry = AI_STEP.step()
@@ -1538,20 +1500,14 @@ def pbm_status():
 
 def api_pbm_start(body):
     """Begin a play-by-mail match: fresh game, you play ONE side, the other
-    seat is your email opponent (the AI General). Runs at the earned tier -
-    PBM is a full-gate feature by construction."""
+    seat is your email opponent (the AI General)."""
     if SCEN_MODE not in pbm_mod.PBM_MODES:
         return dict(error="play-by-mail v1 plays the strategic-family games "
                           f"({', '.join(pbm_mod.PBM_MODES)})")
     side = body.get("side")
     if side not in GAME_OBJ.side_order:
         return dict(error=f"pick a side: {' or '.join(GAME_OBJ.side_order)}")
-    if TIER != TIER_EARNED:
-        r = api_reset(dict(tier=TIER_EARNED))   # PBM = full gate, always
-        if r.get("error"):
-            return r
-    else:
-        api_reset({})
+    api_reset({})
     if body.get("seed") is not None:
         SG.new_game(int(body["seed"]))
     ai_s = next(s for s in GAME_OBJ.side_order if s != side)
@@ -1592,7 +1548,7 @@ def api_pbm_import(body):
     replayed through a fresh engine first (verify_game semantics) - a file
     that doesn't reproduce is rejected with the specific reason, exactly
     what we mail back to the sender."""
-    global TIER, AI_STEP
+    global AI_STEP
     if SCEN_MODE not in pbm_mod.PBM_MODES:
         return dict(error="play-by-mail v1 plays the strategic-family games")
     try:
@@ -1602,10 +1558,6 @@ def api_pbm_import(body):
     if doc["game"] != GAME_SLUG:
         return dict(error=f"this file belongs to {doc['game']!r} - open that "
                           "game from the Games menu, then import it there")
-    init_tier = doc["log"][0].get("tier")
-    if init_tier != TIER_EARNED:
-        return dict(error=f"file was played at tier {init_tier}; this "
-                          f"machine's earned tier for the game is {TIER_EARNED}")
     sc = pbm_mod.load_sidecar(LIVE, GAME_SLUG)
     prev = []
     if sc:
@@ -1631,9 +1583,6 @@ def api_pbm_import(body):
     else:
         sc["seq"] = doc["seq"]
     pbm_mod.save_sidecar(LIVE, GAME_SLUG, sc)
-    if TIER != init_tier:            # gate must rebuild at the file's tier or
-        TIER = init_tier             # the state-file tier check would reset it
-        save_tier()
     AI_STEP = None
     done.clear()
     build_gate()
@@ -1708,8 +1657,7 @@ def _salvo_advance_ai(sc):
 
 def api_salvo_start(body):
     """Attach the player's own LLM to one seat (Mode 2; with a mailed match
-    active it becomes Mode 3 - same packets, remote opponent). Plays at the
-    earned tier: SALVO is a full-gate feature by construction."""
+    active it becomes Mode 3 - same packets, remote opponent)."""
     global AI_STEP
     if SCEN_MODE not in salvo_mod.SALVO_MODES:
         return dict(error="SALVO v1 plays the strategic-family games "
@@ -1723,14 +1671,9 @@ def api_salvo_start(body):
                           f"{pbm_sc['human_side']} - the LLM plays YOUR "
                           "seat; the other side arrives by mail")
     if body.get("fresh"):
-        r = api_reset(dict(tier=TIER_EARNED))
-        if r.get("error"):
-            return r
+        api_reset({})
         if body.get("seed") is not None:
             SG.new_game(int(body["seed"]))
-    elif TIER != TIER_EARNED:
-        return dict(error="SALVO plays at full rules; this game is running "
-                          "below that - start fresh or switch mode first")
     AI_STEP = None
     # s["n"] counts log LINES (init included); action numbering starts at
     # the next line, so "everything the LLM has seen" = s["n"] - 1
@@ -1829,19 +1772,11 @@ def api_salvo_stop():
 
 
 def api_reset(body=None):
-    global TIER, AI_STEP
+    global AI_STEP
     AI_STEP = None
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
     undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window
-    t = None if SCEN_MODE in SEAT_MODEL else (body or {}).get("tier")
-    if t is not None:
-        if t not in TIER_CHOICES:
-            return dict(error=f"tier {t} is not available for this game "
-                              f"(earned: {TIER_EARNED})")
-        TIER = t
-        save_tier()
-        build_gate()          # rebuild the gate at the newly selected tier
     if os.path.exists(WORK):
         os.remove(WORK)
     if os.path.exists(facing_path()):
@@ -1856,29 +1791,24 @@ def api_reset(body=None):
         TG.new_game()
     if GAME_OBJ.setup_save:
         fresh_board()
-    return dict(ok=True, tier=TIER)
+    return dict(ok=True)
 
 
-def load_game(game_dir, tier=None):
+def load_game(game_dir):
     """(Re)initialize the server onto a game — the single door for both the
     startup path and runtime game-switching. Tears down and rebuilds every
     module global that describes 'the loaded game', so switching games is just
     calling this again: per-game state is already file-backed (the work .vsav +
-    JSONL log + tier/facing sidecars live under live\\game_<slug>.*), so a
-    switch is load-from-disk, no new persistence.
-
-    tier: run BELOW the earned tier (0=free play, 1=movement, ...). None = the
-    persisted sidecar, clamped to what the game has earned."""
+    JSONL log + seats/facing sidecars live under live\\game_<slug>.*), so a
+    switch is load-from-disk, no new persistence."""
     global GAME_OBJ, GAME_SLUG, WORK, SCEN_PATH, SCEN_MODE
-    global TIER, TIER_EARNED, TIER_CHOICES, done, facing, AI_STEP
+    global done, facing, AI_STEP
 
     # reset per-game runtime state so nothing leaks across a switch
     done = {}
     facing = {}
     AI_STEP = None
     SCEN_PATH = SCEN_MODE = None
-    TIER_EARNED = 0
-    TIER_CHOICES = [0]
 
     GAME_OBJ = gamespec.Game(game_dir)
     gkey = GAME_SLUG = os.path.basename(os.path.normpath(game_dir))
@@ -1886,23 +1816,6 @@ def load_game(game_dir, tier=None):
     if GAME_OBJ.spec.get("scenario"):
         SCEN_PATH = GAME_OBJ._path(GAME_OBJ.spec["scenario"])
         SCEN_MODE = json.load(open(SCEN_PATH, encoding="utf-8")).get("mode")
-        if SCEN_MODE in SG_FAMILY:
-            # mirror the engine's own earned-tier logic (sg_earned_tier):
-            # 1 = movement gate, 2 = full combat gate, 3 = + AI
-            TIER_EARNED = sg_earned_tier(SCEN_MODE, GAME_OBJ.spec)
-            TIER_CHOICES = list(range(TIER_EARNED + 1))
-        elif SCEN_MODE in SEAT_MODEL:
-            pass
-        else:
-            # tactical family: validated combat rules + policy AI both ship
-            TIER_EARNED = 3
-            TIER_CHOICES = [0, 3]
-    TIER = load_tier()
-    if tier is not None and SCEN_MODE not in SEAT_MODEL:
-        if tier not in TIER_CHOICES:
-            raise ValueError(f"tier {tier} not available (choices: {TIER_CHOICES})")
-        TIER = tier
-        save_tier()
     build_gate()
     SEATS.clear()
     SEATS.update(load_seats())
@@ -1959,6 +1872,9 @@ def route_get(path, qs):
     if (TG or SG) and path == "/api/log":
         return api_log_tail(qs)
     if TG and path == "/api/ai_plan":
+        br = seat_theta(qs["side"][0], dict(brain=(qs.get("brain") or [None])[0]))
+        if br.get("error"):
+            return dict(none=True, error=br["error"], flow=flow_view())
         p = ai_mod.plan_next(TG, qs["side"][0])
         return p if p else dict(none=True, flow=flow_view())
     if path == "/api/pbm/export":
@@ -2124,24 +2040,13 @@ if __name__ == "__main__":
         _default = game_dir(RELEASE_GAMES[0])
     ap.add_argument("--game", default=_default)
     ap.add_argument("--port", type=int, default=8641)
-    ap.add_argument("--tier", type=int, default=None,
-                    help="run BELOW the earned tier (0=free play, 1=movement "
-                         "gate, ...); default = the game's earned tier")
     a = ap.parse_args()
-    try:
-        load_game(a.game, tier=a.tier)
-    except ValueError as e:
-        sys.exit(str(e))
-    if SG:
-        print(f"strategic gate (tier {TIER} of {TIER_EARNED}): "
-              f"{SG.scenario['name']} (log {SG.log_path})")
-    elif SJ:
-        print(f"soj gate (tier {TIER} of {TIER_EARNED}, hotseat, no AI): "
-              f"{SJ.scenario['name']} (log {SJ.log_path})")
-    elif TG:
-        print(f"tactical mode (tier {TIER}): {TG.scenario['name']} "
-              f"(log {TG.log_path})")
-    elif SCEN_PATH:
-        print(f"tier 0 selected (earned {TIER_EARNED}): free play, no gate")
+    load_game(a.game)
+    g = SG or SJ or TG
+    if g:
+        print(f"{SCEN_MODE or 'tactical'} gate ({seat_pairing()}): "
+              f"{g.scenario['name']} (log {g.log_path})")
+    else:
+        print("no encoded scenario: board only, no gate")
     print(f"{GAME_OBJ.name} board UI ->  http://localhost:{a.port}   (Ctrl+C to stop)")
     make_server(a.port).serve_forever()

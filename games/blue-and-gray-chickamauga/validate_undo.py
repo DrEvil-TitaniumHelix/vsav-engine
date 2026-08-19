@@ -31,7 +31,7 @@ Per game:
      in a row THROUGH the AI's replies, asserting each landing hash, then
      redo the cut tail raw and assert byte-perfect recovery. Also: undo
      while an AI TurnStepper is mid-turn (stepper must be dropped).
-  C. LAWS - refused with no gate (tier 0), refused while a PBM or SALVO
+  C. LAWS - refused while a PBM or SALVO
      sidecar is attached, refused on an empty window, undo out of game
      over, state survives a gate rebuild (server restart), the .vsav
      mirror matches the gate after undo, the archive holds every cut line.
@@ -154,14 +154,14 @@ def die(what):
 # ------------------------------------------------- reference self-play game
 def build_ref_gate(slug, mode, workdir, seed):
     """A gate constructed EXACTLY like server.build_gate builds the live one
-    (tier=None = earned), so the reference game matches the live game."""
+    so the reference game matches the live game."""
     game_dir = os.path.join(REPO, "games", slug)
     game = gamespec.Game(game_dir)
     scen = game._path(game.spec["scenario"])
     cls = {"strategic": strat_mod.StrategicGame, "bluegray": bg_mod.BlueGrayGame,
            "westwall": ww_mod.WestwallGame,
            "napoleonic": nap_mod.NapoleonicGame}.get(mode)
-    g = cls(game, scen, workdir, tier=None) if cls \
+    g = cls(game, scen, workdir) if cls \
         else gs_mod.TacticalGame(game, scen, workdir)
     g.new_game(seed)
     return g
@@ -468,13 +468,6 @@ def laws(slug, mode):
           if board_available() else
           "       note: board setup .vsav absent (BYO asset, expected in "
           "CI) - mirror assertions skipped, gate/log/undo claims unaffected")
-    # tier 0 = no gate = no undo
-    if 0 in server.TIER_CHOICES:
-        server.api_reset({"tier": 0})
-        r = server.api_undo()
-        check("gate" in (r.get("error") or ""),
-              f"{slug}: undo refused at tier 0 (no gate)")
-        server.api_reset({"tier": server.TIER_EARNED})
     # fresh game = empty window
     live_gate().new_game(1)
     r = server.api_undo()
@@ -505,8 +498,8 @@ def stepper_test(slug, mode, seed, lines):
     if fed < 2:
         return
     side = g.s["mover"]
-    server.api_ai_step({"side": side})            # fresh stepper: peek
-    r = server.api_ai_step({"side": side})        # executes ONE ai action
+    server.api_ai_step({"side": side, "brain": "basic"})   # fresh stepper: peek
+    r = server.api_ai_step({"side": side, "brain": "basic"})   # executes ONE ai action
     if not r.get("step"):
         return
     check(server.AI_STEP is not None, f"{slug}: stepper is mid-turn")
@@ -541,8 +534,6 @@ def main():
               f"game {'finished' if finished else 'CAPPED'} "
               f"({time.time() - t0:.0f}s)", flush=True)
         server.load_game(os.path.join(REPO, "games", slug))
-        if server.TIER != server.TIER_EARNED:
-            server.api_reset({"tier": server.TIER_EARNED})
 
         try:
             covered = sweep(slug, mode, seed, lines,          # A: hotseat

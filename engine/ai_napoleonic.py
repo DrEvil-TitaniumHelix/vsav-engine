@@ -34,7 +34,7 @@ replayable game):
     leaders stay in command range of their division [4.3.3].
   fire - every capable unit fires at the best legal target (the gate's
     8.1.1 hierarchy/arc/LOS decide legality).
-  shock (tier 2+) - infantry melees an adjacent front-hex enemy stack
+  shock (phase-4 flow) - infantry melees an adjacent front-hex enemy stack
     when its own stack has at least equal SP; cavalry in good morale
     charges non-square targets at 2-4 hexes [8.4].
   windows - infantry tries to form square against a charge [8.4.2#4];
@@ -373,7 +373,7 @@ def _fire_pick(g, side, pids, theta=None):
 
 
 def _shock_pick(g, side, act, theta=None):
-    """Melee / charge declarations for a Full Activation (tier 2+)."""
+    """Melee / charge declarations for a Full Activation (phase-4 flow)."""
     if not getattr(g, "_p4", False) or act.get("atype") != "full":
         return None
     for pid in sorted(act["incommand"]):

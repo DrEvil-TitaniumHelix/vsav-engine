@@ -1,4 +1,4 @@
-"""Afrika Korps Tier-1 FULL-scope gate validation: arrivals, supply dice,
+"""Afrika Korps FULL-scope gate validation: arrivals, supply dice,
 sea movement, Rommel bonus, fortress ZOC immunity (spec #9/#12 evidence).
 
 Every case is a rulebook-cited legal action or illegal proposal driven
@@ -7,7 +7,7 @@ engine/verify_game.py (verdicts, dice, state hashes). The Rommel cases
 replay the module tournament clarification's worked example verbatim
 (Rommel W6->W8 with the El Agheila units; road + regular movement kept).
 
-Run:  python games/afrika-korps-classic-ah/validate_tier1.py
+Run:  python games/afrika-korps-classic-ah/validate_full_scope.py
 """
 import json
 import os

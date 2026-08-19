@@ -71,8 +71,8 @@ const FRAME = (() => {
                          padding:1px 5px; border-radius:4px; }
       #guidepanel ul, #guidepanel ol { margin:4px 0 8px; padding-left:20px; }
       #guidepanel li { margin:3px 0; }
-      #rulespanel, #tierpanel { color:#dde3ea; }
-      #rulespanel .dim, #tierpanel .dim, #guidepanel .dim { color:#9aa3ad; }
+      #rulespanel { color:#dde3ea; }
+      #rulespanel .dim, #guidepanel .dim { color:#9aa3ad; }
       #rulespanel details { margin:2px 0; }
       #rulespanel summary { cursor:pointer; font-weight:600; padding:4px 0; }
       #rulespanel summary:hover { filter:brightness(1.18); }
@@ -95,7 +95,7 @@ const FRAME = (() => {
     if (!guideEl) return;
     let left = 0, right = (H && H.guideRight) || 0;
     const W = window.innerWidth;
-    const ids = (H.guideAvoid || ['arrivals', 'tierpanel'])
+    const ids = (H.guideAvoid || ['arrivals'])
       .concat(['combat', 'pbmpanel', 'rulespanel', 'tablespanel', 'guidepanel', 'logdock']);
     ids.forEach(id => {
       const el = document.getElementById(id);
@@ -248,18 +248,17 @@ const FRAME = (() => {
     ov.onclick = () => { clearTimeout(refuseT); ov.style.display = 'none'; };
   }
 
-  // ---------- shared top-right panels: Tier / Rules / Tables ----------
+  // ---------- shared top-right panels: Mode / Rules / Tables ----------
   // One implementation for every screen (Bruce 2026-07-17: "all of these
-  // interfaces need tier selection … essentially unified"). A client calls
-  // initPanels({game, flow, clientItems, toast}) once; the frame owns the
-  // buttons, the panels (created if the page doesn't declare them), the
-  // open-one-close-others behavior, and the tier-change flow.
-  let PH = null, tierArm = null;
+  // interfaces … essentially unified"). A client calls
+  // initPanels({game, flow, clientItems, toast, onSeats}) once; the frame owns
+  // the buttons, the panels (created if the page doesn't declare them), the
+  // open-one-close-others behavior, and the seat dialog.
+  let PH = null;
   const $id = (i) => document.getElementById(i);
   const escp = (s) => String(s).replace(/[&<>]/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const PANEL_IDS = ['rulespanel', 'tablespanel', 'tierpanel', 'pbmpanel',
-                     'guidepanel'];
+  const PANEL_IDS = ['rulespanel', 'tablespanel', 'pbmpanel', 'guidepanel'];
   const BTN_FOR = { rulesbtn: 'rulespanel', tablesbtn: 'tablespanel',
                     guidebtn: 'guidepanel' };
 
@@ -284,71 +283,6 @@ const FRAME = (() => {
       if (el) el.classList.toggle('on', p === id && opened);
     });
     return opened;
-  }
-  const MODE_NAME = { sandbox: 'Sandbox', full: 'Full rules' };
-  const MODE_DESC = {
-    sandbox: `free play. Nothing is enforced: move any piece anywhere,
-              exactly as in VASSAL. You are the umpire.`,
-    full: `every action is checked by the ${UMPIRE} (the rules engine) — legal
-           moves shown, illegal moves impossible, combat resolved on the
-           validated tables.` };
-  function modeInfo(T) {
-    if (!T) return null;
-    const modes = [];
-    if (T.choices.includes(0)) modes.push('sandbox');
-    if (T.earned > 0) modes.push('full');
-    return { modes, active: T.active === 0 ? 'sandbox' : 'full',
-             tier: { sandbox: 0, full: T.earned },
-             mismatch: T.active !== (T.active === 0 ? 0 : T.earned) };
-  }
-  function renderTierBtn() {
-    const B = $id('tierbtn');
-    if (!B) return;
-    const g = PH && PH.game(), M = modeInfo(g && g.tier);
-    if (!M) { show(B, false); return; }
-    const locked = M.modes.length < 2 && !M.mismatch;
-    show(B, true);
-    B.disabled = locked;
-    B.style.opacity = locked ? '.65' : '';
-    B.textContent = locked ? `Mode: ${MODE_NAME[M.active]} 🔒` : `Mode: ${MODE_NAME[M.active]} ▾`;
-    B.title = locked
-      ? (M.active === 'full'
-         ? `This game is full rules only — the ${UMPIRE} checks every action`
-         : 'This game is sandbox only — no enforced rules encoded yet')
-      : 'Game mode — Sandbox or Full rules';
-    B.classList.toggle('on', $id('tierpanel').style.display === 'block');
-  }
-  function renderTierPanel() {
-    const P = $id('tierpanel'), M = modeInfo(PH.game().tier);
-    let h = `<b>Game mode</b>
-             <div class="dim" style="margin:4px 0 8px">Switching mode starts a
-             NEW game.</div>`;
-    const T = PH.game().tier;
-    M.modes.forEach(m => {
-      const active = M.tier[m] === T.active, armed = tierArm === m;
-      h += `<div class="tierrow" data-t="${m}" style="padding:6px 8px; margin:3px 0;
-              border-radius:6px; cursor:${active ? 'default' : 'pointer'};
-              border:1px solid ${active ? '#3a6ea5' : armed ? '#e0a34e' : '#3a3f47'};
-              background:${active ? '#2b3f55' : '#2c2f36'}">
-              <b>${MODE_NAME[m]}</b> — ${MODE_DESC[m]}
-              ${active ? ' <span style="color:#9fc27f">— ACTIVE</span>'
-                       : armed ? ' <span style="color:#e0a34e">— click again to restart in this mode</span>' : ''}
-            </div>`;
-    });
-    P.innerHTML = h;
-    P.querySelectorAll('.tierrow').forEach(el => el.onclick = async () => {
-      const m = el.dataset.t;
-      if (M.tier[m] === PH.game().tier.active) return;
-      if (tierArm !== m) { tierArm = m; renderTierPanel(); return; }
-      tierArm = null;
-      const r = await (await fetch('/api/reset', {method: 'POST',
-        body: JSON.stringify({tier: M.tier[m]})})).json();
-      if (r.error) { (PH.toast || alert)(r.error); return; }
-      // "/" reroutes to the client the new tier plays in (tactical <-> board);
-      // the serverless demo installs its own hook (reload + session tier)
-      if (window.DEMO_TIER_HOOK) window.DEMO_TIER_HOOK(r);
-      else location.href = '/';
-    });
   }
   // ---------- seat model: one Mode button, two seat pickers ----------
   const SEAT_DESC = {
@@ -460,7 +394,6 @@ const FRAME = (() => {
     if (!P || P.style.display !== 'block') return;
     const G = PH.game(), FLOW = PH.flow();
     const rs = FLOW && FLOW.rules_scope;
-    const T = G && G.tier, M = modeInfo(T);
     const ghdr = t => `<div style="margin:12px 0 2px; padding-top:8px;
       border-top:1px solid #3a3f47; color:#8b93a0; font-size:11px;
       letter-spacing:.12em; text-transform:uppercase">${t}</div>`;
@@ -482,28 +415,16 @@ const FRAME = (() => {
     const GR = `The game's rules`, PL = `This platform`;
     top += ghdr(GR);
     const SI = G && G.seats;
-    if (!M && SI) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${escp(SI.pairing)}
+    if (SI && rs) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${escp(SI.pairing)}
                  — the ${UMPIRE} checks every action, whoever sits in the seat
                  (Mode button changes the seats).</div>`;
-    if (M) top += `<div style="margin:4px 0 2px; color:#8fb8d8">${MODE_NAME[M.active]}
-                 mode — ${M.active === 'sandbox' ? 'nothing is enforced'
-                                                 : `the ${UMPIRE} checks every action`}
-                 ${M.active === 'full' && T.active < T.earned ? ` <span class="dim">
-                 (running below the game's validated level — restart from the Mode
-                 button to enable everything)</span>` : ''}</div>`;
     if (rs && rs.banner)
       top += `<div style="margin:6px 0; padding:5px 8px; border-radius:4px; font-weight:600;
               ${/^PLAYABLE/.test(rs.banner) ? 'background:#28401f;color:#b8e09a'
                                             : 'background:#4a3820;color:#e8c37a'}">${rs.banner}</div>`;
-    if (!rs && !SI)
-      top += (T && T.earned > 0)
-        ? `<div class="dim" style="margin-top:6px">You selected Sandbox — free play by
-           choice. NOTHING is enforced: move any piece anywhere, including the printed
-           tracks, exactly as in VASSAL. You are the umpire. The validated full-rules
-           gate is available from the Mode button (starts a new game).</div>`
-        : `<div class="dim" style="margin-top:6px">Sandbox — free play. No rules are
-           enforced for this game yet; move pieces as you would at a physical table.
-           You are the umpire.</div>`;
+    if (!rs)
+      top += `<div class="dim" style="margin-top:6px">No rules are encoded for this
+           game folder yet; move pieces as you would at a physical table.</div>`;
     const secs = [];
     const sec = (grp, color, title, n, body) => secs.push({grp, color, title, n, body});
     if (rs) {
@@ -570,10 +491,7 @@ const FRAME = (() => {
     if (gated)
       ci.push(`<li><b>End player turn</b> — asks the ${UMPIRE} to close your turn; it
             refuses (with citations) while obligations are open.</li>`);
-    if (M && M.modes.length > 1)
-      ci.push(`<li><b>Mode</b> — Sandbox (free play, you are the umpire) or Full rules
-            (the validated gate). Switching starts a new game.</li>`);
-    if (!M && SI)
+    if (SI && gated)
       ci.push(`<li><b>Mode</b> — who sits in each seat: ${SI.available.map(k => SI.labels[k]).join(' / ')}.
             Every pairing is legal (hot-seat, you vs a computer, computer vs computer);
             seats change at once, the game continues.</li>`);
@@ -700,7 +618,7 @@ const FRAME = (() => {
              same data the engine resolves combat on, not scanned images.</div>`;
     if (!tables.length)
       h += `<div class="dim" style="margin-top:6px">This game has no encoded combat tables
-            (sandbox, or none applicable).</div>`;
+            (none applicable).</div>`;
     for (const t of tables) {
       h += `<h3>${escp(t.title)}</h3>`;
       if (t.cite) h += `<div class="cite">${escp(t.cite)}</div>`;
@@ -724,7 +642,7 @@ const FRAME = (() => {
   }
   // ---------- guide panel (engine-level, Bruce 2026-07-17: every game) -----
   // Sections are GENERATED from what the engine already knows (game family,
-  // tier, victory text carried as data in game.json "guide") plus any
+  // seats, victory text carried as data in game.json "guide") plus any
   // hand-written per-game sections from that same block — all our own words.
   const TURN_GUIDE = {
     tactical:
@@ -759,14 +677,13 @@ const FRAME = (() => {
        you are.</p>`,
     free:
       `<h2>How a turn works</h2>
-       <p>Sandbox — the engine enforces nothing in this mode. Move any piece
-       anywhere, exactly as at a physical table or in VASSAL; you are the
-       umpire. The validated rules gate is available from the Mode button.</p>`,
+       <p>No rules are encoded for this game folder. Move any piece anywhere,
+       exactly as at a physical table or in VASSAL.</p>`,
   };
   function guideSections() {
     const G = PH.game(), FLOW = PH.flow();
     const gd = (G && G.guide) || {};
-    const tierOn = !!(G && ((G.seats && !G.tier) || (G.tier && G.tier.active > 0)));
+    const gated = !!FLOW;
     const mode = !FLOW ? 'free'
       : FLOW.mode === 'napoleonic' ? 'napoleonic'
       : FLOW.segment !== undefined ? 'tactical' : 'strategic';
@@ -774,16 +691,12 @@ const FRAME = (() => {
     S.push(['This game',
       `<h2>${G.name}</h2>
        <p>Sides: ${G.sides.map((s) => s.label).join(' vs ')}. Pick yours top-left;
-       switch any time for hot-seat play${tierOn ? ' — every action still goes' +
+       switch any time for hot-seat play${gated ? ' — every action still goes' +
        ' through the same rules gate' : ''}.</p>
-       ${G.tier ? `<p>${tierOn ? `Full rules — the ${UMPIRE} checks every action`
-          : 'Sandbox — free play, you are the umpire'}${
-          modeInfo(G.tier).modes.length > 1
-          ? ' — switch on the Mode button.' : '.'}</p>`
-        : G.seats ? `<p>${escp(G.seats.pairing)} — the ${UMPIRE} checks every action
+       ${G.seats && gated ? `<p>${escp(G.seats.pairing)} — the ${UMPIRE} checks every action
           whoever sits in a seat; the <b>Mode</b> button changes the seats
           (${G.seats.available.map(k => G.seats.labels[k]).join(' / ')}; any pairing).</p>` : ''}`]);
-    S.push(['How a turn works', TURN_GUIDE[tierOn ? mode : 'free']]);
+    S.push(['How a turn works', TURN_GUIDE[mode]]);
     if (gd.victory)
       S.push(['How to win', `<h2>How to win</h2><p>${gd.victory}</p>`]);
     (gd.sections || []).forEach((s) => S.push([s.title, s.html]));
@@ -797,16 +710,14 @@ const FRAME = (() => {
        <li><b>Rules</b> shows exactly what the engine enforces (with rulebook
        section numbers) and this game's credits; <b>Tables</b> shows the
        transcribed data the engine plays on.</li>
-       ${G.tier && G.tier.active >= 3 ? `<li>The <b>AI</b> plays any side you
-       don't — stepped (press SPACE per action) or auto, at slow/medium/fast
-       pace. It proposes through the same gate you play through.</li>` : ''}
-       ${tierOn ? `<li><b>↶ Undo</b> takes back your last decision (up to 5
+       ${G.seats && G.seats.available.length > 1 ? `<li>A <b>computer seat</b>
+       plays its side itself — stepped (press SPACE per action) or auto, at
+       slow/medium/fast pace. It proposes through the same gate you play
+       through; the <b>Mode</b> button decides who sits where.</li>` : ''}
+       ${gated ? `<li><b>↶ Undo</b> takes back your last decision (up to 5
        in a row) — the AI's replies after it are unwound too. Dice are seeded,
        so redoing the same action gives the same result.</li>` : ''}
-       <li><b>Reset game</b> restarts the scenario${
-       G.tier && modeInfo(G.tier).modes.length > 1
-       ? '; the <b>Mode</b> button switches between sandbox and full rules' : ''}.
-       </li></ul>`]);
+       <li><b>Reset game</b> restarts the scenario.</li></ul>`]);
     return S;
   }
   let guideSec = 0;
@@ -832,11 +743,6 @@ const FRAME = (() => {
   function initPanels(hooks) {
     PH = hooks;
     // panels a screen doesn't declare are created with the standard look
-    ensurePanel('tierpanel',
-      `display:none; position:fixed; top:52px; right:8px; width:360px;
-       max-width:44vw; background:#23262c; border:1px solid #3a3f47;
-       border-radius:10px; padding:12px 14px; z-index:60; font-size:13px;
-       box-shadow:0 6px 24px rgba(0,0,0,.5)`);
     ensurePanel('rulespanel',
       `display:none; position:fixed; top:52px; right:8px; width:440px;
        max-width:44vw; max-height:calc(100vh - 70px); overflow:auto;
@@ -852,26 +758,16 @@ const FRAME = (() => {
     const gb = $id('guidebtn');
     if (gb) gb.onclick = () => {
       if (soloPanel('guidepanel')) renderGuidePanel();
-      renderTierBtn();
     };
     const mb = $id('modebtn');
     if (mb) mb.onclick = openSeatsDialog;
-    const tb = $id('tierbtn');
-    if (tb) tb.onclick = () => {
-      const opened = soloPanel('tierpanel');
-      tierArm = null;
-      if (opened) renderTierPanel();
-      renderTierBtn();
-    };
     const rb = $id('rulesbtn');
     if (rb) rb.onclick = () => {
       if (soloPanel('rulespanel')) renderRules();
-      renderTierBtn();
     };
     const tab = $id('tablesbtn');
     if (tab) tab.onclick = () => {
       if (soloPanel('tablespanel')) renderTables();
-      renderTierBtn();
     };
   }
 
@@ -955,7 +851,7 @@ const FRAME = (() => {
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
            show, setGuide, guideAvoidPanels, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
-           initPanels, soloPanel, renderTierBtn, renderModeBtn, openSeatsDialog,
+           initPanels, soloPanel, renderModeBtn, openSeatsDialog,
            renderRules, renderTables,
            refusal, UMPIRE };
 })();

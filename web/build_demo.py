@@ -1,18 +1,18 @@
 """
-build_demo.py - Bake the FULL-FUNCTION browser demo: every release game at its
-earned tier, played by THE actual Python engine running in the browser
+build_demo.py - Bake the FULL-FUNCTION browser demo: every release game with
+its whole gate, played by THE actual Python engine running in the browser
 (Pyodide/WASM). One link, one selection page (box art from the user's own
 module), BYO-module gate in front of every game. Ships zero third-party art
 and zero module-provided saves — those come out of the user's .vmod at
 runtime, in the browser, never uploaded.
 
 Output layout (dist/demo — serve statically, e.g. python -m http.server):
-  index.html            the selection page (graphics + tier badges)
+  index.html            the selection page (graphics + capability tags)
   shared/byo.js         the module gate (verify sha256, cache, extract)
   shared/bridge.js      Pyodide host: /api/* -> server.route_get/route_post
   py/pyodide/*          vendored Pyodide runtime (web/vendor/pyodide)
   py/app.zip            engine/*.py + ui/server.py + games/<slug>/ data
-  g/<slug>/index.html   loader (picks board/tactical client by session tier)
+  g/<slug>/index.html   loader (picks the family's client)
   g/<slug>/board.html   baked ui/index.html      (all games)
   g/<slug>/tactical.html baked ui/tactical.html  (tactical family only)
   g/<slug>/manifest.js  module identity (sha256 + download link + asset map)
@@ -171,9 +171,7 @@ def bake_client(src_name, slug, name, manifest, menu_href="../../index.html"):
 LOADER = """<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>%(name)s</title></head><body
 style="background:#1a1c20"><script>
-var t = localStorage.getItem('tier:%(slug)s');
-var tactical = %(tactical)s && !(t !== null && +t === 0);
-location.replace(tactical ? 'tactical.html' : 'board.html');
+location.replace(%(tactical)s ? 'tactical.html' : 'board.html');
 </script></body></html>
 """
 
@@ -186,7 +184,7 @@ location.replace('soj.html');
 
 
 def menu_page(metas, n_rot):
-    cards = json.dumps([dict(slug=m["slug"], name=m["name"], tier=m["tier"],
+    cards = json.dumps([dict(slug=m["slug"], name=m["name"],
                              tags=m.get("tags") or [],
                              blurb=m.get("blurb") or "",
                              needs=[r["filename"] for r in m["manifest"]["requirements"]],
@@ -222,7 +220,6 @@ def menu_page(metas, n_rot):
   .meta { display:flex; gap:8px; flex-wrap:wrap; }
   .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
          border:1px solid #4a4f57; color:#b9c2cc; }
-  .tag.tier { background:#243447; border-color:#3a6ea5; color:#9cc4ee; }
   .tag.ai   { background:#2f2740; border-color:#7a5aa5; color:#c9aef0; }
   .tag.soon { background:#2c2f36; border-color:#4a4f57; color:#98a0a8; }
   .tag.feature { background:#243d33; border-color:#3a7a5f; color:#8fd8b4; }
@@ -403,8 +400,7 @@ def main():
         n_req = len(manifest["requirements"])
         client_desc = ("soj" if soj else
                        "tactical+board" if tactical else "board")
-        print(f"{slug}: client={client_desc}, "
-              f"{'seat model' if meta['tier'] is None else 'earned tier %s' % meta['tier']['earned']}, {n_req} module req(s)")
+        print(f"{slug}: client={client_desc}, seat model, {n_req} module req(s)")
 
     covers = os.path.join(ROOT, "web", "covers")
     n_rot = 0

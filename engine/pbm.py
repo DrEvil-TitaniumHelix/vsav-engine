@@ -140,11 +140,11 @@ def human_side(doc):
 
 
 # -------------------------------------------------------------------- replay
-def build_engine(game_dir, scenario_name, live_dir, seed, tier, mode):
+def build_engine(game_dir, scenario_name, live_dir, seed, mode):
     game = gamespec.Game(game_dir)
     scen_path = find_scenario(game_dir, scenario_name)
     cls = ENGINES[mode]
-    return cls(game, scen_path, live_dir, seed=seed, tier=tier)
+    return cls(game, scen_path, live_dir, seed=seed)
 
 
 def replay(game_dir, entries, live_dir):
@@ -160,7 +160,7 @@ def replay(game_dir, entries, live_dir):
         if os.path.exists(p):
             os.remove(p)
     eng = build_engine(game_dir, init["scenario"], live_dir,
-                       init["seed"], init.get("tier"), init["mode"])
+                       init["seed"], init["mode"])
     for lu in init["units"]:
         u = eng.s["units"].get(lu["pid"])
         if not u or [u["col"], u["row"]] != lu["hex"] or u["side"] != lu["side"]:

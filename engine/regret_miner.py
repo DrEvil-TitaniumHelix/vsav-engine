@@ -81,13 +81,13 @@ def _rollout_tactical(tg):
 
 FAMILIES = {
     "bluegray": dict(ctor=bg_mod.BlueGrayGame, rollout=_rollout_generic(ai_bluegray),
-                     mined={"move"}, tiered=True),
+                     mined={"move"}),
     "westwall": dict(ctor=ww_mod.WestwallGame, rollout=_rollout_generic(ai_westwall),
-                     mined={"move"}, tiered=True),
+                     mined={"move"}),
     "strategic": dict(ctor=strat_mod.StrategicGame, rollout=_rollout_generic(ai_strategic),
-                      mined={"move"}, tiered=True),
+                      mined={"move"}),
     None: dict(ctor=gs_mod.TacticalGame, rollout=_rollout_tactical,
-               mined={"move", "fire"}, tiered=False),
+               mined={"move", "fire"}),
 }
 
 
@@ -102,9 +102,6 @@ def find_scenario(game_dir, init):
 
 
 def make_engine(game, scen_path, live_dir, init, fam):
-    if fam["tiered"]:
-        return fam["ctor"](game, scen_path, live_dir, seed=init["seed"],
-                           tier=init.get("tier"))
     return fam["ctor"](game, scen_path, live_dir, seed=init["seed"])
 
 

@@ -39,16 +39,16 @@ def mkscen(units, reserve=(), night=(), turns=4, first="Union"):
                "occupation": {"union": {"1920": 10}, "confederate": {"0211": 20},
                               "either": {"0822": 5}},
                "start_occupation": {"union": ["0211", "0822"], "confederate": ["1920"]}},
-        "rules_scope": {"enforced": ["test"], "enforced_tier2": ["test"], "umpired": []},
+        "rules_scope": {"enforced": ["test"], "enforced_combat": ["test"], "umpired": []},
     }
     p = os.path.join(TMP, f"scenario_test{SCEN_COUNT[0]}.json")
     json.dump(scen, open(p, "w"), indent=1)
     return p
 
-def mkgame(scen_path, seed=1, tier=None):
+def mkgame(scen_path, seed=1):
     live = os.path.join(TMP, f"live{SCEN_COUNT[0]}_{seed}")
     os.makedirs(live, exist_ok=True)
-    return bluegray.BlueGrayGame(G, scen_path, live, seed=seed, tier=tier), live
+    return bluegray.BlueGrayGame(G, scen_path, live, seed=seed), live
 
 def U(uid, slot, side, c, r, cls="inf", s=None):
     st = G.stats(slot)

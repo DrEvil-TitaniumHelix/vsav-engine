@@ -12,7 +12,7 @@
  *   3. writes module-provided engine files (setup saves) into the engine FS,
  *   4. srv.load_game(<slug>), builds counter/map blob URLs from the module,
  *   5. answers the queued /api/* calls through srv.route_get/route_post.
- * Saved games: the engine's live/ dir (work save, JSONL audit log, tier
+ * Saved games: the engine's live/ dir (work save, JSONL audit log, seats
  * sidecars) is synced to IndexedDB after every state-changing call and
  * restored before load_game on the next visit — the engine's own resume
  * path (log replay) then continues the game exactly where it stood, the
@@ -211,7 +211,7 @@
         "        return _bridge_json.dumps({'error': str(e)})\n"
       );
       // restore the saved game BEFORE load_game: the engine resumes from its
-      // own live files (log replay + tier sidecar), same as a native restart
+      // own live files (log replay + seats sidecar), same as a native restart
       const restored = await restoreLive(py);
       if (restored) setStatus("Resuming your saved game…");
       if (navigator.storage && navigator.storage.persist)
@@ -233,13 +233,4 @@
     }
   })();
 
-  // tier switches reload this page; the engine's tier sidecar (in the saved
-  // live files) is the truth — localStorage only mirrors it so the loader
-  // page can pick the right client (tactical vs board) before Python boots
-  window.DEMO_TIER_HOOK = async (r) => {
-    if (r && r.tier !== undefined)
-      localStorage.setItem("tier:" + SLUG, r.tier);
-    await writeSaveNow();               // reset already ran — persist it now
-    location.href = "./";               // loader picks the right client
-  };
 })();

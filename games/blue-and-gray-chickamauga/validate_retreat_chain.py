@@ -94,7 +94,7 @@ with tempfile.TemporaryDirectory() as tmp:
                "exit_per_csp": {"Union": 1, "Confederate": 10},
                "confederate_train_fail": 10, "occupation": {},
                "start_occupation": {}},
-        "rules_scope": {"enforced": ["t"], "enforced_tier2": ["t"], "umpired": []}}
+        "rules_scope": {"enforced": ["t"], "enforced_combat": ["t"], "umpired": []}}
     spath = os.path.join(tmp, "scenario_swap.json")
     json.dump(scen, open(spath, "w"), indent=1)
     for seed in (3, 5, 7, 11, 13):

@@ -37,7 +37,7 @@ module (from vassalengine.org) and its rulebook, then ask Claude:
 
 Claude follows **ENCODING_GUIDE.md** (the full process, with
 `games/afrika-korps-classic-ah/` as the worked reference: ingest → game.json →
-terrain → scenario → cited table transcription → validation → tier badge).
+terrain → scenario → cited table transcription → validation → release).
 
 ---
 

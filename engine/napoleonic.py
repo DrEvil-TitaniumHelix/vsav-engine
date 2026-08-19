@@ -46,11 +46,12 @@ TURN_NOUN = "turn"
 class NapoleonicGame(GateGame):
     HASH_KEYS = ("turn", "mover", "units", "moved", "seed", "rng_calls",
                  "tier")
+    SCHEMA_TIER = 3
     TURN_NOUN = "turn"
     PHASE_FIELD = "phase"
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None,
-                 command=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None,
+                 command=None, phase4=None):
         super().__init__(game, scenario_path, live_dir)
         self.F = fm.Formations(game)
         self._load_terrain()
@@ -72,10 +73,9 @@ class NapoleonicGame(GateGame):
         self._cavtype = {(u["side"], u["slot"]): u["cav_type"]
                          for u in self.scenario["units"]
                          if u.get("cav_type")}
-        self._resolve_tier(tier)
-        # phase 4 (tier 2): melee + reaction windows + strategic movement.
-        # Tier 1 keeps the phase-3 flow so schema-3 logs replay untouched.
-        self._p4 = self._cmd and self.tier >= 2
+        self.combat = None
+        melee = bool((game.spec.get("combat_tables") or {}).get("melee"))
+        self._p4 = self._cmd and (melee if phase4 is None else bool(phase4))
         self._resume_or_new(self._fresh_seed(seed),
                             required=("units", "moved", "tier", "schema"))
         have = self.s.get("schema", 2)
@@ -111,21 +111,6 @@ class NapoleonicGame(GateGame):
         return self.thex.get(f"{c},{r}", "clear")
 
     # ---------------------------------------------------------- lifecycle
-    def _resolve_tier(self, tier):
-        # Napoleonic family earned tier 2 at phase 4 (fire + command +
-        # melee + reactions enforced); tier 3 = tier 2 plus a validated
-        # policy AI declared in game.json `policy_ai` (spec #13 - the
-        # gate is identical, the AI is an opponent offered on top).
-        # Tier 1 = the phase-3 subset (melee/reactions umpired); a tier
-        # change starts a new game.
-        self.combat = None
-        melee = bool((self.game.spec.get("combat_tables") or {})
-                     .get("melee"))
-        self.tier_earned = (3 if self.game.spec.get("policy_ai")
-                            else 2) if melee else 1
-        self.tier = self.tier_earned if tier is None \
-            else max(1, min(int(tier), self.tier_earned))
-
     def new_game(self, seed=None):
         seed = self._fresh_seed(seed)
         units = {}
@@ -150,7 +135,7 @@ class NapoleonicGame(GateGame):
                   "moved": [], "fired": [], "returned": [],
                   "pending_fire": None,
                   "seed": seed, "rng_calls": 0,
-                  "tier": self.tier, "n": 0}
+                  "tier": self.SCHEMA_TIER, "n": 0}
         if self._cmd:
             self.s["schema"] = 3
             self.s["phase"] = "command"
@@ -191,7 +176,7 @@ class NapoleonicGame(GateGame):
         self._reset_log()
         self._log({"event": "init", "mode": "napoleonic",
                    "scenario": self.scenario["name"],
-                   "tier": self.tier, "seed": seed,
+                   "seed": seed,
                    "schema": self.s["schema"],
                    "units": self._units_for_log(units)})
         self.save()
@@ -778,7 +763,7 @@ class NapoleonicGame(GateGame):
 
     def enemy_front_hexes(self, side):
         """Hexes in any enemy COMBAT unit's front [5.1.3]; routed units
-        project nothing (no rout state yet at tier 1)."""
+        project nothing."""
         out = {}
         for v in self.s["units"].values():
             if v["side"] == side or v["arm"] == "leader":

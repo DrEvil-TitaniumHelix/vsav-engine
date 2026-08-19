@@ -464,8 +464,7 @@ def main():
             print("module art not found locally - schematic fallback")
 
     with tempfile.TemporaryDirectory() as tmp:
-        tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"],
-                                 tier=init.get("tier"))
+        tg = bg_mod.BlueGrayGame(game, scen, tmp, seed=init["seed"])
         mv = BGMovie(game, tg, terrain, a.width, labels, art=art)
         if a.stills:
             os.makedirs(a.stills, exist_ok=True)

@@ -793,7 +793,7 @@
    "Division fatigue: accumulation/recovery [13.1/13.2 + designer Q&A], effects incl. 7/8/9 thresholds per errata [13.3]",
    "Division breakpoint: LIM ban + no Full Activations [11.2.1]"
   ],
-  "enforced_tier2": [
+  "enforced_combat": [
    "Melee: Bayonet + Assault combat [8.2/8.3] with pre-shock morale checks, supporting stacks [8.2.1#2 + Fox Q&A], once-per-activation caps, melee rounds and the continue/withdraw windows [8.5/8.5.3], the errata Retreat result (2000-07-20)",
    "Cavalry charges [8.4]: May Charge marker [5.1.2], range 2-4 + LOS + front-hexside charge path [8.4.1/8.4.2 + A8.1.1], Stand-or-Square window, charge bonus arithmetic incl. halving [A8.1.2/8.4.2#6], pursuit [8.4.2#8], Blown lifecycle [8.4.4/8.4.5]",
    "Reaction windows [6.2]: fire/move/reverse/limber/face/charge + decline, expenditure-vs-entry triggers per arm [6.2.1-6.2.7 + Fox Q&A], once-per-activation budgets [8.1.2-8.1.4], reaction charges take the pre-melee check and end the mover's movement (Fox Q&A)",
