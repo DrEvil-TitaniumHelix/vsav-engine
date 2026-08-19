@@ -1,21 +1,38 @@
 {
- "shipped_ai": "baseline (graduation bar NOT MET - see portfolio_shipped.json)",
+ "shipped_ai": "champion elite_0 (graduation bar MET 2026-08-19 - grad_bar.json)",
  "elite": "elite_0",
  "elite_theta": {
   "aggression": 1.0,
-  "risk": 0.0,
-  "terrain": 0.15076093025764986,
-  "cohesion": 0.1634622367489279,
-  "exit_turn": 7.294743844366662,
-  "exit_weak": 3.0825732212174635,
-  "north_drive": 0.7781110254260418,
-  "hold_row": 10.815949601606118,
-  "block": 1.3201150529129098,
-  "advance": 0.5330199736293814,
-  "art_stand": 0.414207459970608,
-  "bombard_min": 5.811509039188662,
-  "prussian_target": 0.914869599578694,
-  "concentrate": 1.0
+  "risk": 0.08021494637827359,
+  "terrain": 0.0,
+  "cohesion": 0.0,
+  "exit_turn": 8.623605266792483,
+  "exit_weak": 6.369761811473771,
+  "north_drive": 0.36065261253911673,
+  "hold_row": 10.767556336945557,
+  "block": 1.5,
+  "advance": 0.49662829639773287,
+  "art_stand": 1.0,
+  "bombard_min": 5.358112056948533,
+  "prussian_target": 0.9937000669074836,
+  "concentrate": 0.46201702294453517,
+  "pocket": 1.209494038508099,
+  "pocket_risk": 1.4449447335330876,
+  "race_push": 0.7412436998197645,
+  "race_guard": 0.0029561192577657832,
+  "runners": 0.0,
+  "runner_turn": 10.0,
+  "dr_w": 0.4037831254241918,
+  "ar_w": 0.033419765216521326,
+  "ex_w": 0.49461124788721733,
+  "al_aggression": 0.5725563243845875,
+  "al_risk": 0.0,
+  "al_terrain": 0.0,
+  "al_cohesion": 1.1133035796013868,
+  "al_advance": 0.46513147909109986,
+  "al_bombard_min": 8.0,
+  "al_pocket": 0.04640266384455907,
+  "al_pocket_risk": 0.6034191735339074
  },
  "games": [
   {
@@ -36,8 +53,8 @@
    "errors": 0,
    "verified": true,
    "verify_msg": "350/350 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_970\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_s970.log.jsonl"
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_970\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_s970.log.jsonl"
   },
   {
    "label": "baseline_selfplay",
@@ -57,8 +74,8 @@
    "errors": 0,
    "verified": true,
    "verify_msg": "308/308 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_971\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_s971.log.jsonl"
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_971\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_s971.log.jsonl"
   },
   {
    "label": "baseline_selfplay",
@@ -78,11 +95,11 @@
    "errors": 0,
    "verified": true,
    "verify_msg": "306/306 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_972\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\baseline_selfplay_s972.log.jsonl"
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_972\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\baseline_selfplay_s972.log.jsonl"
   },
   {
-   "label": "elite_0_Fr_vs_baseline",
+   "label": "champ_Fr_vs_baseline",
    "seed": 970,
    "elite_seat": "Fr",
    "turns": 4,
@@ -90,80 +107,80 @@
    "winner": "Al",
    "losses": {
     "Fr": 40,
-    "Al": 30
+    "Al": 39
    },
    "exited": 0,
    "demoralized": false,
-   "battles": 36,
-   "actions": 253,
+   "battles": 31,
+   "actions": 241,
    "errors": 0,
    "verified": true,
-   "verify_msg": "252/252 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Fr_vs_baseline_970\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Fr_vs_baseline_s970.log.jsonl"
+   "verify_msg": "240/240 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Fr_vs_baseline_970\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Fr_vs_baseline_s970.log.jsonl"
   },
   {
-   "label": "elite_0_Al_vs_baseline",
+   "label": "champ_Al_vs_baseline",
    "seed": 970,
    "elite_seat": "Al",
    "turns": 11,
    "over": true,
    "winner": "draw",
    "losses": {
-    "Fr": 51,
-    "Al": 47
+    "Fr": 49,
+    "Al": 48
    },
-   "exited": 4,
+   "exited": 5,
    "demoralized": true,
-   "battles": 58,
-   "actions": 417,
+   "battles": 51,
+   "actions": 432,
    "errors": 0,
    "verified": true,
-   "verify_msg": "416/416 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Al_vs_baseline_970\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Al_vs_baseline_s970.log.jsonl"
+   "verify_msg": "431/431 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Al_vs_baseline_970\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Al_vs_baseline_s970.log.jsonl"
   },
   {
-   "label": "elite_0_Fr_vs_baseline",
+   "label": "champ_Fr_vs_baseline",
    "seed": 971,
    "elite_seat": "Fr",
-   "turns": 5,
+   "turns": 8,
    "over": true,
    "winner": "Fr",
    "losses": {
-    "Fr": 16,
-    "Al": 48
+    "Fr": 36,
+    "Al": 57
    },
    "exited": 7,
    "demoralized": true,
-   "battles": 25,
-   "actions": 231,
+   "battles": 47,
+   "actions": 365,
    "errors": 0,
    "verified": true,
-   "verify_msg": "230/230 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Fr_vs_baseline_971\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Fr_vs_baseline_s971.log.jsonl"
+   "verify_msg": "364/364 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Fr_vs_baseline_971\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Fr_vs_baseline_s971.log.jsonl"
   },
   {
-   "label": "elite_0_Al_vs_baseline",
+   "label": "champ_Al_vs_baseline",
    "seed": 971,
    "elite_seat": "Al",
-   "turns": 4,
+   "turns": 11,
    "over": true,
-   "winner": "Al",
+   "winner": "draw",
    "losses": {
-    "Fr": 40,
-    "Al": 37
+    "Fr": 68,
+    "Al": 57
    },
-   "exited": 0,
-   "demoralized": false,
-   "battles": 39,
-   "actions": 240,
+   "exited": 2,
+   "demoralized": true,
+   "battles": 61,
+   "actions": 433,
    "errors": 0,
    "verified": true,
-   "verify_msg": "239/239 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
-   "log": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Al_vs_baseline_971\\game_napoleon-at-waterloo.log.jsonl",
-   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-18_naw_optimizer\\corpus_games\\elite_0_Al_vs_baseline_s971.log.jsonl"
+   "verify_msg": "432/432 entries verified: every verdict, every die, every state hash reproduced (0 illegal proposals were rejected and provably never touched the game state)",
+   "log": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Al_vs_baseline_971\\game_napoleon-at-waterloo.log.jsonl",
+   "corpus_file": "C:\\VassalArnhem\\runs\\2026-08-19_naw_v2_optimizer\\corpus_games\\champ_Al_vs_baseline_s971.log.jsonl"
   }
  ]
 }
