@@ -60,6 +60,7 @@ import ai_bluegray as bai_mod  # noqa: E402
 import ai_westwall as wai_mod  # noqa: E402
 import ai_napoleonic as nai_mod  # noqa: E402
 import ai_soj as soj_ai_mod  # noqa: E402
+import ai_naw as naw_ai_mod  # noqa: E402
 import pbm as pbm_mod  # noqa: E402
 import plans as plans_mod  # noqa: E402
 import champion as champ_mod  # noqa: E402
@@ -67,6 +68,7 @@ import salvo as salvo_mod  # noqa: E402
 import undo as undo_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic", "naw")
+SEAT_MODEL = ("soj", "naw")
 
 
 def sg_earned_tier(scen_mode, spec):
@@ -82,7 +84,7 @@ def sg_earned_tier(scen_mode, spec):
 
 def sg_ai_module():
     """The policy-AI module matching the loaded strategic-family gate."""
-    return {"bluegray": bai_mod, "westwall": wai_mod,
+    return {"bluegray": bai_mod, "westwall": wai_mod, "naw": naw_ai_mod,
             "napoleonic": nai_mod}.get(SCEN_MODE, sai_mod)
 
 
@@ -149,7 +151,7 @@ def seats_path():
 def seat_kinds():
     kinds = ["human"]
     if GAME_OBJ and (SCEN_MODE == "tactical"
-                     or (SCEN_PATH and SCEN_MODE not in SG_FAMILY and SCEN_MODE != "soj")
+                     or (SCEN_PATH and SCEN_MODE not in SG_FAMILY and SCEN_MODE not in SEAT_MODEL)
                      or GAME_OBJ.spec.get("policy_ai")):
         kinds.append("basic")
     if "basic" in kinds and champ_mod.genome(GAME_OBJ.dir) is not None:
@@ -241,6 +243,9 @@ def build_gate():
     if SCEN_MODE == "soj":
         SJ = soj_mod.SoJGame(GAME_OBJ, SCEN_PATH, LIVE)
         return
+    if SCEN_MODE == "naw":
+        SG = naw_mod.NawGame(GAME_OBJ, SCEN_PATH, LIVE)
+        return
     if TIER == 0:
         return
     if SCEN_MODE == "strategic":
@@ -250,8 +255,6 @@ def build_gate():
         SG = bg_mod.BlueGrayGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "westwall":
         SG = ww_mod.WestwallGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
-    elif SCEN_MODE == "naw":
-        SG = naw_mod.NawGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     elif SCEN_MODE == "napoleonic":
         SG = nap_mod.NapoleonicGame(GAME_OBJ, SCEN_PATH, LIVE, tier=TIER)
     else:
@@ -536,7 +539,7 @@ def game_descriptor():
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
         facing=g.facing,
-        tier=None if SJ else dict(
+        tier=None if SCEN_MODE in SEAT_MODEL else dict(
             active=TIER, earned=TIER_EARNED, choices=TIER_CHOICES,
             labels={0: "Tier 0 — free play, you are the umpire",
                     1: "Tier 1 — movement & arrivals enforced",
@@ -675,7 +678,7 @@ def game_meta(slug):
         if scen_mode in SG_FAMILY:
             earned = sg_earned_tier(scen_mode, spec)
             choices = list(range(earned + 1))
-        elif scen_mode == "soj":
+        elif scen_mode in SEAT_MODEL:
             earned, choices = None, []
         else:
             earned, choices = 3, [0, 3]
@@ -1334,6 +1337,18 @@ def api_sg_ai_turn(body):
                           "not locally")
     if sg_over():
         return dict(steps=[], flow=SG.flow(), error="game is over")
+    if SCEN_MODE == "naw":
+        side = body.get("side") or SG.decider()
+        if SG.decider() != side:
+            return dict(steps=[], flow=SG.flow(),
+                        error=f"it is not {side}'s decision")
+        br = seat_theta(side, body)
+        if br.get("error"):
+            return dict(steps=[], flow=SG.flow(), error=br["error"])
+        steps = naw_ai_mod.take_turn(SG, side, br["theta"])
+        sync_mirror()
+        done.clear()
+        return dict(steps=steps, flow=SG.flow())
     if SCEN_MODE == "napoleonic":
         # napoleonic decisions interleave (LIM draws, reaction/shock
         # windows): the AI plays every decision belonging to `side`
@@ -1377,7 +1392,7 @@ def api_ai_step(body):
         AI_STEP = None
         return dict(done=True, step=None, next=None, flow=SG.flow(),
                     error="game is over")
-    if SCEN_MODE == "napoleonic":
+    if SCEN_MODE in ("napoleonic", "naw"):
         side = body.get("side") or SG.decider()
         fresh = (AI_STEP is None or AI_STEP.done()
                  or AI_STEP.sg is not SG
@@ -1387,7 +1402,15 @@ def api_ai_step(body):
                 return dict(done=False, step=None, next=None,
                             flow=SG.flow(),
                             error=f"it is not {side}'s decision")
-            AI_STEP = sg_ai_module().TurnStepper(SG, side)
+            if SCEN_MODE == "naw":
+                br = seat_theta(side, body)
+                if br.get("error"):
+                    return dict(done=False, step=None, next=None,
+                                flow=SG.flow(), error=br["error"])
+                AI_STEP = naw_ai_mod.TurnStepper(SG, side, br["theta"])
+                AI_STEP.brain = (body or {}).get("brain") or SEATS.get(side)
+            else:
+                AI_STEP = sg_ai_module().TurnStepper(SG, side)
             return dict(done=AI_STEP.done(), step=None,
                         next=AI_STEP.peek(), flow=SG.flow())
     else:
@@ -1809,7 +1832,7 @@ def api_reset(body=None):
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
     undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window
-    t = None if SJ else (body or {}).get("tier")
+    t = None if SCEN_MODE in SEAT_MODEL else (body or {}).get("tier")
     if t is not None:
         if t not in TIER_CHOICES:
             return dict(error=f"tier {t} is not available for this game "
@@ -1866,14 +1889,14 @@ def load_game(game_dir, tier=None):
             # 1 = movement gate, 2 = full combat gate, 3 = + AI
             TIER_EARNED = sg_earned_tier(SCEN_MODE, GAME_OBJ.spec)
             TIER_CHOICES = list(range(TIER_EARNED + 1))
-        elif SCEN_MODE == "soj":
+        elif SCEN_MODE in SEAT_MODEL:
             pass
         else:
             # tactical family: validated combat rules + policy AI both ship
             TIER_EARNED = 3
             TIER_CHOICES = [0, 3]
     TIER = load_tier()
-    if tier is not None and SCEN_MODE != "soj":
+    if tier is not None and SCEN_MODE not in SEAT_MODEL:
         if tier not in TIER_CHOICES:
             raise ValueError(f"tier {tier} not available (choices: {TIER_CHOICES})")
         TIER = tier
