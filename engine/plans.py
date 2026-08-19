@@ -49,6 +49,7 @@ consolidate when the next family adapter lands rather than fork further.
 import ai_bluegray as abg
 import ai_napoleonic as anp
 import ai_soj as aso
+import ai_naw as anw
 import ai_westwall as aww
 
 
@@ -383,12 +384,13 @@ def _mode_of(tg):
     return {"BlueGrayGame": "bluegray",
             "WestwallGame": "westwall",
             "NapoleonicGame": "napoleonic",
-            "SoJGame": "soj"}.get(type(tg).__name__)
+            "SoJGame": "soj",
+            "NawGame": "naw"}.get(type(tg).__name__)
 
 
 def _policy_of(tg):
     return {"bluegray": abg, "westwall": aww,
-            "napoleonic": anp, "soj": aso}.get(_mode_of(tg), abg)
+            "napoleonic": anp, "soj": aso, "naw": anw}.get(_mode_of(tg), abg)
 
 
 def take_turn(tg, plan=None, resolve_for=None):
@@ -404,6 +406,8 @@ def take_turn(tg, plan=None, resolve_for=None):
         return anp.take_turn(tg, theta=plan)
     if _mode_of(tg) == "soj":
         return aso.take_turn(tg, theta=plan)
+    if _mode_of(tg) == "naw":
+        return anw.take_turn(tg, theta=plan)
     if tg.s["over"]:
         return []
     comp = COMPILERS.get(_mode_of(tg))
@@ -426,7 +430,7 @@ def play_game(tg, planners=None, max_turns=None):
     side's planner is resolved once and ai_napoleonic.play_game drives
     the interleaved decider flow."""
     planners = planners or {}
-    if _mode_of(tg) in ("napoleonic", "soj"):
+    if _mode_of(tg) in ("napoleonic", "soj", "naw"):
         thetas = {sd: (pl(tg, sd) if callable(pl) else pl)
                   for sd, pl in planners.items()}
         return _policy_of(tg).play_game(tg, max_turns=max_turns, thetas=thetas)

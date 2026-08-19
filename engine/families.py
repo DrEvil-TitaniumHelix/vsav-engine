@@ -138,8 +138,40 @@ def _soj():
     }
 
 
+def _naw_margin(vp, order):
+    a, b = order
+    m = float(vp[a]["cs"] - vp[b]["cs"]) + 2.0 * vp[a]["exited"]
+    if vp[a]["won"]:
+        m += 100.0
+    elif vp[b]["won"]:
+        m -= 100.0
+    return m
+
+
+def _naw_result(tg):
+    s = tg.s
+    fr, al = tg.game.side_order
+    vp = {fr: {"cs": s["losses"][al], "exited": len(s["exited"]), "won": s["winner"] == fr},
+          al: {"cs": s["losses"][fr], "won": s["winner"] == al}}
+    return {"vp": vp, "winner": s["winner"], "over": bool(s["over"])}
+
+
+def _naw():
+    import naw
+    import ai_naw
+    import strategy_naw
+    return {
+        "kind": "naw",
+        "game_cls": naw.NawGame,
+        "ai": ai_naw,
+        "strategy": strategy_naw,
+        "margin": _naw_margin,
+        "result": _naw_result,
+    }
+
+
 _LOADERS = {"bluegray": _bluegray, "westwall": _westwall,
-            "napoleonic": _napoleonic, "soj": _soj}
+            "napoleonic": _napoleonic, "soj": _soj, "naw": _naw}
 
 
 def kind_of(game):

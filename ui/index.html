@@ -121,6 +121,7 @@
     <span id="note" class="fixw"></span>
     <span id="progress" class="fixw"></span>
     <button class="sidebtn holdspace fixw" id="tierbtn" style="width:170px"></button>
+    <button class="sidebtn holdspace" id="modebtn"></button>
     <button class="sidebtn" id="pbmbtn">⚔ Matches</button>
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
@@ -298,6 +299,7 @@ function bootGame(g) {
   });
   if (!mySide) { mySide = g.sides[0].id; }
   document.getElementById('side-' + mySide).classList.add('on');
+  if (g.seats && !g.tier) document.getElementById('aimode').value = 'auto';
   if (window.SALVO) SALVO.init({
     slug: g.slug || window.DEMO_SLUG || 'game',
     onUpdate: () => { refresh(); },
@@ -327,6 +329,8 @@ async function refresh() {
   if (document.getElementById('pbmpanel').style.display === 'block') renderPBMPanel();
   if (FRAME.renderUndo) FRAME.renderUndo(s.undo);   // guard: stale-cached frame.js
   renderTierBtn();
+  if (seatModel()) { FRAME.renderModeBtn(); followHumanSeat(); }
+  else FRAME.show('modebtn', false);
   document.getElementById('note').textContent = s.notes;
   OV.setAttribute('width', MAPW); OV.setAttribute('height', MAPH);
   if (!combatActive()) clearBattleSel();
@@ -336,6 +340,45 @@ async function refresh() {
   renderGuide();   // after the panels: it may mark a panel button as the sole way forward
   renderRules();
   render();
+  driveAI();
+}
+
+// ---------- seat model (Mode button: Human / Basic AI / Champion AI per seat) ----------
+// A game whose descriptor carries seats and no tier runs the gate always; the only
+// dimension is who sits in each seat. Computer seats drive themselves through
+// /api/ai_step; Human seats play at this screen (two Humans = hot-seat, the "play as"
+// side follows whichever Human seat the game is waiting on).
+function seatModel() { return !!(GAME && GAME.seats && !GAME.tier); }
+function seatOf(side) { return (GAME && GAME.seats && GAME.seats.current[side]) || 'human'; }
+function computerSeat(side) { const k = seatOf(side); return k === 'basic' || k === 'champion'; }
+function seatName(side) { const k = seatOf(side); return (GAME.seats && GAME.seats.names[k]) || k; }
+function actingSide() {
+  if (!FLOW) return null;
+  const C = FLOW.combat;
+  if (C && C.pending && C.pending.chooser) return C.pending.chooser;
+  return FLOW.decider || FLOW.mover;
+}
+function followHumanSeat() {
+  const a = actingSide();
+  if (!a || computerSeat(a) || mySide === a || dragging) return;
+  mySide = a; deselect();
+  document.querySelectorAll('#sidebtns .sidebtn').forEach(x => x.classList.remove('on'));
+  const sb = document.getElementById('side-' + mySide);
+  if (sb) sb.classList.add('on');
+}
+let aiPaused = false;
+function driveAI() {
+  if (!seatModel() || !FLOW || FLOW.over || aiPaused || aiActive || aiBusy) return;
+  if (!computerSeat(actingSide())) return;
+  aiActive = true; renderFlow();
+  if (document.getElementById('aimode').value === 'auto') aiAutoLoop();
+  else aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); driveAI(); } });
+}
+function pauseAI() {
+  aiPaused = !aiPaused;
+  document.getElementById('aiplaybtn').blur();
+  if (aiPaused) { aiActive = false; aiNext = null; drawAIIntent(null); renderFlow(); renderGuide(); }
+  else driveAI();
 }
 
 // ---------- guidance banner + sole-way-forward marker ----------
@@ -383,6 +426,20 @@ function renderGuide() {
       : `GAME OVER after ${FLOW.turn - 1} turns — `)
       + `<b>Reset game</b> starts a new one.`, true);
     FRAME.soleNext('resetbtn');
+    return;
+  }
+  if (seatModel() && computerSeat(actingSide())) {
+    const who = actingSide();
+    if (aiPaused) {
+      FRAME.setGuide(`<b>${seatName(who)}</b> plays <b>${sideLabel(who)}</b> — paused. Press <b>▶ Resume</b> to let it continue, or change the seats under <b>Mode</b>.`);
+      FRAME.soleNext('aiplaybtn');
+    } else {
+      FRAME.setGuide(`<b>${seatName(who)}</b> is deciding for <b>${sideLabel(who)}</b>`
+        + (document.getElementById('aimode').value === 'step'
+           ? ' — press <b>SPACE</b> to execute each highlighted proposal (yellow = acting unit, red = target).'
+           : ' — every proposal animates on its own; each one goes through the Umpire and is logged with its verdict.'));
+      FRAME.soleNext(null);
+    }
     return;
   }
   if (FLOW.mode === 'napoleonic' && napGuide()) return;
@@ -682,6 +739,17 @@ function renderFlow() {
   // waiting on a side you are NOT playing — it answers exactly that
   // side's decisions and stops when the flow returns to you.
   // Stepped (grognard) or animated auto-play, engine-driven one action at a time.
+  if (seatModel()) {
+    const anyComputer = GAME.seats.order.some(computerSeat);
+    FRAME.show('aictl', anyComputer);
+    const AB2 = document.getElementById('aiplaybtn');
+    AB2.disabled = !!FLOW.over;
+    AB2.textContent = aiPaused ? '▶ Resume' : '⏸ Pause';
+    fb.textContent = FLOW.over
+      ? `GAME OVER after ${FLOW.turn - 1} turns`
+      : `${FLOW.turn_label || ('turn ' + FLOW.turn)} — ${sideShort(FLOW.mover)} moves`;
+    return;
+  }
   const tier3 = !PBM && !FLOW.over && GAME && GAME.tier && GAME.tier.active >= 3;
   const aiOK = (tier3
     && (FLOW.mode === 'napoleonic'
@@ -1738,6 +1806,7 @@ FRAME.initPanels({
   game: () => GAME,
   flow: () => FLOW,
   toast,
+  onSeats: async () => { aiPaused = false; aiActive = false; aiNext = null; drawAIIntent(null); await refresh(); },
 });
 FRAME.initUndo({ refresh, toast });   // engine-level undo button (one decision per press)
 const renderTierBtn = FRAME.renderTierBtn,
@@ -2115,7 +2184,8 @@ async function aiStepOnce() {
   aiBusy = true; showThinking(true);
   let r;
   try {
-    r = await (await fetch('/api/ai_step', { method: 'POST', body: '{}' })).json();
+    r = await (await fetch('/api/ai_step', { method: 'POST',
+          body: JSON.stringify(seatModel() ? {side: actingSide()} : {}) })).json();
   } catch (e) { aiBusy = false; showThinking(false); toast('AI step failed: ' + e); return { done: true }; }
   aiBusy = false; showThinking(false);
   if (r.error) { toast('Gate: ' + r.error); return { done: true }; }
@@ -2138,7 +2208,7 @@ async function aiStepOnce() {
 async function aiAutoLoop() {
   if (!aiActive) return;
   const r = await aiStepOnce();
-  if (r.done || !aiActive) { aiActive = false; renderFlow(); return; }
+  if (r.done || !aiActive) { aiActive = false; aiNext = null; renderFlow(); if (seatModel() && !aiPaused) driveAI(); return; }
   const pace = parseInt(document.getElementById('aipace').value);
   // pace only between EXECUTED actions; the initial reveal advances immediately
   setTimeout(aiAutoLoop, r.step ? pace : 0);
@@ -2153,16 +2223,16 @@ async function startAI() {
     await aiStepOnce();                 // reveal the first intent; SPACE advances
   }
 }
-document.getElementById('aiplaybtn').onclick = startAI;
+document.getElementById('aiplaybtn').onclick = () => (seatModel() ? pauseAI() : startAI());
 document.getElementById('aimode').onchange = () => {
   if (aiActive && document.getElementById('aimode').value === 'auto') aiAutoLoop();
 };
 document.addEventListener('keydown', e => {
   if (e.code !== 'Space') return;
-  if (!aiActive || aiBusy) return;
+  if (!aiActive || aiBusy || aiPaused) return;
   if (document.getElementById('aimode').value !== 'step') return;
   e.preventDefault();
-  aiStepOnce().then(r => { if (r.done) { aiActive = false; renderFlow(); } });
+  aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); if (seatModel() && !aiPaused) driveAI(); } });
 });
 
 refresh();

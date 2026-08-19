@@ -13,7 +13,7 @@ class NawGame(GateGame):
                  "fought", "defended", "advanced", "contacts", "disrupted", "battle_no", "pending")
     TURN_NOUN = "Game-Turn"
 
-    def __init__(self, game, scenario_path, live_dir, seed=None, tier=None):
+    def __init__(self, game, scenario_path, live_dir, seed=None):
         super().__init__(game, scenario_path, live_dir)
         self.reserve = {u["id"]: u for u in self.scenario.get("reserve", [])}
         self.schedule = self.reserve
@@ -22,14 +22,13 @@ class NawGame(GateGame):
         self.exit_hexes = {(int(h[:2]), int(h[2:])) for h in game.spec["exit"]["hexes"]}
         self.exit_side = game.spec["exit"]["side"]
         self.exit_cost = float(game.spec["exit"]["cost_mp"])
-        self._resolve_tier(tier)
         self._resume_or_new(seed, required=("losses", "moved", "first_forty", "contacts"))
 
     def new_game(self, seed=None):
         seed = self._fresh_seed(seed)
         units = self._scenario_units()
         self.s = {
-            "seed": seed, "rng_calls": 0, "n": 0, "tier": self.tier,
+            "seed": seed, "rng_calls": 0, "n": 0,
             "turn": 1, "phase": "movement", "mover": self.first_player,
             "over": False, "winner": None,
             "units": units,
@@ -48,7 +47,7 @@ class NawGame(GateGame):
         }
         self._reset_log()
         self._log({"event": "init", "mode": "naw",
-                   "scenario": self.scenario["name"], "tier": self.tier,
+                   "scenario": self.scenario["name"],
                    "rules_scope": self.rules_scope(), "seed": seed,
                    "turns": self.turns, "first_player": self.first_player,
                    "units": self._units_for_log(units)})
@@ -56,9 +55,20 @@ class NawGame(GateGame):
 
     def rules_scope(self):
         sc = self.scenario.get("rules_scope", {})
+        open_rows = sc.get("not_yet_enforced", [])
         return {"enforced": sc.get("enforced", []),
-                "not_enforced": sc.get("not_yet_enforced", []),
-                "rulings": sc.get("rulings", []) + [f"OPEN for Bruce: {q}" for q in sc.get("open_for_bruce", [])]}
+                "not_enforced": open_rows,
+                "rulings": sc.get("rulings", []) + [f"OPEN for Bruce: {q}" for q in sc.get("open_for_bruce", [])],
+                "banner": ("PLAYABLE - every coverage-matrix cell enforced or unreachable (validate_data/movement/combat/battle/victory; "
+                           "the one open cell is the platform UNDO policy, NAW2-OR-3)" if not open_rows
+                           else "BUILD IN PROGRESS - NOT PLAYABLE by the coverage-matrix standard (open rows below)")}
+
+    def side_to_move(self):
+        p = self.s["pending"]
+        return p["by"] if p else self.s["mover"]
+
+    def decider(self):
+        return self.side_to_move()
 
     def _scenario_units(self):
         return {u["id"]: {"pid": u["id"], "slot": u["slot"], "name": u.get("name", u["slot"]), "side": u["side"],
@@ -1085,6 +1095,5 @@ class NawGame(GateGame):
                     "exit_hexes": sorted(self.game.grid.hexnum(*h) for h in self.exit_hexes)},
             "exited": {pid: "north" for pid in s["exited"]},
             "scenario": self.scenario["name"],
-            "tier": self.tier, "tier_earned": self.tier_earned,
             "rules_scope": self.rules_scope(),
         }

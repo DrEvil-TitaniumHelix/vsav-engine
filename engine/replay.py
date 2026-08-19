@@ -61,8 +61,7 @@ def make_gate(game, scen_path, workdir, init):
         return ww_mod.WestwallGame(game, scen_path, workdir,
                                    seed=init["seed"], tier=init.get("tier"))
     if mode == "naw":
-        return naw_mod.NawGame(game, scen_path, workdir,
-                               seed=init["seed"], tier=init.get("tier"))
+        return naw_mod.NawGame(game, scen_path, workdir, seed=init["seed"])
     if mode == "bluegray":
         return bg_mod.BlueGrayGame(game, scen_path, workdir,
                                    seed=init["seed"], tier=init.get("tier"))

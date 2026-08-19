@@ -1,6 +1,13 @@
 {
  "name": "Napoleon at Waterloo (SPI, Second Edition 1971)",
  "blurb": "18 June 1815, 1 pm to 10 pm - Dunnigan's introductory division-scale Waterloo. Ten Game-Turns, forty Strength Points to break an army, seven French divisions to march off the north edge. Second Edition (1971) rules exactly as printed on the folio; the Third Edition is a separate game.",
+ "policy_ai": {
+  "kind": "naw",
+  "engine": "engine/ai_naw.py",
+  "strategy": "engine/strategy_naw.py",
+  "validated": "games/napoleon-at-waterloo/validate_ai.py",
+  "note": "Seat model: each seat is Human, Basic AI (this transparent policy AI) or Champion AI (playbook/champion.json once a training run graduates); the Basic AI plays BOTH seats - Movement Phase attack planner (targets chosen by achievable odds, attackers massed on the adjacent hexes, artillery posted at two hexes with a clear line, the rest positioned by threat/terrain/cohesion/objective), Prussian entry, French exits (weak units from exit_turn, everyone once the Allies are demoralized), Combat Phase obligations resolved best-first with complete_assignment() as the always-legal fallback, and every pending (victor-chosen retreats, exchange payment, advances) - submits only through the gate; full 10-turn AI-vs-AI games complete and replay through verify_game. The 14-gene strategy family (strategy_naw.py) is the training substrate for the champion."
+ },
  "edition": {
   "printed": "SPI Napoleon at Waterloo, Second Edition, copyright 1971 (folio: rules sheet, Examples of Attacks, counter set, map sheet with both CRT copies, TEC, Time Record, Demoralization Scale)",
   "not_this_game": "The 1979 Third Edition is a different-sized battlefield (380 hexes vs 594), opposite hex-column parity, four reversed rules (E17/E21/E23/E28) - encoded as its own game, never as a flag here (Bruce 2026-08-13). Christian Holm Christensen's 2024 fan revamp (rules.pdf, CC BY-SA) is neither edition and is never cited.",
