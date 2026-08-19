@@ -140,8 +140,9 @@ def default_seats():
     kinds = seat_kinds()
     comp = ("champion" if "champion" in kinds
             else "basic" if "basic" in kinds else "human")
-    return {sd: ("human" if i == 0 else comp)
-            for i, sd in enumerate(GAME_OBJ.side_order)}
+    g = SJ or SG or TG
+    first = getattr(g, "first_player", None) or GAME_OBJ.side_order[0]
+    return {sd: ("human" if sd == first else comp) for sd in GAME_OBJ.side_order}
 
 
 def load_seats():
