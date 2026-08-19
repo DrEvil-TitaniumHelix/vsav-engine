@@ -93,18 +93,25 @@ const FRAME = (() => {
     // the banner must never cover a left-side panel (the Vorpatzki-
     // overlay bug): start it right of any visible panel anchored left
     if (!guideEl) return;
-    let left = 0;
-    (H.guideAvoid || ['arrivals', 'tierpanel']).forEach(id => {
+    let left = 0, right = (H && H.guideRight) || 0;
+    const W = window.innerWidth;
+    const ids = (H.guideAvoid || ['arrivals', 'tierpanel'])
+      .concat(['combat', 'pbmpanel', 'rulespanel', 'tablespanel', 'guidepanel']);
+    ids.forEach(id => {
       const el = document.getElementById(id);
       // NOTE: these panels are position:fixed — offsetParent is always
       // null for them, so visibility must come from getClientRects()
       if (!el || el.style.display === 'none'
           || !el.getClientRects().length) return;
       const r = el.getBoundingClientRect();
-      if (r.left < window.innerWidth * 0.45 && r.width)
+      if (!r.width || r.bottom < guideEl.getBoundingClientRect().top) return;
+      if (r.left < W * 0.45)
         left = Math.max(left, r.right + 12);
+      else if (r.right > W * 0.55)
+        right = Math.max(right, W - r.left + 12);
     });
     guideEl.style.left = left + 'px';
+    guideEl.style.right = right + 'px';
   }
   function setGuide(html, over) {   // what should the player do RIGHT NOW?
     if (!guideEl) {
@@ -946,7 +953,7 @@ const FRAME = (() => {
     + 'release to drop';
 
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
-           show, setGuide, setGuideSuffix, soleNext, MOVE_HINT,
+           show, setGuide, guideAvoidPanels, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
            initPanels, soloPanel, renderTierBtn, renderModeBtn, openSeatsDialog,
            renderRules, renderTables,

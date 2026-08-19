@@ -188,7 +188,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js?v=20260818g"></script>
+<script src="frame.js?v=20260819a"></script>
 <script src="salvo.js?v=20260718s"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
@@ -1278,6 +1278,7 @@ function chips(set) {
 function renderCombat() {
   const box = document.getElementById('combat');
   const C = FLOW && FLOW.combat;
+  requestAnimationFrame(() => FRAME.guideAvoidPanels && FRAME.guideAvoidPanels());
   if (!C || FLOW.over) { box.style.display = 'none'; return; }
   // pendings render in EVERY phase (movement-phase demolition/Rommel would
   // otherwise leave the game blocked with no visible way to answer)
