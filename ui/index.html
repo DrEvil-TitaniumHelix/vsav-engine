@@ -14,6 +14,18 @@
             box-shadow:0 2px 8px rgba(0,0,0,.5); min-width:920px; }
   .tbrow { display:flex; align-items:center; flex-wrap:nowrap; gap:0 12px; height:37px; }
   #zoomctl { position:fixed; right:14px; bottom:14px; z-index:48; display:flex; flex-direction:column; gap:6px; }
+  #logdock { display:none; position:fixed; top:82px; right:0; bottom:0; width:300px; background:#1d2025;
+             border-left:1px solid #333; z-index:28; flex-direction:column; box-shadow:-4px 0 16px rgba(0,0,0,.35); }
+  #logdock.on { display:flex; }
+  #loghdr { padding:5px 10px; font-size:11.5px; color:#8a8f98; border-bottom:1px solid #333;
+            display:flex; justify-content:space-between; }
+  #log { flex:1; overflow-y:auto; font-size:11.5px; padding:6px 8px; font-family:Consolas,monospace; }
+  .le { padding:3px 6px; border-radius:4px; margin-bottom:3px; white-space:pre-wrap; word-break:break-word; }
+  .le.legal { background:#202620; color:#b9d3ac; }
+  .le.illegal { background:#2d1d1c; color:#e8a49b; border-left:3px solid #b0483a; }
+  .le.event { background:#1d2430; color:#a9c4e8; }
+  .le .ev { color:#ffd75e; }
+  .le .die { color:#fff; font-weight:700; }
   #zoomctl button { width:40px; height:40px; border-radius:8px; border:1px solid #555;
                     background:#23262cee; color:#ddd; font-size:20px; cursor:pointer;
                     box-shadow:0 3px 10px rgba(0,0,0,.5); }
@@ -126,6 +138,7 @@
     <button class="sidebtn" id="rulesbtn">📜 Rules</button>
     <button class="sidebtn" id="tablesbtn">📊 Tables</button>
     <button class="sidebtn" id="guidebtn">📖 Guide</button>
+    <button class="sidebtn" id="logbtn" title="running game log: every proposal with the Umpire's verdict and every result">📋 Log</button>
     <button class="sidebtn" id="menubtn" onclick="location.href='/menu'">☰ Games</button>
     <button class="sidebtn holdspace fixw" id="undobtn" style="width:110px">↶ Undo</button>
     <button class="sidebtn" id="resetbtn">Reset game</button>
@@ -181,6 +194,7 @@
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
      border:1px solid #3a3f47; border-radius:8px; padding:10px 12px; z-index:30;
      box-shadow:0 6px 24px rgba(0,0,0,.5);"></div>
+<div id="logdock"><div id="loghdr"><span>GAME LOG — every proposal, legal or not</span><span id="lognote"></span></div><div id="log"></div></div>
 <div id="combat" style="display:none; position:fixed; top:52px; right:8px; max-width:360px;
      max-height:70vh; overflow:auto; background:#2c2320ee; color:#e8ddd4; font-size:13px;
      border:1px solid #55423a; border-radius:8px; padding:10px 12px; z-index:30;
@@ -188,7 +202,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js?v=20260819a"></script>
+<script src="frame.js?v=20260819b"></script>
 <script src="salvo.js?v=20260718s"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
@@ -239,8 +253,86 @@ FRAME.initFrame({
     return mine.length > 0 && mine.every(u => u.status);
   },
   followTop: ['tierpanel','arrivals','combat','rulespanel','tablespanel','pbmpanel']
-             .map(id => ({ id, gap: 8 })),
+             .map(id => ({ id, gap: 8 })).concat([{ id: 'logdock', gap: 0 }]),
 });
+const DOCK_W = 300;
+function logDockOn() { return localStorage.getItem('valor.logdock') !== 'off'; }
+function applyLogDock() {
+  const on = logDockOn();
+  document.getElementById('logdock').classList.toggle('on', on);
+  const b = document.getElementById('logbtn'); if (b) b.classList.toggle('on', on);
+  const off = on ? DOCK_W : 0;
+  [['combat', 8], ['tierpanel', 8], ['rulespanel', 8], ['tablespanel', 8], ['pbmpanel', 8],
+   ['guidepanel', 8], ['zoomctl', 14], ['selbox', 14]].forEach(([id, base]) => {
+    const el = document.getElementById(id); if (el) el.style.right = (base + off) + 'px'; });
+  if (FRAME.guideAvoidPanels) FRAME.guideAvoidPanels();
+  if (on) renderLog();
+}
+document.getElementById('logbtn').onclick = () => {
+  localStorage.setItem('valor.logdock', logDockOn() ? 'off' : 'on'); applyLogDock();
+};
+function nameOf(pid) { const u = units.find(x => x.id === String(pid)); return u ? (u.slot || u.name || pid) : pid; }
+function fmtEvent(ev) {
+  if (ev.battle !== undefined && ev.result)
+    return `<span class="ev">⚔ battle ${ev.battle}</span> ${ev.attack} vs ${ev.defense} = ${ev.column}` +
+           (ev.raw_column && ev.raw_column !== ev.column ? ` (raw ${ev.raw_column})` : '') +
+           ` · die <span class="die">${ev.die}</span> → <b>${ev.result}</b> ${ev.explanation ? '— ' + ev.explanation : ''}`;
+  if (ev.eliminated) return `<span class="ev">✖ ${ev.eliminated}</span> eliminated` + (ev.losses ? ` · losses ${Object.entries(ev.losses).map(([k,v])=>k+' '+v).join(' / ')}` : '');
+  if (ev.retreat) return `↩ ${ev.retreat} ${ev.from} → ${ev.to}` + (ev.chosen_by ? ` (chosen by ${ev.chosen_by}${ev.forced ? ', only safe hex' : ''})` : '');
+  if (ev.disrupted) return `⚡ ${ev.disrupted} disrupted at ${ev.at} by ${ev.by}`;
+  if (ev.advance) return `➡ ${ev.advance} advances ${ev.from} → ${ev.to}`;
+  if (ev.advance_declined) return `no advance (${ev.advance_declined})`;
+  if (ev.exchange) return `EX paid: ${ev.exchange}` + (ev.owe !== undefined ? ` (owe ${ev.owe}, pay ${ev.pay})` : '');
+  if (ev.move) return `${ev.move} ${ev.from} → ${Array.isArray(ev.to) ? ev.to.join(',') : ev.to}` + (ev.mp !== undefined ? ` (${ev.mp} MP)` : '');
+  if (ev.exit) return `<span class="ev">⇧ ${ev.exit} exits</span>` + (ev.via ? ` via ${ev.via}` : '');
+  if (ev.game_turn) return `<span class="ev">— Game-Turn ${ev.game_turn}${ev.label ? ' (' + ev.label + ')' : ''} —</span>`;
+  if (ev.player_turn) return `— ${ev.player_turn} Player-Turn ${ev.turn} —`;
+  if (ev.phase) return `phase → ${ev.phase}` + (ev.obligations !== undefined ? ` · ${ev.obligations} obligation(s)` : '');
+  if (ev.winner) return `<span class="ev">★ GAME OVER — ${ev.winner}</span>${ev.why ? ' — ' + ev.why : ''}`;
+  if (ev.demoralized) return `<span class="ev">☠ DEMORALIZED: ${ev.demoralized}</span>`;
+  const ks = Object.keys(ev).filter(k => !['pid', 'why', 'side'].includes(k));
+  return ks.slice(0, 4).map(k => `${k}: ${typeof ev[k] === 'object' ? JSON.stringify(ev[k]) : ev[k]}`).join(' · ');
+}
+function fmtAction(a) {
+  const nm = a.unit ? ` ${nameOf(a.unit)}` : '';
+  switch (a.type) {
+    case 'move': return `move${nm} → ${a.dest ? a.dest.join(',') : ''}`;
+    case 'battle': return `attack: ${(a.attackers || []).map(nameOf).join(', ')} vs ${(a.defenders || []).map(nameOf).join(', ')}`;
+    case 'retreat': return a.decline ? 'retreat declined (stands fast)' : `retreat${nm} → ${a.path ? a.path[a.path.length - 1].join(',') : ''}`;
+    case 'advance': return a.decline ? 'advance declined' : `advance${nm} → ${a.hex ? a.hex.join(',') : ''}`;
+    case 'exchange_loss': return `exchange loss: ${(a.units || []).map(nameOf).join(', ')}`;
+    case 'exit': return `exit${nm} via ${a.via ? a.via.join(',') : ''}`;
+    case 'reinforce': return `reinforce${nm} at ${a.hex ? a.hex.join(',') : ''}`;
+    default: return a.type + nm + Object.keys(a).filter(k => !['type', 'unit'].includes(k)).map(k => ` ${k}=${JSON.stringify(a[k])}`).join('');
+  }
+}
+let logLastN = -1, logBusy = false;
+async function renderLog() {
+  if (!logDockOn() || logBusy) return;
+  logBusy = true;
+  let r;
+  try { r = await (await fetch('/api/log?n=120')).json(); } catch (e) { logBusy = false; return; }
+  logBusy = false;
+  const L = document.getElementById('log');
+  const es = r.entries || [];
+  const lastN = es.length ? (es[es.length - 1].n || 0) : 0;
+  if (lastN === logLastN && es.length && L.childElementCount) return;
+  logLastN = lastN;
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  L.innerHTML = es.map(e => {
+    if (e.event === 'init') return `<div class="le event">INIT ${esc(e.scenario || '')} seed=${e.seed}</div>`;
+    if (e.event && e.event !== 'action') return `<div class="le event">${esc(e.event)} ${esc(JSON.stringify(e).slice(0, 160))}</div>`;
+    const v = e.verdict || {}, cls = v.legal ? 'legal' : 'illegal';
+    let h = `<b>n${e.n}</b> T${e.turn} ${esc(e.phase || '')} ${esc(e.side || '')}: ${esc(fmtAction(e.action || {}))}`;
+    if (!v.legal) h += `\n   REJECTED: ${esc((v.reasons || []).join('; '))}`;
+    else if (v.reasons && v.reasons.length) h += `\n   ${esc(v.reasons[0])}`;
+    (e.result || []).forEach(ev => { h += `\n   ${fmtEvent(ev)}`; });
+    return `<div class="le ${cls}">${h}</div>`;
+  }).join('');
+  L.scrollTop = L.scrollHeight;
+  document.getElementById('lognote').textContent = `${es.length} shown`;
+}
+applyLogDock();
 let toastT = null;
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -340,6 +432,7 @@ async function refresh() {
   renderGuide();   // after the panels: it may mark a panel button as the sole way forward
   renderRules();
   render();
+  renderLog();
   driveAI();
 }
 
@@ -450,7 +543,7 @@ function renderGuide() {
   // placement [22.4]) — a tester was left with "Your move" while the
   // gate refused everything (Bruce 2026-07-18). One check, all phases.
   if (C && C.pending_rommel) {
-    FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the left panel [22.4].`);
+    FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the right panel [22.4].`);
     FRAME.soleNext(null);
     return;
   }
@@ -464,7 +557,7 @@ function renderGuide() {
                  || ('resolve the pending "' + C.pending.kind + '" choice');
     const who = C.pending.chooser
       ? `the <b>${sideLabel(C.pending.chooser)}</b> player must ` : '';
-    FRAME.setGuide(`<b>Decision required</b> — ${who}${what}, in the left panel. `
+    FRAME.setGuide(`<b>Decision required</b> — ${who}${what}, in the right panel. `
       + `Nothing else can happen until it is resolved.`);
     FRAME.soleNext(null);
     return;
@@ -522,7 +615,7 @@ function renderGuide() {
     // pendings already handled above, for every phase
     if (C.must_attack.length || C.must_be_attacked.length) {
       FRAME.setGuide(`<b>Combat</b> — units in enemy contact MUST fight [8.4]: click your attackers, `
-        + `then the adjacent enemy defenders, then <b>⚔ Resolve battle</b> in the left panel.`);
+        + `then the adjacent enemy defenders, then <b>⚔ Resolve battle</b> in the right panel.`);
       FRAME.soleNext(null);
       return;
     }
