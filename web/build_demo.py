@@ -132,7 +132,7 @@ def game_payload(zf, slug, manifest):
     # champion.json so the in-browser AI seat plays the same champion as
     # the native app; doctrine.md feeds the SALVO challenger payload. The
     # heavy corpus stays out.
-    for fn in ("champion.json", "doctrine.md"):
+    for fn in ("champion.json", "doctrine.md", "manifest.json"):
         p = os.path.join(gdir, "playbook", fn)
         if os.path.isfile(p):
             zf.write(p, f"games/{slug}/playbook/{fn}")
