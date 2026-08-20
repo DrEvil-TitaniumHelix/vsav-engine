@@ -160,7 +160,7 @@
 <div id="actions"></div>
 <div id="picker"></div>
 
-<script src="frame.js?v=20260819b"></script>
+<script src="frame.js?v=20260820b"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay'), FW = document.getElementById('facewheel');
@@ -266,7 +266,7 @@ function actingSide(){
   return FLOW.fire_done.includes(FLOW.initiative)?null:FLOW.initiative;
 }
 function aiSide(){ return actingSide(); }
-function aiTurn(){ const a=actingSide(); return !!a&&computerSeat(a); }
+function aiTurn(){ const a=actingSide(); return !!a&&computerSeat(a)&&FRAME.started(); }
 function followHumanSeat(){
   const a=actingSide();
   if(!a||computerSeat(a)||mySide===a||dragging)return;

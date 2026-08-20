@@ -105,10 +105,10 @@ def facing_path():
 
 
 SEATS = {}
-SEAT_LABEL = {"human": "Human", "basic": "Basic AI",
-              "champion": "Champion AI", "harness": "Harness"}
+STARTED = False
+SEAT_LABEL = {"human": "Human", "basic": "Basic AI", "champion": "Champion AI"}
 SEAT_NAME = {"human": "Human", "basic": "Computer (Basic AI)",
-             "champion": "Computer (Champion)", "harness": "Harness"}
+             "champion": "Computer (Champion)"}
 
 
 def seats_path():
@@ -123,8 +123,6 @@ def seat_kinds():
         kinds.append("basic")
     if "basic" in kinds and champ_mod.genome(GAME_OBJ.dir) is not None:
         kinds.append("champion")
-    if SCEN_MODE in salvo_mod.SALVO_MODES:
-        kinds.append("harness")
     return kinds
 
 
@@ -145,8 +143,18 @@ def default_seats():
     return {sd: ("human" if sd == first else comp) for sd in GAME_OBJ.side_order}
 
 
+def game_in_progress():
+    lp = getattr(SJ or SG or TG, "log_path", None)
+    if not lp or not os.path.exists(lp):
+        return False
+    with open(lp, encoding="utf-8") as f:
+        return sum(1 for _ in f) > 1
+
+
 def load_seats():
+    global STARTED
     d = default_seats()
+    saved = {}
     if os.path.exists(seats_path()):
         try:
             saved = json.load(open(seats_path()))
@@ -156,12 +164,13 @@ def load_seats():
         for sd in d:
             if saved.get(sd) in kinds:
                 d[sd] = saved[sd]
+    STARTED = bool(saved["_started"]) if "_started" in saved else game_in_progress()
     return d
 
 
 def save_seats():
     with open(seats_path(), "w") as f:
-        json.dump(SEATS, f)
+        json.dump(dict(SEATS, _started=STARTED), f)
 
 
 def seat_pairing():
@@ -172,14 +181,14 @@ def seat_pairing():
 
 def seats_view():
     labels, names = seat_labels()
-    return dict(current=dict(SEATS), available=seat_kinds(),
+    return dict(current=dict(SEATS), available=seat_kinds(), started=STARTED,
                 labels=labels, names=names, pairing=seat_pairing(),
                 order=list(GAME_OBJ.side_order),
                 generalship=champ_mod.generalship(GAME_OBJ.dir))
 
 
 def api_seats(body):
-    global AI_STEP
+    global AI_STEP, STARTED
     req = (body or {}).get("seats") or {}
     kinds = seat_kinds()
     for sd, k in req.items():
@@ -190,19 +199,22 @@ def api_seats(body):
                               f"game (available: {', '.join(SEAT_LABEL[x] for x in kinds)})")
     if req:
         SEATS.update(req)
-        save_seats()
         AI_STEP = None
+    if (body or {}).get("start"):
+        STARTED = True
+    if req or (body or {}).get("start"):
+        save_seats()
     return dict(ok=True, seats=seats_view())
 
 
 def seat_theta(side, body=None):
     k = (body or {}).get("brain") or SEATS.get(side, "human")
+    if not STARTED and not (body or {}).get("brain"):
+        return dict(error="the game has not been started - choose the seats "
+                          "and press Start")
     if k == "human":
         return dict(error=f"the {side} seat is Human - no computer plays it "
                           f"(change it under Mode)")
-    if k == "harness":
-        return dict(error=f"the {side} seat is a Harness - its moves arrive "
-                          f"through the match folder, not this button")
     if k not in seat_kinds():
         return dict(error=f"{k} is not available for this game")
     if k == "champion":
@@ -1773,8 +1785,10 @@ def api_salvo_stop():
 
 
 def api_reset(body=None):
-    global AI_STEP
+    global AI_STEP, STARTED
     AI_STEP = None
+    STARTED = False
+    save_seats()
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
     undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window

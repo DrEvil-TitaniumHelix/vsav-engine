@@ -194,6 +194,10 @@ check(info["game"]["seats"]["current"] == {"Fr": "human", "Al": ("champion" if "
       f"default seats: Human French vs the computer Allies ({info['game']['seats']['current']})")
 check(info["flow"]["mode"] == "naw" and "tier" not in info["flow"] and info["flow"]["rules_scope"]["banner"].startswith("PLAYABLE"),
       f"flow carries no tier; rules_scope banner: {info['flow']['rules_scope']['banner'][:60]}...")
+r = server.route_post("/api/ai_step", {})
+check("not been started" in (r.get("error") or ""), f"server refuses every computer seat before Start: {r.get('error')}")
+r = server.route_post("/api/seats", {"start": True})
+check(r.get("ok") and r["seats"]["started"] is True, "Start recorded: seats.started True")
 r = server.route_post("/api/sg_ai_turn", {"side": "Al"})
 check(r.get("error") == "it is not Al's decision", f"server refuses the AI for a seat not deciding: {r.get('error')}")
 r = server.route_post("/api/sg_ai_turn", {})
