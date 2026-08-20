@@ -198,7 +198,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js?v=20260819b"></script>
+<script src="frame.js?v=20260820b"></script>
 <script src="salvo.js?v=20260718s"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
@@ -459,7 +459,7 @@ function remoteSeat(side) {
   return !!((PBM && PBM.ai_side === side) || (SALVO_ST && SALVO_ST.llm_side === side));
 }
 function driveAI() {
-  if (!FLOW || FLOW.over || aiPaused || aiActive || aiBusy) return;
+  if (!FLOW || FLOW.over || aiPaused || aiActive || aiBusy || !FRAME.started()) return;
   if (!computerSeat(actingSide()) || remoteSeat(actingSide())) return;
   aiActive = true; renderFlow();
   if (document.getElementById('aimode').value === 'auto') aiAutoLoop();

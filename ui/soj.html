@@ -171,7 +171,7 @@
 <div id="toast"></div>
 <div id="tablespanel"></div>
 
-<script src="frame.js?v=20260819b"></script>
+<script src="frame.js?v=20260820b"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
 const OV = document.getElementById('overlay');
@@ -276,7 +276,7 @@ function seatName(side){ const k=seatOf(side); return GAME.seats&&GAME.seats.nam
 let aiPaused=false;
 function driveAI(){
   if(!GAME||!FLOW||FLOW.over||aiPaused||aiActive||aiBusy||busy)return;
-  if(!computerSeat(actingSide()))return;
+  if(!computerSeat(actingSide())||!FRAME.started())return;
   aiActive=true; render();
   if(document.getElementById('aimode').value==='auto')aiAutoLoop();
   else aiStepOnce().then(r=>{ if(r.done){ aiActive=false; aiNext=null; render(); driveAI(); } });

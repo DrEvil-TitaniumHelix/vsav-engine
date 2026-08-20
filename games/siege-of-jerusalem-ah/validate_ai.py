@@ -152,6 +152,10 @@ import server
 server.LIVE = tempfile.mkdtemp()
 server.load_game(HERE)
 r = server.route_post("/api/ai_step", {})
+check("not been started" in (r.get("error") or ""), f"server refuses every computer seat before Start: {r.get('error')}")
+r = server.route_post("/api/seats", {"start": True})
+check(r.get("ok") and r["seats"]["started"] is True, "Start recorded: seats.started True")
+r = server.route_post("/api/ai_step", {})
 first = r["next"]
 n = 0
 while not r["done"] and n < 400:

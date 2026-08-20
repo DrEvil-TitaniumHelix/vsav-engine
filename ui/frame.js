@@ -288,17 +288,18 @@ const FRAME = (() => {
   const SEAT_DESC = {
     human: 'you, at this screen (two Human seats = hot-seat)',
     basic: "the shipped policy AI",
-    champion: 'the trained champion (self-play, graduation bar met)',
-    harness: 'an outside model, moving through the match folder' };
+    champion: 'the trained champion (self-play, graduation bar met)' };
   function seatsInfo() { const g = PH && PH.game(); return g && g.seats; }
+  function started() { const S = seatsInfo(); return !S || S.started !== false; }
   function renderModeBtn() {
     const B = $id('modebtn');
     if (!B) return;
     const S = seatsInfo();
     if (!S) { show(B, false); return; }
     show(B, true);
+    if (!started() && !$id('seatsdlg')) { openSeatsDialog(); return; }
     B.textContent = `Mode: ${S.pairing} ▾`;
-    B.title = 'Who sits in each seat — Human, Basic AI, Champion AI, Harness; '
+    B.title = 'Who sits in each seat — Human, Basic AI, Champion AI; '
       + 'every pairing is legal, computer vs computer included';
     B.classList.toggle('on', !!$id('seatsdlg'));
   }
@@ -308,9 +309,10 @@ const FRAME = (() => {
     renderModeBtn();
   }
   function openSeatsDialog() {
-    if ($id('seatsdlg')) { closeSeatsDialog(); return; }
+    if ($id('seatsdlg')) { if (started()) closeSeatsDialog(); return; }
     const S = seatsInfo(), G = PH.game();
     if (!S) return;
+    const setup = !started();
     const ov = document.createElement('div');
     ov.id = 'seatsdlg';
     ov.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,.55);
@@ -330,11 +332,13 @@ const FRAME = (() => {
     ov.innerHTML = `<div style="width:760px; max-width:94vw; background:#23262c;
         border:1px solid #3a3f47; border-radius:12px; padding:22px 26px;
         font-size:17px; line-height:1.5; color:#e6ebf0; box-shadow:0 8px 30px rgba(0,0,0,.6)">
-      <div style="font-size:24px; font-weight:700; margin-bottom:8px; color:#fff">Mode — who plays each seat</div>
+      <div style="font-size:24px; font-weight:700; margin-bottom:8px; color:#fff">${setup
+        ? 'New game — who plays each seat' : 'Mode — who plays each seat'}</div>
       <div style="margin-bottom:12px; color:#b9c2cc">The ${UMPIRE} checks every action whoever
         sits in the seat. Any pairing is legal: Human vs Human is hot-seat, Human vs a
         computer is a match, computer vs computer plays itself for you to watch.
-        Seats change immediately; the game continues from where it stands.</div>
+        ${setup ? 'Nothing moves until you press <b>Start game</b>.'
+                : 'Seats change immediately; the game continues from where it stands.'}</div>
       ${rows}
       ${gs ? `<div style="margin:6px 0 2px; padding:10px 12px; background:#1a1d22; border:1px solid #3a3f47;
         border-radius:8px; color:#c9d3dd; font-size:15px; line-height:1.45">
@@ -343,8 +347,8 @@ const FRAME = (() => {
         the training record; a rung the record does not prove is never shown.</span></div>` : ''}
       <div id="seatsprev" style="margin:14px 0 8px; color:#9cc4ee; font-weight:700; font-size:19px"></div>
       <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px">
-        <button id="seatscancel" class="sidebtn" style="font-size:16px; padding:8px 18px; color:#e6ebf0">Cancel</button>
-        <button id="seatsapply" class="sidebtn" style="font-weight:700; font-size:16px; padding:8px 22px; color:#fff">Apply</button>
+        ${setup ? '' : '<button id="seatscancel" class="sidebtn" style="font-size:16px; padding:8px 18px; color:#e6ebf0">Cancel</button>'}
+        <button id="seatsapply" class="sidebtn" style="font-weight:700; font-size:16px; padding:8px 22px; color:#fff">${setup ? 'Start game' : 'Apply'}</button>
       </div></div>`;
     document.body.appendChild(ov);
     const sels = [...ov.querySelectorAll('select')];
@@ -352,13 +356,15 @@ const FRAME = (() => {
       sels.map(x => S.names[x.value]).join(' vs '); };
     sels.forEach(x => x.onchange = preview);
     preview();
-    ov.onclick = e => { if (e.target === ov) closeSeatsDialog(); };
-    $id('seatscancel').onclick = closeSeatsDialog;
+    if (!setup) {
+      ov.onclick = e => { if (e.target === ov) closeSeatsDialog(); };
+      $id('seatscancel').onclick = closeSeatsDialog;
+    }
     $id('seatsapply').onclick = async () => {
       const seats = {};
       sels.forEach(x => seats[x.dataset.side] = x.value);
       const r = await (await fetch('/api/seats', {method: 'POST',
-        body: JSON.stringify({seats})})).json();
+        body: JSON.stringify({seats, start: setup})})).json();
       if (r.error) { (PH.toast || alert)(r.error); return; }
       if (G) G.seats = r.seats;
       closeSeatsDialog();
@@ -851,7 +857,7 @@ const FRAME = (() => {
   return { initFrame, apply, zoomAt, centerOn, navUnit, onRender, layoutBars,
            show, setGuide, guideAvoidPanels, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
-           initPanels, soloPanel, renderModeBtn, openSeatsDialog,
+           initPanels, soloPanel, renderModeBtn, openSeatsDialog, started,
            renderRules, renderTables,
            refusal, UMPIRE };
 })();
