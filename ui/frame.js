@@ -288,7 +288,8 @@ const FRAME = (() => {
   const SEAT_DESC = {
     human: 'you, at this screen (two Human seats = hot-seat)',
     basic: "the shipped policy AI",
-    champion: 'the trained champion (self-play, graduation bar met)' };
+    champion: 'the trained champion (self-play, graduation bar met)',
+    harness: 'bring your own AI — it plays this seat through the Umpire' };
   function seatsInfo() { const g = PH && PH.game(); return g && g.seats; }
   function started() { const S = seatsInfo(); return !S || S.started !== false; }
   function renderModeBtn() {
@@ -313,6 +314,7 @@ const FRAME = (() => {
     const S = seatsInfo(), G = PH.game();
     if (!S) return;
     const setup = !started();
+    if (setup) HARNESS.reset();
     const ov = document.createElement('div');
     ov.id = 'seatsdlg';
     ov.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,.55);
@@ -340,6 +342,7 @@ const FRAME = (() => {
         ${setup ? 'Nothing moves until you press <b>Start game</b>.'
                 : 'Seats change immediately; the game continues from where it stands.'}</div>
       ${rows}
+      <div id="harnessblocks"></div>
       ${gs ? `<div style="margin:6px 0 2px; padding:10px 12px; background:#1a1d22; border:1px solid #3a3f47;
         border-radius:8px; color:#c9d3dd; font-size:15px; line-height:1.45">
         <b style="color:#f0f4f8">Generalship ${gs.rung}/10 — ${escp(gs.general)}.</b>
@@ -353,7 +356,8 @@ const FRAME = (() => {
     document.body.appendChild(ov);
     const sels = [...ov.querySelectorAll('select')];
     const preview = () => { $id('seatsprev').textContent =
-      sels.map(x => S.names[x.value]).join(' vs '); };
+      sels.map(x => S.names[x.value]).join(' vs ');
+      HARNESS.renderBlocks(sels.filter(x => x.value === 'harness').map(x => x.dataset.side), label, setup); };
     sels.forEach(x => x.onchange = preview);
     preview();
     if (!setup) {
@@ -363,6 +367,8 @@ const FRAME = (() => {
     $id('seatsapply').onclick = async () => {
       const seats = {};
       sels.forEach(x => seats[x.dataset.side] = x.value);
+      if (setup && !HARNESS.allTested(sels.filter(x => x.value === 'harness').map(x => x.dataset.side))) {
+        (PH.toast || alert)('Every Harness seat must pass its connection test before Start'); return; }
       const r = await (await fetch('/api/seats', {method: 'POST',
         body: JSON.stringify({seats, start: setup})})).json();
       if (r.error) { (PH.toast || alert)(r.error); return; }
@@ -372,6 +378,266 @@ const FRAME = (() => {
     };
     renderModeBtn();
   }
+  // ---------- Harness seat: bring-your-own AI plays a seat ----------
+  const HARNESS = (() => {
+    const ST = {};              // side -> {transport, tested, packet, dir, timer, lastMove, busy}
+    const web = () => !!window.DEMO_BUILD;
+    const api = async (path, body) => (await fetch(path, body !== undefined
+      ? {method: 'POST', body: JSON.stringify(body)} : undefined)).json();
+    const st = sd => ST[sd] || (ST[sd] = {transport: null, tested: false, packet: null,
+                                           dir: null, timer: null, lastMove: null, busy: false});
+    const J = o => JSON.stringify(o, null, 1);
+    const copy = async (t) => { try { await navigator.clipboard.writeText(t); return true; }
+                                catch (e) { return false; } };
+    const dl = (text, name) => { const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'}));
+      a.download = name; a.click(); };
+    async function applyReply(sd, r) {
+      const x = st(sd);
+      if (r.harness && r.harness[sd]) { x.transport = r.harness[sd].transport; x.tested = !!r.harness[sd].tested; }
+      if (r.packet) { x.packet = r.packet; await writePacket(sd); }
+      return r;
+    }
+    async function sync(sd) { return applyReply(sd, await api('/api/harness/packet?side=' + encodeURIComponent(sd))); }
+    // ---- folder ferry (File System Access API: Chrome/Edge) ----
+    function idb() { return new Promise((res, rej) => {
+      const rq = indexedDB.open('harness_dirs', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('dirs');
+      rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); }); }
+    const key = sd => location.pathname + '|' + sd;
+    async function saveHandle(sd, h) { try { const db = await idb();
+      db.transaction('dirs', 'readwrite').objectStore('dirs').put(h, key(sd)); } catch (e) {} }
+    async function loadHandle(sd) { try { const db = await idb();
+      return await new Promise(res => { const rq = db.transaction('dirs').objectStore('dirs').get(key(sd));
+        rq.onsuccess = () => res(rq.result || null); rq.onerror = () => res(null); }); } catch (e) { return null; } }
+    async function writeFile(d, name, text) { const fh = await d.getFileHandle(name, {create: true});
+      const w = await fh.createWritable(); await w.write(text); await w.close(); }
+    async function readText(d, name) { try { const fh = await d.getFileHandle(name);
+      return await (await fh.getFile()).text(); } catch (e) { return null; } }
+    async function writePacket(sd) {
+      const x = st(sd);
+      if (!x.dir || !x.packet) return;
+      const k = x.packet.n + ':' + x.packet.kind + ':' + (x.packet.since || []).length;
+      if (x.wroteKey === k) return;
+      x.wroteKey = k;
+      try { await writeFile(x.dir, 'packet.json', J(x.packet)); } catch (e) {}
+    }
+    async function pickFolder(sd) {
+      if (typeof window.showDirectoryPicker !== 'function')
+        throw new Error('This browser cannot grant folder access — use Chrome or Edge, or choose CHAT.');
+      const x = st(sd);
+      x.dir = await window.showDirectoryPicker({mode: 'readwrite'});
+      await saveHandle(sd, x.dir);
+      x.lastMove = await readText(x.dir, 'move.json');
+      x.wroteKey = null;
+      try { const rd = await api('/api/harness/readme?side=' + encodeURIComponent(sd));
+            if (rd.text) await writeFile(x.dir, 'HARNESS_README.md', rd.text); } catch (e) {}
+      await sync(sd);
+      startPoll(sd);
+    }
+    async function resumeFolder(sd) {
+      const x = st(sd);
+      if (x.dir) return true;
+      const h = await loadHandle(sd);
+      if (!h) return false;
+      let perm = 'denied';
+      try { perm = await h.queryPermission({mode: 'readwrite'}); } catch (e) { return false; }
+      if (perm !== 'granted') { try { perm = await h.requestPermission({mode: 'readwrite'}); } catch (e) {} }
+      if (perm !== 'granted') return false;
+      x.dir = h; x.lastMove = await readText(h, 'move.json'); x.wroteKey = null;
+      return true;
+    }
+    async function pollFolder(sd) {
+      const x = st(sd);
+      if (!x.dir || x.busy) return;
+      const raw = await readText(x.dir, 'move.json');
+      if (!raw || raw === x.lastMove || !x.packet) return;
+      let mv = null;
+      try { mv = JSON.parse(raw); } catch (e) { return; }
+      if (mv.n !== x.packet.n) { x.lastMove = raw; return; }
+      x.lastMove = raw;
+      await submit(sd, mv);
+    }
+    // ---- polling (folder ferry + URL/agent self-service) ----
+    let resumeCb = null;
+    function startPoll(sd) {
+      const x = st(sd);
+      if (x.timer) return;
+      x.timer = setInterval(async () => {
+        if (x.busy) return;
+        x.busy = true;
+        try {
+          if (x.transport === 'folder') await pollFolder(sd);
+          const before = x.tested + ':' + (x.packet && x.packet.n);
+          await sync(sd);
+          const after = x.tested + ':' + (x.packet && x.packet.n);
+          if (before !== after) { renderAll(); if (resumeCb && started()) resumeCb(); }
+        } catch (e) {} finally { x.busy = false; }
+      }, 2000);
+    }
+    function stopPoll(sd) { const x = st(sd); if (x.timer) clearInterval(x.timer); x.timer = null; }
+    async function submit(sd, mv) {
+      const x = st(sd);
+      const r = await api(started() ? '/api/harness/move' : '/api/harness/hello', {side: sd, move: mv});
+      await applyReply(sd, r);
+      x.lastVerdict = r.error || r.verdict || (r.ok ? `reply accepted — ${r.queued} order(s) queued` : '');
+      x.lastOk = !r.error && r.ok !== false;
+      renderAll();
+      if (started() && r.ok && resumeCb) resumeCb();
+      return r;
+    }
+    // ---- UI: dialog blocks ----
+    let blockSides = [], blockLabel = id => id, blockSetup = true;
+    function renderBlocks(sides, label, setup) {
+      blockSides = sides; blockLabel = label || blockLabel; blockSetup = setup;
+      const host = $id('harnessblocks');
+      if (!host) return;
+      host.innerHTML = sides.map(sd => blockHtml(sd)).join('');
+      sides.forEach(sd => { wireBlock(sd); if (!st(sd).packet) sync(sd).then(() => { renderBlocks(blockSides, blockLabel, blockSetup); }); });
+      const apply = $id('seatsapply');
+      if (apply && setup) apply.disabled = !allTested(sides);
+    }
+    const allTested = sides => sides.every(sd => st(sd).tested);
+    function blockHtml(sd) {
+      const x = st(sd), tr = x.transport;
+      const B = (id, t, on) => `<button class="sidebtn hb" data-h="${id}" data-side="${sd}"
+        style="font-size:14px; padding:6px 12px; color:#fff; ${on ? 'outline:2px solid #9cc4ee;' : ''}">${t}</button>`;
+      const pk = x.packet;
+      const testDone = x.tested;
+      return `<div style="margin:8px 0 12px; padding:12px 14px; background:#1a1d22; border:1px solid #3a3f47;
+          border-radius:8px; color:#c9d3dd; font-size:14px; line-height:1.45">
+        <div style="font-size:17px; font-weight:700; color:#f0f4f8; margin-bottom:6px">
+          Harness — ${escp(blockLabel(sd))} seat: bring your own AI</div>
+        <div style="margin-bottom:8px">Your AI (Claude, ChatGPT, Gemini, Claude Code, Codex, a local model, your
+          own program) plays this seat on its own. Each turn the game sends it a packet — the position and what it
+          must decide — and it replies with orders; the ${UMPIRE} checks every order against the real rules and
+          sends back a cited rejection when one breaks them. No API key, no account: your AI runs where it already runs.
+          <span style="color:#98a3ae">Is it really a general? Any model can send legal orders; few can win — a frontier
+          model handed the champion's doctrine cold scored below the basic AI in our tests. The README below carries
+          the preparation pathway (briefing → drill → exam → rating) and the researcher rung; all of it optional.</span></div>
+        <div style="margin:6px 0"><b style="color:#f0f4f8">1. Give your AI its README</b> — it is written to the AI,
+          not to you. Paste the whole thing into your AI.
+          ${B('readme-copy', '📋 Copy README')} ${B('readme-dl', '⬇ Download README')}</div>
+        <div style="margin:6px 0"><b style="color:#f0f4f8">2. Your AI answers FOLDER, URL or CHAT</b> — press what it said:
+          ${B('tr-folder', '📁 FOLDER', tr === 'folder')}
+          ${web() ? '' : B('tr-url', '🔗 URL', tr === 'url')}
+          ${B('tr-chat', '💬 CHAT', tr === 'chat')}</div>
+        ${tr === 'folder' ? `<div style="margin:6px 0 6px 18px">${x.dir
+            ? `Folder <b>${escp(x.dir.name)}</b> attached — tell your AI that path. packet.json is there now; it answers in move.json.`
+            : `${B('pick', '📁 Pick the match folder…')} then tell your AI the folder's path.`}</div>` : ''}
+        ${tr === 'url' ? `<div style="margin:6px 0 6px 18px">Tell your AI the game is at
+            <code style="color:#9cc4ee">${escp(location.origin)}</code> — the README has the two calls. Its first
+            POST is the connection test.</div>` : ''}
+        ${tr ? `<div style="margin:8px 0 2px"><b style="color:#f0f4f8">3. Connection test</b>
+          ${testDone ? `<span style="color:#7ee787; font-weight:700"> — passed ✔</span>` : ''}
+          ${x.lastVerdict && !testDone ? `<div style="color:${x.lastOk ? '#7ee787' : '#ff8a80'}; margin:4px 0">${escp(x.lastVerdict)}</div>` : ''}
+          ${tr === 'chat' ? `<div style="margin:4px 0 0 18px">${B('pk-copy', '📋 Copy hello packet')} → paste to your AI →
+              paste its reply here:<br>
+              <textarea data-h="reply" data-side="${sd}" style="width:100%; height:74px; margin-top:4px; background:#111317;
+                color:#e6ebf0; border:1px solid #4a5058; border-radius:6px; font-family:monospace; font-size:12px"></textarea>
+              ${B('reply-submit', testDone ? 'Test again' : 'Submit test')}</div>`
+            : `<div style="margin:4px 0 0 18px; color:#98a3ae">${testDone ? 'Your AI answered the hello packet in shape.'
+                : 'Waiting for your AI to answer the hello packet' + (tr === 'folder' && !x.dir ? ' (pick the folder first)' : '') + '…'}</div>`}
+          ${x.lastVerdict && testDone ? `<div style="color:#98a3ae; margin:4px 0 0 18px">${escp(x.lastVerdict)}</div>` : ''}
+          </div>` : ''}
+      </div>`;
+    }
+    function wireBlock(sd) {
+      const host = $id('harnessblocks') || document;
+      host.querySelectorAll(`.hb[data-side="${sd}"]`).forEach(b => b.onclick = () => act(sd, b.dataset.h, host));
+    }
+    async function act(sd, what, host) {
+      const x = st(sd), toast = PH.toast || alert;
+      try {
+        if (what === 'readme-copy' || what === 'readme-dl') {
+          const r = await api('/api/harness/readme?side=' + encodeURIComponent(sd));
+          if (r.error) { toast(r.error); return; }
+          if (what === 'readme-dl') dl(r.text, r.filename);
+          else toast((await copy(r.text)) ? 'README copied — paste it to your AI' : 'Clipboard blocked — use Download');
+          return;
+        }
+        if (what.startsWith('tr-')) {
+          const tr = what.slice(3);
+          await applyReply(sd, await api('/api/harness/config', {side: sd, transport: tr}));
+          if (tr === 'folder') { if (!(await resumeFolder(sd))) {} }
+          if (tr === 'folder' || tr === 'url') startPoll(sd); else stopPoll(sd);
+          renderAll(); return;
+        }
+        if (what === 'pick') { await pickFolder(sd); renderAll(); return; }
+        if (what === 'pk-copy') {
+          if (!x.packet) await sync(sd);
+          toast((await copy(J(x.packet))) ? 'Packet copied — paste it to your AI' : 'Clipboard blocked');
+          return;
+        }
+        if (what === 'reply-submit') {
+          const ta = host.querySelector(`textarea[data-h="reply"][data-side="${sd}"]`);
+          const raw = ta ? ta.value.trim() : '';
+          if (!raw) { toast('Paste the reply from your AI first'); return; }
+          await submit(sd, raw);
+          return;
+        }
+      } catch (e) { toast(e.message || String(e)); }
+    }
+    function renderAll() {
+      if ($id('harnessblocks')) renderBlocks(blockSides, blockLabel, blockSetup);
+      renderPanel();
+    }
+    // ---- in-game relay panel ----
+    let waitSide = null;
+    function wait(r, resume) {
+      resumeCb = resume;
+      waitSide = r.side;
+      const x = st(r.side);
+      applyReply(r.side, r);
+      if (x.transport === 'folder' && !x.dir) resumeFolder(r.side).then(() => writePacket(r.side));
+      if (x.transport === 'folder' || x.transport === 'url') startPoll(r.side);
+      ensurePanel('harnesspanel', `display:none; position:fixed; right:12px; bottom:12px; width:460px;
+        max-width:92vw; max-height:60vh; overflow:auto; background:#23262c; border:1px solid #3a3f47;
+        border-radius:10px; padding:12px 16px; z-index:60; font-size:14px; line-height:1.5; color:#e6ebf0;
+        box-shadow:0 6px 24px rgba(0,0,0,.5)`);
+      renderPanel();
+    }
+    function clearWait() { waitSide = null; const p = $id('harnesspanel'); if (p) p.style.display = 'none'; }
+    const waiting = sd => waitSide !== null && (sd === undefined || sd === waitSide);
+    function renderPanel() {
+      const p = $id('harnesspanel');
+      if (!p) return;
+      if (!waitSide || !started()) { p.style.display = 'none'; return; }
+      const sd = waitSide, x = st(sd), pk = x.packet, tr = x.transport;
+      const B = (id, t) => `<button class="sidebtn hb" data-h="${id}" data-side="${sd}"
+        style="font-size:14px; padding:6px 12px; color:#fff">${t}</button>`;
+      p.style.display = 'block';
+      p.innerHTML = `<div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:4px">
+          Harnessed AI — ${escp(blockLabel(sd))} seat
+          <span style="color:#9cc4ee; font-weight:400; font-size:13px">packet n=${pk ? pk.n : '?'}
+          ${pk && pk.kind === 'rejection' ? '· <b style="color:#ff8a80">rejection</b>' : ''}</span></div>
+        ${pk && pk.kind === 'rejection' ? `<div style="color:#ff8a80; font-size:13px; margin-bottom:4px">
+          The ${UMPIRE} refused order ${(pk.rejected || {}).accepted + 1}: ${escp(((pk.rejected || {}).reasons || []).join('; '))}
+          — the orders before it stood.</div>` : ''}
+        ${tr === 'chat' ? `<div>${B('pk-copy', '📋 Copy packet')} → paste to your AI → paste its reply:<br>
+            <textarea data-h="reply" data-side="${sd}" style="width:100%; height:80px; margin-top:4px; background:#111317;
+              color:#e6ebf0; border:1px solid #4a5058; border-radius:6px; font-family:monospace; font-size:12px"></textarea>
+            ${B('reply-submit', 'Submit reply')}</div>`
+          : `<div style="color:#98a3ae">Waiting for your AI over ${tr === 'folder'
+              ? 'the match folder' + (x.dir ? ` <b>${escp(x.dir.name)}</b>` : ' — <b>not attached</b>') : 'the local URL'}…
+              ${tr === 'folder' && !x.dir ? B('pick', '📁 Re-attach folder') : ''}</div>`}
+        ${x.lastVerdict ? `<div style="color:${x.lastOk ? '#98a3ae' : '#ff8a80'}; font-size:13px; margin-top:4px">${escp(x.lastVerdict)}</div>` : ''}`;
+      wireBlock(sd);
+      p.querySelectorAll(`.hb[data-side="${sd}"]`).forEach(b => b.onclick = () => act(sd, b.dataset.h, p));
+    }
+    function guide(sd) {
+      const x = st(sd);
+      return x.transport === 'chat'
+        ? `<b>Harnessed AI</b> plays <b>${escp(blockLabel(sd))}</b> — copy the packet from the Harness panel to your AI and paste its reply back.`
+        : `<b>Harnessed AI</b> plays <b>${escp(blockLabel(sd))}</b> — waiting for its reply over ${x.transport === 'folder' ? 'the match folder' : 'the local URL'}.`;
+    }
+    function reset() {
+      Object.keys(ST).forEach(sd => { stopPoll(sd); delete ST[sd]; });
+      clearWait();
+    }
+    return { renderBlocks, allTested, wait, clearWait, waiting, guide, renderPanel, reset, state: st };
+  })();
+
   let rulesQ = '', rulesBuilt = '', rulesBodies = [], rulesHits = [], rulesCur = 0;
   function rulesMark(el, q) {
     const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), ts = [];
@@ -858,6 +1124,6 @@ const FRAME = (() => {
            show, setGuide, guideAvoidPanels, setGuideSuffix, soleNext, MOVE_HINT,
            initUndo, renderUndo,
            initPanels, soloPanel, renderModeBtn, openSeatsDialog, started,
-           renderRules, renderTables,
+           renderRules, renderTables, HARNESS,
            refusal, UMPIRE };
 })();
