@@ -1,6 +1,6 @@
-# Ingest scorecard — VASSAL .vmod → Tier-0 conversion
+# Ingest scorecard — VASSAL .vmod → bare-board ingest
 
-26 modules: **9 full / 16 partial / 1 fail**. Tier-0 = board + grid + pieces + a starting setup, playable in the browser as free piece-pushing (VASSAL-parity, zero rules enforcement). Failures are data: each row says exactly what's missing.
+26 modules: **9 full / 16 partial / 1 fail**. Ingest = board + grid + pieces + a starting setup, playable in the browser as free piece-pushing (VASSAL-parity, zero rules enforcement). Ingest is the first step of encoding, not a playable rating — the old tier ladder is retired; see README "How a game qualifies". Failures are data: each row says exactly what's missing.
 
 | Module | Verdict | Grid | Pieces | Setup | Why not full |
 |---|---|---|---|---|---|

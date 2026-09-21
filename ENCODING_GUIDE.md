@@ -30,7 +30,8 @@ your own game you supply:
    charts and player aids.
 2. **The rulebook** — many modules ship the full scanned rulebook inside the
    `.vmod`; if yours doesn't, bring a copy. No rulebook, no rules encoding
-   (the game can still run as Tier 0 free play).
+   (the module still ingests to a bare board — the starting point for
+   encoding, not a playable game).
 3. **A starting position** — a setup save or the printed setup instructions,
    so a scenario can be built (`engine/make_save.py` builds `.vsav` files from
    the module's own pieces).
@@ -53,7 +54,7 @@ your own game you supply:
 
 ## Can my game be encoded? — the five-point pre-screen
 
-All five must pass for a game to ship with an **enforced** rules gate (Tier 1+):
+All five must pass for a game to ship with an **enforced** rules gate:
 
 1. **Rules present** — embedded in the module or freely/legitimately obtainable.
 2. **Rules transcribe cleanly** — clear procedures, ideally with worked
@@ -68,22 +69,31 @@ All five must pass for a game to ship with an **enforced** rules gate (Tier 1+):
    source, or expert review. No way to check the transcription = no
    enforcement.
 
-Failing the screen doesn't mean the game can't run — it runs at **Tier 0**
-(free play, you are the umpire) instead of with a validated gate.
+Failing the screen means the game is not offered. The module still ingests
+to a bare board (VASSAL-parity piece pushing) that you can encode on top of,
+but unenforced play is not a VALOR game — that is what VASSAL already does.
 
-## The tier ladder — encode incrementally, enforce only what's validated
+## The coverage matrix — a game ships whole or not at all
 
-A game earns its tier; it never ships enforcement that hasn't been proven:
+The old Tier 0–3 ladder is retired. Playability is binary and strict:
 
-- **Tier 0** — free play: board, counters, dice, logging. You are the umpire.
-- **Tier 1** — movement enforced (grid, MA, terrain, ZOC).
-- **Tier 2** — combat enforced (the full gate).
-- **Tier 3** — full gate plus an AI opponent.
+- Build a **coverage matrix** for the game: every rule, in every phase of the
+  turn sequence, per scenario, is a cell (`COVERAGE_MATRIX.md`; see
+  `games/siege-of-jerusalem-ah/` and `games/napoleon-at-waterloo/`).
+- A cell is closed only when it is **enforced** by the gate or **unreachable,
+  with evidence**. There is no "umpired" state: an action the gate cannot
+  check is a defect.
+- The game is offered when every cell is closed. Until then it is work in
+  progress, however much of it is enforced. You still build incrementally —
+  movement, then combat, then the rest — but those are build stages, not
+  shippable ratings.
+- What a player chooses is **seats**, not a rules level: Human, Basic AI,
+  Champion/Advanced AI or Harness in each seat, gate always on.
 
 **The iron rule: a wrong gate is worse than no gate.** Every table and
 procedure must be validated against the rulebook's *own worked examples* (or
 expert review) before the engine may enforce it. If a table can't be
-validated, the game stays at the lower tier — still perfectly playable.
+validated, its cell stays open and the game is not offered until it is.
 
 ## The process (follow the reference game)
 
@@ -93,7 +103,7 @@ below has a concrete artifact there to copy the shape of:
 1. **Ingest the module** — extract the `.vmod`, read `buildFile` for grid
    geometry and PieceSlots (see `engine/ingest.py`, `engine/setup_module.py`;
    AK's `INGEST_REPORT.md` / `ingest_summary.json` show the output).
-2. **Write `game.json`** — grid, sides, counters, assets, tier config. This
+2. **Write `game.json`** — grid, sides, counters, assets. This
    file IS the game; the engine is generic.
 3. **Terrain** — per-hex terrain data (`build_terrain.py`, `terrain.json`).
 4. **Scenario** — starting position + arrivals (`make_scenario.py`,
@@ -101,9 +111,9 @@ below has a concrete artifact there to copy the shape of:
 5. **Transcribe the tables** — CRT, terrain effects, whatever the game
    resolves on — into cited data (Tobruk's `combat.json` is the pattern).
 6. **Validate everything** — AK has seven validators
-   (`validate_grid/movement/tier1/combat/tier2/arrivals/ai.py`) run against
+   (`validate_grid/movement/full_scope/combat/completion/arrivals/ai.py`) run against
    the rulebook's printed examples, with the evidence chain in
-   `VALIDATION.md`. Your game needs its equivalent before any tier badge.
+   `VALIDATION.md`. Your game needs its equivalent before it is offered.
 7. **Register the original game's defects** — encoding always surfaces bugs
    in the *printed* game (contradictions, undefined cases, broken
    cross-references, map errata). They go in `game.json` `source_defects`
