@@ -10,9 +10,12 @@ Scenario JSON:
   {"units": [{"slot": "Panzer-III H", "hex": [5, 19]},
              {"gpid": "580", "hex": [29, 20]},
              {"gpid": "2363", "hex": [2, 5], "layer": 2,
-              "img": "ge/ge467S.svg", "name": "4-6-7 1sq"}, ...]}
+              "img": "ge/ge467S.svg", "name": "4-6-7 1sq"},
+             {"slot": "Militia", "loc": "washington"}, ...]}
   "slot" = PieceSlot entryName (must be unique in the module) or use "gpid".
-  "hex"  = [col, row] in engine grid coords.
+  "hex"  = [col, row] in engine grid coords (hex games).
+  "loc"  = region location id (region-space games; placed at that origin).
+  "xy"   = raw [x, y] pixels (any space kind).
   "layer" (optional) = level for the slot's INNERMOST emb2. VASL counters are
     quality ladders (one slot = 4-6-8/4-6-7/4-4-7/4-3-6 as layer levels); this
     sets that layer's state to N and the paired broken-side layer before it
@@ -99,6 +102,8 @@ def build(game, scenario, out_path):
             rec = recs[0]
         if "xy" in u:                       # raw pixel placement (at-start ingest)
             x, y = int(u["xy"][0]), int(u["xy"][1])
+        elif "loc" in u:                    # region-space location id
+            x, y = game.loc_to_pixel(u["loc"])
         else:
             col, row = u["hex"]
             x, y = game.grid.hex_to_pixel(col, row)

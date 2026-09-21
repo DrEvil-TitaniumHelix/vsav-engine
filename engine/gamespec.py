@@ -9,10 +9,11 @@ means authoring a spec directory, not writing engine code.
 
 Spec-driven today: hex grid + numbering, sides, stats, terrain costs, hexside
 rules (prohibit / override / add, each with an "unless" feature like a bridge),
-ZOC flags, off-map classification. Combat (CRT) generalizes next.
+ZOC flags, off-map classification; OR region (named-location) space with an
+authored adjacency graph (AREA_MAP_DESIGN.md). Combat (CRT) generalizes next.
 """
 import heapq, json, os
-from collections import deque
+from collections import defaultdict, deque
 
 
 class Grid:
@@ -87,6 +88,114 @@ class Grid:
         return self.hexnum(col, row)
 
 
+class RegionSpace:
+    """Named-location graph: pixel <-> location id via region origins + edges.
+
+    Tie-break for nearest-origin snap: lower location id wins (stable, documented).
+    Directed edges are supported in the schema; Tier-0 treats undirected unless
+    an edge sets directed:true (then only a→b is added).
+    """
+
+    def __init__(self, data, default_mp=1.0):
+        self.locations = dict(data.get("locations") or {})
+        self.edges = list(data.get("edges") or [])
+        self.impassable_tags = set(data.get("impassable_tags") or ["offmap"])
+        self.default_mp = float(default_mp)
+        self.ingest = dict(data.get("ingest") or {})
+        self._adj = defaultdict(list)   # id -> [(nbr, cost)]
+        for e in self.edges:
+            a, b = e["a"], e["b"]
+            cost = float(e["cost"]) if "cost" in e else self.default_mp
+            self._adj[a].append((b, cost))
+            if not e.get("directed"):
+                self._adj[b].append((a, cost))
+        # origin index for snap
+        self._origins = [(lid, loc["origin"][0], loc["origin"][1])
+                         for lid, loc in self.locations.items()
+                         if loc.get("origin") is not None]
+
+    def has_edges(self):
+        return bool(self.edges)
+
+    def on_map(self, loc):
+        if loc not in self.locations:
+            return False
+        tags = set(self.locations[loc].get("tags") or [])
+        return not (tags & self.impassable_tags)
+
+    def display_name(self, loc):
+        rec = self.locations.get(loc)
+        return rec["name"] if rec else loc
+
+    def loc_to_pixel(self, loc):
+        o = self.locations[loc]["origin"]
+        return int(o[0]), int(o[1])
+
+    def pixel_to_loc(self, x, y, max_radius=None):
+        """Nearest region origin. Tie-break: lower id wins."""
+        best, best_d2 = None, None
+        for lid, ox, oy in self._origins:
+            d2 = (ox - x) * (ox - x) + (oy - y) * (oy - y)
+            if max_radius is not None and d2 > max_radius * max_radius:
+                continue
+            if best is None or d2 < best_d2 or (d2 == best_d2 and lid < best):
+                best, best_d2 = lid, d2
+        return best
+
+    def neighbors(self, loc):
+        return [n for n, _ in self._adj.get(loc, [])]
+
+    def move_cost(self, a, b):
+        if not self.on_map(b):
+            return None
+        for n, c in self._adj.get(a, []):
+            if n == b:
+                return c
+        return None
+
+    def distance(self, a, b):
+        """Shortest-path hop/cost distance (Dijkstra). None if unreachable."""
+        if a == b:
+            return 0
+        if not self.has_edges():
+            return None
+        best = {a: 0.0}
+        pq = [(0.0, a)]
+        while pq:
+            cost, cur = heapq.heappop(pq)
+            if cur == b:
+                return cost
+            if cost > best.get(cur, float("inf")):
+                continue
+            for n, ec in self._adj.get(cur, []):
+                nc = cost + ec
+                if nc < best.get(n, float("inf")):
+                    best[n] = nc
+                    heapq.heappush(pq, (nc, n))
+        return None
+
+    def reachable(self, start, ma):
+        """BFS/Dijkstra: loc -> MP spent, within budget `ma`."""
+        if not self.has_edges():
+            return {}
+        best = {start: 0.0}
+        pq = [(0.0, start)]
+        while pq:
+            cost, cur = heapq.heappop(pq)
+            if cost > best.get(cur, float("inf")):
+                continue
+            for n, ec in self._adj.get(cur, []):
+                if not self.on_map(n):
+                    continue
+                nc = cost + ec
+                if nc > ma:
+                    continue
+                if nc < best.get(n, float("inf")):
+                    best[n] = nc
+                    heapq.heappush(pq, (nc, n))
+        return best
+
+
 class Game:
     """A loaded game spec + its terrain data + the spec-driven movement engine."""
 
@@ -98,23 +207,51 @@ class Game:
         self.name = spec["name"]
         self.map_name = spec.get("map_name", "Main Map")
         self.save_key = int(spec.get("save_key", "a3"), 16)
-        self.grid = Grid(spec["grid"])
+
+        # space discriminator: legacy specs omit space and carry top-level "grid"
+        space = spec.get("space")
+        if not space and "grid" in spec:
+            space = {"kind": "hex", "grid": spec["grid"]}
+        self.space_kind = (space or {}).get("kind", "hex")
+        self.regions = None
+        self.grid = None
+
+        if self.space_kind == "region":
+            rfile = (space or {}).get("file", "regions.json")
+            rpath = self._path(rfile)
+            if not rpath or not os.path.exists(rpath):
+                # inline locations allowed for tiny maps
+                rdata = (space or {}).get("locations") and {
+                    "locations": space["locations"],
+                    "edges": space.get("edges", []),
+                    "impassable_tags": space.get("impassable_tags", ["offmap"]),
+                    "ingest": space.get("ingest", {}),
+                }
+                if not rdata:
+                    raise FileNotFoundError(f"region space file missing: {rfile}")
+            else:
+                rdata = json.load(open(rpath, encoding="utf-8"))
+            m = spec.get("movement", {})
+            self.regions = RegionSpace(rdata, default_mp=float(m.get("default_mp", 1.0)))
+        else:
+            grid_cfg = spec.get("grid") or (space or {}).get("grid")
+            if not grid_cfg:
+                raise KeyError("hex game requires grid in game.json")
+            self.grid = Grid(grid_cfg)
+            if "naming" in grid_cfg:
+                self.grid.set_naming(grid_cfg["naming"])
 
         s = spec["sides"]
         self.side_order = s["order"]
         self.default_side = s["default"]
         self.detect_tokens = s.get("detect_tokens", {})
 
-        g = spec["grid"]
-        if "naming" in g:
-            self.grid.set_naming(g["naming"])
-
         st = spec.get("stats", {})
         self.stat_patterns = [(frag, tuple(v)) for frag, v in st.get("patterns", [])]
         self.default_stat = tuple(st.get("default", (0, 0, 0)))
 
-        m = spec["movement"]
-        self.terrain_mp = m["terrain_mp"]
+        m = spec.get("movement", {})
+        self.terrain_mp = m.get("terrain_mp", {})
         self.default_mp = float(m.get("default_mp", 1.0))
         self.hexside_rules = m.get("hexside_rules", [])
         self.zoc_cfg = m.get("zoc", {})
@@ -150,6 +287,9 @@ class Game:
     def _path(self, rel):
         return os.path.normpath(os.path.join(self.dir, rel)) if rel else None
 
+    def _hex_only(self, name):
+        raise NotImplementedError(f"{name}() is hex-only; this game is space.kind=region")
+
     # ------------------------------------------------------------- sides & stats
     def side(self, unit_name):
         for side_id, tokens in self.detect_tokens.items():
@@ -168,8 +308,57 @@ class Game:
                 return st
         return self.default_stat
 
+    # ------------------------------------------------------------- shared location API
+    def location_id(self, pos):
+        if self.space_kind == "region":
+            return pos if isinstance(pos, str) else None
+        col, row = pos
+        return self.grid.hexnum(col, row)
+
+    def loc_to_pixel(self, loc):
+        if self.space_kind == "region":
+            return self.regions.loc_to_pixel(loc)
+        if isinstance(loc, (list, tuple)) and len(loc) == 2:
+            return self.grid.hex_to_pixel(loc[0], loc[1])
+        return self.grid.hexnum_to_pixel(loc)
+
+    def pixel_to_loc(self, x, y, max_radius=None):
+        if self.space_kind == "region":
+            return self.regions.pixel_to_loc(x, y, max_radius=max_radius)
+        col, row, hexn = self.grid.pixel_to_hex(x, y)
+        return hexn
+
+    def display_name(self, loc):
+        if self.space_kind == "region":
+            return self.regions.display_name(loc)
+        if isinstance(loc, (list, tuple)):
+            return self.grid.display_name(loc[0], loc[1])
+        # hexnum string
+        d = self.grid.digits
+        s = f"{int(loc):0{d * 2}d}"
+        return self.grid.display_name(int(s[:d]), int(s[d:]))
+
+    def legal_region_dests(self, unit, ma):
+        """Tier-0a: all on-map locs when edges empty. Tier-0b: BFS within MA."""
+        if self.space_kind != "region":
+            self._hex_only("legal_region_dests")
+        start = unit.get("loc")
+        if not start:
+            return {}
+        if not self.regions.has_edges():
+            # Tier-0a umpire model: any on-map location (including stay)
+            return {lid: 0.0 for lid in self.regions.locations if self.regions.on_map(lid)}
+        reach = self.regions.reachable(start, ma)
+        reach.pop(start, None)
+        return reach
+
     # ------------------------------------------------------------- geometry
-    def neighbors(self, col, row):
+    def neighbors(self, col, row=None):
+        if self.space_kind == "region":
+            # region callers pass a single location id
+            if row is not None:
+                self._hex_only("neighbors")
+            return self.regions.neighbors(col)
         # pure function of (col,row) and the fixed grid — memoize (called
         # pervasively by traces/ZOC/distance; identical outputs, so regressions
         # are byte-for-byte unchanged)
@@ -195,6 +384,8 @@ class Game:
         return out
 
     def hex_distance(self, a, b):
+        if self.space_kind == "region":
+            return self.regions.distance(a, b)
         # neighbors() is a pure infinite lattice (linear pixel round-trip), so
         # BFS distance equals the doubled-coordinate closed form — verified
         # exhaustively, 674,730 pairs / 0 mismatches across all 5 gridded
@@ -231,13 +422,26 @@ class Game:
 
     # ------------------------------------------------------------- terrain
     def hexkey(self, c, r):
+        if self.space_kind == "region":
+            self._hex_only("hexkey")
         return self.grid.hexnum(c, r)
 
-    def hex_terrain(self, c, r):
+    def hex_terrain(self, c, r=None):
+        if self.space_kind == "region":
+            # optional destination terrain/tag lookup by location id
+            loc = c if r is None else None
+            if loc is None:
+                self._hex_only("hex_terrain")
+            rec = self.regions.locations.get(loc) or {}
+            return rec.get("terrain")
         v = self.terrain["hexes"].get(self.hexkey(c, r)) if self.terrain else None
         return v["t"] if v else None
 
-    def on_map(self, c, r):
+    def on_map(self, c, r=None):
+        if self.space_kind == "region":
+            if r is not None:
+                self._hex_only("on_map")
+            return self.regions.on_map(c)
         t = self.hex_terrain(c, r)
         if t is not None:
             return t not in self.impassable
@@ -247,18 +451,22 @@ class Game:
         return False
 
     def side_features(self, a, b):
+        if self.space_kind == "region":
+            self._hex_only("side_features")
         if not self.terrain:
             return {}
         return (self.terrain["sides"].get(f"{self.hexkey(*a)}|{self.hexkey(*b)}")
                 or self.terrain["sides"].get(f"{self.hexkey(*b)}|{self.hexkey(*a)}") or {})
 
     def move_cost(self, a, b):
-        """MP cost to enter hex b from adjacent hex a, or None if prohibited.
-        Hexside rules fire in spec order: prohibit short-circuits, the first
-        matching override sets the base cost, adds accumulate, caps clamp the
-        terrain base downward (B&G 5.23 trail: 2 MP into forest/rough, plain
-        terrain cost when cheaper); otherwise the base is the destination
-        hex's terrain cost."""
+        """MP cost to enter hex/location b from adjacent a, or None if prohibited."""
+        if self.space_kind == "region":
+            return self.regions.move_cost(a, b)
+        # Hexside rules fire in spec order: prohibit short-circuits, the first
+        # matching override sets the base cost, adds accumulate, caps clamp the
+        # terrain base downward (B&G 5.23 trail: 2 MP into forest/rough, plain
+        # terrain cost when cheaper); otherwise the base is the destination
+        # hex's terrain cost.
         if not self.on_map(*b):
             return None
         f = self.side_features(a, b)
@@ -286,6 +494,8 @@ class Game:
 
     # ------------------------------------------------------------- ZOC & movement
     def occupied(self, board):
+        if self.space_kind == "region":
+            return {u["loc"]: u for u in board if u.get("loc")}
         return {(u["col"], u["row"]): u for u in board}
 
     def unit_class(self, unit_name):

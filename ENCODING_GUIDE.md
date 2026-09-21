@@ -60,8 +60,10 @@ All five must pass for a game to ship with an **enforced** rules gate (Tier 1+):
    examples in the rulebook to validate against.
 3. **Mechanics fit the engine** — hex movement + ZOC/terrain, plus one combat
    flavor already built (odds/differential CRT, or to-hit/damage). Not yet in
-   the engine: card-driven systems, hidden movement, air/naval subsystems —
-   each is a future engine expansion, not a per-game hack.
+   the engine: card-driven systems, hidden movement, air/naval subsystems,
+   area/point-to-point maps — each is a future engine expansion, not a
+   per-game hack. (Area/territory maps: see `AREA_MAP_DESIGN.md`. War Room
+   gap register: `WARROOM_GAPS.md`.)
 4. **Complete playable scope exists** — a defined scenario with victory
    conditions, not the whole game system at once.
 5. **Every encoded table is validatable** — worked examples, a second printed

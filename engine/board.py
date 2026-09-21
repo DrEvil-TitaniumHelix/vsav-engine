@@ -27,6 +27,11 @@ IMG_RE = re.compile(r"piece;[^;]*;[^;]*;([^;]+?)\.(png|gif|svg|jpg|jpeg|bmp);")
 # some modules reference counter art WITHOUT a file extension (VASSAL allows
 # it); the BasicPiece image is then the raw 3rd field, escaped '/' permitted
 IMG_NOEXT_RE = re.compile(r"piece;[^;]*;[^;]*;((?:\\.|[^;/])+);")
+# blank-BasicPiece layered counters (A House Divided / VASL style): name in
+# field 4, art lives on an emb2 layer image list
+BP_NAME_RE = re.compile(r"piece;[^;]*;[^;]*;[^;]*;((?:\\.|[^/;])*)/")
+# emb2 type: after 15 semicolons past "emb2" comes the comma-separated image list
+EMB2_IMGS_RE = re.compile(r"emb2;(?:[^;]*;){15}([^;]+)")
 ESC = "\x1b"
 
 
@@ -56,16 +61,29 @@ class Board:
                     imgfile = f"{nm}.{img.group(2)}"
                 else:
                     img = IMG_NOEXT_RE.search(c)
-                    if not img:
-                        continue
-                    nm = imgfile = img.group(1).strip().replace("\\", "")
+                    if img:
+                        nm = imgfile = img.group(1).strip().replace("\\", "")
+                    else:
+                        # blank BasicPiece + emb2 layer art (region-map modules)
+                        emb = EMB2_IMGS_RE.search(c)
+                        bp = BP_NAME_RE.search(c)
+                        if not emb or not bp:
+                            continue
+                        imgs = [s.strip() for s in emb.group(1).split(",") if s.strip()]
+                        if not imgs:
+                            continue
+                        imgfile = imgs[0].replace("\\", "")
+                        nm = bp.group(1).strip().replace("\\", "") or imgfile.rsplit(".", 1)[0]
                 # BasicPiece state, three formats seen in the wild:
                 #   3.2-era (Westwall): "...\tfalse;<map>;1;x,y" (map EMPTY for singletons;
                 #     Bitter Woods variant uses a map ID like "Map0" + board index 2)
                 #   slot-style (Tobruk): "<map>;x;y;<gpid>"
+                #   null-map (stacked AHD): "null;x;y;<gpid>" — XY comes from stack
                 st = re.search(r"\tfalse;[^;\t]*;\d+;(\d+),(\d+)", c)
                 if not st:
                     st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
+                if not st:
+                    st = re.search(r"[;\t]null;(\d+);(\d+);\d+", c)
                 x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
                 self.pieces[m.group(1)] = dict(name=nm, kind=m.group(2),
                                                img=imgfile,
@@ -96,13 +114,23 @@ class Board:
     def units(self):
         """All stacked (mark) pieces as the familiar unit dicts, one per piece."""
         out = []
+        region = getattr(self.game, "space_kind", "hex") == "region"
         for pid, p in self.pieces.items():
             if p["kind"] not in self.game.unit_kinds:
                 continue
-            col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
-            out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
-                            img=p["img"],
-                            x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn))
+            if region:
+                loc = self.game.pixel_to_loc(p["x"], p["y"])
+                locname = self.game.display_name(loc) if loc else None
+                # hexnum/hexname aliases keep existing UI selection/log panels working
+                out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
+                                img=p["img"],
+                                x=p["x"], y=p["y"], loc=loc, locname=locname,
+                                hexnum=loc, hexname=locname))
+            else:
+                col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
+                out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
+                                img=p["img"],
+                                x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn))
         return out
 
     def stack_at(self, x, y):
@@ -125,6 +153,8 @@ class Board:
         c = re.sub(rf"(?<!\d){ox},{oy}(?!\d)", f"{nx},{ny}", c)
         c = re.sub(rf"(?<!\d){re.escape(self.game.map_name)};{ox};{oy};",
                    f"{self.game.map_name};{nx};{ny};", c)
+        # stacked / null-map BasicPiece state (A House Divided et al.)
+        c = re.sub(rf"(?<!\d)null;{ox};{oy};", f"null;{nx};{ny};", c)
         self.cmds[p["idx"]] = c
         p["x"], p["y"] = nx, ny
 
@@ -160,33 +190,46 @@ class Board:
         self.member_of[pid] = sid
         self._rewrite_stack(sid)
 
+    def _dest_xy(self, dest):
+        """Resolve dest to pixel (x,y). Accepts (x,y), hexnum, or region loc id."""
+        if isinstance(dest, tuple):
+            return dest
+        if getattr(self.game, "space_kind", "hex") == "region":
+            return self.game.loc_to_pixel(dest)
+        return self.game.grid.hexnum_to_pixel(dest)
+
+    def _loc_label(self, x, y):
+        if getattr(self.game, "space_kind", "hex") == "region":
+            return self.game.pixel_to_loc(x, y)
+        return self.game.grid.pixel_to_hex(x, y)[2]
+
     def move_piece_by_id(self, pid, dest):
         """Move ONE piece by its id (names may collide across sides — Tobruk '1/1')."""
         p = self.pieces[pid]
-        nx, ny = dest if isinstance(dest, tuple) else self.game.grid.hexnum_to_pixel(dest)
-        old = self.game.grid.pixel_to_hex(p["x"], p["y"])[2]
+        nx, ny = self._dest_xy(dest)
+        old = self._loc_label(p["x"], p["y"])
         self._detach(pid)
         self._set_piece_xy(pid, nx, ny)
         self._attach(pid, nx, ny)
-        return f"{p['name']}: {old} -> {self.game.grid.pixel_to_hex(nx, ny)[2]}"
+        return f"{p['name']}: {old} -> {self._loc_label(nx, ny)}"
 
     def move_piece(self, name_fragment, dest):
-        """Move ONE piece (splitting its stack if shared) to dest hex ('2010') or (x,y)."""
+        """Move ONE piece (splitting its stack if shared) to dest hex/loc or (x,y)."""
         pid, p = self.find(name_fragment)
-        nx, ny = dest if isinstance(dest, tuple) else self.game.grid.hexnum_to_pixel(dest)
-        old = self.game.grid.pixel_to_hex(p["x"], p["y"])[2]
+        nx, ny = self._dest_xy(dest)
+        old = self._loc_label(p["x"], p["y"])
         self._detach(pid)
         self._set_piece_xy(pid, nx, ny)
         self._attach(pid, nx, ny)
-        return f"{p['name']}: {old} -> {self.game.grid.pixel_to_hex(nx, ny)[2]}"
+        return f"{p['name']}: {old} -> {self._loc_label(nx, ny)}"
 
     def move_stack(self, hex_from, hex_to):
-        """Move an entire stack (all members) between hexes."""
-        fx, fy = self.game.grid.hexnum_to_pixel(hex_from)
+        """Move an entire stack (all members) between hexes/region locs."""
+        fx, fy = self._dest_xy(hex_from)
         sid = self.stack_at(fx, fy)
         if sid is None:
-            raise ValueError(f"no stack at hex {hex_from}")
-        nx, ny = self.game.grid.hexnum_to_pixel(hex_to)
+            raise ValueError(f"no stack at {hex_from}")
+        nx, ny = self._dest_xy(hex_to)
         s = self.stacks[sid]
         for pid in list(s["members"]):
             self._set_piece_xy(pid, nx, ny)
