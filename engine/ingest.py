@@ -35,6 +35,54 @@ ESC = "\x1b"
 if hasattr(sys.stdout, "reconfigure"):     # Windows console: don't die on em-dashes
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+# Paths written into committed INGEST_REPORT / ingest_summary must not embed
+# machine home directories (/home/<user>, /Users/<user>, C:\Users\<user>).
+_HOME_ABS = re.compile(r'(?i)(?:/(?:home|Users)/[^/\s]+|[A-Z]:[\\/]+Users[\\/]+[^\\/\s]+)')
+
+
+def public_path(p):
+    """Repo-relative if under ROOT, else ~-redacted absolute path."""
+    if not isinstance(p, str) or not p:
+        return p
+    try:
+        ap = os.path.abspath(p)
+        root = os.path.abspath(ROOT)
+        if ap == root or ap.startswith(root + os.sep):
+            return os.path.relpath(ap, root).replace("\\", "/")
+    except (OSError, ValueError):
+        ap = p
+    return redact_home(ap)
+
+
+def redact_home(text):
+    """Replace home-directory prefixes in a string with ~ (portable)."""
+    if not isinstance(text, str) or not text:
+        return text
+    home = os.path.expanduser("~")
+    out = text
+    # Exact expanded home (any slash style)
+    for h in {home, home.replace("\\", "/"), os.path.normpath(home)}:
+        if h and h in out:
+            out = out.replace(h, "~")
+        hf = h.replace("\\", "/")
+        of = out.replace("\\", "/")
+        if hf and hf in of:
+            out = of.replace(hf, "~")
+    out = out.replace("\\", "/")
+    out = _HOME_ABS.sub("~", out)
+    return out
+
+
+def redact_tree(obj):
+    """Deep-redact path-like strings in dict/list trees before JSON commit."""
+    if isinstance(obj, dict):
+        return {k: redact_tree(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [redact_tree(v) for v in obj]
+    if isinstance(obj, str):
+        return redact_home(obj)
+    return obj
+
 PIECE_RE = re.compile(r"^\+/(\d+)/(\w+);")
 STACK_RE = re.compile(r"^\+/(\d+)/stack/([^;]+);(-?\d+);(-?\d+)((?:;\d+)*)\\*$")
 POS32_RE = re.compile(r"false;[^;]*;1;(-?\d+),(-?\d+)")
@@ -945,7 +993,23 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     else:
         rep["verdict"] = "FAIL"
     write_report(rep, out_dir)
-    json.dump({k: v for k, v in rep.items() if k != "buildfile"},
+    summary = redact_tree({k: v for k, v in rep.items() if k != "buildfile"})
+    # Prefer portable staging / asset paths in the committed summary
+    if "staging" in summary:
+        summary["staging"] = public_path(rep.get("staging") or summary["staging"])
+    if "map_asset" in summary and summary["map_asset"]:
+        summary["map_asset"] = public_path(rep.get("map_asset") or summary["map_asset"])
+    if "vmod" in summary:
+        summary["vmod"] = public_path(rep.get("vmod") or summary["vmod"])
+    if isinstance(summary.get("setups"), list):
+        for s in summary["setups"]:
+            if isinstance(s, dict) and s.get("path"):
+                s["path"] = public_path(s["path"])
+    if isinstance(summary.get("steps"), list):
+        summary["steps"] = [redact_home(s) for s in summary["steps"]]
+    if isinstance(summary.get("problems"), list):
+        summary["problems"] = [redact_home(p) for p in summary["problems"]]
+    json.dump(summary,
               open(os.path.join(out_dir, "ingest_summary.json"), "w", encoding="utf-8"),
               indent=1, default=str)
     print(f"  = verdict: {rep['verdict']}  (report: {os.path.join(out_dir, 'INGEST_REPORT.md')})")
@@ -954,6 +1018,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
 
 # ---------------------------------------------------------------- report
 def write_report(rep, out_dir):
+    staging_pub = public_path(rep.get("staging") or "-")
     L = [f"# Ingest report — {rep.get('module', os.path.basename(rep['vmod']))}"
          + (f" v{rep.get('version')}" if rep.get("version") else ""),
          "",
@@ -961,13 +1026,14 @@ def write_report(rep, out_dir):
          "no rules learned, no enforcement claimed)",
          "",
          f"- module file: `{os.path.basename(rep['vmod'])}`",
-         f"- staged at: `{rep.get('staging', '-')}` (assets stay OUT of the repo)",
+         f"- staged at: `{staging_pub}` (assets stay OUT of the repo)",
          ""]
     if rep["verdict"] == "FULL":
         L += [f"Play it:  `python ui/server.py --game {os.path.relpath(out_dir, ROOT)}`", ""]
-    L += ["## What worked", ""] + [f"- {s}" for s in rep["steps"]] + [""]
+    L += ["## What worked", ""] + [f"- {redact_home(s)}" for s in rep["steps"]] + [""]
     if rep["problems"]:
-        L += ["## What didn't (and why)", ""] + [f"- {p}" for p in rep["problems"]] + [""]
+        L += ["## What didn't (and why)", ""] + [
+            f"- {redact_home(p)}" for p in rep["problems"]] + [""]
     space = rep.get("space")
     if space and space.get("kind") == "region":
         L += ["## Region space", "",

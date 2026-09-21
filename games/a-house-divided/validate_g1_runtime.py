@@ -455,7 +455,10 @@ def main():
         os.makedirs(ev, exist_ok=True)
         out_sav = os.path.join(ev, "valor_multihop_gettysburg.vsav")
         shutil.copy(work, out_sav)
-        report["checks"]["multihop"] = dict(path=hop_log, save=out_sav)
+        # Repo-relative path only — never embed machine home dirs in the report
+        report["checks"]["multihop"] = dict(
+            path=hop_log,
+            save=os.path.relpath(out_sav, ROOT).replace("\\", "/"))
 
     # --- nearest-origin sanity: units shouldn't all collapse to one loc
     section("loc distribution sanity (1861)")

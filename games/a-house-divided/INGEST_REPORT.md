@@ -3,11 +3,11 @@
 **Verdict: PARTIAL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
 
 - module file: `ahd_v05e.vmod`
-- staged at: `/home/devmapal/VassalIngest/a-house-divided` (assets stay OUT of the repo)
+- staged at: `~/VassalIngest/a-house-divided` (assets stay OUT of the repo)
 
 ## What worked
 
-- extracted 236 entries -> /home/devmapal/VassalIngest/a-house-divided/extracted
+- extracted 236 entries -> ~/VassalIngest/a-house-divided/extracted
 - module: 'A House Divided' v0.5e; 179 images staged
 - 20 piece/card slots (0 with BasicPiece art, 18 blank-image layer pieces VASL-style); 6 prototypes
 - main board: 'Board' on map 'Main Map'; 1 other board(s) not converted: Battle Window (map 'Battle Window')
@@ -27,7 +27,7 @@
 ## What didn't (and why)
 
 - region edges PARTIAL — Tier-0b graph free play on authored subset only (~24% of locs edged; two components; 98 isolated). FULL needs a verified complete adjacency graph
-- playability requires out-of-tree staging at `/home/devmapal/VassalIngest/a-house-divided` (map + setups); not in git
+- playability requires out-of-tree staging at `~/VassalIngest/a-house-divided` (map + setups); not in git
 
 ## Region space
 
