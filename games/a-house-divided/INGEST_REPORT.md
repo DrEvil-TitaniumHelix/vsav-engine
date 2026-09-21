@@ -26,7 +26,8 @@
 
 ## What didn't (and why)
 
-- region edges PARTIAL — Tier-0b graph free play on authored subset; FULL needs a verified complete adjacency graph
+- region edges PARTIAL — Tier-0b graph free play on authored subset only (~24% of locs edged; two components; 98 isolated). FULL needs a verified complete adjacency graph
+- playability requires out-of-tree staging at `/home/devmapal/VassalIngest/a-house-divided` (map + setups); not in git
 
 ## Region space
 
