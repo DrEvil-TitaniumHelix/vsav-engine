@@ -62,7 +62,7 @@ All five must pass for a game to ship with an **enforced** rules gate (Tier 1+):
    plus (for Tier 1+) ZOC/terrain and one combat flavor already built
    (odds/differential CRT, or to-hit/damage). Region / area / point-to-point
    maps are **in-engine** as Tier-0 space (`space.kind=region`; see
-   `AREA_MAP_DESIGN.md`, War Room gap G1 in `WARROOM_GAPS.md`) — per-game
+   `AREA_MAP_DESIGN.md`; War Room gap G1) — per-game
    folders still need ingest + authored edges; region *rules* gates are later.
    Not yet in the engine: card-driven systems, hidden movement, air/naval
    subsystems — each is a future engine expansion, not a per-game hack.
