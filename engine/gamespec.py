@@ -159,6 +159,8 @@ class RegionSpace:
             return 0
         if not self.has_edges():
             return None
+        if not self.on_map(a) or not self.on_map(b):
+            return None
         best = {a: 0.0}
         pq = [(0.0, a)]
         while pq:
@@ -168,6 +170,8 @@ class RegionSpace:
             if cost > best.get(cur, float("inf")):
                 continue
             for n, ec in self._adj.get(cur, []):
+                if not self.on_map(n):
+                    continue
                 nc = cost + ec
                 if nc < best.get(n, float("inf")):
                     best[n] = nc
@@ -233,7 +237,14 @@ class Game:
                 rdata = json.load(open(rpath, encoding="utf-8"))
             m = spec.get("movement", {})
             self.regions = RegionSpace(rdata, default_mp=float(m.get("default_mp", 1.0)))
+            # Optional snap radius (px): pieces farther than this from every
+            # origin get loc=None (chart / track / far offsets). Default None
+            # = unbounded (legacy); AHD pilot uses ~160.
+            self.snap_radius = (space or {}).get("snap_radius")
+            if self.snap_radius is None:
+                self.snap_radius = (rdata.get("ingest") or {}).get("snap_radius")
         else:
+            self.snap_radius = None
             grid_cfg = spec.get("grid") or (space or {}).get("grid")
             if not grid_cfg:
                 raise KeyError("hex game requires grid in game.json")
@@ -324,7 +335,8 @@ class Game:
 
     def pixel_to_loc(self, x, y, max_radius=None):
         if self.space_kind == "region":
-            return self.regions.pixel_to_loc(x, y, max_radius=max_radius)
+            r = max_radius if max_radius is not None else self.snap_radius
+            return self.regions.pixel_to_loc(x, y, max_radius=r)
         col, row, hexn = self.grid.pixel_to_hex(x, y)
         return hexn
 
