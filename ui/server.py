@@ -1200,9 +1200,20 @@ def api_legal_region(qs):
     """Region-space free play: Tier-0a (all locs) or Tier-0b (graph BFS)."""
     g = GAME_OBJ
     pid = qs["id"][0]
+    whole = qs.get("whole", ["0"])[0] == "1"
     b = fresh_board()
-    me = next(u for u in b.units() if u["id"] == pid)
+    units = b.units()
+    me = next(u for u in units if u["id"] == pid)
+    if not me.get("loc"):
+        return dict(ma=0, dests=[], space="region", edges=g.regions.has_edges(),
+                    edges_status=(g.regions.ingest or {}).get("edges_status"),
+                    error="piece has no snapped region (outside snap_radius)")
     ma = g.stats(me["name"])[2]
+    if whole:
+        sid = b.member_of.get(pid)
+        mates = [u for u in units if u["id"] != pid
+                 and b.member_of.get(u["id"]) == sid]
+        ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
     reach = g.legal_region_dests(me, ma)
     out = []
     for lid, cost in sorted(reach.items(), key=lambda kv: (kv[1], kv[0])):
@@ -1504,13 +1515,31 @@ def api_move(body):
     me = next(u for u in b.units() if u["id"] == pid)
     g = GAME_OBJ
     if getattr(g, "space_kind", "hex") == "region":
-        # dest is a location id string; reject off-graph when edges exist
+        dest = str(dest)
+        if dest not in g.regions.locations:
+            return dict(ok=False, error=f"unknown region {dest!r}")
+        if not me.get("loc"):
+            return dict(ok=False, error="piece has no snapped region (outside snap_radius)")
+        # dest is a location id; reject off-graph when edges exist
+        ma = g.stats(me["name"])[2]
+        if whole:
+            sid = b.member_of.get(pid)
+            mates = [u for u in b.units() if u["id"] != pid
+                     and b.member_of.get(u["id"]) == sid]
+            ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
         if g.regions.has_edges():
-            reach = g.legal_region_dests(me, g.stats(me["name"])[2])
+            reach = g.legal_region_dests(me, ma)
             if dest not in reach:
                 return dict(ok=False, error=f"no route from {me.get('loc')} to {dest} (region graph)")
-        # snap write to catalogued origin (VASSAL-compat mirror)
-        dest = str(dest)
+        if whole:
+            msg = b.move_stack_containing(pid, dest)
+            for mid in b.stacks[b.member_of[pid]]["members"]:
+                done[mid] = "moved"
+        else:
+            msg = b.move_piece_by_id(pid, dest)
+            done[pid] = "moved"
+        b.write(WORK)
+        return dict(ok=True, msg=msg)
     if whole:
         msg = b.move_stack(me["hexnum"], dest)
         for mid in b.stacks[b.member_of[pid]]["members"]:

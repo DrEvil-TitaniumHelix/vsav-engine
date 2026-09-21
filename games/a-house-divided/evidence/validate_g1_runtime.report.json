@@ -31,26 +31,26 @@
         "name": "1861 Scenario.vsav",
         "key": "a8",
         "units": 32,
-        "missing_loc": 0,
-        "on_known": 32,
-        "distinct_locs": 19,
-        "multi_stacks": 9
+        "missing_loc": 6,
+        "on_known": 26,
+        "distinct_locs": 18,
+        "multi_stacks": 6
       },
       {
         "name": "1862 Scenario.vsav",
         "key": "b9",
         "units": 73,
-        "missing_loc": 0,
-        "on_known": 73,
-        "distinct_locs": 34,
-        "multi_stacks": 15
+        "missing_loc": 4,
+        "on_known": 69,
+        "distinct_locs": 33,
+        "multi_stacks": 13
       },
       {
         "name": "1863 Scenario.vsav",
         "key": "96",
         "units": 116,
-        "missing_loc": 0,
-        "on_known": 116,
+        "missing_loc": 4,
+        "on_known": 112,
         "distinct_locs": 43,
         "multi_stacks": 22
       },
@@ -58,8 +58,8 @@
         "name": "1864 Scenario.vsav",
         "key": "a7",
         "units": 133,
-        "missing_loc": 0,
-        "on_known": 133,
+        "missing_loc": 4,
+        "on_known": 129,
         "distinct_locs": 51,
         "multi_stacks": 28
       },
@@ -67,10 +67,10 @@
         "name": "New Game Blank.vsav",
         "key": "41",
         "units": 4,
-        "missing_loc": 0,
-        "on_known": 4,
-        "distinct_locs": 2,
-        "multi_stacks": 2
+        "missing_loc": 4,
+        "on_known": 0,
+        "distinct_locs": 0,
+        "multi_stacks": 0
       }
     ],
     "bfs": {
@@ -99,6 +99,14 @@
         "1588894742299"
       ]
     },
+    "pristine_stack": {
+      "from_loc": "columbus",
+      "to_loc": "dayton",
+      "stack_xy": [
+        886,
+        121
+      ]
+    },
     "multihop": {
       "path": [
         "fredericksburg",
@@ -112,16 +120,12 @@
     },
     "loc_distribution": [
       [
+        null,
+        6
+      ],
+      [
         "fredericksburg",
         4
-      ],
-      [
-        "wilmington",
-        3
-      ],
-      [
-        "ft-monroe",
-        3
       ],
       [
         "pensacola",
@@ -144,10 +148,6 @@
         2
       ],
       [
-        "new-bern",
-        2
-      ],
-      [
         "chillicothe",
         1
       ],
@@ -157,6 +157,14 @@
       ],
       [
         "richmond",
+        1
+      ],
+      [
+        "wheeling",
+        1
+      ],
+      [
+        "macon",
         1
       ]
     ]

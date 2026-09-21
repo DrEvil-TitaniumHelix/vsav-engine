@@ -118,19 +118,24 @@ class Board:
         for pid, p in self.pieces.items():
             if p["kind"] not in self.game.unit_kinds:
                 continue
+            sid = self.member_of.get(pid)
             if region:
                 loc = self.game.pixel_to_loc(p["x"], p["y"])
                 locname = self.game.display_name(loc) if loc else None
-                # hexnum/hexname aliases keep existing UI selection/log panels working
+                # hexnum/hexname stay as loc aliases for legal-dest / log chrome.
+                # UI stack grouping must use stack_id (or pixel), not snapped loc —
+                # multiple VASSAL stacks often nearest-snap to the same city.
                 out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
                                 img=p["img"],
                                 x=p["x"], y=p["y"], loc=loc, locname=locname,
-                                hexnum=loc, hexname=locname))
+                                hexnum=loc, hexname=locname,
+                                stack_id=sid))
             else:
                 col, row, hexn = self.game.grid.pixel_to_hex(p["x"], p["y"])
                 out.append(dict(id=pid, name=p["name"], side=self.game.side(p["name"]),
                                 img=p["img"],
-                                x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn))
+                                x=p["x"], y=p["y"], col=col, row=row, hexnum=hexn,
+                                stack_id=sid))
         return out
 
     def stack_at(self, x, y):
@@ -224,19 +229,54 @@ class Board:
         return f"{p['name']}: {old} -> {self._loc_label(nx, ny)}"
 
     def move_stack(self, hex_from, hex_to):
-        """Move an entire stack (all members) between hexes/region locs."""
-        fx, fy = self._dest_xy(hex_from)
-        sid = self.stack_at(fx, fy)
+        """Move an entire stack (all members) between hexes/region locs.
+
+        For region space, prefer move_stack_containing(pid, dest): stock VASSAL
+        stacks sit near region origins, not on catalogued pixels, so looking up
+        stack_at(loc_to_pixel(from_loc)) fails on pristine saves.
+        """
+        if getattr(self.game, "space_kind", "hex") == "region":
+            # Fall back: find any stack whose members snap to hex_from (loc id).
+            # Ambiguous when several stacks share a snapped city — callers with
+            # a selected piece should use move_stack_containing instead.
+            sid = None
+            for s_id, s in self.stacks.items():
+                if not s["members"]:
+                    continue
+                for pid in s["members"]:
+                    p = self.pieces.get(pid)
+                    if p and self._loc_label(p["x"], p["y"]) == hex_from:
+                        sid = s_id
+                        break
+                if sid is not None:
+                    break
+            if sid is None:
+                raise ValueError(f"no stack at {hex_from}")
+        else:
+            fx, fy = self._dest_xy(hex_from)
+            sid = self.stack_at(fx, fy)
+            if sid is None:
+                raise ValueError(f"no stack at {hex_from}")
+        return self._move_stack_id(sid, hex_to, label_from=hex_from)
+
+    def move_stack_containing(self, pid, dest):
+        """Move the VASSAL stack that currently contains `pid` (by member_of)."""
+        sid = self.member_of.get(pid)
         if sid is None:
-            raise ValueError(f"no stack at {hex_from}")
-        nx, ny = self._dest_xy(hex_to)
+            return self.move_piece_by_id(pid, dest)
+        p = self.pieces[pid]
+        label_from = self._loc_label(p["x"], p["y"])
+        return self._move_stack_id(sid, dest, label_from=label_from)
+
+    def _move_stack_id(self, sid, dest, label_from=None):
+        nx, ny = self._dest_xy(dest)
         s = self.stacks[sid]
         for pid in list(s["members"]):
             self._set_piece_xy(pid, nx, ny)
         s["x"], s["y"] = nx, ny
         self._rewrite_stack(sid)
         names = [self.pieces[m]["name"] for m in s["members"]]
-        return f"stack {hex_from} -> {hex_to}: {names}"
+        return f"stack {label_from or sid} -> {dest}: {names}"
 
     def write(self, out_path):
         vsav.write_vsav(out_path, ESC.join(self.cmds), self.moduledata, self.savedata,

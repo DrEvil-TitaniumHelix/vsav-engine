@@ -1555,7 +1555,12 @@ function render() {
   // through gets a visible ring on the map (Bruce's guidance rule)
   const ACTABLE = new Set(myActableUnits().map(u => u.id));
   const byhex = {};
-  units.forEach(u => { if (u.status !== 'eliminated') (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u); });
+  // Region: group by real VASSAL stack (stack_id / exact XY), not snapped loc —
+  // several off-origin stacks often nearest-snap to the same city.
+  const stackKey = u => (GAME && GAME.space === 'region')
+    ? (u.stack_id != null ? ('S'+u.stack_id) : (`P${u.x},${u.y}`))
+    : u.hexnum;
+  units.forEach(u => { if (u.status !== 'eliminated') (byhex[stackKey(u)] = byhex[stackKey(u)]||[]).push(u); });
   for (const h in byhex) byhex[h].forEach((u, i) => {
     const el = document.createElement('img');
     el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '')
@@ -1800,7 +1805,7 @@ function napAttackMenu(ev, tgt) {
 }
 function showPicker(ev, stackUnits) {
   const P = document.getElementById('picker');
-  P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexnum} — pick one, or move together</div>`;
+  P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexname || stackUnits[0].locname || stackUnits[0].hexnum || ''} — pick one, or move together</div>`;
   stackUnits.forEach(u => {
     const d = document.createElement('div'); d.className = 'item';
     d.innerHTML = `<img src="${GAME.counters_url}${encodeURIComponent(u.img || (u.name + '.png'))}"> ${u.name} <span style="color:#8a8f98">[${u.att}-${u.dfn}-${u.ma}]</span>`;

@@ -646,8 +646,26 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         prior = load_json_quiet(os.path.join(out_dir, "regions.json"))
         prior_edges, prior_status = [], "UNAUTHORED"
         if prior and prior.get("edges"):
-            prior_edges = prior["edges"]
+            locs_preview = {}
+            used = {}
+            for r in named:
+                rid, _ = region_location_id(r["name"], used)
+                locs_preview[rid] = True
+            kept, dropped = [], []
+            for e in prior["edges"]:
+                if e.get("a") in locs_preview and e.get("b") in locs_preview:
+                    kept.append(e)
+                else:
+                    dropped.append(e)
+            prior_edges = kept
             prior_status = (prior.get("ingest") or {}).get("edges_status", "PARTIAL")
+            if dropped:
+                bad(f"dropped {len(dropped)} prior edge(s) with missing endpoints after RegionGrid rewrite "
+                    f"(kept {len(kept)}); sample={dropped[:3]}")
+                if not kept:
+                    prior_status = "UNAUTHORED"
+                elif prior_status == "VERIFIED":
+                    prior_status = "PARTIAL"  # lost endpoints → no longer verified
         rpath, regions_data = write_regions_json(
             named, out_dir, edges=prior_edges, edges_status=prior_status)
         nloc = len(regions_data["locations"])
@@ -764,13 +782,17 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         movement = dict(default_mp=1.0, zoc=dict(exerts=False),
                         enter_enemy_location=True, pass_through_friendly=True,
                         note="Tier 0 region: 1 MP per edge; edges may be empty "
-                             "(snap-only) until authored")
+                             "(snap-only) until authored. "
+                             "enter_enemy_location / pass_through_friendly / zoc "
+                             "are reserved no-ops until a region rules gate exists.")
+        space_out = dict(space_cfg)
+        space_out["snap_radius"] = 160  # px; chart/track pieces beyond this get loc=None
         spec = {
             "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
             "map_name": main_map["name"] or "Main Map",
             "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
             "save_key": save_key,
-            "space": space_cfg,
+            "space": space_out,
             "buildfile": rel(bf_path),
             "moduledata": rel(os.path.join(extracted, "moduledata")),
             "assets": {"map": rel(map_asset) if map_asset else None,
@@ -821,11 +843,14 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         spec["setup_save"] = rel(best["path"])
         # XOR key must match the chosen setup (keys differ across predefined saves)
         spec["save_key"] = best["key"]
-    # Prefer the design-doc pilot setup when present (pieces on main map).
-    prefer = next((s for s in setups if "1861" in (s.get("name") or "")), None)
-    if prefer and (prefer.get("on_map") or 0) >= 10:
-        spec["setup_save"] = rel(prefer["path"])
-        spec["save_key"] = prefer["key"]
+    # Prefer AHD design-doc pilot setup (1861) only for that module folder —
+    # do not key off the bare "1861" substring for every region title.
+    out_base = os.path.basename(os.path.normpath(out_dir)).lower()
+    if "a-house-divided" in out_base or "house-divided" in out_base:
+        prefer = next((s for s in setups if "1861" in (s.get("name") or "")), None)
+        if prefer and (prefer.get("on_map") or 0) >= 10:
+            spec["setup_save"] = rel(prefer["path"])
+            spec["save_key"] = prefer["key"]
     os.makedirs(out_dir, exist_ok=True)
     spec_path = os.path.join(out_dir, "game.json")
     if os.path.exists(spec_path):
