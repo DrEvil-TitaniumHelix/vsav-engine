@@ -1,0 +1,3 @@
+pid=1588894742299 fredericksburg->washington
+piece_xy=(1399,268) origin=(1399,268) match=True
+loc=washington

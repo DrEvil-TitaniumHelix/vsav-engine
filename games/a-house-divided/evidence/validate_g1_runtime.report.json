@@ -1,0 +1,166 @@
+{
+  "checks": {
+    "schema": "PASS",
+    "spot_names": {
+      "found": [
+        "Washington",
+        "Baltimore",
+        "Philadelphia",
+        "New York City",
+        "Richmond",
+        "Fredericksburg",
+        "Manassas Junction",
+        "Harpers Ferry",
+        "Gettysburg",
+        "Harrisburg",
+        "Pittsburgh",
+        "Cincinnatti",
+        "Louisville",
+        "Nashville",
+        "Atlanta",
+        "New Orleans",
+        "Cairo",
+        "St. Louis",
+        "Chicago",
+        "Norfolk"
+      ],
+      "missing": []
+    },
+    "setups": [
+      {
+        "name": "1861 Scenario.vsav",
+        "key": "a8",
+        "units": 32,
+        "missing_loc": 0,
+        "on_known": 32,
+        "distinct_locs": 19,
+        "multi_stacks": 9
+      },
+      {
+        "name": "1862 Scenario.vsav",
+        "key": "b9",
+        "units": 73,
+        "missing_loc": 0,
+        "on_known": 73,
+        "distinct_locs": 34,
+        "multi_stacks": 15
+      },
+      {
+        "name": "1863 Scenario.vsav",
+        "key": "96",
+        "units": 116,
+        "missing_loc": 0,
+        "on_known": 116,
+        "distinct_locs": 43,
+        "multi_stacks": 22
+      },
+      {
+        "name": "1864 Scenario.vsav",
+        "key": "a7",
+        "units": 133,
+        "missing_loc": 0,
+        "on_known": 133,
+        "distinct_locs": 51,
+        "multi_stacks": 28
+      },
+      {
+        "name": "New Game Blank.vsav",
+        "key": "41",
+        "units": 4,
+        "missing_loc": 0,
+        "on_known": 4,
+        "distinct_locs": 2,
+        "multi_stacks": 2
+      }
+    ],
+    "bfs": {
+      "start": "fredericksburg",
+      "ma": 6,
+      "n_dests": 22,
+      "component": 24
+    },
+    "mirror": {
+      "from_loc": "fredericksburg",
+      "to_loc": "washington",
+      "pid": "1588894742299",
+      "xy": [
+        1399,
+        268
+      ]
+    },
+    "reverse_snap": {
+      "target": "richmond",
+      "got": "richmond"
+    },
+    "stacking": {
+      "loc": "philadelphia",
+      "pids": [
+        "1588894657816",
+        "1588894742299"
+      ]
+    },
+    "multihop": {
+      "path": [
+        "fredericksburg",
+        "washington",
+        "baltimore",
+        "philadelphia",
+        "harrisburg",
+        "gettysburg"
+      ],
+      "save": "/home/devmapal/Projects/vsav-engine/games/a-house-divided/evidence/valor_multihop_gettysburg.vsav"
+    },
+    "loc_distribution": [
+      [
+        "fredericksburg",
+        4
+      ],
+      [
+        "wilmington",
+        3
+      ],
+      [
+        "ft-monroe",
+        3
+      ],
+      [
+        "pensacola",
+        2
+      ],
+      [
+        "new-orleans",
+        2
+      ],
+      [
+        "charleston-sc",
+        2
+      ],
+      [
+        "lafayette",
+        2
+      ],
+      [
+        "columbus",
+        2
+      ],
+      [
+        "new-bern",
+        2
+      ],
+      [
+        "chillicothe",
+        1
+      ],
+      [
+        "brunswick",
+        1
+      ],
+      [
+        "richmond",
+        1
+      ]
+    ]
+  },
+  "errors": [],
+  "verdict": "PASS"
+}

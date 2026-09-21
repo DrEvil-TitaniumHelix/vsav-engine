@@ -27,7 +27,7 @@
 | Washington's War | PARTIAL | — | 259 | 115 at-start | no grid of any kind on the main board |
 | Wilderness War | PARTIAL | — | 285 | Annus Mirabilis (1757-1759), Early War Campaign (1755-1759), Late War Campaign (1757-1762), Full Campaign (1755-1762) | board uses 3 NAMED regions (point-to-point/area map) — engine has no region-space support yet |
 | World in Flames Final Edition | FULL | hexgrid | 10091 | 01 - Any 4 Map Scenario, PatiF, AiF, (DoD), 02 - Fascist Tide (DoD), Duce's Dream, 03 - Guadalcanal, Day of Infamy, 04 - Barbarossa, Russian Campaign | — |
-| A House Divided | PARTIAL | — | 20 | New Game (Blank Map), 1861 Scenario, 1862 Scenario, 1863 Scenario, 1864 Scenario | board uses 125 NAMED regions (point-to-point/area map) — engine has no region-space support yet |
+| A House Divided | PARTIAL | region (129 locs) | 20 | New Game (Blank Map), 1861 Scenario, 1862 Scenario, 1863 Scenario, 1864 Scenario | region edges PARTIAL — Tier-0b graph free play on authored subset; FULL needs a verified complete adjacency graph |
 | hannibal_en_2 | FAIL | — | 0 | Standard Setup | no grid of any kind on the main board; best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path) |
 | War At Sea | PARTIAL | — | 78 | Standard Setup | no grid of any kind on the main board; best setup puts only 0 piece(s) on the main map — likely markers, not a scenario; real setups need authoring (the make_save scenario-JSON path) |
 
