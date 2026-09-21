@@ -196,10 +196,15 @@ class Board:
         self._rewrite_stack(sid)
 
     def _dest_xy(self, dest):
-        """Resolve dest to pixel (x,y). Accepts (x,y), hexnum, or region loc id."""
+        """Resolve dest to pixel (x,y). Accepts (x,y), hexnum, or region loc id.
+
+        Fail-closed: unknown region ids raise ValueError (no mutation).
+        """
         if isinstance(dest, tuple):
             return dest
         if getattr(self.game, "space_kind", "hex") == "region":
+            if dest not in self.game.regions.locations:
+                raise ValueError(f"unknown region {dest!r}")
             return self.game.loc_to_pixel(dest)
         return self.game.grid.hexnum_to_pixel(dest)
 
@@ -208,10 +213,25 @@ class Board:
             return self.game.pixel_to_loc(x, y)
         return self.game.grid.pixel_to_hex(x, y)[2]
 
+    def _stacks_snapped_to(self, loc_id):
+        """VASSAL stack ids whose members nearest-snap to region `loc_id`."""
+        hits = []
+        for s_id, s in self.stacks.items():
+            if not s["members"]:
+                continue
+            for pid in s["members"]:
+                p = self.pieces.get(pid)
+                if p and self._loc_label(p["x"], p["y"]) == loc_id:
+                    hits.append(s_id)
+                    break
+        return hits
+
     def move_piece_by_id(self, pid, dest):
         """Move ONE piece by its id (names may collide across sides — Tobruk '1/1')."""
+        if pid not in self.pieces:
+            raise ValueError(f"unknown piece id {pid!r}")
         p = self.pieces[pid]
-        nx, ny = self._dest_xy(dest)
+        nx, ny = self._dest_xy(dest)  # validate dest before mutating
         old = self._loc_label(p["x"], p["y"])
         self._detach(pid)
         self._set_piece_xy(pid, nx, ny)
@@ -221,7 +241,7 @@ class Board:
     def move_piece(self, name_fragment, dest):
         """Move ONE piece (splitting its stack if shared) to dest hex/loc or (x,y)."""
         pid, p = self.find(name_fragment)
-        nx, ny = self._dest_xy(dest)
+        nx, ny = self._dest_xy(dest)  # validate dest before mutating
         old = self._loc_label(p["x"], p["y"])
         self._detach(pid)
         self._set_piece_xy(pid, nx, ny)
@@ -231,27 +251,20 @@ class Board:
     def move_stack(self, hex_from, hex_to):
         """Move an entire stack (all members) between hexes/region locs.
 
-        For region space, prefer move_stack_containing(pid, dest): stock VASSAL
-        stacks sit near region origins, not on catalogued pixels, so looking up
-        stack_at(loc_to_pixel(from_loc)) fails on pristine saves.
+        Region space: `hex_from` is a location id. Exactly one VASSAL stack must
+        nearest-snap to that loc — zero → error, two or more → ambiguous error
+        (never pick arbitrarily). Prefer move_stack_containing(pid, dest) when
+        a piece is already selected.
         """
         if getattr(self.game, "space_kind", "hex") == "region":
-            # Fall back: find any stack whose members snap to hex_from (loc id).
-            # Ambiguous when several stacks share a snapped city — callers with
-            # a selected piece should use move_stack_containing instead.
-            sid = None
-            for s_id, s in self.stacks.items():
-                if not s["members"]:
-                    continue
-                for pid in s["members"]:
-                    p = self.pieces.get(pid)
-                    if p and self._loc_label(p["x"], p["y"]) == hex_from:
-                        sid = s_id
-                        break
-                if sid is not None:
-                    break
-            if sid is None:
+            matches = self._stacks_snapped_to(hex_from)
+            if not matches:
                 raise ValueError(f"no stack at {hex_from}")
+            if len(matches) > 1:
+                raise ValueError(
+                    f"ambiguous stack at {hex_from}: {len(matches)} VASSAL stacks "
+                    f"snap here {matches}; use move_stack_containing(pid, dest)")
+            sid = matches[0]
         else:
             fx, fy = self._dest_xy(hex_from)
             sid = self.stack_at(fx, fy)
@@ -261,17 +274,26 @@ class Board:
 
     def move_stack_containing(self, pid, dest):
         """Move the VASSAL stack that currently contains `pid` (by member_of)."""
+        if pid not in self.pieces:
+            raise ValueError(f"unknown piece id {pid!r}")
         sid = self.member_of.get(pid)
         if sid is None:
             return self.move_piece_by_id(pid, dest)
+        if sid not in self.stacks or not self.stacks[sid]["members"]:
+            raise ValueError(f"piece {pid} has stale stack membership {sid!r}")
         p = self.pieces[pid]
         label_from = self._loc_label(p["x"], p["y"])
         return self._move_stack_id(sid, dest, label_from=label_from)
 
     def _move_stack_id(self, sid, dest, label_from=None):
-        nx, ny = self._dest_xy(dest)
+        if sid not in self.stacks:
+            raise ValueError(f"unknown stack id {sid!r}")
+        nx, ny = self._dest_xy(dest)  # validate dest before mutating
         s = self.stacks[sid]
-        for pid in list(s["members"]):
+        members = list(s["members"])
+        if not members:
+            raise ValueError(f"stack {sid} has no members")
+        for pid in members:
             self._set_piece_xy(pid, nx, ny)
         s["x"], s["y"] = nx, ny
         self._rewrite_stack(sid)
@@ -315,7 +337,12 @@ if __name__ == "__main__":
         b.write(out)
         print(f"wrote {out}")
     elif cmd == "movestack":
-        out, hf, ht = args[2], args[3], args[4]
-        print(" ", b.move_stack(hf, ht))
+        # hex: movestack out.vsav FROM_HEX TO_HEX
+        # region: movestack out.vsav --pid PIECE_ID TO_LOC  (loc-from is ambiguous)
+        out = args[2]
+        if args[3] == "--pid":
+            print(" ", b.move_stack_containing(args[4], args[5]))
+        else:
+            print(" ", b.move_stack(args[3], args[4]))
         b.write(out)
         print(f"wrote {out}")

@@ -107,6 +107,11 @@
         121
       ]
     },
+    "ambiguous_stack": {
+      "loc": "fredericksburg",
+      "n_stacks": 2
+    },
+    "fail_closed_dest": "PASS",
     "multihop": {
       "path": [
         "fredericksburg",
@@ -119,10 +124,6 @@
       "save": "/home/devmapal/Projects/vsav-engine/games/a-house-divided/evidence/valor_multihop_gettysburg.vsav"
     },
     "loc_distribution": [
-      [
-        null,
-        6
-      ],
       [
         "fredericksburg",
         4
@@ -165,6 +166,10 @@
       ],
       [
         "macon",
+        1
+      ],
+      [
+        "gettysburg",
         1
       ]
     ]

@@ -349,6 +349,67 @@ def main():
         if not pristine_ok and not any("pristine" in e for e in errors):
             ok("no off-origin multi-member stack on graph sample (skipped)")
 
+        # Fail-closed Board APIs: never pick an arbitrary stack / unknown dest
+        section("fail-closed region stack / dest APIs")
+        b = load_board(game, path_1861, key_1861)
+        from collections import defaultdict
+        stacks_by_loc = defaultdict(set)
+        for u in b.units():
+            if u.get("loc") and u.get("stack_id") is not None:
+                stacks_by_loc[u["loc"]].add(u["stack_id"])
+        amb_loc = next((loc for loc, sids in stacks_by_loc.items() if len(sids) > 1), None)
+        if amb_loc:
+            try:
+                b.move_stack(amb_loc, next(iter(game.regions.locations)))
+                fail(f"move_stack({amb_loc}) should raise when {len(stacks_by_loc[amb_loc])} stacks snap there",
+                     errors)
+            except ValueError as e:
+                if "ambiguous" not in str(e).lower():
+                    fail(f"move_stack ambiguity error missing 'ambiguous': {e}", errors)
+                else:
+                    ok(f"move_stack({amb_loc}) raises on {len(stacks_by_loc[amb_loc])} stacks")
+            report["checks"]["ambiguous_stack"] = dict(
+                loc=amb_loc, n_stacks=len(stacks_by_loc[amb_loc]))
+        else:
+            ok("no multi-stack snapped city in 1861 (ambiguity case skipped)")
+        # unique loc still works via move_stack(loc)
+        uniq_moved = False
+        if game.regions.has_edges():
+            for loc, sids in stacks_by_loc.items():
+                if len(sids) != 1:
+                    continue
+                dests = game.legal_region_dests(dict(loc=loc, name="x"), 6)
+                dest = next((d for d in dests if d != loc), None)
+                if not dest:
+                    continue
+                try:
+                    msg = b.move_stack(loc, dest)
+                    ok(f"move_stack unique loc OK: {msg}")
+                    uniq_moved = True
+                    break
+                except Exception as e:
+                    fail(f"move_stack unique loc: {e}", errors)
+                    uniq_moved = True
+                    break
+        if not uniq_moved:
+            ok("no unique edged stack loc to exercise move_stack(loc) success path")
+        # unknown dest must not mutate
+        b2 = load_board(game, path_1861, key_1861)
+        u0 = next(u for u in b2.units() if u.get("loc"))
+        before = (b2.pieces[u0["id"]]["x"], b2.pieces[u0["id"]]["y"])
+        try:
+            b2.move_piece_by_id(u0["id"], "not-a-real-region-id")
+            fail("unknown dest should raise", errors)
+        except ValueError as e:
+            after = (b2.pieces[u0["id"]]["x"], b2.pieces[u0["id"]]["y"])
+            if after != before:
+                fail(f"unknown dest mutated piece XY {before} -> {after}", errors)
+            elif "unknown region" not in str(e):
+                fail(f"expected unknown region error, got: {e}", errors)
+            else:
+                ok("unknown dest raises; piece XY unchanged")
+        report["checks"]["fail_closed_dest"] = "PASS"
+
     # --- multi-hop campaign on graph (deeper play smoke)
     section("multi-hop path along authored edges")
     with tempfile.TemporaryDirectory() as td:

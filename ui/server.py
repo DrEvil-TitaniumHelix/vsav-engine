@@ -1514,25 +1514,35 @@ def api_move(body):
     pid, dest, whole = body["id"], body["dest"], body.get("whole")
     me = next(u for u in b.units() if u["id"] == pid)
     g = GAME_OBJ
-    if getattr(g, "space_kind", "hex") == "region":
-        dest = str(dest)
-        if dest not in g.regions.locations:
-            return dict(ok=False, error=f"unknown region {dest!r}")
-        if not me.get("loc"):
-            return dict(ok=False, error="piece has no snapped region (outside snap_radius)")
-        # dest is a location id; reject off-graph when edges exist
-        ma = g.stats(me["name"])[2]
+    try:
+        if getattr(g, "space_kind", "hex") == "region":
+            dest = str(dest)
+            if dest not in g.regions.locations:
+                return dict(ok=False, error=f"unknown region {dest!r}")
+            if not me.get("loc"):
+                return dict(ok=False, error="piece has no snapped region (outside snap_radius)")
+            # dest is a location id; reject off-graph when edges exist
+            ma = g.stats(me["name"])[2]
+            if whole:
+                sid = b.member_of.get(pid)
+                mates = [u for u in b.units() if u["id"] != pid
+                         and b.member_of.get(u["id"]) == sid]
+                ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
+            if g.regions.has_edges():
+                reach = g.legal_region_dests(me, ma)
+                if dest not in reach:
+                    return dict(ok=False, error=f"no route from {me.get('loc')} to {dest} (region graph)")
+            if whole:
+                msg = b.move_stack_containing(pid, dest)
+                for mid in b.stacks[b.member_of[pid]]["members"]:
+                    done[mid] = "moved"
+            else:
+                msg = b.move_piece_by_id(pid, dest)
+                done[pid] = "moved"
+            b.write(WORK)
+            return dict(ok=True, msg=msg)
         if whole:
-            sid = b.member_of.get(pid)
-            mates = [u for u in b.units() if u["id"] != pid
-                     and b.member_of.get(u["id"]) == sid]
-            ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
-        if g.regions.has_edges():
-            reach = g.legal_region_dests(me, ma)
-            if dest not in reach:
-                return dict(ok=False, error=f"no route from {me.get('loc')} to {dest} (region graph)")
-        if whole:
-            msg = b.move_stack_containing(pid, dest)
+            msg = b.move_stack(me["hexnum"], dest)
             for mid in b.stacks[b.member_of[pid]]["members"]:
                 done[mid] = "moved"
         else:
@@ -1540,15 +1550,9 @@ def api_move(body):
             done[pid] = "moved"
         b.write(WORK)
         return dict(ok=True, msg=msg)
-    if whole:
-        msg = b.move_stack(me["hexnum"], dest)
-        for mid in b.stacks[b.member_of[pid]]["members"]:
-            done[mid] = "moved"
-    else:
-        msg = b.move_piece_by_id(pid, dest)
-        done[pid] = "moved"
-    b.write(WORK)
-    return dict(ok=True, msg=msg)
+    except ValueError as e:
+        # Board APIs fail closed (unknown dest / ambiguous region stack, …)
+        return dict(ok=False, error=str(e))
 
 
 def api_pass(body):
