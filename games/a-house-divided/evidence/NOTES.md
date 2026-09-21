@@ -1,7 +1,7 @@
 # G1 evidence — A House Divided (VASSAL ↔ VALOR)
 
 **Date:** 2026-09-20 (deeper suite + claim-review hygiene 2026-09-21)  
-**Module:** `ahd_v05e.vmod` (v0.5e) staged at `/home/devmapal/VassalIngest/a-house-divided/`  
+**Module:** `ahd_v05e.vmod` (v0.5e) staged at `~/VassalIngest/a-house-divided/`  
 **VASSAL:** 3.7.26 + Temurin JRE 17 (user-local; no root package needed for Java)  
 **VALOR:** `python ui/server.py --game games/a-house-divided --port 8641`
 
@@ -13,7 +13,7 @@ Playability of this folder requires that out-of-tree staging (map + setups). A c
 |---|---|---|
 | `vassal_1861_main.png` | VASSAL 3.7.26 Player — stock **1861 Scenario.vsav** | OK (human map view) |
 | `valor_1861_initial.png` | VALOR browser — same 1861 setup loaded | OK |
-| `compare_valor_vs_vassal_1861.png` | Side-by-side contact sheet (VALOR \| VASSAL) | OK |
+| `compare_valor_vs_vassal_1861.png` | Side-by-side contact sheet (VALOR /| VASSAL) | OK |
 | `valor_1861_after_moves.png` | VALOR after API moves (Fredericksburg→Washington→Baltimore); re-captured 2026-09-21 | OK (≠ initial) |
 | `vassal_after_valor_mirror.png` | VASSAL full player window on `valor_after_move_baltimore.vsav` (1854×1011); re-captured 2026-09-21 | OK map view |
 | `vassal_mirror_ne_crop.png` | NE crop of that mirrored save | OK secondary |
