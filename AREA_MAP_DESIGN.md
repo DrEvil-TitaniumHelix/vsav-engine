@@ -1,7 +1,7 @@
 # Engine design: Area / territory map (region space)
 
 **Status: IMPLEMENTED (P1–P3) — 2026-09-20.** Pilot A House Divided is Tier-0 playable (`space.kind=region`, sample PARTIAL edges). P4 (full verified AHD adjacency → SCORECARD FULL) remains open.
-**Trigger / north star:** unlock the spatial substrate War Room needs (`WARROOM_GAPS.md` G1), and convert the SCORECARD “named regions” PARTIAL/FAIL rows to **playable Tier-0 in the browser** (space model + area-map UI together).
+**Trigger / north star:** unlock the spatial substrate War Room needs (gap G1), and convert the SCORECARD “named regions” PARTIAL/FAIL rows to **playable Tier-0 in the browser** (space model + area-map UI together).
 
 **Primary pilot (required): A House Divided** — 129 named regions; bundled scenarios put pieces on the main map (best UI / `.vsav` verification). Other SCORECARD PARTIAL region titles (Diplomacy, Paths of Glory, …) are follow-on smoke once the primary pilot works. Wilderness War is a poor first smoke (ingest saw only 3 named regions).
 
@@ -52,11 +52,11 @@ That is ~13% of the catalog (point-to-point) plus area/region-snap titles — an
 2. **Tier-0 playable in the browser**: load a named-region module, see the map + counters, snap pieces to regions, move with the same click/legal-highlight loop hex games use — so humans can verify ingest/edges on the real art immediately.
 3. **Ingest**: named `RegionGrid` → emit region nodes (id, name, origin xy); do **not** invent edges from pixels alone.
 4. **Hex games byte-identical**: no change to `HASH_KEYS`, movement results, or validators for existing hex titles.
-5. **Area-map UI is in G1** (not deferred): region labels on hover/select, origin markers, legal-dest overlay keyed by region id. Planning-sheet / sealed-order UI stays in `WARROOM_GAPS.md` G2.
+5. **Area-map UI is in G1** (not deferred): region labels on hover/select, origin markers, legal-dest overlay keyed by region id. Planning-sheet / sealed-order UI stays in War Room gap G2.
 
 ### Non-goals (explicit)
 
-- Sealed orders, N seats, planning sheets, battle boards, air/naval domains, economy (`WARROOM_GAPS.md` G2+).
+- Sealed orders, N seats, planning sheets, battle boards, air/naval domains, economy (War Room gaps G2+).
 - Inferring a correct political/adjacency graph from map art or region XY alone (unsafe; author or cite).
 - Shipping module art/rulebooks in the public repo.
 - Square grids (separate future expansion; Twilight Struggle stays PARTIAL).
@@ -391,7 +391,7 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 ### D. Docs
 
 - SCORECARD / LIBRARY_CENSUS one-line update: region space + Tier-0 UI supported (edges authored per game).
-- Link from `WARROOM_GAPS.md` G1 → this file marked implemented when merged.
+- War Room gap G1 marks this family implemented when merged (gap register is local, not shipped).
 
 ---
 
@@ -448,7 +448,7 @@ War Room map data is **not** required in P1–P4 (no WR `.vmod`). After P3, a ha
 
 ## References in-repo
 
-- `WARROOM_GAPS.md` — full War Room gap register (G1 = this family)
+- Local War Room gap register (G1 = this family) — not committed to git
 - `SCORECARD.md` — current named-region PARTIAL rows
 - `LIBRARY_CENSUS.md` — “point-to-point/area-map support = single biggest unlock”
 - `ENCODING_GUIDE.md` — mechanics fit / iron rule
