@@ -57,6 +57,31 @@ here and still works. By **DrEvil / Titanium Helix**. MIT licensed.
 
 ---
 
+## How a game qualifies — the coverage matrix (the tier ladder is retired)
+
+Earlier versions of this repo rated games on a ladder — Tier 0 free play,
+Tier 1 movement, Tier 2 combat, Tier 3 AI. **That ladder is gone**, and so is
+"sandbox" free play. Two things replaced it:
+
+- **The coverage matrix** — the internal measure of whether a game is
+  playable. Every rule, in every phase of the turn, per scenario, is a cell.
+  A cell has exactly two acceptable states: **enforced** by the gate, or
+  **unreachable, with evidence**. A game is offered only when every cell is
+  closed. Nothing is left to a human umpire: an action the gate cannot check
+  is an engine defect, not a disclosure. Partial enforcement is a defect
+  list, not a level. (`COVERAGE_MATRIX.md` in a game's folder, e.g.
+  `games/siege-of-jerusalem-ah/`.)
+- **Seats** — the only choice a player makes. The gate is always on; each
+  seat is Human, Basic AI, Champion/Advanced AI or an outside Harness, and
+  every pairing is legal.
+
+Ingesting a module (board, grid, pieces, a setup — see `SCORECARD.md`) is the
+**first step of encoding, not a playable rating**. An ingested-only module
+opens as a bare board for encoding work and is never in the menu: pushing
+pieces with no rules checked is what VASSAL already does.
+
+---
+
 ## Game 1: Afrika Korps (Avalon Hill, 1964) — the flagship
 
 The **entire campaign game, encoded**: the full North Africa map (playable
