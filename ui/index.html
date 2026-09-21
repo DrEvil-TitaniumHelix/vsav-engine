@@ -513,7 +513,16 @@ function renderGuide() {
     FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
                          ? cmdStepper() : '');
   if (!FLOW) {
-    FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
+    if (GAME && GAME.space === 'region') {
+      const es = GAME.edges_status || 'UNAUTHORED';
+      if (es === 'UNAUTHORED' || es === '') {
+        FRAME.setGuide('No rules gate — region snap free play (Tier-0a): drag any counter to a named region.');
+      } else {
+        FRAME.setGuide(`No rules gate — region graph free play (Tier-0, edges ${es}): drag only along authored edges (green circles). Off-graph destinations are rejected.`);
+      }
+    } else {
+      FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
+    }
     FRAME.soleNext(null);
     return;
   }

@@ -3,7 +3,7 @@
 **Status: IMPLEMENTED (P1–P3) — 2026-09-20.** Pilot A House Divided is Tier-0 playable (`space.kind=region`, sample PARTIAL edges). P4 (full verified AHD adjacency → SCORECARD FULL) remains open.
 **Trigger / north star:** unlock the spatial substrate War Room needs (`WARROOM_GAPS.md` G1), and convert the SCORECARD “named regions” PARTIAL/FAIL rows to **playable Tier-0 in the browser** (space model + area-map UI together).
 
-**Primary pilot (required): A House Divided** — 125 named regions; bundled scenarios put pieces on the main map (best UI / `.vsav` verification). Other SCORECARD PARTIAL region titles (Diplomacy, Paths of Glory, …) are follow-on smoke once the primary pilot works. Wilderness War is a poor first smoke (ingest saw only 3 named regions).
+**Primary pilot (required): A House Divided** — 129 named regions; bundled scenarios put pieces on the main map (best UI / `.vsav` verification). Other SCORECARD PARTIAL region titles (Diplomacy, Paths of Glory, …) are follow-on smoke once the primary pilot works. Wilderness War is a poor first smoke (ingest saw only 3 named regions).
 
 ### Implementer: obtain the pilot module yourself
 
