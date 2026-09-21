@@ -177,6 +177,10 @@ def parse_buildfile(bf_path):
                 or (lt.endswith("Map") and mp.get("mapName") is not None)):
             continue
         m = dict(name=mp.get("mapName", ""), private=lt == "PrivateMap",
+                 # VASSAL Map edge padding: piece XY in .vsav is map-space
+                 # (board image + edge); Region/HexGrid origins are board-space.
+                 edge_width=int(float(mp.get("edgeWidth", 0) or 0)),
+                 edge_height=int(float(mp.get("edgeHeight", 0) or 0)),
                  boards=[], setup_stacks=0, at_start=[])
         for el in mp.iter():
             lt = local(el.tag)
@@ -840,6 +844,8 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             "map_name": main_map["name"] or "Main Map",
             "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
             "save_key": save_key,
+            "map_edge": {"width": int(main_map.get("edge_width") or 0),
+                         "height": int(main_map.get("edge_height") or 0)},
             "space": space_out,
             "buildfile": rel(bf_path),
             "moduledata": rel(os.path.join(extracted, "moduledata")),
@@ -865,6 +871,8 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             "map_name": main_map["name"] or "Main Map",
             "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
             "save_key": save_key,
+            "map_edge": {"width": int(main_map.get("edge_width") or 0),
+                         "height": int(main_map.get("edge_height") or 0)},
             "grid": grid_cfg,
             "buildfile": rel(bf_path),
             "moduledata": rel(os.path.join(extracted, "moduledata")),

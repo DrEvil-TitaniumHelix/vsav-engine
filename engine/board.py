@@ -32,25 +32,78 @@ IMG_NOEXT_RE = re.compile(r"piece;[^;]*;[^;]*;((?:\\.|[^;/])+);")
 BP_NAME_RE = re.compile(r"piece;[^;]*;[^;]*;[^;]*;((?:\\.|[^/;])*)/")
 # emb2 type: after 15 semicolons past "emb2" comes the comma-separated image list
 EMB2_IMGS_RE = re.compile(r"emb2;(?:[^;]*;){15}([^;]+)")
+# AHD-style pieces stack two emb2 traits: a "back"/damage face (*-back.png,
+# often light-on-dark) and a Main face (dark-on-color). Prefer non-back art so
+# the UI matches what VASSAL shows for an unflipped counter.
+_BACK_FACE_RE = re.compile(r"-back\.(png|gif|jpe?g|bmp|svg)$", re.I)
+# BasicPiece type ends at name/; state tokens follow (tab-separated).
+_PIECE_STATE_RE = re.compile(
+    r"piece;(?:\\.|[^;/])*;(?:\\.|[^;/])*;(?:\\.|[^;/])*;(?:\\.|[^/;])*/(.*)$")
 ESC = "\x1b"
+
+
+def _emb2_face_images(cmd):
+    """Pick the best emb2 image list from a piece command (Main over -back)."""
+    lists = []
+    for raw in EMB2_IMGS_RE.findall(cmd):
+        imgs = [s.strip().replace("\\", "") for s in raw.split(",") if s.strip()]
+        if imgs:
+            lists.append(imgs)
+    if not lists:
+        return []
+    def score(imgs):
+        return sum(0 if _BACK_FACE_RE.search(i) else 1 for i in imgs)
+    return max(lists, key=score)
+
+
+def _emb2_display_image(cmd):
+    """Resolve the visible emb2 image: Main face list + current 1-based level.
+
+    VASSAL Embellishment stores level as a signed int in piece state (see
+    make_save.set_innermost_layer); draw uses image[abs(value)-1] when value≠0.
+    When several emb2 traits exist, the last positive state token is the active
+    Main-face level (back/damage twins are typically negative / inactive).
+    """
+    imgs = _emb2_face_images(cmd)
+    if not imgs:
+        return None
+    m = _PIECE_STATE_RE.search(cmd)
+    level = 1  # default: first layer (militia / N-00 / …)
+    if m:
+        positives = []
+        for tok in m.group(1).split("\t"):
+            t = tok.strip().rstrip("\\")
+            if re.fullmatch(r"-?\d+", t):
+                v = int(t)
+                if v > 0:
+                    positives.append(v)
+        if positives:
+            level = positives[-1]
+    idx = max(0, min(len(imgs) - 1, abs(level) - 1))
+    return imgs[idx]
 
 
 class Board:
     def __init__(self, path, game):
         self.game = game
         self.path = path
+        # Map edge: .vsav stores map-space XY; we keep board-space internally
+        # so pieces align with the board image + Region/HexGrid origins.
+        self.edge_w = int(getattr(game, "edge_w", 0) or 0)
+        self.edge_h = int(getattr(game, "edge_h", 0) or 0)
         self.stack_re = re.compile(
             rf"^\+/(\d+)/stack/{re.escape(game.map_name)};(\d+);(\d+)((?:;\d+)*)\\*$")
         plain, self.moduledata, self.savedata = vsav.read_vsav(path)
         self.cmds = plain.split(ESC)
-        self.pieces = {}   # id -> dict(name, kind, idx, x, y)
+        self.pieces = {}   # id -> dict(name, kind, idx, x, y)  — board-space XY
         self.stacks = {}   # id -> dict(idx, x, y, members[list of piece ids])
         for i, c in enumerate(self.cmds):
             m = self.stack_re.match(c.rstrip())
             if m:
                 members = [s for s in m.group(4).split(";") if s]
-                self.stacks[m.group(1)] = dict(idx=i, x=int(m.group(2)), y=int(m.group(3)),
-                                               members=members)
+                mx, my = int(m.group(2)), int(m.group(3))
+                self.stacks[m.group(1)] = dict(
+                    idx=i, x=mx - self.edge_w, y=my - self.edge_h, members=members)
                 continue
             m = PIECE_RE.match(c)
             if m:
@@ -65,14 +118,10 @@ class Board:
                         nm = imgfile = img.group(1).strip().replace("\\", "")
                     else:
                         # blank BasicPiece + emb2 layer art (region-map modules)
-                        emb = EMB2_IMGS_RE.search(c)
                         bp = BP_NAME_RE.search(c)
-                        if not emb or not bp:
+                        imgfile = _emb2_display_image(c)
+                        if not imgfile or not bp:
                             continue
-                        imgs = [s.strip() for s in emb.group(1).split(",") if s.strip()]
-                        if not imgs:
-                            continue
-                        imgfile = imgs[0].replace("\\", "")
                         nm = bp.group(1).strip().replace("\\", "") or imgfile.rsplit(".", 1)[0]
                 # BasicPiece state, three formats seen in the wild:
                 #   3.2-era (Westwall): "...\tfalse;<map>;1;x,y" (map EMPTY for singletons;
@@ -84,7 +133,11 @@ class Board:
                     st = re.search(rf"[;\t]{re.escape(game.map_name)};(\d+);(\d+);\d+", c)
                 if not st:
                     st = re.search(r"[;\t]null;(\d+);(\d+);\d+", c)
-                x, y = (int(st.group(1)), int(st.group(2))) if st else (None, None)
+                if st:
+                    x = int(st.group(1)) - self.edge_w
+                    y = int(st.group(2)) - self.edge_h
+                else:
+                    x, y = None, None
                 self.pieces[m.group(1)] = dict(name=nm, kind=m.group(2),
                                                img=imgfile,
                                                idx=i, x=x, y=y)
@@ -150,24 +203,32 @@ class Board:
         top = max(int(i) for i in list(self.pieces) + list(self.stacks))
         return str(top + 1)
 
+    def _to_map(self, x, y):
+        """Board-space → VASSAL map-space (add Map edge padding)."""
+        return x + self.edge_w, y + self.edge_h
+
     def _set_piece_xy(self, pid, nx, ny):
         p = self.pieces[pid]
         ox, oy = p["x"], p["y"]
+        # Command strings store map-space coords; internals are board-space.
+        omx, omy = self._to_map(ox, oy)
+        nmx, nmy = self._to_map(nx, ny)
         c = self.cmds[p["idx"]]
         # exact old coord pair, both encodings, digit-boundary guarded
-        c = re.sub(rf"(?<!\d){ox},{oy}(?!\d)", f"{nx},{ny}", c)
-        c = re.sub(rf"(?<!\d){re.escape(self.game.map_name)};{ox};{oy};",
-                   f"{self.game.map_name};{nx};{ny};", c)
+        c = re.sub(rf"(?<!\d){omx},{omy}(?!\d)", f"{nmx},{nmy}", c)
+        c = re.sub(rf"(?<!\d){re.escape(self.game.map_name)};{omx};{omy};",
+                   f"{self.game.map_name};{nmx};{nmy};", c)
         # stacked / null-map BasicPiece state (A House Divided et al.)
-        c = re.sub(rf"(?<!\d)null;{ox};{oy};", f"null;{nx};{ny};", c)
+        c = re.sub(rf"(?<!\d)null;{omx};{omy};", f"null;{nmx};{nmy};", c)
         self.cmds[p["idx"]] = c
         p["x"], p["y"] = nx, ny
 
     def _rewrite_stack(self, sid):
         s = self.stacks[sid]
+        mx, my = self._to_map(s["x"], s["y"])
         tail = "".join(f";{m}" for m in s["members"])
         self.cmds[s["idx"]] = (f"+/{sid}/stack/{self.game.map_name};"
-                               f"{s['x']};{s['y']}{tail}\\")
+                               f"{mx};{my}{tail}\\")
 
     def _detach(self, pid):
         sid = self.member_of.pop(pid, None)
