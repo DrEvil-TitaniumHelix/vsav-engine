@@ -38,7 +38,34 @@ def test_pixel_tiebreak_and_bfs():
     assert set(reach) == {"a", "b"}
 
 
+def test_map_edge_loaded_from_spec():
+    """game.json map_edge becomes Game.edge_w/h (board↔map conversion)."""
+    with tempfile.TemporaryDirectory() as td:
+        regions = {
+            "locations": {"a": {"name": "A", "origin": [100, 200]}},
+            "edges": [],
+            "ingest": {"edges_status": "UNAUTHORED"},
+        }
+        open(os.path.join(td, "regions.json"), "w").write(json.dumps(regions))
+        spec = {
+            "name": "edge-test",
+            "map_name": "Main Map",
+            "save_key": "a3",
+            "map_edge": {"width": 75, "height": 75},
+            "space": {"kind": "region", "file": "regions.json"},
+            "sides": {"order": ["A", "B"], "default": "A", "detect_tokens": {}},
+            "unit_kinds": ["mark"],
+            "stats": {"default": [0, 0, 1]},
+            "movement": {"default_mp": 1.0},
+        }
+        open(os.path.join(td, "game.json"), "w").write(json.dumps(spec))
+        g = gamespec.Game(td)
+        assert g.edge_w == 75 and g.edge_h == 75
+        assert g.loc_to_pixel("a") == (100, 200)
+
+
 if __name__ == "__main__":
     test_slug_collision_via_ingest()
     test_pixel_tiebreak_and_bfs()
+    test_map_edge_loaded_from_spec()
     print("PASS region_space unit checks")

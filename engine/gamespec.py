@@ -211,6 +211,11 @@ class Game:
         self.name = spec["name"]
         self.map_name = spec.get("map_name", "Main Map")
         self.save_key = int(spec.get("save_key", "a3"), 16)
+        # VASSAL Map edgeWidth/edgeHeight: .vsav piece XY is map-space;
+        # board image + Region/HexGrid origins are board-space. Convert in board.py.
+        edge = spec.get("map_edge") or {}
+        self.edge_w = int(edge.get("width") or 0)
+        self.edge_h = int(edge.get("height") or 0)
 
         # space discriminator: legacy specs omit space and carry top-level "grid"
         space = spec.get("space")

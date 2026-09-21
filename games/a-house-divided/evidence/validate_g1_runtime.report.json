@@ -33,7 +33,7 @@
         "units": 32,
         "missing_loc": 6,
         "on_known": 26,
-        "distinct_locs": 18,
+        "distinct_locs": 19,
         "multi_stacks": 6
       },
       {
@@ -42,8 +42,8 @@
         "units": 73,
         "missing_loc": 4,
         "on_known": 69,
-        "distinct_locs": 33,
-        "multi_stacks": 13
+        "distinct_locs": 39,
+        "multi_stacks": 14
       },
       {
         "name": "1863 Scenario.vsav",
@@ -51,8 +51,8 @@
         "units": 116,
         "missing_loc": 4,
         "on_known": 112,
-        "distinct_locs": 43,
-        "multi_stacks": 22
+        "distinct_locs": 51,
+        "multi_stacks": 24
       },
       {
         "name": "1864 Scenario.vsav",
@@ -60,8 +60,8 @@
         "units": 133,
         "missing_loc": 4,
         "on_known": 129,
-        "distinct_locs": 51,
-        "multi_stacks": 28
+        "distinct_locs": 65,
+        "multi_stacks": 30
       },
       {
         "name": "New Game Blank.vsav",
@@ -74,15 +74,15 @@
       }
     ],
     "bfs": {
-      "start": "fredericksburg",
+      "start": "washington",
       "ma": 6,
-      "n_dests": 22,
+      "n_dests": 23,
       "component": 24
     },
     "mirror": {
-      "from_loc": "fredericksburg",
+      "from_loc": "harpers-ferry",
       "to_loc": "washington",
-      "pid": "1588894742299",
+      "pid": "1588894747494",
       "xy": [
         1399,
         268
@@ -99,18 +99,6 @@
         "1588894742299"
       ]
     },
-    "pristine_stack": {
-      "from_loc": "columbus",
-      "to_loc": "dayton",
-      "stack_xy": [
-        886,
-        121
-      ]
-    },
-    "ambiguous_stack": {
-      "loc": "fredericksburg",
-      "n_stacks": 2
-    },
     "fail_closed_dest": "PASS",
     "multihop": {
       "path": [
@@ -125,11 +113,11 @@
     },
     "loc_distribution": [
       [
-        "fredericksburg",
-        4
+        "washington",
+        3
       ],
       [
-        "pensacola",
+        "mobile",
         2
       ],
       [
@@ -141,35 +129,35 @@
         2
       ],
       [
-        "lafayette",
+        "chicago",
+        2
+      ],
+      [
+        "fort-wayne",
         2
       ],
       [
         "columbus",
-        2
-      ],
-      [
-        "chillicothe",
         1
       ],
       [
-        "brunswick",
+        "harpers-ferry",
         1
       ],
       [
-        "richmond",
+        "savannah",
         1
       ],
       [
-        "wheeling",
+        "front-royal",
         1
       ],
       [
-        "macon",
+        "canton",
         1
       ],
       [
-        "gettysburg",
+        "atlanta",
         1
       ]
     ]

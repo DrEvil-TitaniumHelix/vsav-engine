@@ -38,7 +38,11 @@ Playability of this folder requires that out-of-tree staging (map + setups). A c
 
 - **Same map art** and **same counters** on named city boxes in both clients.
 - After an engine *move*, piece XY equals the VASSAL Region origin (no hex lattice).
-- Stock setups: pieces are **nearest-origin** assigned (`loc`), not already seated on catalog origins (0/32 on exact origin in 1861).
+- Stock setups: after correcting VASSAL Map `edgeWidth`/`edgeHeight` (75px),
+  **26** combat pieces sit on catalog origins; **2** cavalry sit on recruitment-
+  poster holding boxes (`loc=None`); **4** army-size `N-00` markers (`report`)
+  sit on the Army Size track (also outside city snap). Counters render at
+  native **51×51**; emb2 art prefers the Main face (not `*-back.png`).
 - VASSAL chrome differs; VALOR uses its own top bar + origin-marker toggle (◎).
 - VALOR guide for PARTIAL region games states graph free play + off-graph reject (not “drag anywhere”).
 

@@ -3,6 +3,10 @@
  "map_name": "Main Map",
  "board_name": "Board",
  "save_key": "a8",
+ "map_edge": {
+  "width": 75,
+  "height": 75
+ },
  "space": {
   "kind": "region",
   "file": "regions.json",
@@ -16,7 +20,7 @@
   "counters_dir": "../../../../VassalIngest/a-house-divided/extracted/images"
  },
  "ui": {
-  "counter_px": 75
+  "counter_px": 51
  },
  "unit_kinds": [
   "clone",
