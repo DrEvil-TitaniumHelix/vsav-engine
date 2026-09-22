@@ -35,6 +35,54 @@ ESC = "\x1b"
 if hasattr(sys.stdout, "reconfigure"):     # Windows console: don't die on em-dashes
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+# Paths written into committed INGEST_REPORT / ingest_summary must not embed
+# machine home directories (/home/<user>, /Users/<user>, C:\Users\<user>).
+_HOME_ABS = re.compile(r'(?i)(?:/(?:home|Users)/[^/\s]+|[A-Z]:[\\/]+Users[\\/]+[^\\/\s]+)')
+
+
+def public_path(p):
+    """Repo-relative if under ROOT, else ~-redacted absolute path."""
+    if not isinstance(p, str) or not p:
+        return p
+    try:
+        ap = os.path.abspath(p)
+        root = os.path.abspath(ROOT)
+        if ap == root or ap.startswith(root + os.sep):
+            return os.path.relpath(ap, root).replace("\\", "/")
+    except (OSError, ValueError):
+        ap = p
+    return redact_home(ap)
+
+
+def redact_home(text):
+    """Replace home-directory prefixes in a string with ~ (portable)."""
+    if not isinstance(text, str) or not text:
+        return text
+    home = os.path.expanduser("~")
+    out = text
+    # Exact expanded home (any slash style)
+    for h in {home, home.replace("\\", "/"), os.path.normpath(home)}:
+        if h and h in out:
+            out = out.replace(h, "~")
+        hf = h.replace("\\", "/")
+        of = out.replace("\\", "/")
+        if hf and hf in of:
+            out = of.replace(hf, "~")
+    out = out.replace("\\", "/")
+    out = _HOME_ABS.sub("~", out)
+    return out
+
+
+def redact_tree(obj):
+    """Deep-redact path-like strings in dict/list trees before JSON commit."""
+    if isinstance(obj, dict):
+        return {k: redact_tree(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [redact_tree(v) for v in obj]
+    if isinstance(obj, str):
+        return redact_home(obj)
+    return obj
+
 PIECE_RE = re.compile(r"^\+/(\d+)/(\w+);")
 STACK_RE = re.compile(r"^\+/(\d+)/stack/([^;]+);(-?\d+);(-?\d+)((?:;\d+)*)\\*$")
 POS32_RE = re.compile(r"false;[^;]*;1;(-?\d+),(-?\d+)")
@@ -129,6 +177,10 @@ def parse_buildfile(bf_path):
                 or (lt.endswith("Map") and mp.get("mapName") is not None)):
             continue
         m = dict(name=mp.get("mapName", ""), private=lt == "PrivateMap",
+                 # VASSAL Map edge padding: piece XY in .vsav is map-space
+                 # (board image + edge); Region/HexGrid origins are board-space.
+                 edge_width=int(float(mp.get("edgeWidth", 0) or 0)),
+                 edge_height=int(float(mp.get("edgeHeight", 0) or 0)),
                  boards=[], setup_stacks=0, at_start=[])
         for el in mp.iter():
             lt = local(el.tag)
@@ -168,14 +220,59 @@ def parse_board(el):
             b["grids"].append(dict(kind="square", dx=attrs_f(g, "dx"), dy=attrs_f(g, "dy"),
                                    x0=attrs_f(g, "x0", default=0), y0=attrs_f(g, "y0", default=0)))
         elif lt == "RegionGrid":
-            pts, names = [], set()
+            pts, regions = [], []
             for r in g.iter():
                 if local(r.tag) == "Region":
-                    pts.append((int(float(r.get("originx", 0))), int(float(r.get("originy", 0)))))
-                    names.add(r.get("name", ""))
-            b["grids"].append(dict(kind="region", points=pts,
-                                   named=len(names - {"New Region", ""})))
+                    x = int(float(r.get("originx", 0)))
+                    y = int(float(r.get("originy", 0)))
+                    pts.append((x, y))
+                    name = (r.get("name") or "").strip()
+                    if name and name != "New Region":
+                        regions.append(dict(name=name, x=x, y=y))
+            b["grids"].append(dict(kind="region", points=pts, regions=regions,
+                                   named=len(regions)))
     return b
+
+
+def region_location_id(name, used):
+    """Stable slug id from a VASSAL region name; collisions get -2, -3, ….
+    `used` maps id -> printed name. Returns (id, collided:bool)."""
+    base = slugify(name) or "region"
+    if base not in used:
+        used[base] = name
+        return base, False
+    n = 2
+    while f"{base}-{n}" in used:
+        n += 1
+    rid = f"{base}-{n}"
+    used[rid] = name
+    return rid, True
+
+
+def write_regions_json(named_regions, out_dir, edges=None, edges_status="UNAUTHORED"):
+    """Emit regions.json locations from RegionGrid {name,x,y} list.
+    Edges are never invented here — empty + UNAUTHORED unless caller supplies."""
+    used, locations, collisions = {}, {}, []
+    for r in named_regions:
+        rid, collided = region_location_id(r["name"], used)
+        if collided:
+            collisions.append(dict(name=r["name"], id=rid))
+        locations[rid] = dict(name=r["name"], origin=[r["x"], r["y"]])
+    data = {
+        "locations": locations,
+        "edges": list(edges or []),
+        "impassable_tags": ["offmap"],
+        "ingest": {
+            "region_grid_points": len(named_regions),
+            "edges_status": edges_status,
+            "id_collisions": collisions,
+        },
+    }
+    path = os.path.join(out_dir, "regions.json")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=1)
+    return path, data
 
 
 # ---------------------------------------------------------------- region fit
@@ -565,8 +662,9 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
                 rep["main_map"] = tgt["name"]
                 ok(f"targeting map window {tgt['name']!r} (ships boardless — takes external boards)")
 
-    # --- grid
+    # --- grid / region space
     grid_cfg, grid_how = None, None
+    space_cfg, regions_data = None, None
     hexes = [g for g in main_board["grids"] if g["kind"] == "hex" and g["dx"]]
     regions = [g for g in main_board["grids"] if g["kind"] == "region"]
     squares = [g for g in main_board["grids"] if g["kind"] == "square"]
@@ -594,14 +692,54 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
             bad(f"region lattice fit failed ({len(regions[0]['points'])} points"
                 + (f", {fit['bad_pct']}% outliers" if fit else ", no consistent spacing") + ")")
     elif regions and regions[0]["named"]:
-        bad(f"board uses {regions[0]['named']} NAMED regions (point-to-point/area map) — "
-            "engine has no region-space support yet")
-        rep["region_names"] = regions[0]["named"]
+        # Named RegionGrid → region space (locations only; edges stay authored).
+        # Preserve a curated edges list if regions.json already exists in out_dir.
+        named = regions[0].get("regions") or []
+        prior = load_json_quiet(os.path.join(out_dir, "regions.json"))
+        prior_edges, prior_status = [], "UNAUTHORED"
+        if prior and prior.get("edges"):
+            locs_preview = {}
+            used = {}
+            for r in named:
+                rid, _ = region_location_id(r["name"], used)
+                locs_preview[rid] = True
+            kept, dropped = [], []
+            for e in prior["edges"]:
+                if e.get("a") in locs_preview and e.get("b") in locs_preview:
+                    kept.append(e)
+                else:
+                    dropped.append(e)
+            prior_edges = kept
+            prior_status = (prior.get("ingest") or {}).get("edges_status", "PARTIAL")
+            if dropped:
+                bad(f"dropped {len(dropped)} prior edge(s) with missing endpoints after RegionGrid rewrite "
+                    f"(kept {len(kept)}); sample={dropped[:3]}")
+                if not kept:
+                    prior_status = "UNAUTHORED"
+                elif prior_status == "VERIFIED":
+                    prior_status = "PARTIAL"  # lost endpoints → no longer verified
+        rpath, regions_data = write_regions_json(
+            named, out_dir, edges=prior_edges, edges_status=prior_status)
+        nloc = len(regions_data["locations"])
+        est = regions_data["ingest"]["edges_status"]
+        space_cfg = dict(
+            kind="region", file="regions.json",
+            provenance="from VASSAL RegionGrid names+origins; edges hand-authored / cited")
+        grid_how = "region"
+        rep["region_names"] = nloc
+        ok(f"region space: {nloc} named locations from RegionGrid → {os.path.basename(rpath)} "
+           f"(edges {est})")
+        ok("Tier-0: counters snap to nearest region; movement along edges disabled "
+           "until edges authored" if est == "UNAUTHORED" else
+           f"Tier-0: {len(prior_edges)} authored edge(s), status {est}")
+        if regions_data["ingest"]["id_collisions"]:
+            ok(f"region id collisions resolved: {regions_data['ingest']['id_collisions']}")
     elif squares:
         bad(f"board uses a SQUARE grid (dx={squares[0]['dx']}) — engine has no square-grid support yet")
     else:
         bad("no grid of any kind on the main board")
     rep["grid"], rep["grid_how"] = grid_cfg, grid_how
+    rep["space"] = space_cfg
 
     # --- map asset
     img_path = ext["image"] if ext else find_image(extracted, main_board["image"])
@@ -675,7 +813,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
 
     # --- game.json skeleton
     save_key = setups[0]["key"] if setups else "a3"
-    placeholder = grid_cfg is None
+    placeholder = grid_cfg is None and space_cfg is None
     if placeholder:
         grid_cfg = dict(orient="flat", dx=100.0, dy=100.0, x0=50.0, y0=50.0,
                         stagger=False, hexnum_digits=2,
@@ -683,7 +821,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     bounds = None
     if ext:
         bounds = dict(cols=[0, ext["cols"] - 1], rows=[1, ext["rows"]])
-    elif map_dims:
+    elif map_dims and grid_cfg:
         bounds = dict(cols=[0, max(1, int((map_dims[0] - grid_cfg["x0"]) / grid_cfg["dx"]))],
                       rows=[0, max(1, int((map_dims[1] - grid_cfg["y0"]) / grid_cfg["dy"]))])
     unit_kinds = sorted({k for s in setups for k in s["kinds"]}) if setups \
@@ -692,34 +830,83 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     if len(sides) < 2:
         sides = (sides + ["Side A", "Side B"])[:2]
     rel = lambda p: os.path.relpath(p, out_dir).replace("\\", "/")
-    spec = {
-        "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
-        "map_name": main_map["name"] or "Main Map",
-        "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
-        "save_key": save_key,
-        "grid": grid_cfg,
-        "buildfile": rel(bf_path),
-        "moduledata": rel(os.path.join(extracted, "moduledata")),
-        "assets": {"map": rel(map_asset) if map_asset else None,
-                   "counters_dir": rel(os.path.join(extracted, "images"))},
-        "ui": {"counter_px": 75},
-        "unit_kinds": unit_kinds,
-        "sides": {"order": sides[:2], "labels": {s: s for s in sides[:2]},
-                  "default": sides[1] if len(sides) > 1 else sides[0],
-                  "detect_tokens": {},
-                  "note": "TODO detect_tokens empty — every piece shows as the default side until filled in"},
-        "stats": {"patterns": [], "default": [0, 0, 6],
-                  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"},
-        "movement": {"impassable_terrain": [], "terrain_mp": {}, "default_mp": 1.0,
-                     "hexside_rules": [], "zoc": {"exerts": False},
-                     "enter_enemy_hex": True, "pass_through_friendly": True,
-                     **({"bounds": bounds} if bounds else {}),
-                     "note": "Tier 0: uniform 1 MP, no ZOC, no terrain — piece pushing, not rules"},
-        "ingest": {"tool": "engine/ingest.py", "grid_how": grid_how or "placeholder",
-                   "module_version": md["version"]},
-    }
+    if space_cfg and space_cfg.get("kind") == "region":
+        movement = dict(default_mp=1.0, zoc=dict(exerts=False),
+                        enter_enemy_location=True, pass_through_friendly=True,
+                        note="Tier 0 region: 1 MP per edge; edges may be empty "
+                             "(snap-only) until authored. "
+                             "enter_enemy_location / pass_through_friendly / zoc "
+                             "are reserved no-ops until a region rules gate exists.")
+        space_out = dict(space_cfg)
+        space_out["snap_radius"] = 160  # px; chart/track pieces beyond this get loc=None
+        spec = {
+            "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
+            "map_name": main_map["name"] or "Main Map",
+            "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
+            "save_key": save_key,
+            "map_edge": {"width": int(main_map.get("edge_width") or 0),
+                         "height": int(main_map.get("edge_height") or 0)},
+            "space": space_out,
+            "buildfile": rel(bf_path),
+            "moduledata": rel(os.path.join(extracted, "moduledata")),
+            "assets": {"map": rel(map_asset) if map_asset else None,
+                       "counters_dir": rel(os.path.join(extracted, "images"))},
+            "ui": {"counter_px": 75},
+            "unit_kinds": unit_kinds,
+            "sides": {"order": sides[:2], "labels": {s: s for s in sides[:2]},
+                      "default": sides[1] if len(sides) > 1 else sides[0],
+                      "detect_tokens": {},
+                      "note": "TODO detect_tokens empty — every piece shows as the default side until filled in"},
+            "stats": {"patterns": [], "default": [0, 0, 6],
+                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"},
+            "movement": movement,
+            "ingest": {"tool": "engine/ingest.py", "grid_how": grid_how or "region",
+                       "module_version": md["version"],
+                       "edges_status": (regions_data or {}).get("ingest", {}).get("edges_status",
+                                                                                   "UNAUTHORED")},
+        }
+    else:
+        spec = {
+            "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
+            "map_name": main_map["name"] or "Main Map",
+            "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
+            "save_key": save_key,
+            "map_edge": {"width": int(main_map.get("edge_width") or 0),
+                         "height": int(main_map.get("edge_height") or 0)},
+            "grid": grid_cfg,
+            "buildfile": rel(bf_path),
+            "moduledata": rel(os.path.join(extracted, "moduledata")),
+            "assets": {"map": rel(map_asset) if map_asset else None,
+                       "counters_dir": rel(os.path.join(extracted, "images"))},
+            "ui": {"counter_px": 75},
+            "unit_kinds": unit_kinds,
+            "sides": {"order": sides[:2], "labels": {s: s for s in sides[:2]},
+                      "default": sides[1] if len(sides) > 1 else sides[0],
+                      "detect_tokens": {},
+                      "note": "TODO detect_tokens empty — every piece shows as the default side until filled in"},
+            "stats": {"patterns": [], "default": [0, 0, 6],
+                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"},
+            "movement": {"impassable_terrain": [], "terrain_mp": {}, "default_mp": 1.0,
+                         "hexside_rules": [], "zoc": {"exerts": False},
+                         "enter_enemy_hex": True, "pass_through_friendly": True,
+                         **({"bounds": bounds} if bounds else {}),
+                         "note": "Tier 0: uniform 1 MP, no ZOC, no terrain — piece pushing, not rules"},
+            "ingest": {"tool": "engine/ingest.py", "grid_how": grid_how or "placeholder",
+                       "module_version": md["version"]},
+        }
     if setups:
-        spec["setup_save"] = rel(max(setups, key=lambda s: (s["on_map"] or 0, s["pieces"]))["path"])
+        best = max(setups, key=lambda s: (s["on_map"] or 0, s["pieces"]))
+        spec["setup_save"] = rel(best["path"])
+        # XOR key must match the chosen setup (keys differ across predefined saves)
+        spec["save_key"] = best["key"]
+    # Prefer AHD design-doc pilot setup (1861) only for that module folder —
+    # do not key off the bare "1861" substring for every region title.
+    out_base = os.path.basename(os.path.normpath(out_dir)).lower()
+    if "a-house-divided" in out_base or "house-divided" in out_base:
+        prefer = next((s for s in setups if "1861" in (s.get("name") or "")), None)
+        if prefer and (prefer.get("on_map") or 0) >= 10:
+            spec["setup_save"] = rel(prefer["path"])
+            spec["save_key"] = prefer["key"]
     os.makedirs(out_dir, exist_ok=True)
     spec_path = os.path.join(out_dir, "game.json")
     if os.path.exists(spec_path):
@@ -787,7 +974,26 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     if setups and best_setup < 10:
         bad(f"best setup puts only {best_setup} piece(s) on the main map — likely markers, "
             "not a scenario; real setups need authoring (the make_save scenario-JSON path)")
-    if grid_how and setups and best_setup >= 10 and map_asset and n_slots \
+    edges_status = (regions_data or {}).get("ingest", {}).get("edges_status") if space_cfg else None
+    if space_cfg and space_cfg.get("kind") == "region":
+        # Region space is PARTIAL until a verified edge graph exists; locations alone
+        # are enough for Tier-0a snap play but not a FULL scorecard row.
+        if edges_status != "VERIFIED":
+            if not any("edges" in p.lower() for p in rep["problems"]):
+                if edges_status == "PARTIAL":
+                    bad("region edges PARTIAL — Tier-0b graph free play on authored "
+                        "subset; FULL needs a verified complete adjacency graph")
+                else:
+                    bad(f"region edges {edges_status or 'UNAUTHORED'} — snap-to-region "
+                        "Tier-0a only until a verified adjacency graph is authored")
+        if (edges_status == "VERIFIED" and setups and best_setup >= 10 and map_asset and n_slots
+                and (rt_units is None or rt_units >= 10)):
+            rep["verdict"] = "FULL"
+        elif map_asset and n_slots:
+            rep["verdict"] = "PARTIAL"
+        else:
+            rep["verdict"] = "FAIL"
+    elif grid_how and setups and best_setup >= 10 and map_asset and n_slots \
             and (rt_units is None or rt_units >= 10):
         rep["verdict"] = "FULL"
     elif map_asset and n_slots:
@@ -795,7 +1001,23 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     else:
         rep["verdict"] = "FAIL"
     write_report(rep, out_dir)
-    json.dump({k: v for k, v in rep.items() if k != "buildfile"},
+    summary = redact_tree({k: v for k, v in rep.items() if k != "buildfile"})
+    # Prefer portable staging / asset paths in the committed summary
+    if "staging" in summary:
+        summary["staging"] = public_path(rep.get("staging") or summary["staging"])
+    if "map_asset" in summary and summary["map_asset"]:
+        summary["map_asset"] = public_path(rep.get("map_asset") or summary["map_asset"])
+    if "vmod" in summary:
+        summary["vmod"] = public_path(rep.get("vmod") or summary["vmod"])
+    if isinstance(summary.get("setups"), list):
+        for s in summary["setups"]:
+            if isinstance(s, dict) and s.get("path"):
+                s["path"] = public_path(s["path"])
+    if isinstance(summary.get("steps"), list):
+        summary["steps"] = [redact_home(s) for s in summary["steps"]]
+    if isinstance(summary.get("problems"), list):
+        summary["problems"] = [redact_home(p) for p in summary["problems"]]
+    json.dump(summary,
               open(os.path.join(out_dir, "ingest_summary.json"), "w", encoding="utf-8"),
               indent=1, default=str)
     print(f"  = verdict: {rep['verdict']}  (report: {os.path.join(out_dir, 'INGEST_REPORT.md')})")
@@ -804,6 +1026,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
 
 # ---------------------------------------------------------------- report
 def write_report(rep, out_dir):
+    staging_pub = public_path(rep.get("staging") or "-")
     L = [f"# Ingest report — {rep.get('module', os.path.basename(rep['vmod']))}"
          + (f" v{rep.get('version')}" if rep.get("version") else ""),
          "",
@@ -811,13 +1034,22 @@ def write_report(rep, out_dir):
          "no rules learned, no enforcement claimed)",
          "",
          f"- module file: `{os.path.basename(rep['vmod'])}`",
-         f"- staged at: `{rep.get('staging', '-')}` (assets stay OUT of the repo)",
+         f"- staged at: `{staging_pub}` (assets stay OUT of the repo)",
          ""]
     if rep["verdict"] == "FULL":
         L += [f"Play it:  `python ui/server.py --game {os.path.relpath(out_dir, ROOT)}`", ""]
-    L += ["## What worked", ""] + [f"- {s}" for s in rep["steps"]] + [""]
+    L += ["## What worked", ""] + [f"- {redact_home(s)}" for s in rep["steps"]] + [""]
     if rep["problems"]:
-        L += ["## What didn't (and why)", ""] + [f"- {p}" for p in rep["problems"]] + [""]
+        L += ["## What didn't (and why)", ""] + [
+            f"- {redact_home(p)}" for p in rep["problems"]] + [""]
+    space = rep.get("space")
+    if space and space.get("kind") == "region":
+        L += ["## Region space", "",
+              f"- kind: **region** ({rep.get('region_names', '?')} named locations)",
+              f"- file: `{space.get('file', 'regions.json')}`",
+              f"- provenance: {space.get('provenance', '—')}",
+              "- Adjacency edges are authored data (not in the VASSAL module). "
+              "UNAUTHORED = Tier-0a snap-only free play.", ""]
     grid = rep.get("grid")
     if grid:
         L += ["## Grid", "", "```json", json.dumps(grid, indent=1), "```",
@@ -865,6 +1097,8 @@ def batch(vmod_dir, scorecard_path):
         bf = r.get("buildfile") or {}
         slots = len(bf.get("slots", [])) if bf else "-"
         grid = r.get("grid_how") or "—"
+        if r.get("space") and r["space"].get("kind") == "region":
+            grid = f"region ({r.get('region_names', '?')} locs)"
         setups = ", ".join(s["name"] or "unnamed" for s in r.get("setups", [])) or \
             (f"{r.get('at_start_count', 0)} at-start" if r.get("at_start_count") else "—")
         why = "; ".join(r.get("problems", [])[:3]) or "—"

@@ -59,10 +59,14 @@ All five must pass for a game to ship with an **enforced** rules gate:
 1. **Rules present** — embedded in the module or freely/legitimately obtainable.
 2. **Rules transcribe cleanly** — clear procedures, ideally with worked
    examples in the rulebook to validate against.
-3. **Mechanics fit the engine** — hex movement + ZOC/terrain, plus one combat
-   flavor already built (odds/differential CRT, or to-hit/damage). Not yet in
-   the engine: card-driven systems, hidden movement, air/naval subsystems —
-   each is a future engine expansion, not a per-game hack.
+3. **Mechanics fit the engine** — hex *or* named-region movement substrate,
+   plus (for Tier 1+) ZOC/terrain and one combat flavor already built
+   (odds/differential CRT, or to-hit/damage). Region / area / point-to-point
+   maps are **in-engine** as Tier-0 space (`space.kind=region`; see
+   `AREA_MAP_DESIGN.md`; War Room gap G1) — per-game
+   folders still need ingest + authored edges; region *rules* gates are later.
+   Not yet in the engine: card-driven systems, hidden movement, air/naval
+   subsystems — each is a future engine expansion, not a per-game hack.
 4. **Complete playable scope exists** — a defined scenario with victory
    conditions, not the whole game system at once.
 5. **Every encoded table is validatable** — worked examples, a second printed
