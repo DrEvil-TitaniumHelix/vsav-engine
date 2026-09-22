@@ -9,8 +9,8 @@ clear it.
 
 1. **Never ship a wrong rules engine.** A rule is only enforced where it's been
    validated against worked examples, an independent source, or expert review.
-   If a table can't be validated, the game stays at a lower tier with that rule
-   unenforced. A wrong gate is worse than no gate.
+   If a table can't be validated, that cell of the game's coverage matrix stays
+   open and the game is not offered — nothing ships half-enforced. A wrong gate is worse than no gate.
 2. **Every encoded rule cites its source.** Rulebook section/page references live
    in the game's `game.json` alongside the rule, the way the existing games do.
    Original-game defects found while encoding go in `source_defects` with quoted
@@ -25,13 +25,14 @@ clear it.
 
 Start with **`ENCODING_GUIDE.md`** — it walks the full pipeline (grid geometry
 from the module `buildFile`, counters from PieceSlots, terrain, the rules layer
-as `game.json` plus one procedure module, the validators, and the tier system).
+as `game.json` plus one procedure module, the validators, and the coverage matrix).
 `games/afrika-korps-classic-ah/` is the worked reference: `game.json`,
 `terrain.json`, a scenario file, the `validate_*.py` evidence chain, and
 `VALIDATION.md`.
 
-A game earns a tier only when its validators are green and its `VALIDATION.md`
-documents the evidence. That's the contract between "it runs" and "it's correct."
+A game is offered only when every cell of its coverage matrix is enforced or
+proven unreachable, its validators are green and its `VALIDATION.md` documents
+the evidence. There are no tiers and no free-play mode. That's the contract between "it runs" and "it's correct."
 
 ## Running the tests
 

@@ -199,7 +199,7 @@
 <div id="selbox" style="display:none"></div>
 <div id="toast"></div>
 
-<script src="frame.js?v=20260820b"></script>
+<script src="frame.js?v=20260820i"></script>
 <script src="salvo.js?v=20260718s"></script>
 <script>
 const W = document.getElementById('world'), VP = document.getElementById('viewport');
@@ -450,7 +450,7 @@ async function refresh() {
 // game is waiting on). A mailed or LLM-harnessed seat is driven by its own
 // channel, never from here.
 function seatOf(side) { return (GAME && GAME.seats && GAME.seats.current[side]) || 'human'; }
-function computerSeat(side) { const k = seatOf(side); return k === 'basic' || k === 'champion'; }
+function computerSeat(side) { const k = seatOf(side); return k === 'basic' || k === 'champion' || k === 'harness'; }
 function seatName(side) { const k = seatOf(side); return (GAME.seats && GAME.seats.names[k]) || k; }
 function actingSide() {
   if (!FLOW) return null;
@@ -473,6 +473,7 @@ function remoteSeat(side) {
 function driveAI() {
   if (!FLOW || FLOW.over || aiPaused || aiActive || aiBusy || !FRAME.started()) return;
   if (!computerSeat(actingSide()) || remoteSeat(actingSide())) return;
+  if (FRAME.HARNESS && FRAME.HARNESS.waiting(actingSide())) return;
   aiActive = true; renderFlow();
   if (document.getElementById('aimode').value === 'auto') aiAutoLoop();
   else aiStepOnce().then(r => { if (r.done) { aiActive = false; aiNext = null; renderFlow(); driveAI(); } });
@@ -539,6 +540,11 @@ function renderGuide() {
   }
   if (computerSeat(actingSide()) && !remoteSeat(actingSide())) {
     const who = actingSide();
+    if (FRAME.HARNESS && FRAME.HARNESS.waiting(who) && !aiPaused) {
+      FRAME.setGuide(FRAME.HARNESS.guide(who));
+      FRAME.soleNext(null);
+      return;
+    }
     if (aiPaused) {
       FRAME.setGuide(`<b>${seatName(who)}</b> plays <b>${sideLabel(who)}</b> — paused. Press <b>▶ Resume</b> to let it continue, or change the seats under <b>Mode</b>.`);
       FRAME.soleNext('aiplaybtn');
@@ -2313,6 +2319,13 @@ async function aiStepOnce() {
   } catch (e) { aiBusy = false; showThinking(false); toast('AI step failed: ' + e); return { done: true }; }
   aiBusy = false; showThinking(false);
   if (r.error) { toast('Gate: ' + r.error); return { done: true }; }
+  if (r.waiting && FRAME.HARNESS) {
+    if (r.flow) FLOW = r.flow;
+    aiActive = false; aiNext = null; drawAIIntent(null);
+    FRAME.HARNESS.wait(r, () => { FRAME.HARNESS.clearWait(); refresh(); });
+    renderGuide();
+    return { done: true, waiting: true };
+  }
   if (r.flow) FLOW = r.flow;
   if (r.step) await refresh();          // an action executed — board reflects it
   aiNext = r.next; drawAIIntent(aiNext);
