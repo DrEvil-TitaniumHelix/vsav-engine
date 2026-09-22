@@ -67,5 +67,23 @@
   "module_version": "0.5e",
   "edges_status": "PARTIAL"
  },
- "setup_save": "../../../../VassalIngest/a-house-divided/setups/1861 Scenario.vsav"
+ "setup_save": "../../../../VassalIngest/a-house-divided/setups/1861 Scenario.vsav",
+ "credits": {
+  "game": {
+   "title": "A House Divided",
+   "publisher": "Game Designers' Workshop",
+   "year": "1981",
+   "design": "Frank Chadwick (design)",
+   "source": "publisher/year from the module library listing; designer from the BoardGameGeek entry the module readme links - rulebook not on hand, printed credits unverified"
+  },
+  "module": {
+   "title": "A House Divided 0.5e (VASSAL module, Classic Version)",
+   "implementation": "Wargame Academy VASSAL Team (original module, releases 0.1-0.3, users guide 2005); Askatasuno (0.4-0.5e update of the old GDW module, 2020)",
+   "contributors": "Esparver73 (Louisville map errata); library maintainers Ian_S, JimSB, wga",
+   "library": "vassalengine.org/library/projects/A_House_Divided",
+   "source": "the module's own version history + users guide + the module library listing"
+  },
+  "encoding": "Fabian Schaffert (devmapal) - named-region / area-map space model, RegionGrid ingest, region legal-move + UI overlay, A House Divided ingest pilot (PR #3, merged 2026-09-22)",
+  "note": "No rules are enforced for this game yet - it is an ingest pilot for the region-space substrate. All game content remains the property of its publisher; all module art and data remain the work of the module authors above. Bring-your-own-module: the module is downloaded by each user from the VASSAL module library, never redistributed here."
+ }
 }

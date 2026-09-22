@@ -404,6 +404,12 @@ Everything else stays **bring-your-own-module**: other games' folders hold only
 our spec/rules data, and `setup_module.py` ingests the module you download from
 vassalengine.org yourself.
 
+## Contributors
+
+- **Fabian Schaffert** ([devmapal](https://github.com/devmapal)) — named-region / area-map space
+  model (`space.kind=region`), RegionGrid ingest, region legal-move + UI overlay, and the
+  *A House Divided* ingest pilot (PR #3, 2026-09).
+
 ## Legal
 
 Code is MIT. *Tobruk* © its rights-holders (originally Avalon Hill, 1975); *Arnhem* /
