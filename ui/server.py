@@ -65,6 +65,7 @@ import pbm as pbm_mod  # noqa: E402
 import plans as plans_mod  # noqa: E402
 import champion as champ_mod  # noqa: E402
 import salvo as salvo_mod  # noqa: E402
+import harness as harness_mod  # noqa: E402
 import undo as undo_mod  # noqa: E402
 
 SG_FAMILY = ("strategic", "bluegray", "westwall", "napoleonic", "naw")
@@ -106,9 +107,11 @@ def facing_path():
 
 SEATS = {}
 STARTED = False
-SEAT_LABEL = {"human": "Human", "basic": "Basic AI", "champion": "Champion AI"}
+SEAT_LABEL = {"human": "Human", "basic": "Basic AI", "champion": "Champion AI",
+              "harness": "Harness (your AI)"}
 SEAT_NAME = {"human": "Human", "basic": "Computer (Basic AI)",
-             "champion": "Computer (Champion)"}
+             "champion": "Computer (Champion)", "harness": "Harnessed AI"}
+PORT = 8641
 
 
 def seats_path():
@@ -123,6 +126,8 @@ def seat_kinds():
         kinds.append("basic")
     if "basic" in kinds and champ_mod.genome(GAME_OBJ.dir) is not None:
         kinds.append("champion")
+    if SG and harness_mod.supported(SCEN_MODE, SG):
+        kinds.append("harness")
     return kinds
 
 
@@ -198,9 +203,23 @@ def api_seats(body):
             return dict(error=f"{SEAT_LABEL.get(k, k)} is not available for this "
                               f"game (available: {', '.join(SEAT_LABEL[x] for x in kinds)})")
     if req:
+        hs = harness_mod.load(LIVE, GAME_SLUG)
+        for sd, k in req.items():
+            if k != "harness" and sd in hs["seats"]:
+                del hs["seats"][sd]
+            if k == "harness":
+                harness_mod.seat(hs, sd, create=True)
+        harness_mod.save(LIVE, GAME_SLUG, hs)
         SEATS.update(req)
         AI_STEP = None
     if (body or {}).get("start"):
+        hs = harness_mod.load(LIVE, GAME_SLUG)
+        for sd, k in SEATS.items():
+            st = harness_mod.seat(hs, sd) if k == "harness" else None
+            if k == "harness" and not (st and st["tested"]):
+                return dict(error=f"the {sd} seat is a Harness whose "
+                                  "connection test has not passed yet",
+                            seats=seats_view())
         STARTED = True
     if req or (body or {}).get("start"):
         save_seats()
@@ -221,6 +240,155 @@ def seat_theta(side, body=None):
         return dict(theta=champ_mod.plan_for(SJ or SG or TG, side=side),
                     kind=k)
     return dict(theta=None, kind=k)
+
+
+def harness_status():
+    return harness_mod.status(harness_mod.load(LIVE, GAME_SLUG), SG)
+
+
+def _harness_seat(body):
+    side = (body or {}).get("side")
+    if side not in GAME_OBJ.side_order:
+        return None, None, dict(error=f"pick a side: {' or '.join(GAME_OBJ.side_order)}")
+    hs = harness_mod.load(LIVE, GAME_SLUG)
+    st = harness_mod.seat(hs, side, create=True)
+    return hs, (side, st), None
+
+
+def _harness_packet(side, st, kind=None):
+    return harness_mod.packet(SG, st, side, GAME_SLUG, SCEN_MODE, kind=kind)
+
+
+def _harness_reply(hs, side, st, extra=None):
+    harness_mod.save(LIVE, GAME_SLUG, hs)
+    kind = None if STARTED else "hello"
+    out = dict(packet=_harness_packet(side, st, kind), harness=harness_status(),
+               flow=SG.flow(), side=side)
+    out["salvo"] = dict(llm_side=side, n=st["n"], pbm=False,
+                        your_llm_up=out["harness"][side].get("up", False),
+                        match_id=GAME_SLUG, over=sg_over())
+    if extra:
+        out.update(extra)
+    return out
+
+
+def api_harness_readme(qs):
+    side = (qs.get("side") or [None])[0]
+    if side not in GAME_OBJ.side_order:
+        return dict(error=f"pick a side: {' or '.join(GAME_OBJ.side_order)}")
+    text = harness_mod.readme_text(
+        GAME_SLUG, GAME_OBJ.spec, SCEN_MODE, game_dir(GAME_SLUG), side,
+        turns=SG.turns, url_base=f"http://localhost:{PORT}",
+        web=(sys.platform == "emscripten"))
+    return dict(text=text, filename=f"harness_readme_{GAME_SLUG}_{side}.md")
+
+
+def api_harness_packet(qs):
+    hs, seat, err = _harness_seat({"side": (qs.get("side") or [None])[0]})
+    if err:
+        return err
+    side, st = seat
+    return _harness_reply(hs, side, st)
+
+
+def api_harness_config(body):
+    hs, seat, err = _harness_seat(body)
+    if err:
+        return err
+    side, st = seat
+    tr = body.get("transport")
+    if tr not in harness_mod.TRANSPORTS:
+        return dict(error=f"transport must be one of {', '.join(harness_mod.TRANSPORTS)}")
+    st["transport"] = tr
+    return _harness_reply(hs, side, st)
+
+
+def api_harness_hello(body):
+    hs, seat, err = _harness_seat(body)
+    if err:
+        return err
+    side, st = seat
+    if STARTED:
+        return dict(error="the game has started - send orders, not a test")
+    try:
+        acts, comm = harness_mod.check_reply(body.get("move"), st["n"])
+    except salvo_mod.MoveError as e:
+        return _harness_reply(hs, side, st, dict(ok=False, verdict=str(e)))
+    problems, judged = harness_mod.hello_verdict(SG, side, SCEN_MODE, acts)
+    if problems:
+        return _harness_reply(hs, side, st, dict(ok=False, verdict="; ".join(problems)))
+    st["tested"] = True
+    legal = None if judged is None else sum(1 for v in judged if v["legal"])
+    msg = f"connected - {len(acts)} order(s) read in the right shape"
+    if judged is not None:
+        msg += f"; the Umpire would accept {legal} of {len(acts)} right now"
+        if legal != len(acts):
+            msg += " (" + "; ".join(r for v in judged if not v["legal"]
+                                    for r in v["reasons"])[:300] + ")"
+    msg += ". Nothing was applied."
+    return _harness_reply(hs, side, st, dict(ok=True, verdict=msg, commentary=comm))
+
+
+def api_harness_move(body):
+    hs, seat, err = _harness_seat(body)
+    if err:
+        return err
+    side, st = seat
+    if not STARTED:
+        return api_harness_hello(body)
+    if SEATS.get(side) != "harness":
+        return dict(error=f"the {side} seat is not a Harness")
+    if sg_over():
+        return _harness_reply(hs, side, st, dict(error="the game is over"))
+    if harness_mod.decider(SG) != side:
+        return _harness_reply(hs, side, st, dict(
+            error=f"not {side}'s decision right now - wait for a decision packet"))
+    if st["queue"]:
+        return _harness_reply(hs, side, st, dict(
+            error="your previous reply is still being played - wait for the next packet"))
+    try:
+        acts, comm = harness_mod.check_reply(body.get("move"), st["n"])
+    except salvo_mod.MoveError as e:
+        return _harness_reply(hs, side, st, dict(error=str(e)))
+    harness_mod.accept_reply(st, acts, comm)
+    return _harness_reply(hs, side, st, dict(ok=True, queued=len(acts)))
+
+
+def api_harness_log():
+    if not SG or not os.path.exists(SG.log_path):
+        return dict(lines=[])
+    return dict(lines=open(SG.log_path, encoding="utf-8").read().splitlines())
+
+
+def harness_ai_step(side, body):
+    global AI_STEP
+    hs = harness_mod.load(LIVE, GAME_SLUG)
+    st = harness_mod.seat(hs, side, create=True)
+    if harness_mod.decider(SG) != side:
+        return dict(done=False, step=None, next=None, flow=SG.flow(),
+                    error=f"it is not {side}'s decision")
+    if not st["queue"]:
+        AI_STEP = None
+        return dict(done=False, step=None, next=None, flow=SG.flow(),
+                    waiting=True, side=side, harness=harness_status(),
+                    packet=_harness_packet(side, st))
+    fresh = (AI_STEP is None or not isinstance(AI_STEP, harness_mod.HarnessStepper)
+             or AI_STEP.sg is not SG or AI_STEP.side != side)
+    save_cb = lambda: harness_mod.save(LIVE, GAME_SLUG, hs)
+    if fresh:
+        AI_STEP = harness_mod.HarnessStepper(SG, st, side, save_cb)
+        return dict(done=False, step=None, next=AI_STEP.peek(), flow=SG.flow())
+    AI_STEP.st = st
+    AI_STEP.save_cb = save_cb
+    entry = AI_STEP.step()
+    sync_mirror()
+    done.clear()
+    finished = AI_STEP.done()
+    nxt = AI_STEP.peek()
+    if finished:
+        AI_STEP = None
+    return dict(done=finished, step=entry, next=nxt, flow=SG.flow(),
+                harness=harness_status())
 
 
 def build_gate():
@@ -1154,6 +1322,8 @@ def api_state():
         out["pbm"] = pbm_status()
     if SCEN_MODE in salvo_mod.SALVO_MODES:
         out["salvo"] = salvo_status()
+    if SG and "harness" in seat_kinds():
+        out["harness"] = harness_status()
     if SG or TG:
         out["undo"] = undo_status()
     return out
@@ -1425,6 +1595,13 @@ def api_ai_step(body):
         AI_STEP = None
         return dict(done=True, step=None, next=None, flow=SG.flow(),
                     error="game is over")
+    hside = body.get("side") or harness_mod.decider(SG)
+    if SEATS.get(hside) == "harness":
+        br = seat_theta(hside, body)
+        if br.get("error"):
+            return dict(done=False, step=None, next=None, flow=SG.flow(),
+                        error=br["error"])
+        return harness_ai_step(hside, body)
     if SCEN_MODE in ("napoleonic", "naw"):
         side = body.get("side") or SG.decider()
         fresh = (AI_STEP is None or AI_STEP.done()
@@ -1883,6 +2060,7 @@ def api_reset(body=None):
     save_seats()
     pbm_mod.clear_sidecar(LIVE, GAME_SLUG)   # a reset abandons any PBM match
     salvo_mod.clear_sidecar(LIVE, GAME_SLUG)  # ...and any SALVO attachment
+    harness_mod.clear(LIVE, GAME_SLUG)
     undo_mod.clear(LIVE, GAME_SLUG)          # ...and the undo window
     if os.path.exists(WORK):
         os.remove(WORK)
@@ -1992,6 +2170,12 @@ def route_get(path, qs):
         return api_salvo_log()
     if SG and path == "/api/salvo/payload":
         return api_salvo_payload()
+    if SG and path == "/api/harness/readme":
+        return api_harness_readme(qs)
+    if SG and path == "/api/harness/packet":
+        return api_harness_packet(qs)
+    if SG and path == "/api/harness/log":
+        return api_harness_log()
     return None
 
 
@@ -2034,6 +2218,12 @@ def route_post(path, body):
         return api_salvo_tick()
     if path == "/api/salvo/stop":
         return api_salvo_stop()
+    if SG and path == "/api/harness/config":
+        return api_harness_config(body)
+    if SG and path == "/api/harness/hello":
+        return api_harness_hello(body)
+    if SG and path == "/api/harness/move":
+        return api_harness_move(body)
     if path == "/api/pass":
         return api_pass(body)
     if path == "/api/face":
@@ -2148,6 +2338,7 @@ if __name__ == "__main__":
     ap.add_argument("--game", default=_default)
     ap.add_argument("--port", type=int, default=8641)
     a = ap.parse_args()
+    PORT = a.port
     load_game(a.game)
     g = SG or SJ or TG
     if g:

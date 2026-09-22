@@ -86,6 +86,8 @@ def run_one(path, extra_args=None):
         return "PASS", secs, ""
     tail = (proc.stdout + proc.stderr).strip().splitlines()
     tail = tail[-1] if tail else f"exit {proc.returncode}"
+    if "FileNotFoundError" in tail and ".vsav'" in tail:
+        return "SKIP", 0.0, "needs the bring-your-own module save (absent): " + tail.rsplit(os.sep, 1)[-1].rstrip("'")
     return "FAIL", secs, tail
 
 
