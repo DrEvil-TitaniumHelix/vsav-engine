@@ -786,6 +786,7 @@ const FRAME = (() => {
               With: ${md.contributors}.<br>
               <span class="dim">${md.library} (${md.source})</span></li>`;
       }
+      if (CR.encoding) cb += `<li><b>VALOR encoding</b> — ${CR.encoding}</li>`;
       if (CR.note) cb += `<li class="dim">${CR.note}</li>`;
       sec(PL, '#8fb8d8', 'Credits', null, cb + `</ul>`);
     }
