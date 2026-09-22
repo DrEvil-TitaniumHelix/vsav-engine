@@ -77,6 +77,9 @@ def run_one(path, extra_args=None):
             cwd=REPO,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
             timeout=PER_VALIDATOR_TIMEOUT,
         )
     except subprocess.TimeoutExpired:

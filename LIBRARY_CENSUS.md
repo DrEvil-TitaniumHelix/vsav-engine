@@ -43,7 +43,7 @@ Hex-and-counter wargames (tactical/operational/strategic WWII+historical) are
 the library's overwhelming center of mass — which is the ingest tool's home
 turf (see SCORECARD.md: 9/26 pilot modules convert FULL today, runtime-verified,
 with point-to-point/area-map support now in-engine: `space.kind=region` +
-`regions.json` + Tier-0 browser UI (see `AREA_MAP_DESIGN.md`; pilot
+`regions.json` + ingest browser UI (see `AREA_MAP_DESIGN.md`; pilot
 A House Divided is PARTIAL — locations + sample edges; full adjacency
 still per-game authoring).
 

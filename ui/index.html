@@ -517,9 +517,9 @@ function renderGuide() {
     if (GAME && GAME.space === 'region') {
       const es = GAME.edges_status || 'UNAUTHORED';
       if (es === 'UNAUTHORED' || es === '') {
-        FRAME.setGuide('No rules gate — region snap free play (Tier-0a): drag any counter to a named region.');
+        FRAME.setGuide('No rules gate (ingest only): drag any counter to a named region.');
       } else {
-        FRAME.setGuide(`No rules gate — region graph free play (Tier-0, edges ${es}): drag only along authored edges (green circles). Off-graph destinations are rejected.`);
+        FRAME.setGuide(`No rules gate (ingest only, edges ${es}): drag only along authored edges (green circles). Off-graph destinations are rejected.`);
       }
     } else {
       FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
@@ -1843,7 +1843,7 @@ async function select(u, whole, ev) {
     const where = u.hexname || u.locname || u.hexnum || u.loc || '';
     const mode = legal.edges
       ? `MA ${legal.ma}, ${legal.dests.length} reachable regions (graph)`
-      : `${legal.dests.length} regions (Tier-0a snap — edges unauthored)`;
+      : `${legal.dests.length} regions (snap-only — edges unauthored)`;
     A.innerHTML = `<b>${whole ? 'STACK @ '+where : u.name}</b> @ <b>${where}</b> — ${mode}.
                    Drag to a green circle.
                    <button class="sidebtn" onclick="passSel()">Pass</button>

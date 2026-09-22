@@ -1,5 +1,5 @@
 {
- "name": "A House Divided \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "name": "A House Divided \u2014 INGESTED skeleton (free play only, nothing verified)",
  "map_name": "Main Map",
  "board_name": "Board",
  "save_key": "a8",
@@ -50,7 +50,7 @@
    0,
    6
   ],
-  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned"
  },
  "movement": {
   "default_mp": 1.0,
@@ -59,7 +59,7 @@
   },
   "enter_enemy_location": true,
   "pass_through_friendly": true,
-  "note": "Tier 0 region: 1 MP per edge; edges may be empty (snap-only) until authored. enter_enemy_location / pass_through_friendly / zoc are reserved no-ops until a region rules gate exists."
+  "note": "ingest region: 1 MP per edge; edges may be empty (snap-only) until authored. enter_enemy_location / pass_through_friendly / zoc are reserved no-ops until a region rules gate exists."
  },
  "ingest": {
   "tool": "engine/ingest.py",

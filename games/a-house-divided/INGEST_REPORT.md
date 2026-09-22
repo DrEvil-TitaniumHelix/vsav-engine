@@ -1,6 +1,6 @@
 # Ingest report — A House Divided v0.5e
 
-**Verdict: PARTIAL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
+**Verdict: PARTIAL** (ingest — free piece pushing; no rules learned, no enforcement claimed)
 
 - module file: `ahd_v05e.vmod`
 - staged at: `~/VassalIngest/a-house-divided` (assets stay OUT of the repo)
@@ -12,7 +12,7 @@
 - 20 piece/card slots (0 with BasicPiece art, 18 blank-image layer pieces VASL-style); 6 prototypes
 - main board: 'Board' on map 'Main Map'; 1 other board(s) not converted: Battle Window (map 'Battle Window')
 - region space: 129 named locations from RegionGrid → regions.json (edges PARTIAL)
-- Tier-0: 37 authored edge(s), status PARTIAL
+- ingest: 37 authored edge(s), status PARTIAL
 - region id collisions resolved: [{'name': 'Jacksonville', 'id': 'jacksonville-2'}, {'name': 'Columbus', 'id': 'columbus-2'}, {'name': 'Macon', 'id': 'macon-2'}, {'name': 'Fayetteville', 'id': 'fayetteville-2'}]
 - map asset: ahd_mod_2.png (1896x1289 px)
 - setup 'New Game (Blank Map)': 8 pieces, 4 ON the main map (8 self-positioned, 4 in stacks), key 0x41
@@ -20,13 +20,13 @@
 - setup '1862 Scenario': 77 pieces, 61 ON the main map (77 self-positioned, 57 in stacks), key 0xb9
 - setup '1863 Scenario': 120 pieces, 96 ON the main map (120 self-positioned, 90 in stacks), key 0x96
 - setup '1864 Scenario': 133 pieces, 120 ON the main map (133 self-positioned, 90 in stacks), key 0xa7
-- no terrain metadata (normal — terrain is not a Tier-0 item)
+- no terrain metadata (normal — terrain is not an ingest item)
 - spec skeleton -> games/a-house-divided/game.json
 - runtime self-check: engine loads the setup and sees 32 units
 
 ## What didn't (and why)
 
-- region edges PARTIAL — Tier-0b graph free play on authored subset only (~24% of locs edged; two components; 98 isolated). FULL needs a verified complete adjacency graph
+- region edges PARTIAL — graph play on authored subset only (~24% of locs edged; two components; 98 isolated). FULL needs a verified complete adjacency graph
 - playability requires out-of-tree staging at `~/VassalIngest/a-house-divided` (map + setups); not in git
 
 ## Region space
@@ -34,7 +34,7 @@
 - kind: **region** (129 named locations)
 - file: `regions.json`
 - provenance: from VASSAL RegionGrid names+origins; edges hand-authored / cited
-- Adjacency edges are authored data (not in the VASSAL module). UNAUTHORED = Tier-0a snap-only free play.
+- Adjacency edges are authored data (not in the VASSAL module). UNAUTHORED = snap-only free play.
 
 ## Setups
 

@@ -60,9 +60,9 @@ All five must pass for a game to ship with an **enforced** rules gate:
 2. **Rules transcribe cleanly** — clear procedures, ideally with worked
    examples in the rulebook to validate against.
 3. **Mechanics fit the engine** — hex *or* named-region movement substrate,
-   plus (for Tier 1+) ZOC/terrain and one combat flavor already built
+   plus (behind a rules gate) ZOC/terrain and one combat flavor already built
    (odds/differential CRT, or to-hit/damage). Region / area / point-to-point
-   maps are **in-engine** as Tier-0 space (`space.kind=region`; see
+   maps are **in-engine** as ingest space (`space.kind=region`; see
    `AREA_MAP_DESIGN.md`; War Room gap G1) — per-game
    folders still need ingest + authored edges; region *rules* gates are later.
    Not yet in the engine: card-driven systems, hidden movement, air/naval
