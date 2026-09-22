@@ -92,7 +92,7 @@ class RegionSpace:
     """Named-location graph: pixel <-> location id via region origins + edges.
 
     Tie-break for nearest-origin snap: lower location id wins (stable, documented).
-    Directed edges are supported in the schema; Tier-0 treats undirected unless
+    Directed edges are supported in the schema; ingest treats undirected unless
     an edge sets directed:true (then only a→b is added).
     """
 
@@ -356,14 +356,14 @@ class Game:
         return self.grid.display_name(int(s[:d]), int(s[d:]))
 
     def legal_region_dests(self, unit, ma):
-        """Tier-0a: all on-map locs when edges empty. Tier-0b: BFS within MA."""
+        """snap-only: all on-map locs when edges empty. graph play: BFS within MA."""
         if self.space_kind != "region":
             self._hex_only("legal_region_dests")
         start = unit.get("loc")
         if not start:
             return {}
         if not self.regions.has_edges():
-            # Tier-0a umpire model: any on-map location (including stay)
+            # snap-only umpire model: any on-map location (including stay)
             return {lid: 0.0 for lid in self.regions.locations if self.regions.on_map(lid)}
         reach = self.regions.reachable(start, ma)
         reach.pop(start, None)

@@ -1,5 +1,5 @@
 {
- "name": "A House Divided \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
+ "name": "A House Divided \u2014 INGESTED skeleton (free play only, nothing verified)",
  "map_name": "Main Map",
  "board_name": "Board",
  "save_key": "41",
@@ -46,7 +46,7 @@
    0,
    6
   ],
-  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
+  "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned"
  },
  "movement": {
   "impassable_terrain": [],
@@ -68,7 +68,7 @@
     12
    ]
   },
-  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+  "note": "ingest: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
  },
  "ingest": {
   "tool": "engine/ingest.py",

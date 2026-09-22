@@ -4,7 +4,7 @@ ingest.py - Generalized VASSAL .vmod ingest: one command, structured output.
     python engine/ingest.py <path-to.vmod> [--out games/<name>] [--staging <dir>] [--name <slug>]
     python engine/ingest.py --batch <dir-with-vmods> [--scorecard SCORECARD.md]
 
-Tier-0 conversion only (spec #1): extract the module, detect the board grid,
+ingest only (spec #1): extract the module, detect the board grid,
 parse the piece definitions, find bundled setups, and emit a game.json
 skeleton plus an honest per-module INGEST_REPORT.md of what worked, what
 didn't, and why. NO rules are learned and NO enforcement is claimed here —
@@ -437,7 +437,7 @@ def hexgrid_to_engine(g):
         cfg["provenance"] = (f"{conf}; module numbering: first={num.get('first')} "
                              f"hType={num.get('hType')} vType={num.get('vType')} "
                              f"hOff={num.get('hOff')} vOff={num.get('vOff')} "
-                             f"stagger={num.get('stagger')} — hex LABELS unverified, geometry is what matters for Tier 0")
+                             f"stagger={num.get('stagger')} — hex LABELS unverified, geometry is what matters for ingest")
     else:
         cfg["provenance"] = conf + "; no grid numbering in module"
     cfg["hexnum_digits"] = 2
@@ -729,9 +729,9 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         rep["region_names"] = nloc
         ok(f"region space: {nloc} named locations from RegionGrid → {os.path.basename(rpath)} "
            f"(edges {est})")
-        ok("Tier-0: counters snap to nearest region; movement along edges disabled "
+        ok("ingest: counters snap to nearest region; movement along edges disabled "
            "until edges authored" if est == "UNAUTHORED" else
-           f"Tier-0: {len(prior_edges)} authored edge(s), status {est}")
+           f"ingest: {len(prior_edges)} authored edge(s), status {est}")
         if regions_data["ingest"]["id_collisions"]:
             ok(f"region id collisions resolved: {regions_data['ingest']['id_collisions']}")
     elif squares:
@@ -808,7 +808,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     if terr:
         ok(f"terrain metadata present ({', '.join(terr[:3])}) — extractable later (VASL method)")
     else:
-        ok("no terrain metadata (normal — terrain is not a Tier-0 item)")
+        ok("no terrain metadata (normal — terrain is not an ingest item)")
     rep["terrain_meta"] = terr
 
     # --- game.json skeleton
@@ -833,14 +833,14 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     if space_cfg and space_cfg.get("kind") == "region":
         movement = dict(default_mp=1.0, zoc=dict(exerts=False),
                         enter_enemy_location=True, pass_through_friendly=True,
-                        note="Tier 0 region: 1 MP per edge; edges may be empty "
+                        note="ingest region: 1 MP per edge; edges may be empty "
                              "(snap-only) until authored. "
                              "enter_enemy_location / pass_through_friendly / zoc "
                              "are reserved no-ops until a region rules gate exists.")
         space_out = dict(space_cfg)
         space_out["snap_radius"] = 160  # px; chart/track pieces beyond this get loc=None
         spec = {
-            "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
+            "name": f"{rep['module']} — INGESTED skeleton (free play only, nothing verified)",
             "map_name": main_map["name"] or "Main Map",
             "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
             "save_key": save_key,
@@ -858,7 +858,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
                       "detect_tokens": {},
                       "note": "TODO detect_tokens empty — every piece shows as the default side until filled in"},
             "stats": {"patterns": [], "default": [0, 0, 6],
-                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"},
+                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned"},
             "movement": movement,
             "ingest": {"tool": "engine/ingest.py", "grid_how": grid_how or "region",
                        "module_version": md["version"],
@@ -867,7 +867,7 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
         }
     else:
         spec = {
-            "name": f"{rep['module']} — INGESTED Tier-0 skeleton (free play only, nothing verified)",
+            "name": f"{rep['module']} — INGESTED skeleton (free play only, nothing verified)",
             "map_name": main_map["name"] or "Main Map",
             "board_name": (ext["name"] if ext else main_board["name"]) or main_map["name"] or "Main Map",
             "save_key": save_key,
@@ -885,12 +885,12 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
                       "detect_tokens": {},
                       "note": "TODO detect_tokens empty — every piece shows as the default side until filled in"},
             "stats": {"patterns": [], "default": [0, 0, 6],
-                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned (Tier 0)"},
+                      "provenance": "UNVERIFIED placeholder MA for free-play highlighting only — no rules learned"},
             "movement": {"impassable_terrain": [], "terrain_mp": {}, "default_mp": 1.0,
                          "hexside_rules": [], "zoc": {"exerts": False},
                          "enter_enemy_hex": True, "pass_through_friendly": True,
                          **({"bounds": bounds} if bounds else {}),
-                         "note": "Tier 0: uniform 1 MP, no ZOC, no terrain — piece pushing, not rules"},
+                         "note": "ingest: uniform 1 MP, no ZOC, no terrain — piece pushing, not rules"},
             "ingest": {"tool": "engine/ingest.py", "grid_how": grid_how or "placeholder",
                        "module_version": md["version"]},
         }
@@ -977,15 +977,15 @@ def ingest(vmod_path, out_dir=None, staging_root=None, name=None,
     edges_status = (regions_data or {}).get("ingest", {}).get("edges_status") if space_cfg else None
     if space_cfg and space_cfg.get("kind") == "region":
         # Region space is PARTIAL until a verified edge graph exists; locations alone
-        # are enough for Tier-0a snap play but not a FULL scorecard row.
+        # are enough for snap-only play but not a FULL scorecard row.
         if edges_status != "VERIFIED":
             if not any("edges" in p.lower() for p in rep["problems"]):
                 if edges_status == "PARTIAL":
-                    bad("region edges PARTIAL — Tier-0b graph free play on authored "
+                    bad("region edges PARTIAL — graph play on authored "
                         "subset; FULL needs a verified complete adjacency graph")
                 else:
                     bad(f"region edges {edges_status or 'UNAUTHORED'} — snap-to-region "
-                        "Tier-0a only until a verified adjacency graph is authored")
+                        "snap-only only until a verified adjacency graph is authored")
         if (edges_status == "VERIFIED" and setups and best_setup >= 10 and map_asset and n_slots
                 and (rt_units is None or rt_units >= 10)):
             rep["verdict"] = "FULL"
@@ -1030,7 +1030,7 @@ def write_report(rep, out_dir):
     L = [f"# Ingest report — {rep.get('module', os.path.basename(rep['vmod']))}"
          + (f" v{rep.get('version')}" if rep.get("version") else ""),
          "",
-         f"**Verdict: {rep['verdict']}** (Tier-0 conversion — free piece pushing; "
+         f"**Verdict: {rep['verdict']}** (ingest — free piece pushing; "
          "no rules learned, no enforcement claimed)",
          "",
          f"- module file: `{os.path.basename(rep['vmod'])}`",
@@ -1049,12 +1049,12 @@ def write_report(rep, out_dir):
               f"- file: `{space.get('file', 'regions.json')}`",
               f"- provenance: {space.get('provenance', '—')}",
               "- Adjacency edges are authored data (not in the VASSAL module). "
-              "UNAUTHORED = Tier-0a snap-only free play.", ""]
+              "UNAUTHORED = snap-only free play.", ""]
     grid = rep.get("grid")
     if grid:
         L += ["## Grid", "", "```json", json.dumps(grid, indent=1), "```",
               f"- detection: **{rep.get('grid_how') or 'placeholder'}**",
-              "- hex geometry is what Tier-0 needs; printed hex LABELS are unverified "
+              "- hex geometry is what ingest needs; printed hex LABELS are unverified "
               "until checked against a map anchor.", ""]
     if rep.get("setups"):
         L += ["## Setups", ""]
@@ -1083,11 +1083,11 @@ def batch(vmod_dir, scorecard_path):
                              problems=[f"ingest crashed: {e}"], steps=[]))
             print(f"  ! ingest crashed on {f}: {e}")
     counts = Counter(r["verdict"] for r in reps)
-    L = ["# Ingest scorecard — VASSAL .vmod → Tier-0 conversion",
+    L = ["# Ingest scorecard — VASSAL .vmod → ingest",
          "",
          f"{len(reps)} modules: **{counts.get('FULL', 0)} full / "
          f"{counts.get('PARTIAL', 0)} partial / {counts.get('FAIL', 0)} fail**. "
-         "Tier-0 = board + grid + pieces + a starting setup, playable in the browser "
+         "Ingest = board + grid + pieces + a starting setup, playable in the browser "
          "as free piece-pushing (VASSAL-parity, zero rules enforcement). "
          "Failures are data: each row says exactly what's missing.",
          "",
@@ -1111,7 +1111,7 @@ def batch(vmod_dir, scorecard_path):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="VASSAL .vmod -> Tier-0 game skeleton")
+    ap = argparse.ArgumentParser(description="VASSAL .vmod -> ingest game skeleton")
     ap.add_argument("vmod", nargs="?", help="path to a .vmod")
     ap.add_argument("--out", help="output game dir (default games/<slug>)")
     ap.add_argument("--staging", help="asset staging dir (default ../VassalIngest/<slug>)")

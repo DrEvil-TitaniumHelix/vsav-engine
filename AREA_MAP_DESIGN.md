@@ -1,7 +1,7 @@
 # Engine design: Area / territory map (region space)
 
-**Status: IMPLEMENTED (P1–P3) — 2026-09-20.** Pilot A House Divided is Tier-0 playable (`space.kind=region`, sample PARTIAL edges). P4 (full verified AHD adjacency → SCORECARD FULL) remains open.
-**Trigger / north star:** unlock the spatial substrate War Room needs (gap G1), and convert the SCORECARD “named regions” PARTIAL/FAIL rows to **playable Tier-0 in the browser** (space model + area-map UI together).
+**Status: IMPLEMENTED (P1–P3) — 2026-09-20.** Pilot A House Divided is ingest playable (`space.kind=region`, sample PARTIAL edges). P4 (full verified AHD adjacency → SCORECARD FULL) remains open.
+**Trigger / north star:** unlock the spatial substrate War Room needs (gap G1), and convert the SCORECARD “named regions” PARTIAL/FAIL rows to **playable ingest in the browser** (space model + area-map UI together).
 
 **Primary pilot (required): A House Divided** — 129 named regions; bundled scenarios put pieces on the main map (best UI / `.vsav` verification). Other SCORECARD PARTIAL region titles (Diplomacy, Paths of Glory, …) are follow-on smoke once the primary pilot works. Wilderness War is a poor first smoke (ingest saw only 3 named regions).
 
@@ -40,7 +40,7 @@ That is ~13% of the catalog (point-to-point) plus area/region-snap titles — an
 | `.vsav` piece XY | `board.py` / `vsav.py` | Unchanged — pieces still store pixel (or stack) positions; space layer *interprets* them |
 | Gate / log / verify | `gate.py` | Unchanged contract; actions carry `dest` as a **location id** |
 | Ingest RegionGrid parse | `ingest.parse_board` | Already collects `(originx, originy)` + names; today only *counts* named regions |
-| Tier-0 free play | uniform 1 MP, no ZOC | Same defaults once neighbors exist |
+| ingest free play | uniform 1 MP, no ZOC | Same defaults once neighbors exist |
 
 ---
 
@@ -49,7 +49,7 @@ That is ~13% of the catalog (point-to-point) plus area/region-snap titles — an
 ### Goals (this design)
 
 1. **`space` model** in `game.json`: either `hex` (today) or `region` (graph of named locations).
-2. **Tier-0 playable in the browser**: load a named-region module, see the map + counters, snap pieces to regions, move with the same click/legal-highlight loop hex games use — so humans can verify ingest/edges on the real art immediately.
+2. **ingest playable in the browser**: load a named-region module, see the map + counters, snap pieces to regions, move with the same click/legal-highlight loop hex games use — so humans can verify ingest/edges on the real art immediately.
 3. **Ingest**: named `RegionGrid` → emit region nodes (id, name, origin xy); do **not** invent edges from pixels alone.
 4. **Hex games byte-identical**: no change to `HASH_KEYS`, movement results, or validators for existing hex titles.
 5. **Area-map UI is in G1** (not deferred): region labels on hover/select, origin markers, legal-dest overlay keyed by region id. Planning-sheet / sealed-order UI stays in War Room gap G2.
@@ -60,7 +60,7 @@ That is ~13% of the catalog (point-to-point) plus area/region-snap titles — an
 - Inferring a correct political/adjacency graph from map art or region XY alone (unsafe; author or cite).
 - Shipping module art/rulebooks in the public repo.
 - Square grids (separate future expansion; Twilight Struggle stays PARTIAL).
-- Full Diplomacy / War Room rules enforcement (Tier 1+ is a later gate module).
+- Full Diplomacy / War Room rules enforcement (rules gate is a later gate module).
 - Polygon territory fills (nice-to-have; circle/origin highlights are enough for G1 verification).
 
 ---
@@ -125,7 +125,7 @@ If (3) or (4) fail, G1 VASSAL-compat is not done — even if the browser UI look
 ### What does *not* change
 
 - Still **no VASSAL source** in the repo (constitution).
-- Still no claim that VASSAL enforces rules — parity is **board state / snap positions**, Tier-0 free play.
+- Still no claim that VASSAL enforces rules — parity is **board state / snap positions**, ingest free play.
 - War Room has **no** `.vmod` today → G1 VASSAL work unlocks Diplomacy / PoG / House Divided / etc.; War Room itself still needs G9 (hand-authored or other digital board data) using the **same** `regions.json` schema.
 
 ### Implementer touch list (VASSAL-facing)
@@ -197,12 +197,12 @@ Reuse `movement` keys where they still make sense; ignore hex-only keys:
 | `default_mp` | enter-hex cost | default edge cost if edge omits `cost` |
 | `terrain_mp` | by hex terrain | optional cost by **destination** `terrain` / tag |
 | `hexside_rules` | hexside features | **unused** (or map to edge `tags` later) |
-| `zoc` | hex ZOC | Tier-0 off; Tier-1+ defined per game gate |
+| `zoc` | hex ZOC | ingest off; rules gate defined per game gate |
 | `bounds` | col/row rect | unused |
 | `impassable_terrain` | hex terrain set | prefer `impassable_tags` on locations |
 | `stacking` | end-hex limit | end-**location** limit (same shape) |
 
-Tier-0 ingest skeleton:
+Ingest skeleton:
 
 ```json
 "movement": {
@@ -210,7 +210,7 @@ Tier-0 ingest skeleton:
   "zoc": { "exerts": false },
   "enter_enemy_location": true,
   "pass_through_friendly": true,
-  "note": "Tier 0 region: 1 MP per edge; edges may be empty (snap-only) until authored"
+  "note": "ingest region: 1 MP per edge; edges may be empty (snap-only) until authored"
 }
 ```
 
@@ -230,7 +230,7 @@ Introduce a small **Space** abstraction so callers stop assuming col/row.
 | `move_cost(a, b)` | enter-hex cost | edge cost or None if no edge |
 | `distance(a, b)` | `hex_distance` | Dijkstra / BFS on edges |
 | `loc_to_pixel(loc)` | `hex_to_pixel` | `origin` |
-| `pixel_to_loc(x, y)` | `pixel_to_hex` | nearest region origin (Tier-0 snap), optional max radius |
+| `pixel_to_loc(x, y)` | `pixel_to_hex` | nearest region origin (ingest snap), optional max radius |
 | `display_name(loc)` | grid naming styles | `locations[id].name` |
 
 ### Adapter strategy (critical for non-regression)
@@ -280,27 +280,27 @@ Suggested report lines:
 
 ```
 - region space: 80 named locations from RegionGrid → regions.json (edges UNAUTHORED)
-- Tier-0: counters snap to nearest region; movement along edges disabled until edges authored
+- ingest: counters snap to nearest region; movement along edges disabled until edges authored
 ```
 
 Do **not** auto-edge by Delaunay / k-NN as “verified.” Optional `--guess-edges k` may write a separate `regions.guessed.json` marked UNVERIFIED for authoring aid only — never the live `regions.json` without human accept.
 
 ---
 
-## Movement engine (Tier-0 / Tier-1)
+## Movement engine (ingest / rules gate)
 
-### Tier-0a — snap only (edges empty)
+### snap-only — snap only (edges empty)
 
 - `pixel_to_loc` places / repositions units onto nearest origin.
-- Legal move set = **all** on-map locations (or “any location within N pixels” if you want tighter UX) — umpire model, same spirit as hex Tier-0 with `enter_enemy_hex: true`.
+- Legal move set = **all** on-map locations (or “any location within N pixels” if you want tighter UX) — umpire model, same spirit as hex ingest with `enter_enemy_hex: true`.
 - Log still records every move; no rules citations claiming adjacency.
 
-### Tier-0b — graph free play (edges authored, still no ZOC/rules)
+### graph play — graph free play (edges authored, still no ZOC/rules)
 
 - `legal_dests(unit)` = BFS from current loc with remaining MA (`stats` MA, default 6 placeholder).
 - Reject moves with no path; reason: `"no route from A to B (region graph)"` (not a rulebook cite).
 
-### Tier-1 (later, per game gate)
+### rules gate (later, per game gate)
 
 - Domain tags (`land`/`sea`), ZOC-on-graph, stacking, enemy occupancy — owned by the game’s procedure module, reading the same `regions.json`.
 
@@ -321,7 +321,7 @@ If a setup parks pieces on charts / off the main map (Diplomacy stock boards), k
 
 ## UI / server (required for G1 — not a follow-on)
 
-Area-map UI is how G1 pays off: several SCORECARD PARTIAL titles become **immediately playable as Tier-0 free play**, and humans can eyeball wrong snaps / missing edges on the printed map instead of diffing JSON.
+Area-map UI is how G1 pays off: several SCORECARD PARTIAL titles become **immediately playable as ingest free play**, and humans can eyeball wrong snaps / missing edges on the printed map instead of diffing JSON.
 
 Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk UI ignores region space.
 
@@ -329,7 +329,7 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 
 1. **Load & render** — map asset, counters at `loc_to_pixel`, stack offsets readable when several units share a region.
 2. **Unit DTO** — `loc`, `locname`, `x`, `y`. Prefer aliases `hexnum`←`loc` and `hexname`←`locname` so existing JS selection/log panels keep working; document the alias in a one-line comment near the serializer.
-3. **Select unit → legal dests** — `/api/legal` returns `{ dests: [{id, name, x, y, mp}, ...] }` (Tier-0a: all on-map locs or MA-reachable; Tier-0b: graph BFS).
+3. **Select unit → legal dests** — `/api/legal` returns `{ dests: [{id, name, x, y, mp}, ...] }` (snap-only: all on-map locs or MA-reachable; graph play: graph BFS).
 4. **Overlay** — mark legal destination **origins** (filled circles / rings, same visual language as hex legal highlights). Selected unit’s current region gets a distinct ring. Optional faint marks for *all* region origins when a debug toggle is on (hugely useful for verifying ingest).
 5. **Move** — click a highlighted dest (or drag onto it) posts `dest` as string location id; piece animates/snaps to that origin; toast/reject path shows engine reason text.
 6. **Identity chrome** — selection panel / tooltip shows printed region **name** (not only the slug id).
@@ -346,14 +346,14 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 - [ ] Every obvious province snap lands on the name you expect (spot-check ≥15 regions against map labels).
 - [ ] Two units in one region stack legibly; picker still works.
 - [ ] With edges: legal highlights only on adjacent (or MA-reachable) regions; off-graph click rejected.
-- [ ] With edges empty (Tier-0a): can still free-move / snap for umpire play.
+- [ ] With edges empty (snap-only): can still free-move / snap for umpire play.
 - [ ] Hex game (AK or Chickamauga) still looks and moves as before.
 
 ---
 
 ## Gate / verify
 
-- No new shared gate subclass required for Tier-0 free play if the existing free-play path already moves pieces without a rules gate.
+- No new shared gate subclass required for ingest free play if the existing free-play path already moves pieces without a rules gate.
 - If free play goes through a thin gate, add region `move` handling beside hex without changing hex `HASH_KEYS`.
 - `verify_game.py`: location ids must round-trip in logged actions; state hash includes `loc` for region games (new games only — never rewrite shipped hex `HASH_KEYS`).
 
@@ -373,11 +373,11 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 - INGEST_REPORT no longer says only “no region-space support”; it states locations emitted + edges status.
 - SCORECARD row for A House Divided updates to PARTIAL (locations, no edges) or FULL (per below).
 
-### C. Runtime Tier-0 pilot (**includes UI + VASSAL mirror**)
+### C. Runtime ingest pilot (**includes UI + VASSAL mirror**)
 
 - `python ui/server.py --game games/<pilot>` (or `app.py`) opens the pilot; map + counters visible.
 - Place/move a piece via the UI: engine state `loc` updates; counter sits on that origin; region name shows in selection chrome.
-- Legal-dest overlay works (Tier-0a and, when edges exist, Tier-0b); illegal off-graph move rejected with visible reason.
+- Legal-dest overlay works (snap-only and, when edges exist, graph play); illegal off-graph move rejected with visible reason.
 - Debug (or always-on light) markers make region origins inspectable for ingest QA.
 - Engine→`.vsav` mirror uses region origins; **VASSAL 3 opens the save on the matching snap** (compat contract above).
 - With authored edges for a **subset** (≥10 connected locations): legal highlight follows the graph.
@@ -390,7 +390,7 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 
 ### D. Docs
 
-- SCORECARD / LIBRARY_CENSUS one-line update: region space + Tier-0 UI supported (edges authored per game).
+- SCORECARD / LIBRARY_CENSUS one-line update: region space + ingest UI supported (edges authored per game).
 - War Room gap G1 marks this family implemented when merged (gap register is local, not shipped).
 
 ---
@@ -400,8 +400,8 @@ Work in `ui/server.py` + `ui/index.html` (strategic-style path). Tactical Tobruk
 | Phase | Deliverable | Merge bar |
 |---|---|---|
 | **P1** | **Download** `ahd_v05e.vmod` (or current library build) yourself; stage outside git; parse named regions fully; write `regions.json` locations; `space.kind` in skeleton; SCORECARD PARTIAL wording | Ingest succeeds on A House Divided; locations emitted; no runtime required yet |
-| **P2** | `gamespec` region Space + pixel↔loc; unit state `loc`; **board/make_save/server** region paths; **UI** Tier-0a on **1861** (or similar) setup; **VASSAL `.vsav` round-trip** at region origins | Pilot **playable in browser**; move mirrors to `.vsav` VASSAL can open; human verification started |
-| **P3** | Edge list + BFS legal dests (Tier-0b); overlay respects graph; `validate_region_space.py` | Pilot with ≥10 edges green in UI and validator |
+| **P2** | `gamespec` region Space + pixel↔loc; unit state `loc`; **board/make_save/server** region paths; **UI** snap-only on **1861** (or similar) setup; **VASSAL `.vsav` round-trip** at region origins | Pilot **playable in browser**; move mirrors to `.vsav` VASSAL can open; human verification started |
+| **P3** | Edge list + BFS legal dests (graph play); overlay respects graph; `validate_region_space.py` | Pilot with ≥10 edges green in UI and validator |
 | **P4** | Hand-author full adjacency for **A House Divided**; SCORECARD FULL; edge provenance; VASSAL open/save smoke signed off | FULL row; human + VASSAL checklist complete |
 
 **G1 is not done until P2 lands** — data without UI does not unlock “immediately playable” area games. P1 alone is an allowed intermediate merge. The implementer downloads the pilot `.vmod`; the user does not hand it over.
@@ -440,7 +440,7 @@ War Room map data is **not** required in P1–P4 (no WR `.vmod`). After P3, a ha
 1. **Alias fields in UI:** reuse `hexnum`/`hexname` as aliases for loc id/name (done).
 2. **SCORECARD FULL bar:** complete graph for the main map’s playable locations (not just one setup’s reachable set).
 3. **Multi-board modules:** region space only for `main_map`; stocks remain pixel-only until needed.
-4. **Directed edges:** schema supports `directed: true`; Tier-0 treats undirected unless set.
+4. **Directed edges:** schema supports `directed: true`; ingest treats undirected unless set.
 5. **Always-on vs toggle for all-origin markers:** toolbar ◎ toggle, default **on** for region pilots.
 6. **Region name in piece state?** AHD does not store region names in piece state — pixel snap is the compat contract.
 

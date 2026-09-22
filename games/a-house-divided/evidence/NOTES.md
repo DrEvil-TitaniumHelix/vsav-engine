@@ -49,10 +49,10 @@ Playability of this folder requires that out-of-tree staging (map + setups). A c
 ## Known pilot UX notes
 
 - Ingest `detect_tokens` empty → all pieces report **Side B**; pick **Side B** in the UI to drag.
-- Edge graph is **PARTIAL**: 37 edges, **31/129 (24%)** locs with ≥1 edge, **2** components (sizes 24 and 7), **98** isolated. Under Tier-0b, most printed cities are illegal destinations — sample-graph free play, not full-map graph play.
+- Edge graph is **PARTIAL**: 37 edges, **31/129 (24%)** locs with ≥1 edge, **2** components (sizes 24 and 7), **98** isolated. Under graph play, most printed cities are illegal destinations — sample-graph free play, not full-map graph play.
 - Edges have no cite/tags yet (sample authoring only).
 
-## Deeper Tier-0 validation (2026-09-21)
+## Deeper ingest validation (2026-09-21)
 
 Automated suite: `games/a-house-divided/validate_g1_runtime.py`  
 Report: `evidence/validate_g1_runtime.report.json` — **PASS** (not AHD rules).

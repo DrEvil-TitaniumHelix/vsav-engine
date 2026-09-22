@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Deeper G1 / Tier-0 runtime validation for A House Divided.
+"""Deeper G1 / ingest runtime validation for A House Divided.
 
-Does NOT claim AHD rulebook enforcement (iron rule: Tier-0 free play only).
+Does NOT claim AHD rulebook enforcement (iron rule: ingest free play only).
 Covers AREA_MAP_DESIGN.md automated checklist items:
   - all bundled setups load; every unit resolves a loc
   - pixel_to_loc(origin) self-map (delegates to validate_region_space)
@@ -188,7 +188,7 @@ def main():
     # --- graph BFS consistency
     section("graph BFS / off-graph reject")
     if not game.regions.has_edges():
-        fail("no edges — Tier-0b checks skipped", errors)
+        fail("no edges — graph play checks skipped", errors)
     else:
         # pick a unit on the connected component if possible
         b = load_board(game, path_1861, key_1861)
@@ -510,7 +510,7 @@ def _finish(errors, report, args):
     if errors:
         print(f"FAIL: {len(errors)} check(s) failed")
         sys.exit(1)
-    print("PASS: deeper G1 runtime validation (Tier-0 space/UI/.vsav — not AHD rules)")
+    print("PASS: deeper G1 runtime validation (ingest space/UI/.vsav — not AHD rules)")
     sys.exit(0)
 
 

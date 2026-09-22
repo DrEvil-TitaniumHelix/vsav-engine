@@ -723,7 +723,7 @@ def game_descriptor():
             for lid in sorted(g.regions.locations)
         ]
         desc["edges_status"] = (g.regions.ingest or {}).get("edges_status", "UNAUTHORED")
-        desc["show_origins"] = True   # default on for Tier-0 verification
+        desc["show_origins"] = True   # default on for ingest verification
     else:
         desc["grid"] = dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
                             x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity)
@@ -1367,7 +1367,7 @@ def api_legal_sg(qs):
 
 
 def api_legal_region(qs):
-    """Region-space free play: Tier-0a (all locs) or Tier-0b (graph BFS)."""
+    """Region-space free play: snap-only (all locs) or graph play (graph BFS)."""
     g = GAME_OBJ
     pid = qs["id"][0]
     whole = qs.get("whole", ["0"])[0] == "1"
