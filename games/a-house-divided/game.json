@@ -2,25 +2,25 @@
  "name": "A House Divided \u2014 INGESTED Tier-0 skeleton (free play only, nothing verified)",
  "map_name": "Main Map",
  "board_name": "Board",
- "save_key": "41",
- "grid": {
-  "orient": "flat",
-  "dx": 100.0,
-  "dy": 100.0,
-  "x0": 50.0,
-  "y0": 50.0,
-  "stagger": false,
-  "hexnum_digits": 2,
-  "provenance": "PLACEHOLDER \u2014 no grid detected; snapping is arbitrary, replace before use"
+ "save_key": "a8",
+ "map_edge": {
+  "width": 75,
+  "height": 75
  },
- "buildfile": "../../../VassalIngest/a-house-divided/extracted/buildFile",
- "moduledata": "../../../VassalIngest/a-house-divided/extracted/moduledata",
+ "space": {
+  "kind": "region",
+  "file": "regions.json",
+  "snap_radius": 160,
+  "provenance": "from VASSAL RegionGrid names+origins; edges hand-authored / cited"
+ },
+ "buildfile": "../../../../VassalIngest/a-house-divided/extracted/buildFile",
+ "moduledata": "../../../../VassalIngest/a-house-divided/extracted/moduledata",
  "assets": {
-  "map": "../../../VassalIngest/a-house-divided/extracted/images/ahd_mod_2.png",
-  "counters_dir": "../../../VassalIngest/a-house-divided/extracted/images"
+  "map": "../../../../VassalIngest/a-house-divided/extracted/images/ahd_mod_2.png",
+  "counters_dir": "../../../../VassalIngest/a-house-divided/extracted/images"
  },
  "ui": {
-  "counter_px": 75
+  "counter_px": 51
  },
  "unit_kinds": [
   "clone",
@@ -53,31 +53,19 @@
   "provenance": "UNVERIFIED placeholder MA for free-play highlighting only \u2014 no rules learned (Tier 0)"
  },
  "movement": {
-  "impassable_terrain": [],
-  "terrain_mp": {},
   "default_mp": 1.0,
-  "hexside_rules": [],
   "zoc": {
    "exerts": false
   },
-  "enter_enemy_hex": true,
+  "enter_enemy_location": true,
   "pass_through_friendly": true,
-  "bounds": {
-   "cols": [
-    0,
-    18
-   ],
-   "rows": [
-    0,
-    12
-   ]
-  },
-  "note": "Tier 0: uniform 1 MP, no ZOC, no terrain \u2014 piece pushing, not rules"
+  "note": "Tier 0 region: 1 MP per edge; edges may be empty (snap-only) until authored. enter_enemy_location / pass_through_friendly / zoc are reserved no-ops until a region rules gate exists."
  },
  "ingest": {
   "tool": "engine/ingest.py",
-  "grid_how": "placeholder",
-  "module_version": "0.5e"
+  "grid_how": "region",
+  "module_version": "0.5e",
+  "edges_status": "PARTIAL"
  },
- "setup_save": "../../../VassalIngest/a-house-divided/setups/1864 Scenario.vsav"
+ "setup_save": "../../../../VassalIngest/a-house-divided/setups/1861 Scenario.vsav"
 }

@@ -3,14 +3,17 @@
 **Verdict: PARTIAL** (Tier-0 conversion — free piece pushing; no rules learned, no enforcement claimed)
 
 - module file: `ahd_v05e.vmod`
-- staged at: `C:\VassalIngest\a-house-divided` (assets stay OUT of the repo)
+- staged at: `~/VassalIngest/a-house-divided` (assets stay OUT of the repo)
 
 ## What worked
 
-- extracted 236 entries -> C:\VassalIngest\a-house-divided\extracted
+- extracted 236 entries -> ~/VassalIngest/a-house-divided/extracted
 - module: 'A House Divided' v0.5e; 179 images staged
 - 20 piece/card slots (0 with BasicPiece art, 18 blank-image layer pieces VASL-style); 6 prototypes
 - main board: 'Board' on map 'Main Map'; 1 other board(s) not converted: Battle Window (map 'Battle Window')
+- region space: 129 named locations from RegionGrid → regions.json (edges PARTIAL)
+- Tier-0: 37 authored edge(s), status PARTIAL
+- region id collisions resolved: [{'name': 'Jacksonville', 'id': 'jacksonville-2'}, {'name': 'Columbus', 'id': 'columbus-2'}, {'name': 'Macon', 'id': 'macon-2'}, {'name': 'Fayetteville', 'id': 'fayetteville-2'}]
 - map asset: ahd_mod_2.png (1896x1289 px)
 - setup 'New Game (Blank Map)': 8 pieces, 4 ON the main map (8 self-positioned, 4 in stacks), key 0x41
 - setup '1861 Scenario': 36 pieces, 29 ON the main map (36 self-positioned, 32 in stacks), key 0xa8
@@ -18,12 +21,20 @@
 - setup '1863 Scenario': 120 pieces, 96 ON the main map (120 self-positioned, 90 in stacks), key 0x96
 - setup '1864 Scenario': 133 pieces, 120 ON the main map (133 self-positioned, 90 in stacks), key 0xa7
 - no terrain metadata (normal — terrain is not a Tier-0 item)
-- spec skeleton -> C:\VassalArnhem\games\a-house-divided\game.json
-- runtime self-check: engine loads the setup and sees 16 units
+- spec skeleton -> games/a-house-divided/game.json
+- runtime self-check: engine loads the setup and sees 32 units
 
 ## What didn't (and why)
 
-- board uses 125 NAMED regions (point-to-point/area map) — engine has no region-space support yet
+- region edges PARTIAL — Tier-0b graph free play on authored subset only (~24% of locs edged; two components; 98 isolated). FULL needs a verified complete adjacency graph
+- playability requires out-of-tree staging at `~/VassalIngest/a-house-divided` (map + setups); not in git
+
+## Region space
+
+- kind: **region** (129 named locations)
+- file: `regions.json`
+- provenance: from VASSAL RegionGrid names+origins; edges hand-authored / cited
+- Adjacency edges are authored data (not in the VASSAL module). UNAUTHORED = Tier-0a snap-only free play.
 
 ## Setups
 

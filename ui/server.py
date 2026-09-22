@@ -466,6 +466,18 @@ def fresh_board():
 def unit_view(u):
     g = GAME_OBJ
     a, d, m = g.stats(u["name"])
+    if getattr(g, "space_kind", "hex") == "region":
+        loc = u.get("loc")
+        # hexnum/hexname aliases = loc id/name (minimizes JS churn; see AREA_MAP_DESIGN)
+        v = dict(u, att=a, dfn=d, ma=m,
+                 onmap=bool(loc) and g.on_map(loc),
+                 terrain=g.hex_terrain(loc) if loc else None,
+                 cls=g.unit_class(u["name"]),
+                 hexnum=loc, hexname=g.display_name(loc) if loc else None,
+                 loc=loc, locname=g.display_name(loc) if loc else None,
+                 status=done.get(u["id"]),
+                 facing=facing.get(u["id"], 0) if g.facing else None)
+        return v
     v = dict(u, att=a, dfn=d, ma=m, onmap=g.on_map(u["col"], u["row"]),
              terrain=g.hex_terrain(u["col"], u["row"]),
              cls=g.unit_class(u["name"]),
@@ -684,14 +696,13 @@ def api_new_game(body):
 def game_descriptor():
     g = GAME_OBJ
     w, h = png_size(g.assets["map"])
-    return dict(
+    desc = dict(
         name=g.name,
         slug=GAME_SLUG,
         map_url="/gasset/map", map_w=w, map_h=h,
         counters_url="/gasset/counters/",
         counter_px=g.spec.get("ui", {}).get("counter_px", 75),
-        grid=dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
-                  x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity),
+        space=getattr(g, "space_kind", "hex"),
         sides=[dict(id=s, label=((TG or SG or SJ).scenario["game"].get("side_labels", {}) if (TG or SG or SJ) else {}).get(
                         s, g.spec["sides"].get("labels", {}).get(s, s)))
                for s in g.side_order],
@@ -702,6 +713,21 @@ def game_descriptor():
         guide=g.spec.get("guide"),
         rules_docs=g.spec.get("rules_docs"),
     )
+    if g.space_kind == "region":
+        # snap radius hint for UI drag; origins for optional debug markers
+        desc["grid"] = dict(dx=80, dy=80, orient="region", x0=0, y0=0, offset_parity=0)
+        desc["regions"] = [
+            dict(id=lid, name=g.regions.display_name(lid),
+                 x=g.regions.locations[lid]["origin"][0],
+                 y=g.regions.locations[lid]["origin"][1])
+            for lid in sorted(g.regions.locations)
+        ]
+        desc["edges_status"] = (g.regions.ingest or {}).get("edges_status", "UNAUTHORED")
+        desc["show_origins"] = True   # default on for Tier-0 verification
+    else:
+        desc["grid"] = dict(dx=g.grid.dx, dy=g.grid.dy, orient=g.grid.orient,
+                            x0=g.grid.x0, y0=g.grid.y0, offset_parity=g.grid.offset_parity)
+    return desc
 
 
 # --- multi-game menu: the release bundles several games behind one engine ---
@@ -1340,11 +1366,44 @@ def api_legal_sg(qs):
     return out
 
 
+def api_legal_region(qs):
+    """Region-space free play: Tier-0a (all locs) or Tier-0b (graph BFS)."""
+    g = GAME_OBJ
+    pid = qs["id"][0]
+    whole = qs.get("whole", ["0"])[0] == "1"
+    b = fresh_board()
+    units = b.units()
+    me = next(u for u in units if u["id"] == pid)
+    if not me.get("loc"):
+        return dict(ma=0, dests=[], space="region", edges=g.regions.has_edges(),
+                    edges_status=(g.regions.ingest or {}).get("edges_status"),
+                    error="piece has no snapped region (outside snap_radius)")
+    ma = g.stats(me["name"])[2]
+    if whole:
+        sid = b.member_of.get(pid)
+        mates = [u for u in units if u["id"] != pid
+                 and b.member_of.get(u["id"]) == sid]
+        ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
+    reach = g.legal_region_dests(me, ma)
+    out = []
+    for lid, cost in sorted(reach.items(), key=lambda kv: (kv[1], kv[0])):
+        x, y = g.loc_to_pixel(lid)
+        name = g.display_name(lid)
+        out.append(dict(id=lid, name=name, x=x, y=y, mp=round(cost, 1),
+                        cost=round(cost, 1),
+                        hexnum=lid, hexname=name))  # aliases for existing JS
+    return dict(ma=ma, dests=out, space="region",
+                edges=g.regions.has_edges(),
+                edges_status=(g.regions.ingest or {}).get("edges_status"))
+
+
 def api_legal_free(qs):
     """A game folder with no encoded scenario (dev-only, never in the menu):
     every hex on the board image is a valid drop — including off-map areas
     like printed turn/OOA tracks, exactly as VASSAL itself plays."""
     g = GAME_OBJ
+    if getattr(g, "space_kind", "hex") == "region":
+        return api_legal_region(qs)
     w, h = png_size(g.assets["map"])
     out = []
     c = 0
@@ -1374,6 +1433,8 @@ def api_legal(qs):
     if SJ:
         return dict(ma=0, dests=[],
                     reasons=["SoJ moves are path-based - /api/soj/dests"])
+    if getattr(GAME_OBJ, "space_kind", "hex") == "region":
+        return api_legal_region(qs)
     if not TG:
         return api_legal_free(qs)
     g = GAME_OBJ
@@ -1629,15 +1690,46 @@ def api_move(body):
     b = fresh_board()
     pid, dest, whole = body["id"], body["dest"], body.get("whole")
     me = next(u for u in b.units() if u["id"] == pid)
-    if whole:
-        msg = b.move_stack(me["hexnum"], dest)
-        for mid in b.stacks[b.member_of[pid]]["members"]:
-            done[mid] = "moved"
-    else:
-        msg = b.move_piece_by_id(pid, dest)
-        done[pid] = "moved"
-    b.write(WORK)
-    return dict(ok=True, msg=msg)
+    g = GAME_OBJ
+    try:
+        if getattr(g, "space_kind", "hex") == "region":
+            dest = str(dest)
+            if dest not in g.regions.locations:
+                return dict(ok=False, error=f"unknown region {dest!r}")
+            if not me.get("loc"):
+                return dict(ok=False, error="piece has no snapped region (outside snap_radius)")
+            # dest is a location id; reject off-graph when edges exist
+            ma = g.stats(me["name"])[2]
+            if whole:
+                sid = b.member_of.get(pid)
+                mates = [u for u in b.units() if u["id"] != pid
+                         and b.member_of.get(u["id"]) == sid]
+                ma = min([ma] + [g.stats(u["name"])[2] for u in mates])
+            if g.regions.has_edges():
+                reach = g.legal_region_dests(me, ma)
+                if dest not in reach:
+                    return dict(ok=False, error=f"no route from {me.get('loc')} to {dest} (region graph)")
+            if whole:
+                msg = b.move_stack_containing(pid, dest)
+                for mid in b.stacks[b.member_of[pid]]["members"]:
+                    done[mid] = "moved"
+            else:
+                msg = b.move_piece_by_id(pid, dest)
+                done[pid] = "moved"
+            b.write(WORK)
+            return dict(ok=True, msg=msg)
+        if whole:
+            msg = b.move_stack(me["hexnum"], dest)
+            for mid in b.stacks[b.member_of[pid]]["members"]:
+                done[mid] = "moved"
+        else:
+            msg = b.move_piece_by_id(pid, dest)
+            done[pid] = "moved"
+        b.write(WORK)
+        return dict(ok=True, msg=msg)
+    except ValueError as e:
+        # Board APIs fail closed (unknown dest / ambiguous region stack, …)
+        return dict(ok=False, error=str(e))
 
 
 def api_pass(body):

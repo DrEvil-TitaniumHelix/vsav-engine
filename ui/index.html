@@ -185,6 +185,7 @@
   <button id="zin" title="zoom in">+</button>
   <button id="zout" title="zoom out">−</button>
   <button id="zfit" title="fit whole map">⛶</button>
+  <button id="originsbtn" title="toggle region origin markers" style="display:none;font-size:11px">◎</button>
 </div>
 <div id="arrivals" style="display:none; position:fixed; top:52px; left:8px; max-width:340px;
      max-height:60vh; overflow:auto; background:#23262cee; color:#dde3ea; font-size:13px;
@@ -365,8 +366,19 @@ function bootGame(g) {
     // pointy-top: size = dy/1.5; corners at (0,±size),(±dx/2,±size/2)
     HX = g.grid.dy / 1.5; HXC = HX / 2; HYH = g.grid.dx / 2;
   } else {
-    // flat-top: size = dx/1.5; corners at (±size,0),(±size/2,±dy/2)
+    // flat-top (and region stub): size = dx/1.5; corners at (±size,0),(±size/2,±dy/2)
     HX = g.grid.dx / 1.5; HXC = HX / 2; HYH = g.grid.dy / 2;
+  }
+  showOrigins = g.show_origins !== false;
+  const ob = document.getElementById('originsbtn');
+  if (ob) {
+    ob.style.display = g.space === 'region' ? '' : 'none';
+    ob.classList.toggle('on', showOrigins);
+    ob.onclick = () => {
+      showOrigins = !showOrigins;
+      ob.classList.toggle('on', showOrigins);
+      drawOverlay();
+    };
   }
   document.getElementById('gamename').textContent = g.name.toUpperCase();
   document.title = g.name + ' — VALOR Engine';
@@ -502,7 +514,16 @@ function renderGuide() {
     FRAME.setGuideSuffix(FLOW && FLOW.mode === 'napoleonic' && !FLOW.over
                          ? cmdStepper() : '');
   if (!FLOW) {
-    FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
+    if (GAME && GAME.space === 'region') {
+      const es = GAME.edges_status || 'UNAUTHORED';
+      if (es === 'UNAUTHORED' || es === '') {
+        FRAME.setGuide('No rules gate — region snap free play (Tier-0a): drag any counter to a named region.');
+      } else {
+        FRAME.setGuide(`No rules gate — region graph free play (Tier-0, edges ${es}): drag only along authored edges (green circles). Off-graph destinations are rejected.`);
+      }
+    } else {
+      FRAME.setGuide('No rules are encoded for this game folder — drag any counter anywhere.');
+    }
     FRAME.soleNext(null);
     return;
   }
@@ -858,7 +879,7 @@ function tipHTML(u) {
   else if (u.cls !== 'markers')
     h += `<br>Attack ${u.att} · Defense ${u.dfn} · Movement ${u.ma}`;
   if (u.onmap && u.status !== 'at sea' && u.status !== 'reserve')
-    h += `<br><span class="dim">Hex</span> ${u.hexname || u.hexnum}`
+    h += `<br><span class="dim">${(GAME && GAME.space === 'region') ? 'Region' : 'Hex'}</span> ${u.hexname || u.hexnum || u.locname || u.loc || ''}`
        + (u.terrain ? ` <span class="dim">(${u.terrain})</span>` : '');
   if (u.status === 'reserve')
     h += `<br><span style="color:#e0a34e">Off-board reinforcement${
@@ -1540,7 +1561,12 @@ function render() {
   // through gets a visible ring on the map (Bruce's guidance rule)
   const ACTABLE = new Set(myActableUnits().map(u => u.id));
   const byhex = {};
-  units.forEach(u => { if (u.status !== 'eliminated') (byhex[u.hexnum] = byhex[u.hexnum]||[]).push(u); });
+  // Region: group by real VASSAL stack (stack_id / exact XY), not snapped loc —
+  // several off-origin stacks often nearest-snap to the same city.
+  const stackKey = u => (GAME && GAME.space === 'region')
+    ? (u.stack_id != null ? ('S'+u.stack_id) : (`P${u.x},${u.y}`))
+    : u.hexnum;
+  units.forEach(u => { if (u.status !== 'eliminated') (byhex[stackKey(u)] = byhex[stackKey(u)]||[]).push(u); });
   for (const h in byhex) byhex[h].forEach((u, i) => {
     const el = document.createElement('img');
     el.className = 'counter' + (u.status ? ' done' : '') + (selected && selected.id===u.id ? ' sel' : '')
@@ -1639,15 +1665,57 @@ function renderSelBox() {
   box.style.display = '';
 }
 
-// ---------- hex highlight overlay ----------
+// ---------- hex / region highlight overlay ----------
 const hexCorners = (x,y) => GAME.grid.orient === 'pointy'
   ? [[x,y-HX],[x+HYH,y-HXC],[x+HYH,y+HXC],[x,y+HX],[x-HYH,y+HXC],[x-HYH,y-HXC]]
   : [[x-HX,y],[x-HXC,y-HYH],[x+HXC,y-HYH],[x+HX,y],[x+HXC,y+HYH],[x-HXC,y+HYH]];
 const hexPts = (x,y) => hexCorners(x,y).map(p => p.join(',')).join(' ');
+let showOrigins = true;
+function isRegionSpace() {
+  return (GAME && GAME.space === 'region') || (legal && legal.space === 'region');
+}
+function drawOriginMarkers() {
+  if (!GAME || GAME.space !== 'region' || !showOrigins || !GAME.regions) return;
+  GAME.regions.forEach(r => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', r.x); c.setAttribute('cy', r.y); c.setAttribute('r', '7');
+    c.setAttribute('fill', 'rgba(200,200,120,0.25)');
+    c.setAttribute('stroke', 'rgba(220,220,140,0.55)');
+    c.setAttribute('stroke-width', '1.5');
+    OV.appendChild(c);
+  });
+}
 function drawOverlay() {
   OV.innerHTML = '';
+  drawOriginMarkers();
   if (!legal) return;
-  if (legal.free) return;   // no encoded scenario: no gate, no highlights — drop anywhere
+  if (legal.free) return;   // legacy free-play hex: no gate, no highlights — drop anywhere
+  if (isRegionSpace()) {
+    // ring around current region + filled circles on legal dests
+    if (selected) {
+      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ring.setAttribute('cx', selected.x); ring.setAttribute('cy', selected.y);
+      ring.setAttribute('r', '28'); ring.setAttribute('fill', 'none');
+      ring.setAttribute('stroke', '#f0d060'); ring.setAttribute('stroke-width', '4');
+      OV.appendChild(ring);
+    }
+    legal.dests.forEach(h => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', h.x); c.setAttribute('cy', h.y); c.setAttribute('r', '22');
+      c.setAttribute('fill', 'rgba(120,220,120,0.28)');
+      c.setAttribute('stroke', '#7ce07c'); c.setAttribute('stroke-width', '3');
+      OV.appendChild(c);
+      if (h.cost !== undefined && legal.edges) {
+        const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+        tx.setAttribute('x', h.x); tx.setAttribute('y', h.y + 40);
+        tx.setAttribute('text-anchor','middle'); tx.setAttribute('font-size','20');
+        tx.setAttribute('fill','#1d5c1d'); tx.setAttribute('font-weight','bold');
+        tx.textContent = h.cost;
+        OV.appendChild(tx);
+      }
+    });
+    return;
+  }
   // dim everything except legal hexes + origin: evenodd path with hex holes
   let d = `M0 0 H${OV.getAttribute('width')} V${OV.getAttribute('height')} H0 Z `;
   const hole = (x,y) => 'M' + hexCorners(x,y).map(q=>q.join(' ')).join(' L ') + ' Z ';
@@ -1743,7 +1811,7 @@ function napAttackMenu(ev, tgt) {
 }
 function showPicker(ev, stackUnits) {
   const P = document.getElementById('picker');
-  P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexnum} — pick one, or move together</div>`;
+  P.innerHTML = `<div class="hdr">Stack at ${stackUnits[0].hexname || stackUnits[0].locname || stackUnits[0].hexnum || ''} — pick one, or move together</div>`;
   stackUnits.forEach(u => {
     const d = document.createElement('div'); d.className = 'item';
     d.innerHTML = `<img src="${GAME.counters_url}${encodeURIComponent(u.img || (u.name + '.png'))}"> ${u.name} <span style="color:#8a8f98">[${u.att}-${u.dfn}-${u.ma}]</span>`;
@@ -1769,6 +1837,15 @@ async function select(u, whole, ev) {
   } else if (legal.free) {
     A.innerHTML = `<b>${whole ? 'STACK @ '+u.hexnum : u.name}</b> — no rules encoded:
                    drag anywhere on the board.
+                   <button class="sidebtn" onclick="passSel()">Pass</button>
+                   <button class="sidebtn" onclick="deselect()">Cancel</button>`;
+  } else if (legal.space === 'region') {
+    const where = u.hexname || u.locname || u.hexnum || u.loc || '';
+    const mode = legal.edges
+      ? `MA ${legal.ma}, ${legal.dests.length} reachable regions (graph)`
+      : `${legal.dests.length} regions (Tier-0a snap — edges unauthored)`;
+    A.innerHTML = `<b>${whole ? 'STACK @ '+where : u.name}</b> @ <b>${where}</b> — ${mode}.
+                   Drag to a green circle.
                    <button class="sidebtn" onclick="passSel()">Pass</button>
                    <button class="sidebtn" onclick="deselect()">Cancel</button>`;
   } else {
@@ -1837,7 +1914,8 @@ function dragMove(e) {
   }
 }
 function nearestLegal(m) {
-  let best = null, bd = 70*70;   // must drop within ~70px of a legal hex center
+  const lim = isRegionSpace() ? 100*100 : 70*70;  // region snaps are sparser
+  let best = null, bd = lim;
   legal.dests.forEach(h => { const d=(h.x-m.x)**2+(h.y-m.y)**2; if (d<bd){bd=d;best=h;} });
   return best;
 }

@@ -1,0 +1,1119 @@
+{
+ "locations": {
+  "scranton": {
+   "name": "Scranton",
+   "origin": [
+    1510,
+    36
+   ]
+  },
+  "new-york-city": {
+   "name": "New York City",
+   "origin": [
+    1623,
+    72
+   ]
+  },
+  "philadelphia": {
+   "name": "Philadelphia",
+   "origin": [
+    1540,
+    139
+   ]
+  },
+  "atlantic-city": {
+   "name": "Atlantic City",
+   "origin": [
+    1611,
+    219
+   ]
+  },
+  "harrisburg": {
+   "name": "Harrisburg",
+   "origin": [
+    1413,
+    113
+   ]
+  },
+  "baltimore": {
+   "name": "Baltimore",
+   "origin": [
+    1456,
+    203
+   ]
+  },
+  "fredericksburg": {
+   "name": "Fredericksburg",
+   "origin": [
+    1408,
+    341
+   ]
+  },
+  "yorktown": {
+   "name": "Yorktown",
+   "origin": [
+    1428,
+    427
+   ]
+  },
+  "ft-monroe": {
+   "name": "Ft. Monroe",
+   "origin": [
+    1499,
+    438
+   ]
+  },
+  "norfolk": {
+   "name": "Norfolk",
+   "origin": [
+    1481,
+    506
+   ]
+  },
+  "petersburg": {
+   "name": "Petersburg",
+   "origin": [
+    1366,
+    469
+   ]
+  },
+  "richmond": {
+   "name": "Richmond",
+   "origin": [
+    1356,
+    401
+   ]
+  },
+  "manassas-junction": {
+   "name": "Manassas Junction",
+   "origin": [
+    1324,
+    320
+   ]
+  },
+  "harpers-ferry": {
+   "name": "Harpers Ferry",
+   "origin": [
+    1321,
+    245
+   ]
+  },
+  "gettysburg": {
+   "name": "Gettysburg",
+   "origin": [
+    1335,
+    166
+   ]
+  },
+  "ebensburg": {
+   "name": "Ebensburg",
+   "origin": [
+    1315,
+    84
+   ]
+  },
+  "pittsburgh": {
+   "name": "Pittsburgh",
+   "origin": [
+    1206,
+    114
+   ]
+  },
+  "grafton": {
+   "name": "Grafton",
+   "origin": [
+    1180,
+    250
+   ]
+  },
+  "front-royal": {
+   "name": "Front Royal",
+   "origin": [
+    1249,
+    305
+   ]
+  },
+  "gordonsville": {
+   "name": "Gordonsville",
+   "origin": [
+    1278,
+    391
+   ]
+  },
+  "staunton": {
+   "name": "Staunton",
+   "origin": [
+    1192,
+    390
+   ]
+  },
+  "lynchburg": {
+   "name": "Lynchburg",
+   "origin": [
+    1261,
+    458
+   ]
+  },
+  "roanoake": {
+   "name": "Roanoake",
+   "origin": [
+    1170,
+    467
+   ]
+  },
+  "greensboro": {
+   "name": "Greensboro",
+   "origin": [
+    1191,
+    559
+   ]
+  },
+  "raleigh": {
+   "name": "Raleigh",
+   "origin": [
+    1291,
+    584
+   ]
+  },
+  "new-bern": {
+   "name": "New Bern",
+   "origin": [
+    1463,
+    644
+   ]
+  },
+  "goldsboro": {
+   "name": "Goldsboro",
+   "origin": [
+    1367,
+    626
+   ]
+  },
+  "wilmington": {
+   "name": "Wilmington",
+   "origin": [
+    1380,
+    764
+   ]
+  },
+  "fayetteville": {
+   "name": "Fayetteville",
+   "origin": [
+    1274,
+    693
+   ]
+  },
+  "florence": {
+   "name": "Florence",
+   "origin": [
+    1216,
+    783
+   ]
+  },
+  "charlotte": {
+   "name": "Charlotte",
+   "origin": [
+    1134,
+    645
+   ]
+  },
+  "columbia": {
+   "name": "Columbia",
+   "origin": [
+    1105,
+    783
+   ]
+  },
+  "charleston-sc": {
+   "name": "Charleston (SC)",
+   "origin": [
+    1212,
+    897
+   ]
+  },
+  "st-george": {
+   "name": "St. George",
+   "origin": [
+    1118,
+    872
+   ]
+  },
+  "gainesville": {
+   "name": "Gainesville",
+   "origin": [
+    989,
+    1236
+   ]
+  },
+  "jacksonville": {
+   "name": "Jacksonville",
+   "origin": [
+    1076,
+    1180
+   ]
+  },
+  "brunswick": {
+   "name": "Brunswick",
+   "origin": [
+    1086,
+    1102
+   ]
+  },
+  "savannah": {
+   "name": "Savannah",
+   "origin": [
+    1099,
+    1020
+   ]
+  },
+  "waycross": {
+   "name": "Waycross",
+   "origin": [
+    970,
+    1080
+   ]
+  },
+  "millen": {
+   "name": "Millen",
+   "origin": [
+    1027,
+    931
+   ]
+  },
+  "augusta": {
+   "name": "Augusta",
+   "origin": [
+    1009,
+    843
+   ]
+  },
+  "wheeling": {
+   "name": "Wheeling",
+   "origin": [
+    1110,
+    139
+   ]
+  },
+  "canton": {
+   "name": "Canton",
+   "origin": [
+    1079,
+    67
+   ]
+  },
+  "cleveland": {
+   "name": "Cleveland",
+   "origin": [
+    961,
+    38
+   ]
+  },
+  "columbus": {
+   "name": "Columbus",
+   "origin": [
+    941,
+    162
+   ]
+  },
+  "parkersburg": {
+   "name": "Parkersburg",
+   "origin": [
+    1072,
+    242
+   ]
+  },
+  "franklin": {
+   "name": "Franklin",
+   "origin": [
+    1135,
+    321
+   ]
+  },
+  "charleston-wv": {
+   "name": "Charleston (WV)",
+   "origin": [
+    1051,
+    352
+   ]
+  },
+  "marion": {
+   "name": "Marion",
+   "origin": [
+    1027,
+    509
+   ]
+  },
+  "london": {
+   "name": "London",
+   "origin": [
+    925,
+    431
+   ]
+  },
+  "cumberland-gap": {
+   "name": "Cumberland Gap",
+   "origin": [
+    906,
+    521
+   ]
+  },
+  "glasgow": {
+   "name": "Glasgow",
+   "origin": [
+    791,
+    500
+   ]
+  },
+  "lebanon": {
+   "name": "Lebanon",
+   "origin": [
+    830,
+    431
+   ]
+  },
+  "munfordville": {
+   "name": "Munfordville",
+   "origin": [
+    750,
+    420
+   ]
+  },
+  "bowling-green": {
+   "name": "Bowling Green",
+   "origin": [
+    681,
+    473
+   ]
+  },
+  "lexington": {
+   "name": "Lexington",
+   "origin": [
+    837,
+    353
+   ]
+  },
+  "louisville": {
+   "name": "Louisville",
+   "origin": [
+    751,
+    339
+   ]
+  },
+  "cincinnatti": {
+   "name": "Cincinnatti",
+   "origin": [
+    827,
+    262
+   ]
+  },
+  "dayton": {
+   "name": "Dayton",
+   "origin": [
+    859,
+    196
+   ]
+  },
+  "fort-wayne": {
+   "name": "Fort Wayne",
+   "origin": [
+    811,
+    46
+   ]
+  },
+  "indianapolis": {
+   "name": "Indianapolis",
+   "origin": [
+    706,
+    173
+   ]
+  },
+  "lafayette": {
+   "name": "Lafayette",
+   "origin": [
+    678,
+    69
+   ]
+  },
+  "terra-haute": {
+   "name": "Terra Haute",
+   "origin": [
+    617,
+    217
+   ]
+  },
+  "bloomington-in": {
+   "name": "Bloomington (IN)",
+   "origin": [
+    661,
+    295
+   ]
+  },
+  "evansville": {
+   "name": "Evansville",
+   "origin": [
+    593,
+    374
+   ]
+  },
+  "chicago": {
+   "name": "Chicago",
+   "origin": [
+    581,
+    41
+   ]
+  },
+  "nashville": {
+   "name": "Nashville",
+   "origin": [
+    661,
+    580
+   ]
+  },
+  "sparta": {
+   "name": "Sparta",
+   "origin": [
+    772,
+    589
+   ]
+  },
+  "knoxville": {
+   "name": "Knoxville",
+   "origin": [
+    868,
+    599
+   ]
+  },
+  "ashville": {
+   "name": "Ashville",
+   "origin": [
+    1014,
+    618
+   ]
+  },
+  "greenville": {
+   "name": "Greenville",
+   "origin": [
+    1036,
+    706
+   ]
+  },
+  "macon": {
+   "name": "Macon",
+   "origin": [
+    888,
+    924
+   ]
+  },
+  "atlanta": {
+   "name": "Atlanta",
+   "origin": [
+    821,
+    816
+   ]
+  },
+  "chattanooga": {
+   "name": "Chattanooga",
+   "origin": [
+    783,
+    680
+   ]
+  },
+  "murfreesboro": {
+   "name": "Murfreesboro",
+   "origin": [
+    701,
+    647
+   ]
+  },
+  "jacksonville-2": {
+   "name": "Jacksonville",
+   "origin": [
+    725,
+    816
+   ]
+  },
+  "decatur": {
+   "name": "Decatur",
+   "origin": [
+    632,
+    718
+   ]
+  },
+  "columbus-2": {
+   "name": "Columbus",
+   "origin": [
+    794,
+    940
+   ]
+  },
+  "montgomery": {
+   "name": "Montgomery",
+   "origin": [
+    695,
+    972
+   ]
+  },
+  "selma": {
+   "name": "Selma",
+   "origin": [
+    596,
+    950
+   ]
+  },
+  "albany": {
+   "name": "Albany",
+   "origin": [
+    834,
+    1053
+   ]
+  },
+  "tallahassee": {
+   "name": "Tallahassee",
+   "origin": [
+    864,
+    1142
+   ]
+  },
+  "pensacola": {
+   "name": "Pensacola",
+   "origin": [
+    607,
+    1133
+   ]
+  },
+  "chillicothe": {
+   "name": "Chillicothe",
+   "origin": [
+    974,
+    274
+   ]
+  },
+  "st-joseph": {
+   "name": "St. Joseph",
+   "origin": [
+    50,
+    150
+   ]
+  },
+  "macon-2": {
+   "name": "Macon",
+   "origin": [
+    199,
+    161
+   ]
+  },
+  "quincy": {
+   "name": "Quincy",
+   "origin": [
+    312,
+    166
+   ]
+  },
+  "springfield-il": {
+   "name": "Springfield (IL)",
+   "origin": [
+    421,
+    177
+   ]
+  },
+  "bloomington-il": {
+   "name": "Bloomington (IL)",
+   "origin": [
+    491,
+    117
+   ]
+  },
+  "kansas-city": {
+   "name": "Kansas City",
+   "origin": [
+    62,
+    240
+   ]
+  },
+  "sedalia": {
+   "name": "Sedalia",
+   "origin": [
+    121,
+    308
+   ]
+  },
+  "jefferson-city": {
+   "name": "Jefferson City",
+   "origin": [
+    210,
+    294
+   ]
+  },
+  "st-louis": {
+   "name": "St. Louis",
+   "origin": [
+    369,
+    293
+   ]
+  },
+  "vandalia": {
+   "name": "Vandalia",
+   "origin": [
+    472,
+    294
+   ]
+  },
+  "springfield-mo": {
+   "name": "Springfield (MO)",
+   "origin": [
+    119,
+    414
+   ]
+  },
+  "rolla": {
+   "name": "Rolla",
+   "origin": [
+    239,
+    385
+   ]
+  },
+  "ironton": {
+   "name": "Ironton",
+   "origin": [
+    356,
+    423
+   ]
+  },
+  "thayer": {
+   "name": "Thayer",
+   "origin": [
+    324,
+    495
+   ]
+  },
+  "cairo": {
+   "name": "Cairo",
+   "origin": [
+    443,
+    446
+   ]
+  },
+  "paducah": {
+   "name": "Paducah",
+   "origin": [
+    514,
+    473
+   ]
+  },
+  "fayetteville-2": {
+   "name": "Fayetteville",
+   "origin": [
+    103,
+    524
+   ]
+  },
+  "island-no-10": {
+   "name": "Island No. 10",
+   "origin": [
+    398,
+    544
+   ]
+  },
+  "fts-henry-donelson": {
+   "name": "Fts. Henry & Donelson",
+   "origin": [
+    551,
+    541
+   ]
+  },
+  "pittsburgh-landing": {
+   "name": "Pittsburgh Landing",
+   "origin": [
+    545,
+    619
+   ]
+  },
+  "humbolt": {
+   "name": "Humbolt",
+   "origin": [
+    464,
+    579
+   ]
+  },
+  "newport": {
+   "name": "Newport",
+   "origin": [
+    289,
+    579
+   ]
+  },
+  "little-rock": {
+   "name": "Little Rock",
+   "origin": [
+    190,
+    648
+   ]
+  },
+  "fort-smith": {
+   "name": "Fort Smith",
+   "origin": [
+    54,
+    620
+   ]
+  },
+  "camden": {
+   "name": "Camden",
+   "origin": [
+    163,
+    759
+   ]
+  },
+  "arkansas-post": {
+   "name": "Arkansas Post",
+   "origin": [
+    269,
+    765
+   ]
+  },
+  "memphis": {
+   "name": "Memphis",
+   "origin": [
+    368,
+    669
+   ]
+  },
+  "grand-junction": {
+   "name": "Grand Junction",
+   "origin": [
+    445,
+    678
+   ]
+  },
+  "corinth": {
+   "name": "Corinth",
+   "origin": [
+    526,
+    696
+   ]
+  },
+  "grenada": {
+   "name": "Grenada",
+   "origin": [
+    379,
+    807
+   ]
+  },
+  "okolona": {
+   "name": "Okolona",
+   "origin": [
+    479,
+    774
+   ]
+  },
+  "tuscaloosa": {
+   "name": "Tuscaloosa",
+   "origin": [
+    567,
+    826
+   ]
+  },
+  "jackson": {
+   "name": "Jackson",
+   "origin": [
+    363,
+    955
+   ]
+  },
+  "vicksburg": {
+   "name": "Vicksburg",
+   "origin": [
+    284,
+    936
+   ]
+  },
+  "monroe": {
+   "name": "Monroe",
+   "origin": [
+    204,
+    888
+   ]
+  },
+  "shreveport": {
+   "name": "Shreveport",
+   "origin": [
+    85,
+    889
+   ]
+  },
+  "alexandria": {
+   "name": "Alexandria",
+   "origin": [
+    127,
+    997
+   ]
+  },
+  "natchez": {
+   "name": "Natchez",
+   "origin": [
+    236,
+    1037
+   ]
+  },
+  "mccomb": {
+   "name": "McComb",
+   "origin": [
+    341,
+    1053
+   ]
+  },
+  "baton-rouge": {
+   "name": "Baton Rouge",
+   "origin": [
+    262,
+    1134
+   ]
+  },
+  "new-orleans": {
+   "name": "New Orleans",
+   "origin": [
+    335,
+    1172
+   ]
+  },
+  "mobile": {
+   "name": "Mobile",
+   "origin": [
+    507,
+    1104
+   ]
+  },
+  "meridian": {
+   "name": "Meridian",
+   "origin": [
+    468,
+    954
+   ]
+  },
+  "port-royal": {
+   "name": "Port Royal",
+   "origin": [
+    1160,
+    960
+   ]
+  },
+  "washington": {
+   "name": "Washington",
+   "origin": [
+    1399,
+    268
+   ]
+  }
+ },
+ "edges": [
+  {
+   "a": "washington",
+   "b": "baltimore",
+   "cost": 1
+  },
+  {
+   "a": "washington",
+   "b": "manassas-junction",
+   "cost": 1
+  },
+  {
+   "a": "washington",
+   "b": "harpers-ferry",
+   "cost": 1
+  },
+  {
+   "a": "washington",
+   "b": "fredericksburg",
+   "cost": 1
+  },
+  {
+   "a": "baltimore",
+   "b": "philadelphia",
+   "cost": 1
+  },
+  {
+   "a": "baltimore",
+   "b": "gettysburg",
+   "cost": 1
+  },
+  {
+   "a": "philadelphia",
+   "b": "harrisburg",
+   "cost": 1
+  },
+  {
+   "a": "philadelphia",
+   "b": "atlantic-city",
+   "cost": 1
+  },
+  {
+   "a": "philadelphia",
+   "b": "new-york-city",
+   "cost": 1
+  },
+  {
+   "a": "harrisburg",
+   "b": "gettysburg",
+   "cost": 1
+  },
+  {
+   "a": "harrisburg",
+   "b": "scranton",
+   "cost": 1
+  },
+  {
+   "a": "gettysburg",
+   "b": "harpers-ferry",
+   "cost": 1
+  },
+  {
+   "a": "harpers-ferry",
+   "b": "front-royal",
+   "cost": 1
+  },
+  {
+   "a": "manassas-junction",
+   "b": "front-royal",
+   "cost": 1
+  },
+  {
+   "a": "manassas-junction",
+   "b": "fredericksburg",
+   "cost": 1
+  },
+  {
+   "a": "front-royal",
+   "b": "staunton",
+   "cost": 1
+  },
+  {
+   "a": "fredericksburg",
+   "b": "richmond",
+   "cost": 1
+  },
+  {
+   "a": "fredericksburg",
+   "b": "gordonsville",
+   "cost": 1
+  },
+  {
+   "a": "gordonsville",
+   "b": "staunton",
+   "cost": 1
+  },
+  {
+   "a": "gordonsville",
+   "b": "richmond",
+   "cost": 1
+  },
+  {
+   "a": "richmond",
+   "b": "petersburg",
+   "cost": 1
+  },
+  {
+   "a": "richmond",
+   "b": "yorktown",
+   "cost": 1
+  },
+  {
+   "a": "richmond",
+   "b": "lynchburg",
+   "cost": 1
+  },
+  {
+   "a": "yorktown",
+   "b": "ft-monroe",
+   "cost": 1
+  },
+  {
+   "a": "petersburg",
+   "b": "norfolk",
+   "cost": 1
+  },
+  {
+   "a": "ft-monroe",
+   "b": "norfolk",
+   "cost": 1
+  },
+  {
+   "a": "staunton",
+   "b": "lynchburg",
+   "cost": 1
+  },
+  {
+   "a": "lynchburg",
+   "b": "roanoake",
+   "cost": 1
+  },
+  {
+   "a": "pittsburgh",
+   "b": "harrisburg",
+   "cost": 1
+  },
+  {
+   "a": "pittsburgh",
+   "b": "wheeling",
+   "cost": 1
+  },
+  {
+   "a": "wheeling",
+   "b": "parkersburg",
+   "cost": 1
+  },
+  {
+   "a": "columbus",
+   "b": "dayton",
+   "cost": 1
+  },
+  {
+   "a": "columbus",
+   "b": "chillicothe",
+   "cost": 1
+  },
+  {
+   "a": "dayton",
+   "b": "cincinnatti",
+   "cost": 1
+  },
+  {
+   "a": "cincinnatti",
+   "b": "lexington",
+   "cost": 1
+  },
+  {
+   "a": "lexington",
+   "b": "louisville",
+   "cost": 1
+  },
+  {
+   "a": "louisville",
+   "b": "franklin",
+   "cost": 1
+  }
+ ],
+ "impassable_tags": [
+  "offmap"
+ ],
+ "ingest": {
+  "region_grid_points": 129,
+  "edges_status": "PARTIAL",
+  "id_collisions": [
+   {
+    "name": "Jacksonville",
+    "id": "jacksonville-2"
+   },
+   {
+    "name": "Columbus",
+    "id": "columbus-2"
+   },
+   {
+    "name": "Macon",
+    "id": "macon-2"
+   },
+   {
+    "name": "Fayetteville",
+    "id": "fayetteville-2"
+   }
+  ]
+ }
+}
