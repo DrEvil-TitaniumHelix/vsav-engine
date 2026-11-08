@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 echo "Building The Vassal (one-dir; macOS build untested since v0.2.0) ..."
-pyinstaller --noconfirm --clean thevassal.spec
+python3 -m PyInstaller --noconfirm --clean thevassal.spec
 if [ -e "dist/Legality Engine for VASSAL.app" ]; then
   echo "OK  ->  dist/Legality Engine for VASSAL.app"
   echo "Gatekeeper will block an unsigned app: right-click -> Open the first time,"

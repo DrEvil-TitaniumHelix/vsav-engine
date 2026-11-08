@@ -1,7 +1,8 @@
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 $ver = (Select-String -Path ui\server.py -Pattern '^VERSION = "([^"]+)"').Matches[0].Groups[1].Value
-pyinstaller --noconfirm --clean thevassal.spec
+python -m PyInstaller --noconfirm --clean thevassal.spec
+if ($LASTEXITCODE -ne 0) { Write-Host "BUILD FAILED"; exit 1 }
 $dir = Join-Path $PSScriptRoot "dist\LegalityEngine"
 if (-not (Test-Path (Join-Path $dir "Legality Engine for VASSAL.exe"))) { Write-Host "BUILD FAILED"; exit 1 }
 Copy-Item RELEASE_README.md $dir
