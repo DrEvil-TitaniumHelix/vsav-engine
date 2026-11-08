@@ -15,7 +15,8 @@ plays through the same file. All rules semantics come from games/<game>/game.jso
 
 Run:  python ui\\server.py [--game <dir>] [--port 8641]
 """
-import argparse, http.server, json, os, shutil, struct, sys, urllib.parse
+import argparse, http.server, json, os, shutil, sys, urllib.parse
+import byo
 
 def _base_dir():
     """Read-only asset root (games/, ui/, engine/): the PyInstaller one-file
@@ -27,6 +28,9 @@ def _base_dir():
 
 ROOT = _base_dir()
 HERE = os.path.join(ROOT, "ui")
+byo.MANIFESTS = os.path.join(ROOT, "web", "manifests")
+byo.GAMES = os.path.join(ROOT, "games")
+png_size = byo.png_size
 
 
 def _live_dir():
@@ -426,33 +430,6 @@ def save_facing():
         json.dump(facing, f)
 
 
-def png_size(path):
-    # The map is a BYO asset (module art, never in the repo): on a clean
-    # checkout it is absent, and nothing engine-side may depend on it. The
-    # descriptor then ships map_w/map_h = 0 and the client sizes the board
-    # from the module image it loads itself. (CI 2026-08-18: SoJ has no
-    # games_bundled fallback, so this was the only game to trip.)
-    if not path or not os.path.exists(path):
-        return 0, 0
-    with open(path, "rb") as f:
-        head = f.read(24)
-        if head[:2] == b"\xff\xd8":          # JPEG: walk to the SOF marker
-            f.seek(2)
-            while True:
-                m = f.read(2)
-                if len(m) < 2 or m[0] != 0xFF:
-                    raise ValueError(f"no JPEG SOF marker in {path}")
-                if m[1] in (0xC0, 0xC1, 0xC2, 0xC3):
-                    f.read(3)
-                    h, w = struct.unpack(">HH", f.read(4))
-                    return w, h
-                ln, = struct.unpack(">H", f.read(2))
-                f.seek(ln - 2, 1)
-    if head[:6] in (b"GIF87a", b"GIF89a"):
-        return struct.unpack("<HH", head[6:10])
-    return struct.unpack(">II", head[16:24])
-
-
 def fresh_board():
     if not os.path.exists(WORK):
         if not GAME_OBJ.setup_save:
@@ -735,7 +712,8 @@ def game_descriptor():
 # the owner 2026-07-17). Games not in this list are still loadable via --game /
 # /api/load_game, but the menu shows these. Keep in sync with the release scope.
 RELEASE_GAMES = ["tobruk", "blue-and-gray-chickamauga", "westwall-arnhem",
-                 "afrika-korps-classic-ah", "austerlitz-gmt"]
+                 "afrika-korps-classic-ah", "austerlitz-gmt",
+                 "siege-of-jerusalem-ah", "napoleon-at-waterloo"]
 
 
 def game_client(scen_mode, has_scen):
@@ -767,6 +745,17 @@ def _game_assets_ok(gdir):
         return True                     # nothing external to resolve
     p = m if os.path.isabs(m) else os.path.join(gdir, m)
     return os.path.exists(p)
+
+
+def game_ready(slug, state=None):
+    state = state if state is not None else byo.status(slug)
+    if state["ready"]:
+        return True
+    gdir = game_dir(slug)
+    with open(os.path.join(gdir, "game.json"), encoding="utf-8") as f:
+        assets = json.load(f).get("assets", {})
+    return all(assets.get(k) and check(os.path.join(gdir, assets[k]))
+               for k, check in (("map", os.path.isfile), ("counters_dir", os.path.isdir)))
 
 
 def game_dir(slug):
@@ -849,11 +838,13 @@ def game_meta(slug):
         scen_mode = json.load(open(os.path.join(gdir, scen),
                                    encoding="utf-8")).get("mode")
     mode = scen_mode or ("tactical" if has_scen else None)
+    state = byo.status(slug)
     return dict(slug=slug, name=spec.get("name", slug),
                 mode=mode or "free",
                 client=game_client(scen_mode, has_scen),
                 tags=game_tags(gdir, spec, mode),
-                blurb=spec.get("blurb") or spec.get("description"))
+                blurb=spec.get("blurb") or spec.get("description"),
+                byo=state, ready=game_ready(slug, state))
 
 
 def current_slug():
@@ -903,9 +894,15 @@ def api_load_game(body):
     Loads from disk (per-game state is file-backed), returns the client the
     menu should navigate to."""
     slug = body.get("slug")
+    if not isinstance(slug, str) or not slug or any(c not in "abcdefghijklmnopqrstuvwxyz0123456789-" for c in slug):
+        return dict(error=f"unknown game: {slug!r}")
     gdir = game_dir(slug) if slug else ""
     if not slug or not os.path.isfile(os.path.join(gdir, "game.json")):
         return dict(error=f"unknown game: {slug!r}")
+    if not game_ready(slug):
+        state = byo.status(slug)
+        hint = " ".join(r.get("hint", "") for r in state["requirements"] if r["missing"])
+        return dict(error=("Needs your module. " + hint).strip(), byo=state)
     load_game(gdir)
     return dict(ok=True, slug=slug, client=game_client(SCEN_MODE, bool(SCEN_PATH)),
                 game=game_descriptor())
@@ -2095,7 +2092,7 @@ def load_game(game_dir):
     AI_STEP = None
     SCEN_PATH = SCEN_MODE = None
 
-    GAME_OBJ = gamespec.Game(game_dir)
+    GAME_OBJ = byo.resolve(gamespec.Game(game_dir))
     gkey = GAME_SLUG = os.path.basename(os.path.normpath(game_dir))
     WORK = os.path.join(LIVE, f"game_{gkey}.vsav")
     if GAME_OBJ.spec.get("scenario"):
@@ -2115,9 +2112,6 @@ def load_game(game_dir):
 
 
 def make_server(port):
-    """Build the HTTP server on 127.0.0.1:port (a game must already be loaded).
-    Caller decides whether to serve_forever() (CLI) or run it in a thread behind
-    a native window (app.py)."""
     return http.server.ThreadingHTTPServer(("127.0.0.1", port), H)
 
 
@@ -2125,6 +2119,8 @@ def make_server(port):
 # bridge. Pure functions: (path, qs/body) -> JSON-able dict, or None when the
 # path is not an API route (handler then falls through to files/404).
 def route_get(path, qs):
+    if path.startswith("/api/byo/"):
+        return byo.status(urllib.parse.unquote(path[len("/api/byo/"):]))
     if path == "/api/state":
         return api_state()
     if path == "/api/games":
@@ -2303,8 +2299,9 @@ class H(http.server.SimpleHTTPRequestHandler):
                 name = urllib.parse.unquote(url.path.split("/gasset/counters/", 1)[1])
                 cdir = GAME_OBJ.assets.get("counters_dir")
                 # counter names come from save data; keep the lookup inside the dir
-                safe = os.path.normpath(os.path.join(cdir, name))
-                if not safe.startswith(os.path.abspath(cdir)):
+                cdir = os.path.realpath(cdir)
+                safe = os.path.realpath(os.path.join(cdir, name))
+                if os.path.commonpath((cdir, safe)) != cdir:
                     return self.send_error(403)
                 return self._file(safe)
         except Exception as e:
@@ -2318,9 +2315,26 @@ class H(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
-        body = json.loads(self.rfile.read(int(self.headers["Content-Length"] or 0)) or b"{}")
         try:
-            r = route_post(self.path, body)
+            path = urllib.parse.urlparse(self.path).path
+            length = int(self.headers.get("Content-Length", "0"))
+            if length < 0:
+                raise ValueError("Invalid upload length")
+            if path.startswith("/api/byo/"):
+                slug = urllib.parse.unquote(path[len("/api/byo/"):])
+                state = byo.status(slug)
+                if "error" in state:
+                    return self._json(state)
+                if length > max(r["size"] for r in state["requirements"]) + 65536:
+                    return self._json(dict(ok=False, error="File too large. " + " ".join(r.get("hint", "") for r in state["requirements"])))
+                data = self.rfile.read(length)
+                if self.headers.get_content_type() == "application/json":
+                    data = json.loads(data).get("path")
+                    if not isinstance(data, str) or not data:
+                        raise ValueError("Choose a module file")
+                return self._json(byo.import_module(slug, data))
+            body = json.loads(self.rfile.read(length) or b"{}")
+            r = route_post(path, body)
             if r is not None:
                 return self._json(r)
         except Exception as e:

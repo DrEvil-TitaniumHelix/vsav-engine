@@ -34,7 +34,7 @@ import server as srv  # noqa: E402  (game_meta/game_dir only — no HTTP)
 
 OUT = os.path.join(ROOT, "dist", "demo")
 VENDOR = os.path.join(ROOT, "web", "vendor", "pyodide")
-GAMES = list(srv.RELEASE_GAMES) + ["siege-of-jerusalem-ah", "napoleon-at-waterloo"]
+GAMES = list(srv.RELEASE_GAMES)
 
 # same two counter-src sites build_web.py patches (board client), one in the
 # tactical client — art must come from the user's module via BYO.counter(u)
@@ -360,6 +360,7 @@ def main():
             if fn.endswith(".py"):
                 zf.write(os.path.join(ROOT, "engine", fn), "engine/" + fn)
         zf.write(os.path.join(ROOT, "ui", "server.py"), "ui/server.py")
+        zf.write(os.path.join(ROOT, "ui", "byo.py"), "ui/byo.py")
         for slug in GAMES:
             manifest = load_manifest(slug)
             meta = srv.game_meta(slug)

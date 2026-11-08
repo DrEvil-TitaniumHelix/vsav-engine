@@ -28,12 +28,16 @@ def free_port():
     return p
 
 
+class Api:
+    def choose_module(self):
+        paths = webview.windows[0].create_file_dialog(
+            webview.FileDialog.OPEN, allow_multiple=False,
+            file_types=("VASSAL modules (*.vmod;*.zip)", "All files (*.*)"))
+        return paths[0] if paths else None
+
+
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else free_port()
-    # Pre-load the flagship game so /api/state is always valid even before the
-    # tester picks; the menu still drives the choice via /api/load_game.
-    first = server.game_dir(server.RELEASE_GAMES[0])
-    server.load_game(first)
     httpd = server.make_server(port)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     print(f"The Vassal v{server.VERSION} — engine on http://127.0.0.1:{port}/menu",
@@ -41,6 +45,7 @@ def main():
     webview.create_window(
         f"Legality Engine for VASSAL  ·  v{server.VERSION}",
         f"http://127.0.0.1:{port}/menu",
+        js_api=Api(),
         # opens maximized — the fixed no-wrap topbar wants room; the minimum
         # (generous, to survive Windows display scaling) guarantees the rows
         # always fit even if the tester shrinks the window, so every control

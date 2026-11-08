@@ -15,8 +15,6 @@
   .card { width:320px; background:#23262c; border:1px solid #3a3f47; border-radius:12px;
           padding:20px 22px; box-shadow:0 4px 18px rgba(0,0,0,.45);
           display:flex; flex-direction:column; gap:10px; }
-  .card .art { width:100%; height:190px; object-fit:contain; border-radius:8px;
-               background:#1a1c20; }
   .card h2 { margin:0; font-size:19px; color:#fff; }
   .card .meta { display:flex; gap:8px; flex-wrap:wrap; }
   .tag { font-size:11px; padding:2px 9px; border-radius:20px; background:#2c2f36;
@@ -32,6 +30,15 @@
   .card button:disabled { background:#3a3f47; color:#8a8f98; cursor:default; }
   .card.err { border-color:#7a3a3a; }
   .card.err .blurb { color:#e0a0a0; }
+  .byo-state { font-size:14px; font-weight:600; color:#e3c791; }
+  .byo-state.ready { color:#a8d89a; }
+  .requirement { border-top:1px solid #3a3f47; padding-top:10px; font-size:13px; line-height:1.5; }
+  .requirement code { overflow-wrap:anywhere; color:#dde3ea; }
+  .requirement a { color:#9cc4ee; }
+  .hint { color:#9aa3ad; margin:8px 0; }
+  .module-input { width:100%; font-size:12px; }
+  .browse { width:100%; }
+  .byo-msg { color:#e0a0a0; font-size:13px; overflow-wrap:anywhere; }
   footer { padding:14px 40px 22px; color:#6c7178; font-size:12px; border-top:1px solid #2a2d33; }
   footer b { color:#9aa3ad; font-weight:600; }
   #loading { color:#8a8f98; font-size:14px; }
@@ -50,8 +57,36 @@
   <b>DrEvil / Titanium Helix</b> &nbsp;·&nbsp; <span id="ver">local build</span> &nbsp;·&nbsp; <a href="https://github.com/DrEvil-TitaniumHelix/vsav-engine/issues" target="_blank" rel="noopener" style="color:#9cc4ee">contact the developer / report a bug</a>
 </footer>
 <script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nativePicker = () => window.pywebview && window.pywebview.api && window.pywebview.api.choose_module;
+function pickers(){
+  const native = !!nativePicker();
+  document.querySelectorAll(".browse").forEach(e => e.hidden = !native);
+  document.querySelectorAll(".module-input").forEach(e => e.hidden = native);
+}
+window.addEventListener("pywebviewready", pickers);
+async function supply(g, card, req, file){
+  const msg = card.querySelector(".byo-msg");
+  const controls = req.querySelectorAll("button,input");
+  controls.forEach(e => e.disabled = true);
+  try {
+    let opts;
+    if (file){
+      opts = {method:"POST", headers:{"Content-Type":"application/octet-stream"}, body:file};
+    } else {
+      const path = await window.pywebview.api.choose_module();
+      if (!path) return;
+      opts = {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({path})};
+    }
+    msg.textContent = "Checking module and reading its assets…";
+    const d = await (await fetch("/api/byo/" + encodeURIComponent(g.slug), opts)).json();
+    if (d.error || !d.ok) throw new Error(d.error || "Could not import the module.");
+    await load();
+  } catch(e){ msg.textContent = e.message || String(e); }
+  finally { controls.forEach(e => e.disabled = false); req.querySelector("input").value = ""; }
+}
 async function play(slug, card){
-  const btn = card.querySelector("button");
+  const btn = card.querySelector(".play");
   btn.disabled = true; btn.textContent = "Loading…";
   try {
     const r = await fetch("/api/load_game", {method:"POST",
@@ -68,28 +103,51 @@ async function load(){
   document.getElementById("loading").style.display = "none";
   if (data.version) document.getElementById("ver").textContent = "v" + data.version;
   const cards = document.getElementById("cards");
+  cards.replaceChildren();
   for (const g of data.games){
     const card = document.createElement("div");
     card.className = "card" + (g.error ? " err" : "");
     if (g.error){
-      card.innerHTML = `<h2>${g.name}</h2><div class="blurb">Unavailable: ${g.error}</div>`;
+      card.innerHTML = `<h2>${esc(g.name)}</h2><div class="blurb">Unavailable: ${esc(g.error)}</div>`;
       cards.appendChild(card); continue;
     }
     const tags = (g.tags || []).map(t =>
-      `<span class="tag ${t.kind}"${t.title ? ` title="${t.title.replace(/"/g,'&quot;')}"` : ''}>${t.label}</span>`).join('');
+      `<span class="tag ${esc(t.kind)}"${t.title ? ` title="${esc(t.title)}"` : ''}>${esc(t.label)}</span>`).join('');
     card.innerHTML =
-      `<img class="art" src="/gasset/menu_art/${encodeURIComponent(g.slug)}"
-            onerror="this.remove()" alt="">
-       <h2>${g.name}</h2>
+      `<h2>${esc(g.name)}</h2>
        <div class="meta">
          ${tags}
          ${g.current ? '<span class="tag cur">last played</span>' : ''}
        </div>
-       <div class="blurb">${g.blurb || ""}</div>
-       <button>Play</button>`;
-    card.querySelector("button").onclick = () => play(g.slug, card);
+       <div class="blurb">${esc(g.blurb)}</div>
+       <div class="byo-state${g.ready ? ' ready' : ''}">${g.ready ? "Ready" : "Needs your module"}</div>
+       <div class="requirements"></div>
+       <div class="byo-msg" role="status"></div>
+       <button class="play"${g.ready ? '' : ' disabled'}>Play</button>`;
+    if (!g.ready){
+      if (g.byo.error) card.querySelector(".byo-msg").textContent = g.byo.error;
+      for (const r of g.byo.requirements){
+        const req = document.createElement("div");
+        req.className = "requirement";
+        req.innerHTML = `<div><code>${esc(r.filename)}</code> (${Number(r.size).toLocaleString()} bytes)</div>
+          <a href="${esc(r.page)}" target="_blank" rel="noopener">VASSAL Module Library</a>
+          <div class="hint">${esc(r.hint)}</div>`;
+        if (r.have){
+          const have = document.createElement("div");
+          have.textContent = "Ready"; req.appendChild(have);
+        } else {
+          req.insertAdjacentHTML("beforeend", `<input class="module-input" type="file" aria-label="Choose ${esc(r.filename)}">
+            <button class="browse" hidden>Choose module…</button>`);
+          req.querySelector("input").onchange = e => { if (e.target.files[0]) supply(g, card, req, e.target.files[0]); };
+          req.querySelector("button").onclick = () => supply(g, card, req);
+        }
+        card.querySelector(".requirements").appendChild(req);
+      }
+    }
+    card.querySelector(".play").onclick = () => play(g.slug, card);
     cards.appendChild(card);
   }
+  pickers();
 }
 load();
 </script>
