@@ -92,7 +92,7 @@ def _layout(m, req, slug):
     for doc in m.get("docs", []):
         if doc.get("req") == req:
             skip.update(doc.get("entries", []))
-    return dict(entries=entries, prefix=prefix, skip=sorted(n for n in skip - entries.keys()
+    return dict(entries=entries, prefix=prefix, all=bool(counters.get("all")), skip=sorted(n for n in skip - entries.keys()
                 if prefix and n.startswith(prefix) and Path(n).suffix.lower() in IMAGES), setup=_setup(slug, m, req))
 
 
@@ -164,19 +164,63 @@ def _regenerate(slug, setup, z, stage):
             path.unlink(missing_ok=True)
 
 
+def _counter_stems(slug, m, req, layout, stage):
+    if not layout["prefix"] or layout["all"]:
+        return None
+    try:
+        sys.path.insert(0, str(ROOT / "engine"))
+        import gamespec, board
+
+        game = gamespec.Game(str(Path(GAMES) / slug))
+        if layout["setup"]:
+            game.setup_save = str(_path(stage, layout["setup"]["file"]))
+        else:
+            for ef in m.get("engine_files", []):
+                if ef.get("req") == req and ef["fs_path"].lower().endswith(".vsav"):
+                    game.setup_save = str(_path(stage, ef["fs_path"]))
+                    break
+        stems = set()
+        for unit in board.Board(game.setup_save, game).units():
+            if unit.get("img"):
+                stems.add(os.path.splitext(unit["img"])[0])
+            if unit.get("name"):
+                stems.add(unit["name"])
+        return stems
+    except Exception:
+        return None
+
+
+def _extract(z, info, target):
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with z.open(info) as src, target.open("wb") as dst:
+        shutil.copyfileobj(src, dst)
+
+
+def _sweep():
+    root = _root().resolve()
+    for path in root.glob(".import-*"):
+        if path.is_dir() and not path.is_symlink() and not path.is_junction():
+            shutil.rmtree(_path(root, path.name))
+
+
 def import_module(slug, source):
     m = None
     try:
         m = _manifest(slug)
+        size = len(source) if isinstance(source, (bytes, bytearray)) else os.path.getsize(source)
+        candidates = [r for r in m["requirements"] if r["size"] == size]
+        if not candidates:
+            raise ValueError("That is not the exact module this game requires.")
         with io.BytesIO(source) if isinstance(source, (bytes, bytearray)) else open(source, "rb") as f:
             digest = hashlib.file_digest(f, "sha256").hexdigest()
             size = f.seek(0, 2)
-            r = next((r for r in m["requirements"] if r["sha256"] == digest and r["size"] == size), None)
+            r = next((r for r in candidates if r["sha256"] == digest and r["size"] == size), None)
             if r is None:
                 raise ValueError("That is not the exact module this game requires.")
             with LOCK:
                 if _cached(m, r, slug):
                     return dict(status(slug), ok=True, cached=True)
+                _sweep()
                 layout = _layout(m, r["id"], slug)
                 f.seek(0)
                 with zipfile.ZipFile(f) as z:
@@ -208,13 +252,19 @@ def import_module(slug, source):
                         stage = Path(work) / "assets"
                         stage.mkdir()
                         for out, info in selected.items():
-                            target = _path(stage, out)
-                            target.parent.mkdir(parents=True, exist_ok=True)
-                            with z.open(info) as src, target.open("wb") as dst:
-                                shutil.copyfileobj(src, dst)
-                        files = {n: i.file_size for n, i in selected.items()}
+                            if info.filename in layout["entries"]:
+                                _extract(z, info, _path(stage, out))
                         if layout["setup"]:
                             _regenerate(slug, layout["setup"], z, stage)
+                        stems = _counter_stems(slug, m, r["id"], layout, stage)
+                        selected = {out: info for out, info in selected.items()
+                                    if info.filename in layout["entries"] or stems is None or
+                                    any(os.path.splitext(info.filename[len(layout["prefix"]):])[0].startswith(s) for s in stems)}
+                        for out, info in selected.items():
+                            if info.filename not in layout["entries"]:
+                                _extract(z, info, _path(stage, out))
+                        files = {n: i.file_size for n, i in selected.items()}
+                        if layout["setup"]:
                             name = layout["setup"]["file"]
                             files[name] = _path(stage, name).stat().st_size
                         record = dict(sha256=digest, size=size, layout=layout, files=files)
@@ -307,7 +357,7 @@ def png_size(path):
 
 
 def _self_check():
-    import copy, importlib.util, subprocess, types, urllib.request
+    import copy, http.client, importlib.util, socket, subprocess, types, urllib.request
     from unittest.mock import patch
 
     global MANIFESTS, GAMES
@@ -363,6 +413,17 @@ def _self_check():
             assert not result["ok"] and m["requirements"][0]["hint"] in result["error"]
             assert not _root().exists()
             print("b. Wrong SHA rejected with manifest hint; no cache created: PASS")
+
+            wrong_size = tmp / "wrong-size.vmod"
+            wrong_size.write_bytes(b"wrong size")
+            with patch.object(hashlib, "file_digest", side_effect=AssertionError("wrong size was hashed")):
+                with patch.object(os.path, "getsize", wraps=os.path.getsize) as size_check:
+                    result = import_module("fixture", wrong_size)
+                    size_check.assert_called_once_with(wrong_size)
+                assert not result["ok"] and m["requirements"][0]["hint"] in result["error"]
+                assert not import_module("fixture", b"wrong size")["ok"]
+            assert not _root().exists()
+            print("k. F2: path/bytes size mismatch rejected before hashing; manifest hint retained: PASS")
 
             game = types.SimpleNamespace(dir=str(tmp / "games" / "fixture"),
                                          assets={"map": "dev/map.png", "counters_dir": "dev/counters"},
@@ -421,9 +482,20 @@ def _self_check():
             assert not list(_root().glob(".import-*"))
             print("c. Traversal, absolute/drive/UNC paths and symlink members rejected without writes: PASS")
 
+            stale = _root() / ".import-aborted" / "assets"
+            stale.mkdir(parents=True)
+            (stale / "buildFile").write_bytes(b"interrupted import")
+            untouched = _root() / "unrelated"
+            untouched.mkdir()
+            (untouched / "keep").write_bytes(b"keep")
+            assert not import_module("fixture", bad)["ok"] and stale.exists()
             (dest / "images/unit.png").unlink()
             assert not status("fixture")["ready"]
             assert import_module("fixture", module_path)["ready"]
+            assert not stale.parent.exists() and (untouched / "keep").read_bytes() == b"keep"
+            (untouched / "keep").unlink()
+            untouched.rmdir()
+            print("k. F3: a real import sweeps abandoned .import-* directories, preserving unrelated data: PASS")
             (_root() / (m["requirements"][0]["sha256"] + ".json")).write_text("[]", encoding="utf-8")
             assert not status("fixture")["ready"]
             assert import_module("fixture", module_path)["ready"]
@@ -484,9 +556,18 @@ def _self_check():
                 (gdir / "game.json").write_bytes(spec_raw)
                 (gdir / "setup_units.json").write_bytes(json.dumps(dict(units=units)).encode())
                 generated_data = archive([("images/map.png", png), ("images/unit.png", png),
+                                          ("images/unit_reverse.gif", png), ("images/unitB.svg", png),
+                                          ("images/unrelated.png", png), ("images/Another_Board.bmp", png),
                                           (buildfile, xml.encode()), ("moduledata", b"<data/>")])
-                generated_manifest = manifest(slug, generated_data, lambda mm: mm.update(engine_files=[]))
-                result = import_module(slug, generated_data)
+                def generated_config(mm):
+                    mm["engine_files"] = []
+                    if i == 0:
+                        mm["assets"]["counters"].pop("all")
+                generated_manifest = manifest(slug, generated_data, generated_config)
+                with patch.object(sys.modules[__name__], "_extract", wraps=_extract) as extracted:
+                    result = import_module(slug, generated_data)
+                written = {call.args[1].filename for call in extracted.call_args_list}
+                assert ("images/Another_Board.bmp" in written) == bool(i)
                 assert result["ok"] and result["ready"], result
                 assert "server" not in sys.modules
                 import gamespec, vsav
@@ -494,8 +575,10 @@ def _self_check():
                 generated_save = generated_dir / "setup.vsav"
                 assert vsav.read_vsav(generated_save)[:2] == ("\x1b".join(expected), b"<data/>")
                 assert vsav.save_key(generated_save) == 0x4e
-                assert {p.relative_to(generated_dir).as_posix() for p in generated_dir.rglob("*") if p.is_file()} == {
-                    "images/map.png", "images/unit.png", "setup.vsav"}
+                wanted = {"images/map.png", "images/unit.png", "images/unit_reverse.gif", "images/unitB.svg", "setup.vsav"}
+                if i:
+                    wanted.update(("images/unrelated.png", "images/Another_Board.bmp"))
+                assert {p.relative_to(generated_dir).as_posix() for p in generated_dir.rglob("*") if p.is_file()} == wanted
                 assert not list(_root().glob(".import-*"))
                 assert (gdir / "game.json").read_bytes() == spec_raw
                 generated_game = resolve(gamespec.Game(str(gdir)))
@@ -509,6 +592,27 @@ def _self_check():
                 assert not status(slug)["ready"]
                 assert import_module(slug, generated_data)["ready"]
                 assert vsav.read_vsav(generated_save)[0] == "\x1b".join(expected)
+            import board
+            layout = _layout(generated_manifest, "module", slug)
+            layout["all"] = False
+            with patch.object(board, "Board") as mock_board:
+                mock_board.return_value.units.return_value = [dict(img="sub/face.svg", name="fallback")]
+                assert _counter_stems(slug, generated_manifest, "module", layout, generated_dir) == {"sub/face", "fallback"}
+            for fixture, setup_bytes in (("selected-setup", generated_save.read_bytes()), ("fallback-setup", b"unreadable setup")):
+                gdir = GAMES / fixture
+                gdir.mkdir()
+                (gdir / "game.json").write_bytes(spec_raw)
+                selected_data = archive([("images/map.png", png), ("images/unit.png", png),
+                                         ("images/unit_reverse.gif", png), ("images/unrelated.png", png),
+                                         ("Start.vsav", setup_bytes)])
+                selected_manifest = manifest(fixture, selected_data, lambda mm: mm["assets"]["counters"].pop("all"))
+                result = import_module(fixture, selected_data)
+                assert result["ok"] and result["ready"], result
+                selected_dir = _root() / selected_manifest["requirements"][0]["sha256"]
+                assert (selected_dir / "images/unit.png").is_file() and (selected_dir / "images/unit_reverse.gif").is_file()
+                assert (selected_dir / "images/unrelated.png").is_file() == (fixture == "fallback-setup")
+            assert "build_stage" not in sys.modules
+            print("k. F1: generated/module setups select img/name stems and variants; all=true and unreadable-setup fallback keep the prefix: PASS")
             bad_dir = GAMES / "generated-missing"
             bad_dir.mkdir()
             (bad_dir / "game.json").write_bytes(spec_raw)
@@ -578,13 +682,52 @@ def _self_check():
                 thread = threading.Thread(target=httpd.serve_forever, daemon=True)
                 thread.start()
                 base = "http://127.0.0.1:" + str(httpd.server_port)
-                def request(path, body=None, ctype="application/json"):
-                    req = urllib.request.Request(base + path, data=body, headers={"Content-Type": ctype})
+                def request(path, body=None, ctype="application/json", host=None):
+                    headers = {"Content-Type": ctype}
+                    if host is not None:
+                        headers["Host"] = host
+                    req = urllib.request.Request(base + path, data=body, headers=headers)
                     with urllib.request.urlopen(req, timeout=10) as response:
                         return json.load(response)
                 try:
                     assert request("/api/byo/fixture")["ready"]
                     assert request("/api/byo/fixture", json.dumps(dict(path=str(module_path))).encode())["cached"]
+                    body = json.dumps(dict(path=str(module_path))).encode()
+                    assert request("/api/byo/fixture", body, host=f"localhost:{httpd.server_port}")["cached"]
+                    with patch.object(server.byo, "import_module", side_effect=AssertionError("invalid Host reached importer")):
+                        for host in ("", "127.0.0.1", "localhost:1", f"rebound.invalid:{httpd.server_port}", f"127.0.0.1:{httpd.server_port}.invalid"):
+                            try:
+                                request("/api/byo/fixture", body, host=host)
+                                raise AssertionError(f"Host accepted: {host}")
+                            except urllib.error.HTTPError as e:
+                                assert e.code == 403
+                    print("k. F2: only 127.0.0.1:<actual port> and localhost:<actual port> reach the BYO importer: PASS")
+                    oversized = b"x" * (len(data) + 65537)
+                    draining = threading.Event()
+                    discard = server.H._discard
+                    def observed_discard(handler, length):
+                        draining.set()
+                        return discard(handler, length)
+                    with patch.object(server.H, "_discard", observed_discard):
+                        with socket.create_connection(("127.0.0.1", httpd.server_port), timeout=5) as sock:
+                            head = (f"POST /api/byo/fixture HTTP/1.1\r\nHost: 127.0.0.1:{httpd.server_port}\r\n"
+                                    f"Content-Type: application/octet-stream\r\nContent-Length: {len(oversized)}\r\n\r\n").encode()
+                            sock.sendall(head + oversized[:1024])
+                            assert draining.wait(5)
+                            sock.settimeout(.15)
+                            try:
+                                sock.recv(1)
+                                raise AssertionError("oversize response sent before body was drained")
+                            except socket.timeout:
+                                pass
+                            sock.settimeout(5)
+                            sock.sendall(oversized[1024:])
+                            response = http.client.HTTPResponse(sock)
+                            response.begin()
+                            rejected = json.loads(response.read())
+                            assert not rejected["ok"] and "File too large" in rejected["error"]
+                            assert m["requirements"][0]["hint"] in rejected["error"]
+                    print("k. F4: oversized upload is drained before its complete JSON rejection is sent: PASS")
                     os.environ["LOCALAPPDATA"] = str(tmp / "http-local")
                     assert not request("/api/byo/fixture")["ready"]
                     result = request("/api/byo/fixture", bad, "application/octet-stream")

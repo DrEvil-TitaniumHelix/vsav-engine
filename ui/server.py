@@ -2314,6 +2314,13 @@ class H(http.server.SimpleHTTPRequestHandler):
                 "/tactical.html" if TG else "/index.html")
         return super().do_GET()
 
+    def _discard(self, length):
+        while length:
+            data = self.rfile.read(min(length, 65536))
+            if not data:
+                raise ValueError("Incomplete upload body")
+            length -= len(data)
+
     def do_POST(self):
         try:
             path = urllib.parse.urlparse(self.path).path
@@ -2321,11 +2328,17 @@ class H(http.server.SimpleHTTPRequestHandler):
             if length < 0:
                 raise ValueError("Invalid upload length")
             if path.startswith("/api/byo/"):
+                if self.headers.get_all("Host", []) not in ([f"127.0.0.1:{self.server.server_port}"],
+                                                            [f"localhost:{self.server.server_port}"]):
+                    self._discard(length)
+                    return self.send_error(403, "Invalid Host")
                 slug = urllib.parse.unquote(path[len("/api/byo/"):])
                 state = byo.status(slug)
                 if "error" in state:
+                    self._discard(length)
                     return self._json(state)
                 if length > max(r["size"] for r in state["requirements"]) + 65536:
+                    self._discard(length)
                     return self._json(dict(ok=False, error="File too large. " + " ".join(r.get("hint", "") for r in state["requirements"])))
                 data = self.rfile.read(length)
                 if self.headers.get_content_type() == "application/json":
