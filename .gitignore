@@ -44,7 +44,7 @@ engine/baseline.json
 # scenarios, engine-generated setup saves). Third-party module art — maps,
 # counters, module-provided saves — is NEVER committed (the owner 2026-07-12,
 # Decision Games copyright compliance; art purged from history same day).
-# Stage art locally from your own module copy via build_stage.py.
+# The packaged app imports the player's own .vmod at first run (ui/byo.py).
 dist/*
 *.exe
 !games_bundled/**/*.json

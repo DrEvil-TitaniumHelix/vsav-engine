@@ -1,80 +1,61 @@
-# Legality Engine for VASSAL — beta
+# Legality Engine for VASSAL v0.2.0
 
-A rules-enforcing engine for classic wargames. Pick a game from the menu and
-play; the engine enforces the rules, owns the dice (seeded and logged), and
-records every move so a whole game replays exactly. Ships with **Afrika Korps**
-(full campaign, combat, AI opponent) and **Tobruk** (tactical firefight).
+A portable Windows app. It contains no game art: you supply each game's VASSAL module yourself, once per game.
 
-## Running it (testers)
+## Getting started
 
-**Recommended:** download this repo, open it in PyCharm (or your IDE), launch
-**Claude Code with the Fable model**, and ask it to read `GETTING_STARTED.md`
-and get you started — it sets up, launches, and answers rules questions while
-you play.
+1. Download `LegalityEngine-0.2.0-win64.zip` and unzip it into an empty folder.
+2. Double-click `Legality Engine for VASSAL.exe`.
+3. In the menu, find the game you want. A game you have not set up shows **Needs your module**, with its library link and the exact file name and size.
+4. Download that exact `.vmod` file from the link in the table below.
+5. Choose the file when the app asks. A wrong file is rejected with a hint.
+6. The card now shows **Ready**. Later launches need nothing more.
 
-**Windows (no Python at all):** double-click **`Legality Engine for VASSAL.exe`**
-— it's in this repo's `dist/` folder and also available as a separate download
-from the owner's Google Drive. No install, no Python, no browser — it opens as its
-own window.
+## Modules
 
-> ### ⚠️ Windows will probably warn you the first time
-> Because this is a brand-new one-file program that isn't code-signed, Windows
-> SmartScreen and/or your antivirus may flag it (e.g. "Windows protected your
-> PC", or a quarantine notice). **This is a false positive** — a known nuisance
-> for freshly built one-file apps, not a sign of a virus.
-> - **SmartScreen:** click **More info → Run anyway**.
-> - **Antivirus quarantine:** restore the file / allow it, or add an exception.
->
-> If you're not comfortable doing that, don't force it — tell the owner and he'll
-> sort it out. We warned you it would happen so it's not a surprise.
+Each game needs this exact file. The app checks its size and SHA-256.
 
-**Mac:** double-click **`Legality Engine for VASSAL.app`**. Gatekeeper blocks
-unsigned apps, so the first time: **right-click the app → Open → Open**. After
-that it launches normally.
+| Game | Library page | Exact file name | Size (bytes) |
+|---|---|---|---|
+| Tobruk: Tank Battles in North Africa 1942 | https://vassalengine.org/library/projects/Tobruk_Tank_Battles_in_North_Africa_1942 | `Tobruk_v1.1.vmod` | 95539764 |
+| Blue & Gray: Chickamauga | https://vassalengine.org/library/projects/Blue__Gray_Four_American_Civil_War_Battles | `Blue and Gray Complete.vmod` | 49428841 |
+| Westwall: Arnhem | https://vassalengine.org/library/projects/Westwall_Four_Battles_to_Germany | `Westwall Quad.vmod` | 32527773 |
+| Afrika Korps Classic (Avalon Hill) | https://vassalengine.org/library/projects/Afrika_Korps_Classic_Avalon_Hill | `Afrika Korps Classic AH 3.0.1.vmod` | 11083018 |
+| Austerlitz: Napoleon's Greatest Victory (GMT) | https://vassalengine.org/library/projects/Austerlitz_clanmacrae | `Austerlitz1_0_0.vmod` | 26051623 |
+| The Siege of Jerusalem (Avalon Hill, 1989) | https://vassalengine.org/library/projects/The_Siege_of_Jerusalem | `SOJ 2_5_0.vmod` | 30014120 |
+| Napoleon at Waterloo 2nd Edition (Stephen Oliver, v2.2.0) | https://vassalengine.org/library/projects/napoleon_at_waterloo_2nd_ed_stephen_oliver | `Napoleon at Waterloo 2nd Ed Vers 2.2.vmod` | 12439999 |
 
-## Playing
+## Windows will probably warn you the first time
 
-- **Menu** — pick a game. **Rules** and **Tables** buttons show exactly what the
-  engine enforces and the transcribed combat tables (the same data the engine
-  rolls on — not scanned images), each with rulebook citations.
-- **Tiers** — some games can run at a lower tier (less enforced, more free-play).
-  Switching tiers starts a fresh game.
-- Your game state is saved automatically to your user folder, so closing and
-  reopening picks up where you left off.
+This app is not code-signed, so Windows SmartScreen or your antivirus may flag it (for example "Windows protected your PC", or a quarantine notice).
+
+- **SmartScreen:** click **More info**, then **Run anyway**.
+- **Antivirus quarantine:** restore the file or allow it, or add an exception.
+
+If you are not comfortable doing that, don't force it.
+
+## Your data
+
+- Game state and logs: `%LOCALAPPDATA%\TheVassal\live\`
+- Your imported module files: `%LOCALAPPDATA%\TheVassal\byo\`
 
 ## Reporting a bug
 
-Because every game is deterministic and fully logged, we can reproduce a bug
-exactly from your session. If something goes wrong, note the **version** (shown
-in the menu footer, e.g. `v0.1.0-beta`) and send the owner the game log — it lives in:
+Every game is deterministic and fully logged, so your log replays your exact game on our end.
 
-- **Windows:** `%LOCALAPPDATA%\TheVassal\live\`
-- (the `game_<name>.log.jsonl` and `game_<name>.vsav` files)
-
-That log replays your exact game on our end, so we can find and fix the issue.
-
----
+Note the version shown in the menu footer and send the game log (`game_<name>.log.jsonl`) from the folder above.
 
 ## Building from source (developers)
 
-The repository is the factory for both builds. One-time setup:
-
 ```
 pip install pywebview pyinstaller
+powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Then:
+Produces `dist\LegalityEngine\` (one-dir PyInstaller build, no game art inside) and `dist\LegalityEngine-<version>-win64.zip`. The build fails if any image, save or module file lands in the output. Which games ship: `RELEASE_GAMES` in `ui/server.py` and the `GAMES` table in `thevassal.spec`. Version: `VERSION` in `ui/server.py`. Run from source without packaging: `python app.py` (native window) or `python ui/server.py --port 8641` (browser).
 
-- **Windows:** `powershell -ExecutionPolicy Bypass -File build.ps1`
-  → `dist\Legality Engine for VASSAL.exe`
-- **macOS:** `./build.sh` (must be run **on a Mac** — no cross-compile)
-  → `dist/Legality Engine for VASSAL.app`
+macOS: `./build.sh` on a Mac (untested since v0.2.0; Gatekeeper needs right-click, Open the first time).
 
-Both run `build_stage.py` (copies each release game's real assets into a
-self-contained bundle) and then PyInstaller against `thevassal.spec`.
+## Quiver Launcher
 
-- Which games ship: edit `RELEASE_GAMES` in `build_stage.py` **and**
-  `thevassal.spec` (keep them in sync with `server.RELEASE_GAMES`).
-- The version stamp is `VERSION` in `ui/server.py`.
-- To run from source without packaging: `python app.py` (native window) or
-  `python ui/server.py --game games/<slug> --port 8641` (in a browser).
+Add this repository in Quiver Launcher with **+ Add New Entry** (repository URL `https://github.com/DrEvil-TitaniumHelix/vsav-engine`). Quiver downloads the release zip, checks it and launches the exe; later releases update in place.

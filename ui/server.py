@@ -88,7 +88,7 @@ def sg_over():
         return SG.flow()["over"]
     return SG.s["over"]
 
-VERSION = "0.1.0-beta"  # shown in-app so a tester's bug report names the build
+VERSION = "0.2.0"
 
 GAME_OBJ = None   # gamespec.Game
 GAME_SLUG = None  # basename of the loaded game dir (menu key)
@@ -849,26 +849,6 @@ def game_meta(slug):
 
 def current_slug():
     return GAME_SLUG
-
-
-def menu_art_path(slug):
-    """Resolve a game's selection-card graphic: spec assets.menu_art (the
-    module's own box/splash art, staged locally), else map_thumb, else the map.
-    BYO posture unchanged — these paths point at the user's own module copy on
-    this machine; nothing is bundled or committed."""
-    gdir = game_dir(slug)
-    try:
-        spec = json.load(open(os.path.join(gdir, "game.json"), encoding="utf-8"))
-    except Exception:
-        return None
-    a = spec.get("assets") or {}
-    for key in ("menu_art", "map_thumb", "map"):
-        p = a.get(key)
-        if p:
-            p = p if os.path.isabs(p) else os.path.join(gdir, p)
-            if os.path.isfile(p):
-                return p
-    return None
 
 
 def api_games():
@@ -2288,11 +2268,6 @@ class H(http.server.SimpleHTTPRequestHandler):
             r = route_get(url.path, qs)
             if r is not None:
                 return self._json(r)
-            if url.path.startswith("/gasset/menu_art/"):
-                slug = urllib.parse.unquote(url.path.rsplit("/", 1)[1])
-                if slug not in set(RELEASE_GAMES) | {current_slug()}:
-                    return self.send_error(404)
-                return self._file(menu_art_path(slug))
             if url.path == "/gasset/map":
                 return self._file(GAME_OBJ.assets.get("map"))
             if url.path.startswith("/gasset/counters/"):

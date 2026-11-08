@@ -198,9 +198,10 @@ def _extract(z, info, target):
 
 def _sweep():
     root = _root().resolve()
+    import time
     for path in root.glob(".import-*"):
-        if path.is_dir() and not path.is_symlink() and not path.is_junction():
-            shutil.rmtree(_path(root, path.name))
+        if path.is_dir() and not path.is_symlink() and not path.is_junction() and time.time() - path.stat().st_mtime > 3600:
+            shutil.rmtree(_path(root, path.name), ignore_errors=True)
 
 
 def import_module(slug, source):
@@ -485,6 +486,7 @@ def _self_check():
             stale = _root() / ".import-aborted" / "assets"
             stale.mkdir(parents=True)
             (stale / "buildFile").write_bytes(b"interrupted import")
+            os.utime(stale.parent, (0, 0))
             untouched = _root() / "unrelated"
             untouched.mkdir()
             (untouched / "keep").write_bytes(b"keep")
