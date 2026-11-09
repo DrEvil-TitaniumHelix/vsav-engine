@@ -17,6 +17,11 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "ui"))
 import server        # noqa: E402
+if getattr(sys, "frozen", False) and os.name == "nt":
+    for _d, _, _fs in os.walk(os.path.dirname(sys.executable)):
+        for _f in _fs:
+            try: os.remove(os.path.join(_d, _f) + ":Zone.Identifier")
+            except OSError: pass
 import webview       # noqa: E402
 
 

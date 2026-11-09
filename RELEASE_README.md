@@ -1,10 +1,10 @@
-# Legality Engine for VASSAL v0.2.0
+# VALOR Engine (Legality Engine for VASSAL)
 
 A portable Windows app. It contains no game art: you supply each game's VASSAL module yourself, once per game.
 
 ## Getting started
 
-1. Download `LegalityEngine-0.2.0-win64.zip` and unzip it into an empty folder.
+1. Download the latest `LegalityEngine-<version>-win64.zip` from https://github.com/DrEvil-TitaniumHelix/vsav-engine/releases/latest and unzip it into an empty folder. (Quiver Launcher does this step for you.)
 2. Double-click `Legality Engine for VASSAL.exe`.
 3. In the menu, find the game you want. A game you have not set up shows **Needs your module**, with its library link and the exact file name and size.
 4. Download that exact `.vmod` file from the link in the table below.
@@ -34,6 +34,10 @@ This app is not code-signed, so Windows SmartScreen or your antivirus may flag i
 
 If you are not comfortable doing that, don't force it.
 
+## If the app will not start
+
+Version 0.2.0 could fail at launch with `Failed to resolve Python.Runtime.Loader.Initialize`. Fixed in 0.2.1: download the latest release.
+
 ## Your data
 
 - Game state and logs: `%LOCALAPPDATA%\TheVassal\live\`
@@ -58,4 +62,4 @@ macOS: `./build.sh` on a Mac (untested since v0.2.0; Gatekeeper needs right-clic
 
 ## Quiver Launcher
 
-Add this repository in Quiver Launcher with **+ Add New Entry** (repository URL `https://github.com/DrEvil-TitaniumHelix/vsav-engine`). Quiver downloads the release zip, checks it and launches the exe; later releases update in place.
+VALOR is in the Quiver Launcher catalog: https://quiverlauncher.com/apps/valor-engine-for-vassal-games. Quiver downloads the release zip, checks it and launches the exe; later releases update in place.
