@@ -11,7 +11,7 @@
  * (how to select a unit, which units can still act, what "fit" means, which
  * button glows).
  *
- * FIXED-POSITION DISCIPLINE (the owner's rule): every control lives at a fixed
+ * FIXED-POSITION DISCIPLINE: every control lives at a fixed
  * pixel position that never changes at runtime. Topbar elements are therefore
  * never display:none'd — FRAME.show() toggles visibility so a hidden control
  * keeps its layout slot, and variable-width text sits in fixed-width cells
@@ -57,12 +57,12 @@ const FRAME = (() => {
       #frameguide div.over { background:rgba(70,20,15,.95); font-size:20px;
                              padding:12px 30px; }
       #frameguide b { color:#ffd75e; }
-      /* THE sole way forward (the owner's rule): when only one button can advance
+      /* THE sole way forward: when only one button can advance
          the game, it wears a pulsing red border — everything else is just
          looking around. Applied via FRAME.soleNext(). */
       .solenext { border:2px solid #ff5040 !important; color:#fff !important;
                   animation: soleglow 1.1s ease-in-out infinite; }
-      /* readable panel typography — no low-contrast text (the owner 2026-07-17) */
+      /* readable panel typography — no low-contrast text */
       #guidepanel { color:#dde3ea; }
       #guidepanel h2 { color:#fff; font-size:16px; margin:4px 0 8px; }
       #guidepanel p, #guidepanel li { color:#cfd6dd; }
@@ -249,7 +249,7 @@ const FRAME = (() => {
   }
 
   // ---------- shared top-right panels: Mode / Rules / Tables ----------
-  // One implementation for every screen (the owner 2026-07-17: "all of these
+  // One implementation for every screen (2026-07-17: "all of these
   // interfaces … essentially unified"). A client calls
   // initPanels({game, flow, clientItems, toast, onSeats}) once; the frame owns
   // the buttons, the panels (created if the page doesn't declare them), the
@@ -913,7 +913,7 @@ const FRAME = (() => {
     }
     P.innerHTML = h;
   }
-  // ---------- guide panel (engine-level, the owner 2026-07-17: every game) -----
+  // ---------- guide panel (engine-level, every game) -----
   // Sections are GENERATED from what the engine already knows (game family,
   // seats, victory text carried as data in game.json "guide") plus any
   // hand-written per-game sections from that same block — all our own words.
@@ -1115,7 +1115,7 @@ const FRAME = (() => {
   }
 
   // THE movement instruction — one gesture, one sentence, every client
-  // (the owner 2026-07-18: never a per-game movement heuristic again). Both
+  // (never a per-game movement heuristic again). Both
   // clients move the same way: click to select, hold-drag, release.
   const MOVE_HINT = 'click a unit — its legal hexes light up green — then '
     + 'press and <b>HOLD</b> the counter, drag it onto a green hex, and '

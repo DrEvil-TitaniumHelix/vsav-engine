@@ -1,6 +1,6 @@
 # Napoleon at Waterloo (2nd Ed) — open rulings, DISTILLED (v3, 2026-08-18)
 
-**STATE 2026-08-18 (Fable): the encoding is COMPLETE — bites 4, 5 and 7 landed on top of the reviewed bites 1-3/6.** Every ruling below is now ENFORCED in `engine/naw.py` and proved by `validate_battle.py` (102 checks incl. six full random games replayed by verify_game) except ONE: **NAW2-OR-3 (M.13) — the platform UNDO question — is yours.** Recommendation A: UNDO is a declared platform affordance (already unavailable in mailed/LLM matches); nothing changes in any game. COVERAGE_MATRIX.md: 109/111 ENFORCED, 1 UNREACHABLE, 1 OPEN (M.13). Review of the Opus-era work found four real bugs, all fixed + validator-pinned: exit paths were refused through a friendly unit that had already moved (MOV-07); the MP ledger of a Prussian that entered then moved was overwritten instead of accumulated; game.json's VIC-14 text said "DRAW" where the print says the ALLIED player wins (the code was right); the stacking wedge guard could still be boxed in by later moves (now a matching-based check that every stacked hex stays un-stackable after every move). the owner's rulings (OR-6 A, OR-5 by proof, OR-16 A, D4) stand exactly as given; OR-5's proof is now constructive (star partition of the fixed contact graph, `complete_assignment()`).
+**STATE 2026-08-18 (Fable): the encoding is COMPLETE — bites 4, 5 and 7 landed on top of the reviewed bites 1-3/6.** Every ruling below is now ENFORCED in `engine/naw.py` and proved by `validate_battle.py` (102 checks incl. six full random games replayed by verify_game) except ONE: **NAW2-OR-3 (M.13) — the platform UNDO question — is yours.** Recommendation A: UNDO is a declared platform affordance (already unavailable in mailed/LLM matches); nothing changes in any game. COVERAGE_MATRIX.md: 109/111 ENFORCED, 1 UNREACHABLE, 1 OPEN (M.13). Review of the Opus-era work found four real bugs, all fixed + validator-pinned: exit paths were refused through a friendly unit that had already moved (MOV-07); the MP ledger of a Prussian that entered then moved was overwritten instead of accumulated; game.json's VIC-14 text said "DRAW" where the print says the ALLIED player wins (the code was right); the stacking wedge guard could still be boxed in by later moves (now a matching-based check that every stacked hex stays un-stackable after every move). The rulings (OR-6 A, OR-5 by proof, OR-16 A, D4) stand exactly as given; OR-5's proof is now constructive (star partition of the fixed contact graph, `complete_assignment()`).
 
 ---
 
@@ -33,7 +33,7 @@ Sources: 3rd Ed rules booklet [case numbers in brackets], read verbatim from the
 | **OR-1** | Prussian staging | [7.0] reinforcements ENTER during the Movement Phase | **off-map pool** (as encoded) |
 | (C.10/11) | several-on-several attack geometry | [5.4] *"provided each attacker could have attacked each defender separately"* | every attacker adjacent to every defender (as encoded) |
 
-## RULED BY THE OWNER 2026-08-17 (evening)
+## RULED 2026-08-17 (evening)
 - **OR-6: A** — must-attack obligations are fixed at the start of the Combat Phase; each attack resolves on the live board; an obligation lapses if its contact no longer exists when it comes up. *Reasoning: this is how humans play the physical game; matches the printed battle-line examples; the only reading a referee can enforce without inventing relief rules.*
 - **OR-5: closed by proof** — with the list fixed at phase start a complete assignment always exists (any uncovered enemy can be folded into an adjacent friend's attack, since one unit may attack every enemy it touches). validate_combat will prove it constructively on every reachable position rather than assert it.
 - **OR-16: A** — an advanced unit drops off the fixed obligation list and may not be named again that phase.
@@ -76,7 +76,7 @@ Christian's reply (asked the same evening) may still overturn these.
 - **Christian Holm Christensen's rules** (GitLab rules.tex): agrees on EX at-least/printed/attacker-picks, chain displacement, defender advance after Ar; his retreat chooser = owner (3rd Ed).
 - BGG needs a login (API and site) — untested; Decision Games 2014 = 3rd Ed text (not needed).
 
-- **BGG rules forum, read 2026-08-17 evening through the owner's browser** (98 threads listed; the rules threads that touch our items):
+- **BGG rules forum, read 2026-08-17 evening** (98 threads listed; the rules threads that touch our items):
   - *Advance from ZOC, combat order* (2023, incl. "Donald Johnson, Designer"): advancing while in another enemy's ZOC is legal; advances DO shape later combats in the same phase; the attacker orders his combats to advantage — "all yes". Consistent with sequential resolution on a live board (fits OR-6 A: obligation set fixed, board live) and with OR-16 A.
   - *[SOLVED] Combat results with Ee* + *question on Ee*: whole units, attacker chooses, must total at least the defender's points, no step reduction — = OR-15 A.
   - *Defender advance after combat* (2018): **Stephen Oliver himself** — "either the attacker or the defender can advance after combat if eligible" — = OR-17 A.

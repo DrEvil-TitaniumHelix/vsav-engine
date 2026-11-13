@@ -12,7 +12,7 @@ in modules\\<slug>\\). Deliberately polite to the API: sequential requests,
 identifying User-Agent, sleep between calls. Every phase is resumable — kill
 it anytime, rerun, it continues where it stopped.
 
-Purpose (the owner, 2026-07-08): coverage statistics for the platform — what share
+Purpose (2026-07-08): coverage statistics for the platform — what share
 of the real library the ingest tool converts, and which engine expansions buy
 what coverage. The API's own tags (era/scale/topic) do part of the
 categorization; the rest comes from running ingest over the downloads.

@@ -708,8 +708,8 @@ def game_descriptor():
 
 
 # --- multi-game menu: the release bundles several games behind one engine ---
-# Curated tester menu (order = display order, simplest -> most complex per
-# the owner 2026-07-17). Games not in this list are still loadable via --game /
+# Curated tester menu (order = display order, simplest -> most complex,
+# 2026-07-17). Games not in this list are still loadable via --game /
 # /api/load_game, but the menu shows these. Keep in sync with the release scope.
 RELEASE_GAMES = ["tobruk", "blue-and-gray-chickamauga", "westwall-arnhem",
                  "afrika-korps-classic-ah", "austerlitz-gmt",
@@ -782,7 +782,7 @@ MODE_TAG = {"tactical": "Tactical armor", "strategic": "Strategic hex & counter"
 # "Champion AI" is reserved for the ones that CLEARED the graduation bar
 # (champ_mod.graduated) - a wired genome that won its own optimization run but
 # never faced held-out pairs and fresh randoms reads "Advanced AI" instead
-# (the owner 2026-08-18: the public label may not outrun the evidence).
+# (the public label may not outrun the evidence).
 CHAMPION_WIRED = True
 
 
@@ -796,7 +796,7 @@ def game_tags(gdir, spec, scen_mode):
     that bar (Chickamauga: it won its own run, 13/16, streak 0 of target 3);
     'Advanced AI pending' where a playbook exists but the training runs kept
     the baseline (Austerlitz: two evolutionary attacks, 92k games, no genome
-    graduated — the owner 2026-07-19). Honest news at every rung: a shipped
+    graduated, 2026-07-19). Honest news at every rung: a shipped
     policy is still the reigning champion of its own decision space, and the
     upgrade remains open."""
     tags = []

@@ -54,7 +54,7 @@ def main():
         # opens maximized — the fixed no-wrap topbar wants room; the minimum
         # (generous, to survive Windows display scaling) guarantees the rows
         # always fit even if the tester shrinks the window, so every control
-        # keeps its permanent position (the owner's fixed-layout rule)
+        # keeps its permanent position (fixed-layout rule)
         width=1600, height=900, min_size=(1600, 900), maximized=True)
     webview.start()          # blocks until the window is closed
     httpd.shutdown()

@@ -127,7 +127,7 @@ def cmd_emit(a):
     champion = llm_planner.load_champion(a.game)
     if champion is None:
         raise SystemExit("no playbook champion found - the probe requires "
-                         "maximum knowledge (the owner's rule #1)")
+                         "maximum knowledge (rule #1)")
     bdir = os.path.join(a.out, "briefings")
     os.makedirs(bdir, exist_ok=True)
 

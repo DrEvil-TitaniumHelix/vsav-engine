@@ -19,7 +19,7 @@
   },
   "matrix_evidence": "matrix.json",
   "graduation_bar": {
-   "script": "games/napoleon-at-waterloo/grad_bar.py (westwall pattern; rung [2] amended 2026-08-19 by the owner from 5 fresh randoms >=4 to 20 fresh randoms >=16)",
+   "script": "games/napoleon-at-waterloo/grad_bar.py (westwall pattern; rung [2] amended 2026-08-19 from 5 fresh randoms >=4 to 20 fresh randoms >=16)",
    "held_out_pairs_vs_baseline": "18/20 (seeds 960-979), total margin +3304.0, mean +165.2",
    "fresh_random_pairs": "18/20 (seeds 980-999), margin +3793.0",
    "original_5_random_rung": "3/5 (seeds 980-984, margin +666; losses -109 and -8) - NOT MET on the pre-amendment rung; record grad_bar_5random_original.json",

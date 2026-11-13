@@ -42,7 +42,7 @@ engine/baseline.json
 
 # games_bundled/: ships only OUR OWN data (game specs, terrain derivation,
 # scenarios, engine-generated setup saves). Third-party module art — maps,
-# counters, module-provided saves — is NEVER committed (the owner 2026-07-12,
+# counters, module-provided saves — is NEVER committed (2026-07-12,
 # Decision Games copyright compliance; art purged from history same day).
 # The packaged app imports the player's own .vmod at first run (ui/byo.py).
 dist/*

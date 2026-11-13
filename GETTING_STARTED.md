@@ -20,7 +20,7 @@ Prefer a plain browser? `python ui/server.py` then open the printed URL.
 
 Don't want to touch Python at all? Use the prebuilt Windows exe — download it
 from the [Releases page](https://github.com/DrEvil-TitaniumHelix/vsav-engine/releases/latest),
-or from the owner's Google Drive link (ask the owner). Double-click, no install. Windows
+or from the release download link. Double-click, no install. Windows
 SmartScreen will warn the first time (unsigned new app — click **More info →
 Run anyway**); details in RELEASE_README.md.
 
@@ -56,7 +56,7 @@ terrain → scenario → cited table transcription → validation → release).
 - Every game is deterministic, seeded, and logged (`live/` from source,
   `%LOCALAPPDATA%\TheVassal\live` from the exe). If the tester hits a bug, that
   log reproduces it exactly — have them send the `game_<name>.log.jsonl` and
-  `.vsav` to the owner, with the version from the menu footer.
+  `.vsav` to the maintainer, with the version from the menu footer.
 - `python engine/verify_game.py <log.jsonl>` independently re-verifies any game.
 - Full architecture background is in README.md; tester-facing run/build notes
   are in RELEASE_README.md.

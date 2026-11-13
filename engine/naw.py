@@ -58,7 +58,7 @@ class NawGame(GateGame):
         open_rows = sc.get("not_yet_enforced", [])
         return {"enforced": sc.get("enforced", []),
                 "not_enforced": open_rows,
-                "rulings": sc.get("rulings", []) + [f"OPEN for the owner: {q}" for q in sc.get("open_questions", [])],
+                "rulings": sc.get("rulings", []) + [f"OPEN: {q}" for q in sc.get("open_questions", [])],
                 "banner": ("PLAYABLE - every coverage-matrix cell enforced or unreachable (validate_data/movement/combat/battle/victory; "
                            "the one open cell is the platform UNDO policy, NAW2-OR-3)" if not open_rows
                            else "BUILD IN PROGRESS - NOT PLAYABLE by the coverage-matrix standard (open rows below)")}

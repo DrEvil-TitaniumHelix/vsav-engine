@@ -113,7 +113,7 @@ genome is appended by `make_playbook.py`.
   genome deliberately does not have: unit-level MANEUVER doctrine
   (concentration of force, focus-fire target selection, objective
   steering beyond nearest-foe) rather than thresholds on the existing
-  picks. That is the v2 genome direction, the owner's call.
+  picks. That is the v2 genome direction, an open call.
 - Corpus (runs/…/corpus, every log verified byte-exact): baseline
   self-play seeds 950/951 (French +145/+186); the final reigning
   genome as French vs baseline +162/+183 (no better than baseline's

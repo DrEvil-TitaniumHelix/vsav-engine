@@ -266,7 +266,7 @@ validators ALL PASS.
 ## TIER 1 COMPLETE 2026-07-09 (late): arrivals + sea movement + Rommel bonus
 ## (re-run `python validate_arrivals.py` and `python validate_full_scope.py`)
 
-The three items the owner gated the badge on are now enforced through the gate,
+The three items the badge was gated on are now enforced through the gate,
 each with independent validation:
 
 **ARRIVALS (3.1/3.3, 12, 19) — data cross-validated from FOUR sources**
@@ -377,7 +377,7 @@ Time-Record validation), Rommel two-hex companion bonus (22.1 — ambiguous text
 no worked example found; do NOT encode a guess), sea movement (23.3-23.44 —
 crisp text, needs port-control + off-board state), replacements/substitutes
 (20/21), all combat (Tier 2). The gate is intentionally STRICTER than the full
-rules on arrivals/22.1/23.4: banner + scenario declare it. the owner decides whether
+rules on arrivals/22.1/23.4: banner + scenario declare it. The owner decides whether
 scoped Tier 1 is claimable or whether 22.1+23.4+arrivals must land first.
 Web build (web/) still runs the legacy JS engine — AK gate is Python/HTTP only.
 

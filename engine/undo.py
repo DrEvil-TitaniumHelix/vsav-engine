@@ -4,7 +4,7 @@ State = log replay (the gate logs every accepted action; replay.py rebuilds
 any prefix deterministically), so undo needs no inverse-move code and no
 per-game work: ONE implementation, every gated game inherits it.
 
-WHAT ONE UNDO MEANS (the owner 2026-07-19): one USER decision. The log records
+WHAT ONE UNDO MEANS (2026-07-19): one USER decision. The log records
 which SIDE acted but not who was driving it - and a human legitimately
 submits for the enemy seat (retreat routing, opponent pendings), so side
 attribution cannot identify user decisions. Instead the submission boundary

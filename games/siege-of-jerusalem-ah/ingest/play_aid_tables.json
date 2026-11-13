@@ -278,7 +278,7 @@
       "class": "1 - silent incorrectness (Crest half) / unreachable (Edifice half)",
       "reachable_in_gallus": "crest: yes; edifice: no",
       "rule": "LOF general rules",
-      "finding": "The card's LOF block carries two clauses soj.py does not implement: 'LOF is not allowed through an Edifice hex except to/from central hex of Temple (10.3)' and 'See also 9.52 for Ground level fire through Crest hexsides between non-adjacent units.' Under the owner's 2026-08-09 hard-bounding of the battlefield to the card, every Edifice on the map is Old City (decode-prep 4) so the Edifice clause is unreachable. The Crest clause is NOT - decode-prep 1 established crest hexsides are derivable from the 574 slope hexes already in terrain.json.",
+      "finding": "The card's LOF block carries two clauses soj.py does not implement: 'LOF is not allowed through an Edifice hex except to/from central hex of Temple (10.3)' and 'See also 9.52 for Ground level fire through Crest hexsides between non-adjacent units.' Under the 2026-08-09 hard-bounding of the battlefield to the card, every Edifice on the map is Old City (decode-prep 4) so the Edifice clause is unreachable. The Crest clause is NOT - decode-prep 1 established crest hexsides are derivable from the 574 slope hexes already in terrain.json.",
       "evidence": "Game card LOF DETERMINATION TABLE footnotes; decode-prep 4 Edifice census; decode-prep 1 crest derivation."
     }
   ]

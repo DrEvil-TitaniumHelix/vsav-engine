@@ -3,7 +3,7 @@ grognard_sweep.py - P6 backbone: grognard.com's per-title link hub. One <li>
 per game across EVERY publisher: rules translations, official rules PDFs,
 errata, charts - hosted on grognard.com itself or linked out (incl.
 web.archive.org mirrors). Cross-publisher: targets ALL games still missing a
-rulebook. Looser-rule channel (the owner 2026-07-09); provenance logged per file.
+rulebook. Looser-rule channel (2026-07-09); provenance logged per file.
 
     python engine/grognard_sweep.py --plan    # parse a-z indexes + match
                                               #   -> _meta/grognard_plan.json (review!)

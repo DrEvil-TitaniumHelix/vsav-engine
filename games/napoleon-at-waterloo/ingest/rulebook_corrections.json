@@ -227,7 +227,7 @@
       },
       "severity": "moderate",
       "found_by": ["rules_2nd_ed.json omitted_by_rulebook_verified", "this correction pass"],
-      "gate_consequence": "Unenforceable as written - the trigger is physical and the escape is social. But it is the printed rule that governs whether an engine UNDO is legal: an undo is precisely 'changing a move', and this case makes it require the opponent's consent. Engine-policy question for the owner, not a legality check."
+      "gate_consequence": "Unenforceable as written - the trigger is physical and the escape is social. But it is the printed rule that governs whether an engine UNDO is legal: an undo is precisely 'changing a move', and this case makes it require the opponent's consent. Engine-policy question, not a legality check."
     },
     {
       "id": "C10",

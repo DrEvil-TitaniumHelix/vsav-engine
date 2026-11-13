@@ -4,7 +4,7 @@
 **CONFEDERATE (General Opus / Opus 4.8) WINS 54–5.** Breakdown: eliminations 5 (3/1/XIV, GT13, surrounded — no retreat [7.72]) + occupation 10 (1108+1115) + Union train never exited 10 + 17.32 cutoff 29 (seven Union units: 2/4/XIV, 1/1/XXI, XIV Arty, 3/2/XXI, 1/3/XXI, 2/3/XXI, 3/3/XXI). Union: 5 (0822). CSA LOC road trace NOT clear at end (no exit VP taken — none attempted).
 **Log VERIFIED 581/581** (every verdict, die, and state hash reproduced; 60 illegal proposals provably inert).
 **Thinking scores (structural, grade_commander):** Opus mean 550, Fable mean 533 (grades.json in live dir).
-**Corpus uniqueness:** NO exact position match at ANY of the game's boundaries. Similarity to nearest prior game: 89% after GT1-Union → 38% by GT2 → ≤20% from GT3 on → 5% at game end. the owner's hypothesis (unprecedented board by GT2-3) CONFIRMED — and the divergence started at GT1-Confederate (57%).
+**Corpus uniqueness:** NO exact position match at ANY of the game's boundaries. Similarity to nearest prior game: 89% after GT1-Union → 38% by GT2 → ≤20% from GT3 on → 5% at game end. The hypothesis (unprecedented board by GT2-3) CONFIRMED — and the divergence started at GT1-Confederate (57%).
 **War journals (unsealed):** fable\outbox\war_diary.md (34.6 KB), opus\outbox\war_journal_opus.md.
 **Judge's plan-language note:** the compiler's per-mover ≥1-1 odds guard shaped the whole midgame (fortress assaults could not assemble for either side; artillery bombardment was the only fortress-eviction tool). Both generals independently reverse-engineered its effects. Overseer was informed at GT8 and chose to play on without disclosure. DSL v2 items: assault verb (declared multi-unit contact), entry hold-back verb (Fable improvised it by blocking hexes — cost him the train).
 Judge: The Vassal (this session). Seed: 1863 (announced at match start).
@@ -14,13 +14,13 @@ logged here at the moment of transfer; plans are copied byte-for-byte into
 the engine, never edited. At game end, mailbox files vs live-dir files vs
 the compiled orders in the JSONL log can be diffed by anyone.
 
-## MATCH RESTART (the owner's order, 2026-07-13)
+## MATCH RESTART (2026-07-13)
 The first start was voided after one Union plan: the generals lacked the
 complete game knowledge (map/terrain data, rulebook, reinforcement
 schedule, odds tables, map image, internet research). COMMANDER.md for
 both sides was amended to grant it; the live dir was wiped and
 re-initialized from setup with the SAME seed 1863. General Fable's context
-was also cleared by the owner — he starts fresh with full knowledge. The
+was also cleared — it starts fresh with full knowledge. The
 voided GT1 receipts are preserved below for the audit trail.
 
 ### Voided receipts (first start, played without full game knowledge)
@@ -30,7 +30,7 @@ voided GT1 receipts are preserved below for the audit trail.
 | v2 | 1 | union | plan_gt1_union.json | fable outbox → engine (15 actions, 0 rejected) | 7A9387911D646707DBD758E49112B85F167C34C17850556178FC51A25D1738E1 |
 | v3 | 1 | confederate | briefing_gt1_confederate.txt | judge → opus inbox | E7B0B555142E30269DE5B9D5EB709EB104E3C5FBED07979290544DE2F26C0D1A |
 
-## Confidence track (the owner's order mid-GT1: REQUIRED on every plan from GT1-Confederate onward)
+## Confidence track (order mid-GT1: REQUIRED on every plan from GT1-Confederate onward)
 Each plan must carry "confidence" (low/medium/high) and "win_percent"
 (0-100, own winning probability). Harvested here per plan; calibration vs
 the actual result is part of the post-game scorecard. Fable's GT1 plan

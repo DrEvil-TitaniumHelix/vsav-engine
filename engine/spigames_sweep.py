@@ -1,7 +1,7 @@
 """
 spigames_sweep.py - P4b acquisition sweep: spigames.net rules archive
-(fan-maintained, discrete rules/charts per SPI title). Source supplied by
-the owner 2026-07-09; in scope under his looser retrieval rule of the same date
+(fan-maintained, discrete rules/charts per SPI title). Source supplied
+2026-07-09; in scope under the looser retrieval rule of the same date
 (any freely/publicly downloadable copy; provenance logged per file;
 local-only, never redistributed, never committed).
 

@@ -178,7 +178,7 @@ unres = [(d["id"], r) for d in sd for r in d["rules"] if r not in rules and r no
 check(not unres, f"every source-defect rule reference resolves to a rules_2nd_ed.json row or a named chart ({unres})")
 opens = [d["id"] for d in sd if d["authority"].startswith("PENDING")]
 check(all(not d["enforced"] and d["resolution"].startswith("OPEN") for d in sd if d["id"] in opens) and not opens,
-      f"no register entry is still PENDING a ruling (SD-3 resolved by SPI 1979, C.7 ruled by the owner 2026-08-17) ({opens})")
+      f"no register entry is still PENDING a ruling (SD-3 resolved by SPI 1979, C.7 ruled 2026-08-17) ({opens})")
 check(all(d["authority"].split(" - ")[0].split(" (")[0] in ("DECLARED RULING", "PROVEN OUTCOME-EQUIVALENCE", "OBSERVED", "PUBLISHER CLARIFICATION") for d in sd),
       "every register entry names an authority rung")
 check(all(spec["credits"][k].get(f) for k in ("game", "module") for f in ("title", "source")) and spec["credits"]["module"].get("library"),

@@ -4,7 +4,7 @@ Champion = the portfolio's top-weight genome (or --genome json). Bar:
   [1] 20 held-out home-away pairs vs the BASELINE (seeds 960-979): >=15/20 pair
       wins AND positive mean pair margin.
   [2] >=16/20 home-away pairs vs 20 fresh random genomes (seeds 980-999).
-      Amended 2026-08-19 (the owner): the 5-random rung was a coin-flip test once
+      Amended 2026-08-19: the 5-random rung was a coin-flip test once
       the family got richer (random genomes are pocket players too); the
       champion scored 3/5 on it and 16/20 on the larger sample - the larger
       sample IS the bar now; both records ship in the playbook.

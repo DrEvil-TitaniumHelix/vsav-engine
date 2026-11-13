@@ -1,14 +1,14 @@
 """
 ia_sweep.py - Internet Archive sweep: per-game search of archive.org's texts
 collection for rulebook scans/uploads. Uses the public advancedsearch +
-metadata APIs (the owner endorsed the API route 2026-07-09; looser-rule channel,
+metadata APIs (API route endorsed 2026-07-09; looser-rule channel,
 provenance logged per file).
 
     python engine/ia_sweep.py --plan [--all]   # search per game -> _meta/ia_plan.json (review!)
     python engine/ia_sweep.py --fetch          # download -> Manuals/VASSAL/<title>/ + _meta/ia_log.json
 
 Default target cohort: canon-publisher hex games missing rules (the grognard
-core the owner's success metric tracks); --all widens to every missing-rules game.
+core the success metric tracks); --all widens to every missing-rules game.
 Matching is deliberately strict: the item title must contain the game's full
 main title AND a rules-ish word must appear in the item title, or the PDF
 filename must be rules-ish. Everything else lands in REVIEW.

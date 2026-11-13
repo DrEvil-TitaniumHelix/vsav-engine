@@ -5,7 +5,7 @@ primarily from THE MODULE ITSELF (no scraping, no API walls):
   cover_vassal.<ext>       the module library's own cover (MediaWiki hashed URL)
   cover_module.<ext>       box/cover/title art found INSIDE the module, if any
   map_background.jpg       the main board, downscaled (LaunchBox fanart/bg)
-  counters_composite.png   a sampled grid of counter art (per the owner: a
+  counters_composite.png   a sampled grid of counter art (a
                            composite, not one art per counter)
   assets.json              metadata: manual pointers (rule PDFs bundled in the
                            module + library page), how-to-play video SEARCH

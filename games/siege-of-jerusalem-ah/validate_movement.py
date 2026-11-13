@@ -1523,7 +1523,7 @@ def north_wall_strongpoint_checks(g):
 
 
 def stair_exclusion_checks(g):
-    """R4 declared ruling (the owner 2026-08-12): the 20 doubtful session-1
+    """R4 declared ruling (2026-08-12): the 20 doubtful session-1
     staircase hexsides are EXCLUDED (source_defects
     'staircase-doubtful-hexsides'); the 28 art-confirmed sides stand.
     Pin the exclusion set, prove the loud consequence (a stair-less fort
@@ -1577,7 +1577,7 @@ def stair_exclusion_checks(g):
 
 
 def garrison_checks(g):
-    """R1 declared ruling (the owner 2026-08-12): Roman entry of Garrison Areas
+    """R1 declared ruling (2026-08-12): Roman entry of Garrison Areas
     is barred on the nine battlefield-reachable perimeter hexes of the three
     18.4 areas (see source_defects 'gallus-garrison-extent'). Battery: the
     data list is pinned; every hex refuses Roman movement with the garrison

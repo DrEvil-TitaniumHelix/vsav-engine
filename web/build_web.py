@@ -2,7 +2,7 @@
 build_web.py - Bake the games into a fully static, serverless web release:
 "Dr Evil's Move Legality Engine for VASSAL".
 
-BYO-module build (the release pattern, the owner 2026-07-17): the output contains
+BYO-module build (the release pattern): the output contains
 ONLY our engine + our transcribed game data. No map, no counters — the page
 opens with a drop-zone gate (web/shared/byo.js) that takes the user's own
 .vmod, verifies its SHA-256 against web/manifests/<game>.json, extracts the

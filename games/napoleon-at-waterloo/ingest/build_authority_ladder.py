@@ -308,7 +308,7 @@ DOC = {
         },
     ],
     "carried_to_source_defect_register": [
-        "PREP-1 D4 / PREP-2 section 4: the 2nd Edition rules text and its printed TEC disagree on whether Woods/Road hexes double the defender. Both are printed components of the same edition. the owner's call, not an authority-ladder question.",
+        "PREP-1 D4 / PREP-2 section 4: the 2nd Edition rules text and its printed TEC disagree on whether Woods/Road hexes double the defender. Both are printed components of the same edition. An owner call, not an authority-ladder question.",
         "PREP-4 NAW2-SD-1: the printed 2nd Edition p.1 reads 'The act of placing a Prussian unit on the map EXTENDS one Movement Point' where the same page prints 'expends' correctly two columns later. Printed typo, harmless to play, belongs in the register.",
     ],
     "disagreements_recorded_not_resolved": [

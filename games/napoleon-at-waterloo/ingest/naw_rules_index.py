@@ -849,7 +849,7 @@ ROWS = [
         "edition_diff": None,
         "enforceability": "procedural",
         "printed_typo": "'not may it change' where the sense requires 'nor'. Confirmed by eye at 1.7x and by OCR. Source-defect candidate (typographical).",
-        "note": "NOT recorded by any prior bite -- RULEBOOK_VERIFIED omits case (K.) entirely. Its trigger is physical ('the Player's hand is taken from the piece') and its escape hatch is social ('without the consent of the opposing Player'), so no gate can evaluate it from game state. It is however the rule that governs whether UNDO is legal: an engine undo is exactly 'changing a move', and this case makes that require opponent consent. Flag for the owner as an engine-policy question, not a legality check.",
+        "note": "NOT recorded by any prior bite -- RULEBOOK_VERIFIED omits case (K.) entirely. Its trigger is physical ('the Player's hand is taken from the piece') and its escape hatch is social ('without the consent of the opposing Player'), so no gate can evaluate it from game state. It is however the rule that governs whether UNDO is legal: an engine undo is exactly 'changing a move', and this case makes that require opponent consent. Flag as an engine-policy question, not a legality check.",
     },
     {
         "id": "MOV-20",
@@ -1246,7 +1246,7 @@ ROWS = [
         "edition_diff": "E14",
         "enforceability": "needs_data",
         "needs_data_ref": "Town hex set (hexgraph_2nd_ed.json) and the Terrain Effects Chart (p.5)",
-        "conflict": "D4 -- the printed rules case says TOWNS only; the printed 2nd Ed Terrain Effects Chart row reads 'Towns & Woods/Roads -- Defending unit DOUBLES its Combat Strength'. Two printed components of the same edition disagree on whether a Woods/Road hex doubles the defender. Recorded, NOT resolved: this is a source-defect-register call for the owner, with the TEC and the rules case as the competing authorities.",
+        "conflict": "D4 -- the printed rules case says TOWNS only; the printed 2nd Ed Terrain Effects Chart row reads 'Towns & Woods/Roads -- Defending unit DOUBLES its Combat Strength'. Two printed components of the same edition disagree on whether a Woods/Road hex doubles the defender. Recorded, NOT resolved: this is a source-defect-register call, with the TEC and the rules case as the competing authorities.",
     },
 
     {
@@ -2036,7 +2036,7 @@ PRINTED_DEFECT_CANDIDATES = [
 ]
 
 UNENFORCEABLE_AS_WRITTEN = [
-    {"row": "MOV-19", "why": "the trigger is physical ('the Player's hand is taken from the piece') and the escape is social ('without the consent of the opposing Player'). No gate can evaluate it from game state. It is also the rule that governs whether an engine UNDO is legal -- an undo is precisely 'changing a move'. Engine-policy question for the owner, not a legality check."},
+    {"row": "MOV-19", "why": "the trigger is physical ('the Player's hand is taken from the piece') and the escape is social ('without the consent of the opposing Player'). No gate can evaluate it from game state. It is also the rule that governs whether an engine UNDO is legal -- an undo is precisely 'changing a move'. Engine-policy question, not a legality check."},
     {"row": "CBT-06 + CBT-07 + CBT-10", "why": "jointly these make the combat phase a global assignment problem: every adjacent enemy must be attacked, every adjacent friendly must attack, and no unit may appear twice. Deciding legality requires searching for a complete assignment, not checking one attack at a time. The sheet gives no relief clause for a board position where no complete assignment exists, and no tie-break for choosing among several. A gate must either solve it or declare the position undefined."},
     {"row": "CBT-04 vs CBT-06", "why": "results apply immediately and attacks resolve one at a time, so the set of 'adjacent enemy units' changes during the phase. The sheet does not say whether the mandatory-attack obligations are fixed at the start of the phase or re-evaluated after each result. Two defensible readings, different legal move sets."},
     {"row": "DEM-04", "why": "'the best that the Allies can hope for is a Draw' is a consequence of DEM-05 + VIC-04, not an independently enforceable rule. It should be modelled as a derived state, never as a gate check."},

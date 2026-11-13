@@ -1,6 +1,6 @@
 # Engine design: the Napoleonic tactical families
 
-**Status: DESIGN FOR REVIEW (the owner + mastermind) — nothing here is built. 2026-07-16.**
+**Status: DESIGN FOR REVIEW — nothing here is built. 2026-07-16.**
 **Trigger game: Austerlitz: Napoleon's Greatest Victory (GMT 2000, David Fox) — Great Battles of the Napoleonic Wars Vol. I. Ingested at Tier 0 as `games/austerlitz-gmt`.**
 
 ## Why this is engine work, not game work
@@ -153,11 +153,11 @@ mandatory pre-melee morale checks 8.4, fatigue 13.3/A4.4.5.C, melee retreat
 clarification 8.5). These go straight into `source_defects` with
 authority = official errata when encoding starts.
 
-## Open questions for the owner
+## Open questions
 
 1. **The Playbook is not in GMT's free downloads** — scenario victory conditions,
    special-commander rules, and initiative modifiers live there. Initial LIMs and
-   setups we can recover from the module; VCs we cannot. Options: the owner owns/buys
+   setups we can recover from the module; VCs we cannot. Options: the owner buys
    the printed game (BYO principle applies to us too), or we ask GMT/BGG for the
    scenario pages, or Tier 1 ships with movement only and VCs wait.
 2. **Multi-hex counters [6.5]** (cavalry regiments spanning 2 hexes) — engine

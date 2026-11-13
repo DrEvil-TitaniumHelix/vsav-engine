@@ -5,7 +5,7 @@
 ; HOTKEY:  Ctrl+Alt+R  -> reload newest save
 ;
 ; NOTE (honest): GUI automation of VASSAL's Java/Swing menus is the one piece
-; that needs a live tuning pass with the owner watching -- the exact menu path and
+; that needs a live tuning pass with a person watching -- the exact menu path and
 ; the "discard current game?" prompt handling may need adjustment for this build.
 ; Everything it depends on (the saves themselves) is already proven correct.
 

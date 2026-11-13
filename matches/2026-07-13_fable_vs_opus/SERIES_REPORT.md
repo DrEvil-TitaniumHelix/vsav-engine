@@ -1,5 +1,5 @@
 # Fable 5 vs. Opus 4.8 — Chickamauga head-to-head series
-**2026-07-13 · Blue & Gray: Chickamauga — The Last Victory (campaign, 15 GTs) · play-by-mail harness (PLAY_BY_MAIL.md) · Judge: The Vassal · Overseer: the owner**
+**2026-07-13 · Blue & Gray: Chickamauga — The Last Victory (campaign, 15 GTs) · play-by-mail harness (PLAY_BY_MAIL.md) · Judge: The Vassal**
 
 ## RESULT: OPUS 4.8 SWEEPS THE SERIES 2–0, WINNING FROM BOTH SEATS
 
@@ -23,7 +23,7 @@
 ## Verdicts (the questions the experiment was built to answer)
 - **Skill vs. scenario:** the game-1 blowout was mostly *general*, not seat — Opus won from both chairs. But the seat swap shrank the margin sevenfold (49 → 7): the scenario still tilts Confederate. Both true, now with data.
 - **Calibration beat deliberation.** The structurally-deeper thinker (by scorecard) LOST both games. What won: honest self-recalibration (Opus marked himself down twice after failed predictions) and one decisive rules innovation per game. Fable's characteristic failure mode: committing to elegant grand plans whose hidden costs surfaced late (entry-block → train; grand seal → outrun), plus reading absence of evidence as evidence of absence (the exit misread).
-- **Corpus uniqueness (the owner's GT2-3 hypothesis): CONFIRMED** in game 1 — no exact position match at any boundary; similarity to nearest prior game 89% → 38% → ≤20% → 5%. Confederate-side reactivity drove the divergence from GT1. (Game-2 curve not yet run — regenerable from the log.)
+- **Corpus uniqueness (GT2-3 hypothesis): CONFIRMED** in game 1 — no exact position match at any boundary; similarity to nearest prior game 89% → 38% → ≤20% → 5%. Confederate-side reactivity drove the divergence from GT1. (Game-2 curve not yet run — regenerable from the log.)
 - **The gate held.** 1,141 verified log entries across both games; 124 illegal proposals rejected and provably inert; zero rules violations by either general; every plan hash-receipted; not one judge-authored order.
 
 ## Harness lessons (logged for v2)
@@ -37,5 +37,5 @@
 - **This archive:** `matches/2026-07-13_fable_vs_opus/` — series report + copies of both judge logs (all SHA-256 receipts + full confidence tracks), both scorecards, both war journals per general.
 - **Ground truth:** `runs/2026-07-13_fable_vs_opus/` and `runs/2026-07-13_fable_vs_opus_g2/` — verified JSONL logs, orders sidecars, grades.json. Everything regenerates from these.
 - **Mailboxes (complete correspondence):** `comms_fable_vs_opus/`, `comms_fable_vs_opus_g2/` — every briefing, plan, rejection, map delivery, journal.
-- **the owner's deliverables:** `Desktop\fable_vs_opus\` — both labeled movies (module art, PRIVATE), stills flip-books for both games, README.
+- **Deliverables:** `Desktop\fable_vs_opus\` — both labeled movies (module art, PRIVATE), stills flip-books for both games, README.
 - **Publication rule:** anything published uses `--schematic` renders (zero copyrighted art); module-art movies/stills are private-use. Reproducers bring their own game per PLAY_BY_MAIL.md / ENCODING_GUIDE.md.

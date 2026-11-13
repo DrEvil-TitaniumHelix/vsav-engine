@@ -19,7 +19,7 @@
     "third_edition": "NO HELP. The printed 3rd Ed rules state no defence doubling anywhere (PREP-2 E14) and we hold no printed 3rd Ed TEC; the only one in our possession is a contaminated redraw."
    },
    "resolution": "FOLLOW THE CHART. A defender in a Town hex OR a Woods/Road hex doubles its Combat Strength. Attacking FROM either terrain confers nothing - that half is stated identically by both sources and is proven by printed examples EX-03/EX-04.",
-   "authority": "DECLARED RULING - the owner, 2026-08-14. Both sources are primary and printed in the same folio, so no documentary ladder separates them; the call is a judgement between equals.",
+   "authority": "DECLARED RULING - 2026-08-14. Both sources are primary and printed in the same folio, so no documentary ladder separates them; the call is a judgement between equals.",
    "reasoning": [
     "the chart is the purpose-built terrain document and the artefact players consult at the table, where the rules-text sentence reads as a summary rather than an enumeration",
     "woods being defensively strong is the coherent design reading",
@@ -77,8 +77,8 @@
     "read 'woods' in the disruption clause as the same 'non-Road Woods' the retreat clause defines, treating the shorthand as elision",
     "read it literally - disruption is strictly barred from ALL woods including Woods/Road, a harsher constraint than retreat"
    ],
-   "blast_radius": "5 Woods/Road hexes, and only in the displacement branch. Interacts with NAW2-D4: under the owner's D4 ruling a Woods/Road hex is defensively favourable, which sharpens the question of whether a unit may be shoved into one.",
-   "authority": "PENDING - the owner",
+   "blast_radius": "5 Woods/Road hexes, and only in the displacement branch. Interacts with NAW2-D4: under the D4 ruling a Woods/Road hex is defensively favourable, which sharpens the question of whether a unit may be shoved into one.",
+   "authority": "PENDING",
    "citation": "folio p.5 RETREAT AND ADVANCE AS A RESULT OF COMBAT, paragraphs 2 and 4"
   }
  ],

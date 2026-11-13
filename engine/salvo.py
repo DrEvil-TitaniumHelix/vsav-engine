@@ -7,7 +7,7 @@ kind of answer is required; the player's own LLM (Claude Code, Codex, any
 file-capable agent) writes back a MOVE FILE of one or more gate actions.
 Every action still enters through submit() - the packet layer adds zero
 authority. Assume every submission is rejected; acceptance just advances
-to the next packet (the owner's framing - there is only one loop).
+to the next packet (there is only one loop).
 
 This module is pure protocol logic (packet build + move apply + the
 challenger payload text). File I/O with the actual match folder lives in
@@ -364,7 +364,7 @@ by the legality gate, every die is engine-owned and seeded."""
 
 def _genome_section(game_dir):
     """The champion genome itself - the exact numbers the opponent plays
-    by (the owner 2026-07-18: the challenger gets the genome, not just the
+    by (2026-07-18: the challenger gets the genome, not just the
     prose; the corpus of played games is what stays home). Rendered as
     JSON + the family's own gene-by-gene distillation."""
     import champion

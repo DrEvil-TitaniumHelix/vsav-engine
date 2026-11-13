@@ -246,7 +246,7 @@ SPINE = [
                 "obligation": "MUST NOT",
                 "requirement": "\"Once a unit has been moved, and the Player's hand is taken from the piece, it may not be moved any further during that Player-Turn, not may it change its move without the consent of the opposing Player.\"",
                 "status": "OPEN",
-                "difficulty": "PLATFORM-LEVEL QUESTION, NOT A GAME-LEVEL ONE. The trigger is physical (a hand leaving a piece) and the escape is social (opponent's consent); no gate can evaluate either from game state. Its subject matter is exactly what the platform's UNDO feature does - an undo IS 'changing a move'. That makes MOV-19 a question about the ENGINE's shipped feature set across ALL games, not a NAW encoding detail: either UNDO is a platform affordance that stands outside the printed rules (and is declared as such), or it is gated on an opponent-consent step. the owner's call. Escalate before Fable touches undo semantics anywhere",
+                "difficulty": "PLATFORM-LEVEL QUESTION, NOT A GAME-LEVEL ONE. The trigger is physical (a hand leaving a piece) and the escape is social (opponent's consent); no gate can evaluate either from game state. Its subject matter is exactly what the platform's UNDO feature does - an undo IS 'changing a move'. That makes MOV-19 a question about the ENGINE's shipped feature set across ALL games, not a NAW encoding detail: either UNDO is a platform affordance that stands outside the printed rules (and is declared as such), or it is gated on an opponent-consent step. An owner call. Escalate before anyone touches undo semantics anywhere",
                 "open_ruling": "NAW2-OR-3",
                 "source": "rules_2nd_ed.json unenforceable_as_written (MOV-19); the row is absent from RULEBOOK_VERIFIED entirely",
             },
@@ -489,7 +489,7 @@ SPINE = [
                 "obligation": "PROCEDURE",
                 "requirement": "a DEFENDING unit in a Town hex or a Woods/Road hex doubles its Combat Strength; attacking FROM such terrain confers nothing",
                 "status": "OPEN",
-                "note": "NAW2-D4 RULED (the owner, 2026-08-14): follow the chart, which prints 'Towns & Woods/Roads' as one row. The rules text case (J.) names Towns only. Both are printed components of the same 1971 folio and no documentary ladder separates them; the 27 printed examples are silent (no example places a defender in a Woods/Road hex). Blast radius 5 hexes of 594. The predicate keys on the DEFENDER's hex only - EX-03 proves an attacker in a Town is NOT doubled, EX-04 proves the Town defender IS. Escalation to the game/module creator remains outstanding per spec #21 as amended",
+                "note": "NAW2-D4 RULED (2026-08-14): follow the chart, which prints 'Towns & Woods/Roads' as one row. The rules text case (J.) names Towns only. Both are printed components of the same 1971 folio and no documentary ladder separates them; the 27 printed examples are silent (no example places a defender in a Woods/Road hex). Blast radius 5 hexes of 594. The predicate keys on the DEFENDER's hex only - EX-03 proves an attacker in a Town is NOT doubled, EX-04 proves the Town defender IS. Escalation to the game/module creator remains outstanding per spec #21 as amended",
                 "open_ruling": "NAW2-D4 (ruled; escalation outstanding)",
             },
             {
@@ -712,7 +712,7 @@ SPINE = [
                 "obligation": "MUST NOT",
                 "requirement": "the disrupted unit may not be forced into enemy units, Zones of Control, or 'woods'",
                 "status": "OPEN",
-                "difficulty": "NAW2-SD-3, OPEN, BLOCKS PLAYABILITY. The retreat bar two paragraphs earlier prints 'non-Road Woods'; the disruption bar prints bare lower-case 'woods'. Reading A treats the shorthand as elision (disruption is barred exactly where retreat is barred); reading B takes it literally (disruption is barred from ALL woods, a HARSHER constraint than retreat). The same sentence also OMITS 'off the map', which the retreat bar includes (U1) - so the disruption bar is either deliberately narrower on one axis and wider on another, or loosely drafted. Blast radius 5 Woods/Road hexes in the displacement branch only, and it interacts with C.14: under the owner's D4 ruling a Woods/Road hex is defensively FAVOURABLE, which sharpens whether a unit may be shoved into one. Awaiting the owner",
+                "difficulty": "NAW2-SD-3, OPEN, BLOCKS PLAYABILITY. The retreat bar two paragraphs earlier prints 'non-Road Woods'; the disruption bar prints bare lower-case 'woods'. Reading A treats the shorthand as elision (disruption is barred exactly where retreat is barred); reading B takes it literally (disruption is barred from ALL woods, a HARSHER constraint than retreat). The same sentence also OMITS 'off the map', which the retreat bar includes (U1) - so the disruption bar is either deliberately narrower on one axis and wider on another, or loosely drafted. Blast radius 5 Woods/Road hexes in the displacement branch only, and it interacts with C.14: under the D4 ruling a Woods/Road hex is defensively FAVOURABLE, which sharpens whether a unit may be shoved into one. Awaiting a ruling",
                 "open_ruling": "NAW2-SD-3",
             },
             {
@@ -1195,13 +1195,13 @@ NEW_GAPS = [
 
 OPEN_RULINGS = [
     ("NAW2-SD-3", "X.8", "disruption bar says 'woods', retreat bar says 'non-Road Woods'; and 'off the map' is absent from the disruption bar", "RESOLVED reading A - publisher clarification (SPI 1979 6.4/4.2/6.5): the displaced unit is barred exactly where a retreating unit is; Woods/Road across its road hexside. ENFORCED (validate_battle)"),
-    ("NAW2-D4", "C.14", "TEC vs rules text on Woods/Road defence doubling", "RULED - the owner 2026-08-14, follow the chart; corroborated by the printed 1979 sheet. ENFORCED"),
+    ("NAW2-D4", "C.14", "TEC vs rules text on Woods/Road defence doubling", "RULED - 2026-08-14, follow the chart; corroborated by the printed 1979 sheet. ENFORCED"),
     ("NAW2-OR-1", "S.3", "SET-02 Prussian staging: off-map or literal East-edge placement", "RESOLVED A - SPI 1979 7.0 reinforcements ENTER during a Movement Phase: off-map pool. ENFORCED"),
     ("NAW2-OR-2", "M.6", "MOV-09's two stacking sentences, two scopes", "RESOLVED A - SPI 1979 4.4 'never END a Movement Phase stacked'; wedge-proof by the un-stack matching check. ENFORCED"),
-    ("NAW2-OR-3", "M.13", "MOV-19 touch-move - PLATFORM-LEVEL: whether the engine's UNDO is legal under the printed rules, in this game and every other", "OPEN - the owner's platform call (rec A: UNDO is a declared platform affordance). The game clause of MOV-19 is enforced; this is the ONE cell still open"),
+    ("NAW2-OR-3", "M.13", "MOV-19 touch-move - PLATFORM-LEVEL: whether the engine's UNDO is legal under the printed rules, in this game and every other", "OPEN - platform call (rec A: UNDO is a declared platform affordance). The game clause of MOV-19 is enforced; this is the ONE cell still open"),
     ("NAW2-OR-4", "R.5", "REI-06 non-delayable entry when entry is physically impossible", "RESOLVED A - SPI 1979 7.2 entry bars; a unit with no legal hex waits, logged. ENFORCED"),
-    ("NAW2-OR-5", "C.6", "the mandatory-assignment problem: no printed relief when no complete assignment exists, no tie-break when several do", "CLOSED BY PROOF (the owner 2026-08-17): with the pairs fixed at phase start the live contact graph has no isolated vertex, so a star partition (one-on-many / many-on-one attacks) always exists; the gate's forward check keeps every reachable position completable; complete_assignment() constructs it. ENFORCED (validate_battle: 150 positions + 6 full games)"),
-    ("NAW2-OR-6", "C.7", "are the CBT-06/07 obligations fixed at phase start or re-evaluated after each result", "RULED A - the owner 2026-08-17: fixed at Combat Phase start, resolved on the live board, lapse on lost contact. ENFORCED"),
+    ("NAW2-OR-5", "C.6", "the mandatory-assignment problem: no printed relief when no complete assignment exists, no tie-break when several do", "CLOSED BY PROOF (2026-08-17): with the pairs fixed at phase start the live contact graph has no isolated vertex, so a star partition (one-on-many / many-on-one attacks) always exists; the gate's forward check keeps every reachable position completable; complete_assignment() constructs it. ENFORCED (validate_battle: 150 positions + 6 full games)"),
+    ("NAW2-OR-6", "C.7", "are the CBT-06/07 obligations fixed at phase start or re-evaluated after each result", "RULED A - 2026-08-17: fixed at Combat Phase start, resolved on the live board, lapse on lost contact. ENFORCED"),
     ("NAW2-OR-7", "A.8", "ART-05: EX with only bombarding attackers kills the defender at no cost", "RESOLVED A (literal) - SPI 1979 6.8 confirms. ENFORCED"),
     ("NAW2-OR-8", "A.9", "ART-11 voluntary Ar: who chooses the direction", "RESOLVED A - the owner (SPI 1979 6.8 'may voluntarily retreat'). ENFORCED"),
     ("NAW2-OR-9", "A.14", "ART-17: does one Woods hex among two candidate intervening hexes block the shot", "RESOLVED - SPI 1979 Terrain Key example: open if either candidate is clear; Woods-Road blocks. ENFORCED"),
@@ -1211,7 +1211,7 @@ OPEN_RULINGS = [
     ("NAW2-OR-13", "X.12", "'uninvolved' is never defined", "RESOLVED broad - any friendly unit not in the attack being resolved (SPI 1979 6.5). ENFORCED"),
     ("NAW2-OR-14", "X.13", "disruption has no printed end condition", "RESOLVED A - per-Player-Turn flag, only effect the artillery fire ban. ENFORCED"),
     ("NAW2-OR-15", "X.14", "EX loss selection: who chooses, and is over-payment legal", "RESOLVED A - attacker chooses whole units from the attack, >= PRINTED defender strength (SPI 1979 6.3), over-payment legal. ENFORCED"),
-    ("NAW2-OR-16", "X.17", "advance bar vs mandatory participation", "RULED A - the owner 2026-08-17: an advanced unit leaves the obligation list. ENFORCED"),
+    ("NAW2-OR-16", "X.17", "advance bar vs mandatory participation", "RULED A - 2026-08-17: an advanced unit leaves the obligation list. ENFORCED"),
     ("NAW2-OR-17", "X.18", "advance after an Ar vs SEQ-08's no-non-phasing-action rule", "RESOLVED A - SPI 1979 6.3 'Defending unit has the option to advance after combat'; Stephen Oliver (BGG 2018) concurs. ENFORCED"),
     ("NAW2-OR-18", "V.12", "does an off-map step from exit hex 1101 satisfy MOV-17's along-the-road exit", "RESOLVED legal - SPI 1979 4.2 (the north hexside IS the road; the arrow is printed in the hex). ENFORCED"),
     ("NAW2-OR-19", "D.6", "the demoralization odds shift at the ends of the printed table, and whether the CRT clamp footnote governs a shifted column", "RESOLVED A - clamp at the printed end (SPI 1979 6.2). ENFORCED"),
@@ -1248,7 +1248,7 @@ ENFORCED = {
     "V.7": ("engine/naw.py _apply exit: unit deleted, exited ledger", VM + ": an exited unit is gone for good"),
     "V.8": ("engine/naw.py: exit legal in any own Movement Phase, any arrowed hex, no grouping", VM + ": exits at any time in the random walk"),
     "V.9": ("engine/naw.py _propose_exit: exit_side Fr only (VIC-12; REI-07)", VM + ": Allied units may never exit"),
-    "V.12": ("engine/naw.py: 1101 enterable only from 1102 along the road (terrain.json sides), exit crosses the N road hexside - LEGAL; NAW2-OR-18 kept open for the owner's confirmation (the exit arrow is printed inside the hex)", VM + ": exit through 1101 from 1102 = 2 MP; from 1002 = 3 MP via 1102"),
+    "V.12": ("engine/naw.py: 1101 enterable only from 1102 along the road (terrain.json sides), exit crosses the N road hexside - LEGAL; NAW2-OR-18 kept open for confirmation (the exit arrow is printed inside the hex)", VM + ": exit through 1101 from 1102 = 2 MP; from 1002 = 3 MP via 1102"),
 }
 NOTES = {
     "T.4": "movement refusal in the Combat Phase is enforced (validate_movement: movement refused in the Combat Phase [SEQ-07]); the retreat/disruption/advance half lands with bite 5",
@@ -1322,7 +1322,7 @@ ENFORCED.update({
     "C.4": ("engine/naw.py _apply_battle -> _run_queue: eliminations, retreats, disruptions and advances apply before the next battle can be proposed (pending gate: 'resolve the pending step first')", VB + ": no further battle while a pending stands; demoralization mid-phase changes the NEXT attack's column [DEM-02]"),
     "C.5": ("engine/naw.py battle_check: every non-artillery attacker adjacent to every defender; artillery non-adjacent only at exactly two hexes (bombardment)", "validate_combat.py: non-adjacent infantry refused, artillery at exactly two hexes; " + VB + ": 150 random positions"),
     "C.6": ("engine/naw.py: contacts fixed at end_movement (_contact_pairs); live_pairs/obligations; stranded_by() forward check inside battle_check refuses any attack that would leave a friendly unit with no enemy to attack or an enemy with no friendly attacker; end_phase refused while any live pair remains; complete_assignment() = star partition of the live contact forest (constructive proof of NAW2-OR-5)", VB + ": F1 alone refused when F2 would be stranded [CBT-07]; F vs E1 alone refused when E2 stranded [CBT-06]; 150 random positions x every complete_assignment attack legal in sequence, no obligation left; end_phase REFUSED naming the units; 6 full random games always closed every Combat Phase"),
-    "C.7": ("engine/naw.py s.contacts written once at end_movement; a pair lives while both units stand on their phase-start hexes, the attacker unfought and the defender unattacked; lost contact = lapse (NAW2-OR-6 A, the owner 2026-08-17)", VB + ": obligations fixed at the start of the Combat Phase; disruption moves an uninvolved unit -> its pair lapses (chain settled, phase closes)"),
+    "C.7": ("engine/naw.py s.contacts written once at end_movement; a pair lives while both units stand on their phase-start hexes, the attacker unfought and the defender unattacked; lost contact = lapse (NAW2-OR-6 A, 2026-08-17)", VB + ": obligations fixed at the start of the Combat Phase; disruption moves an uninvolved unit -> its pair lapses (chain settled, phase closes)"),
     "C.8": ("engine/naw.py: any legal battle may be proposed in any order; nothing sequences attacks", VB + ": complete_assignment attacks accepted in arbitrary order in 150 positions; random games"),
     "C.9": ("engine/naw.py battle action names attackers and defenders freely within battle_check", VB + ": one attacker vs two defenders; two attackers vs one; several-on-several (validate_combat EX-14)"),
     "C.10": ("engine/naw.py battle_check melee set: every attacker adjacent to every defender; strengths summed", "validate_combat.py: several attackers vs one defender; " + VB + ": F1+F2 vs E accepted"),
@@ -1366,7 +1366,7 @@ ENFORCED.update({
     "X.19": ("engine/naw.py: 'off the map' is not a retreat option; a unit with no on-map safe hex is eliminated and its printed strength goes to its side's loss ledger (VIC-13); s.exited untouched", VB + ": edge unit at 0110 - off-map hexes never offered; cul-de-sac elimination adds 2 to the Allied ledger; VIC-13 cited in the elimination reason"),
 })
 NOTES.update({
-    "M.13": "GAME CLAUSE ENFORCED (once moved, a unit may not be moved again that Player-Turn - validate_movement MOV-19 refusal; a submitted proposal is final). The consent-to-change clause is the platform UNDO policy NAW2-OR-3 (the owner): the engine has no 'hand leaves piece' event and UNDO rewinds the verified log in every game. Cell stays OPEN until the owner rules OR-3; nothing else in this game depends on it.",
+    "M.13": "GAME CLAUSE ENFORCED (once moved, a unit may not be moved again that Player-Turn - validate_movement MOV-19 refusal; a submitted proposal is final). The consent-to-change clause is the platform UNDO policy NAW2-OR-3: the engine has no 'hand leaves piece' event and UNDO rewinds the verified log in every game. Cell stays OPEN until OR-3 is ruled; nothing else in this game depends on it.",
 })
 
 
@@ -1458,13 +1458,13 @@ def build():
         "spec_conflict_surfaced": {
             "what": "PLATFORM_SPEC #21 as amended 2026-08-09 removed declared-umpired from the authority ladder and requires an unresolvable defect to be escalated to the game/module creator, blocking playability until resolved by authority.",
             "the_problem": "For Napoleon at Waterloo that route does not exist. SPI ceased trading in 1982 and the folio's designer is dead. Every one of the open rulings below is a defect in the 1971 PRINT, not in a VASSAL module, so the living module authors cannot resolve any of them.",
-            "available_authorities": ["official errata, if any is ever found", "proven outcome-equivalence", "a declared ruling by the owner - the rung the amendment removed"],
+            "available_authorities": ["official errata, if any is ever found", "proven outcome-equivalence", "a declared ruling - the rung the amendment removed"],
             "consequence_if_unaddressed": "the encoding terminates in 20 permanently-open cells and a game that can never reach playable",
             "status": "DIRECTION CALL FOR THE OWNER, prior to any encoding work",
         },
         "playability_verdict": {
             "verdict": "PLAYABLE" if total["OPEN"] == 0 else "PLAYABLE PENDING ONE PLATFORM CALL",
-            "reason": "all seven encoding bites built and validated (data layer, movement/ZOC/exit, combat arithmetic, mandatory-attack assignment, result application incl. retreat/disruption/advance/exchange/artillery immunity, reinforcement/victory/demoralization, matrix closure). " + str(total["ENFORCED"]) + " of " + str(total["cells"]) + " cells ENFORCED, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["OPEN"]) + " OPEN" + (" = M.13, the platform UNDO policy NAW2-OR-3 (the owner; rec A = nothing changes). No game-level cell is open; nothing is human-umpired." if total["OPEN"] else ". Nothing is human-umpired.") + " Every ruling in the register is RULED (the owner: D4, OR-6, OR-16), CLOSED BY PROOF (OR-5) or a PUBLISHER CLARIFICATION from SPI's own 1979 text; validators: validate_data / movement / combat / battle / victory.",
+            "reason": "all seven encoding bites built and validated (data layer, movement/ZOC/exit, combat arithmetic, mandatory-attack assignment, result application incl. retreat/disruption/advance/exchange/artillery immunity, reinforcement/victory/demoralization, matrix closure). " + str(total["ENFORCED"]) + " of " + str(total["cells"]) + " cells ENFORCED, " + str(total["UNREACHABLE"]) + " UNREACHABLE-with-evidence, " + str(total["OPEN"]) + " OPEN" + (" = M.13, the platform UNDO policy NAW2-OR-3 (rec A = nothing changes). No game-level cell is open; nothing is human-umpired." if total["OPEN"] else ". Nothing is human-umpired.") + " Every ruling in the register is RULED (D4, OR-6, OR-16), CLOSED BY PROOF (OR-5) or a PUBLISHER CLARIFICATION from SPI's own 1979 text; validators: validate_data / movement / combat / battle / victory.",
         },
     }
     return doc, index
@@ -1483,7 +1483,7 @@ def render_md(doc):
     a("rating.** The game is **playable** exactly when every row below is `ENFORCED` or `UNREACHABLE`.")
     a("There is no third acceptable state; an `OPEN` row is a named defect that blocks playability, and")
     a("nothing may be left to a human umpire — *\"umpired\" is a failure point, not a disclosure*")
-    a("(the owner 2026-08-08). Internal report — builder + testers, never player-facing.")
+    a("(2026-08-08). Internal report — builder + testers, never player-facing.")
     a("")
     a("**This is the SKELETON.** Nothing is encoded: there is no engine code, no validator and no")
     a("`game.json` for this game. Every cell that is not evidenced-unreachable therefore starts `OPEN`.")
@@ -1614,9 +1614,9 @@ def render_md(doc):
     a("> designer is dead. The module authors (PREP-7 job B's register) can answer questions about their")
     a("> *modules*; not one of the rulings below is a module question — every one is a defect in the 1971")
     a("> print. So the only authorities actually available for these 20 open items are (a) official errata,")
-    a("> if any is ever found, (b) proven outcome-equivalence, and (c) a declared ruling by the owner — which")
+    a("> if any is ever found, (b) proven outcome-equivalence, and (c) a declared ruling — which")
     a("> is the rung the 2026-08-09 amendment removed. Siege of Jerusalem could lean on a living module")
-    a("> author; Napoleon at Waterloo cannot. **the owner must decide how a dead-publisher game reaches")
+    a("> author; Napoleon at Waterloo cannot. **The owner must decide how a dead-publisher game reaches")
     a("> playable at all before the encoding is worth starting** — otherwise the work terminates in 20")
     a("> permanently-open cells and a game that can never ship. This is a direction call, not a build")
     a("> problem, and it is prior to every item in the table.")
@@ -1661,7 +1661,7 @@ def render_md(doc):
     a("1. **Rule the blockers first.** `NAW2-SD-3` (X.8), `NAW2-OR-6` (C.7 obligation timing) and")
     a("   `NAW2-OR-7` (A.8 costless Exchange) each decide the shape of code rather than a detail of it;")
     a("   `NAW2-OR-3` (M.13 touch-move vs UNDO) is a **platform-wide** question that reaches every")
-    a("   shipped game and belongs to the owner before Fable touches undo semantics anywhere.")
+    a("   shipped game and is an owner call before anyone touches undo semantics anywhere.")
     a("2. **Then solve C.6.** The mandatory-assignment problem is the single largest engineering item;")
     a("   it cannot be started until C.7 is ruled, and A.4 widens its search space.")
     a("3. **Then the retreat/disruption engine** (X.2–X.13), which has five undefined edges of its own")

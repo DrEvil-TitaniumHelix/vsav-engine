@@ -11,7 +11,7 @@ _meta/catalog.json (library-hosted package PDFs) + _meta/manual_textcheck.json
 
 Writes DOCUMENT_GAPS.md (repo, stats only) + _meta/doc_gaps.json (full rows).
 
-Channel grading for missing rulebooks (the owner 2026-07-09): bundled >
+Channel grading for missing rulebooks (2026-07-09): bundled >
 library-package (vassalengine.org-hosted, fetchable) > publisher-free >
 obtainable > unobtainable. Only sanctioned sources, ever.
 """

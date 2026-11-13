@@ -1,6 +1,6 @@
 # War Room — sealed simultaneous orders: engine design note (bite 1, 2026-09-24)
 
-Rulings this note obeys (the owner 2026-09-24): War Room is ISOLATED from the shared engine (no retest of the other games); BYO deferred (own board now, Fabian's VASSAL module later); Eastern Front 2-player first.
+Rulings this note obeys (2026-09-24): War Room is ISOLATED from the shared engine (no retest of the other games); BYO deferred (own board now, Fabian's VASSAL module later); Eastern Front 2-player first.
 Source: rulebook 2nd ed 2025 update v27u (literature/war-room/rulebook_2nd_ed_v27u.txt). Page cites below are the rulebook's printed page numbers.
 
 ## 1. Isolation shape
@@ -48,7 +48,7 @@ Round = 7 phases. Exactly TWO points are sealed; everything else is the existing
 3. Then coverage matrix per phase, source-defect register, credits (Larry Harris; Thomas Gale; Kevin Chapman; Nightingale Games).
 
 ## 6. Bite sequence
-1. (this bite) design note + board-data diff (TTS vs warroom-app vs rulebook p.5) → disagreement worksheet for the owner/publisher.
+1. (this bite) design note + board-data diff (TTS vs warroom-app vs rulebook p.5) → disagreement worksheet for the publisher.
 2. regions.json for the EF subset + schematic board render + warroom.py skeleton with the seal/pick/move machine + validate_sealed.
 3. Movement rules gate (adjacency, rail, pinning, passages, cancel/illegal).
 4. Combat sub-machine (battle board), then refit/morale/production.

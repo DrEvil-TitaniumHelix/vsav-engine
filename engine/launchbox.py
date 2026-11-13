@@ -33,7 +33,7 @@ PLATFORM = "VASSAL"
 VASSAL_EXE = r"C:\Program Files\VASSAL-3.7.24\VASSAL.exe"
 NS = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 EMU_ID = str(uuid.uuid5(NS, "vassal-engine-emulator"))
-# where the .vmods live (the owner: the ROM drive once moved) — override with
+# where the .vmods live (the ROM drive once moved) — override with
 # --modules-root or the VASSAL_MODULES env var; first existing hit wins,
 # missing modules get their ApplicationPath under the FIRST root
 MODULE_DIRS = ([os.environ["VASSAL_MODULES"]] if os.environ.get("VASSAL_MODULES") else []) \

@@ -105,7 +105,7 @@ edifice = dark-gray background hex.) Everything else in crescent: clear (+ some 
    Fresh->Disrupted->Routed->Panicked, rally table + drm, melee odds CRT + drm + continuous
    combat + advance, missile AF->multiple->result, breach damage accumulation, siege engines
    (Tower/Ram/Armored Tower + facing), escalade, testudo, cauldron rocks, retreat-toward-Refuge.
-   SCOPE CALL (surface to the owner): Refuge = Temple Quarter is off-battlefield; proposal = routed
+   SCOPE CALL: Refuge = Temple Quarter is off-battlefield; proposal = routed
    units exiting the bounded area via the south gates are removed from play (scenario's own
    "played only on the North Wall" bound); flag in validation worksheet for Rob's expert review.
 5. Open module bugs for Rob's worksheet: "P51" Yafo Gate name-marker physically placed in P55;

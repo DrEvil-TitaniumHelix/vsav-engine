@@ -891,7 +891,7 @@ class SoJGame(GateGame):
 
     def _refuge_dist(self, side, h):
         """Distance to Refuge: Judaean = the south gates toward the Temple
-        Quarter (exit = removed from play, the owner-approved scope call);
+        Quarter (exit = removed from play, approved scope call);
         Roman = the nearest board edge, approximated by the north edge
         (lowest row) [15.4]."""
         if side == "Jud":

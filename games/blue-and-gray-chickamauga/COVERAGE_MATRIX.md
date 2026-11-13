@@ -8,7 +8,7 @@ Internal report — builder + testers, never player-facing.
 Scope: **PER SCENARIO** — this file covers *Chickamauga — The Last Victory* (the campaign, 15 GTs)
 only. The unreachable column is never inherited by any other scenario.
 
-Ruleset in force: **the 1975 original** (the owner, 2026-07-10). Decision Games **Deluxe** ranks above
+Ruleset in force: **the 1975 original** (2026-07-10). Decision Games **Deluxe** ranks above
 the 1975 text **where it corrects it** (errata-bearing primary); the Stafford 2018 revision is
 clarification only and is cited nowhere as authority. All scan references are to
 `literature/blue-and-gray/` (BGStandardRules.pdf 4pp; BGChickamauga.pdf scans p01–p10;
@@ -243,7 +243,7 @@ simultaneously; no choice exists beyond which side you sit). It earns data rows,
 | V.2 | 17.11 | 1 VP per enemy CSP eliminated (live accrual) | ENFORCED — `_eliminate` :1073; every validator's battles |
 | V.3 | 17.11/17.31 | exit VP: Union 1/CSP; Confederate 10/CSP gated on the 17.31 LOC | ENFORCED (Union arm) — :1230-1236; VGa §G:273. CSA arm: unprovable on current data — the 17.31 trace is dead because the road network is fragmented (**N25** wrong data; was N15's missing test, found trying to write it) |
 | V.4 | 17.11 | CSA +10 if the Train fails to exit (destroyed ≠ exited) | ENFORCED — :1237-1241; VGa §G:274 |
-| V.5 | 17.12/17.21/17.22 | occupation = last side to move a unit onto/through the hex | ENFORCED — `_credit_occupation` :282, all three writers proven (move/reinforce/advance each staged, credit + VP asserted; validate_scoring.py §3/§4/§5). **N8** still flags the retreat/displacement arm as a declared narrow reading (the owner) |
+| V.5 | 17.12/17.21/17.22 | occupation = last side to move a unit onto/through the hex | ENFORCED — `_credit_occupation` :282, all three writers proven (move/reinforce/advance each staged, credit + VP asserted; validate_scoring.py §3/§4/§5). **N8** still flags the retreat/displacement arm as a declared narrow reading |
 | V.6 | 17.12 | end-of-game scoring of the seven VP hexes (union/confederate/either pools) | ENFORCED — :1242-1250; pool-owner semantics pinned exactly (union-pool scored, enemy-held confederate-pool hex unscored, unheld either-pool unscored; validate_scoring.py §3, plus the draw case §6) |
 | V.7 | 17.23 | start occupation seeded (Union 0211/0502/0822/1108/1115; CSA 1920/2311) | ENFORCED — `new_game` :64-68; validate_scoring.py §2 (real scenario seeding exercised end-to-end by every VA campaign) |
 | V.8 | 17.31 | CSA LOC: a continuous road chain from 0101/0111 off the EASTERN edge, free of Union units (ZOCs irrelevant) | ENFORCED (unproven) — road-graph BFS :1210-1227; the `col ≥ 25` proxy is exact on this map — the only road hex at col ≥ 25 is 2503, the network's eastern terminus (terrain.json census). Validator debt **N15**. **2026-08-16: the trace is DEAD on current data — the road graph fragments into 29 components and no exit-hex chain reaches the east edge in any game (N25, wrong data); loc_ok is always False and the CSA exit VP is unawardable** |
@@ -324,11 +324,11 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N5 | 7.81 | displaced, unfired artillery may still bombard — no displacement state exists | 1 |
 | N6 | 7.22/7.12 | a partial co-stacked attack is accepted while the co-stacked partner is contact-obligated; the partner can then never legally fight and `end_phase` deadlocks — the phase becomes unwinnable — **CLOSED 2026-08-16: proposal-time refusal when an obligated stackmate is excluded, VC §15; the alternative reading (7.12 discharged by the stackmate's attack) REJECTED in writing: 7.12's own sentence requires the stackmate's participation, it cannot be discharged by another unit's battle** | 1 (+2 consequence) |
 | N7 | 10.2/15.1 | night reinforcement entry into an EZOC accepted (reachable via any unit delayed onto GT 9 under 15.3) — **CLOSED 2026-08-16: night/EZOC bar in the reinforce door, VGa §F three arms; VR seed-1 pin unchanged** | 1 |
-| N8 | 17.21/17.22 | retreats/displacement do not confer occupation credit (engine = deliberate-moves-only reading; the printed "last to have moved a Friendly unit onto the hex" plausibly includes combat moves) — declared reading, the owner to rule | 1 under the literal reading |
+| N8 | 17.21/17.22 | retreats/displacement do not confer occupation credit (engine = deliberate-moves-only reading; the printed "last to have moved a Friendly unit onto the hex" plausibly includes combat moves) — declared reading, owner to rule | 1 under the literal reading |
 | N9 | 15.2 | a reinforcement's entry cost is treated as its whole movement — post-entry movement refused; print: "may move and attack freely, just as any other unit" — **CLOSED 2026-08-16: negative-spend continuation convention (no new HASH_KEYS entry), VGa §K; policy AI's own gate (`pid in moved`) skips continuations, so VR's seed-1 pin (33/123) and the VA campaigns are unchanged** | 2 |
 | N10 | 8.16 | no door for bombarding artillery to voluntarily suffer Ar | 2 |
 | N11 | 8.45 vs 8.0/8.11 | the adjacent-unit-across-the-creek bombardment is refused (range strictly 2–3); 8.45's own words make the adjacent unit bombardable, which contradicts 8.0's "two or three hexes" — **register candidate** (ambiguity), engine strict pending the ruling | 2 |
-| N12 | 5.17 | "nor may it change its move without the consent of the opposing Player" vs the platform's UNDO (1 press = 1 decision, all games) — the same cross-game item as NaW M.13/MOV-19, already queued to the owner (NOW.md call #3); recorded so the matrix does not silently bless it | cross-game, the owner-blocked |
+| N12 | 5.17 | "nor may it change its move without the consent of the opposing Player" vs the platform's UNDO (1 press = 1 decision, all games) — the same cross-game item as NaW M.13/MOV-19, already queued (call #3); recorded so the matrix does not silently bless it | cross-game, owner-blocked |
 | N13 | 16.0 vs 17.11 | 1975 prints "UNION Units may exit" while the same folder scores Confederate exits ×10 VP — internal inconsistency; Deluxe 18.3 corrects to "Either Player" (engine already Deluxe-correct) — **register candidate**, companion aspect of the registered exit-hex defect | register candidate |
 | N14 | 7.82 | the printed displacement rules, read literally, permit non-terminating cycles (proven live: the 14,000-entry loop behind VR); the engine's terminating resolution (impossible chains end in elimination) is a declared resolution of a printed defect — **register candidate** | register candidate |
 | N15 | 17.12/17.21–17.23/17.31 | validator debt: occupation credit, start-occupation seeding, occupation scoring, the CSA LOC trace, and a CSA-arm exit (V.3/V.5/V.6/V.7/V.8, EX.8) have code but no asserting test — **CLOSED 2026-08-16 by validate_scoring.py except the LOC/CSA-exit arms, which are blocked by N25** (the trace is dead on fragmented road data; closing them requires the terrain fix first). Also pinned en route: V.1's draw tie and V.9's on-map 17.32 sweep | VD |
@@ -341,7 +341,7 @@ exists, believed correct, no proving test — RULE 1 work items).
 | N22 | 15.51/15.52 | validator debt (audit 2026-08-16): the reinforcement schedule contents never cross-checked against print — **CLOSED 2026-08-16 by validate_scoring.py §1** (per-(GT, class, strength) multiset + entry hexes, both sides, vs rules_transcription.json) | VD |
 | N23 | 7.5/7.6 | validator debt (audit 2026-08-16): no poor-odds battle staged asserting acceptance (C.15), and the <1-5→1-5 low clamp (both still roll) untested (C.16) — **CLOSED 2026-08-16 by VC §14** (2-vs-14 accepted, natural 1-7 → column 1-5, still rolls) | VD |
 | N24 | 7.6 | validator debt (audit 2026-08-16): the exchange non-participant refusal (X.3 subset door :819-822) never staged — **CLOSED 2026-08-16 by VC §5** (bystander refusal added) | VD |
-| N25 | 5.22/17.31/18.23 | **WRONG DATA (found staging N15, 2026-08-16): the road network in terrain.json fragments into 29 disconnected components** — `_road_graph` from the exit hexes reaches ≤27 of 174 road hexes, never col ≥ 25, so `csa_loc_road_clear` is False in every reachable game and the 17.31-gated CSA exit VP (V.3/EX.8) is dead code; units overpay at every under-captured road junction (5.22); the Train's network is pocketed (18.23). Verified against the 1975 scan: solid printed roads run through the fragment gaps (e.g. 0417, 0217/0218, 0715) — the build_terrain.py solid-line discriminator (≥0.78 coverage) under-captured. Fix = recalibrate + per-side scan verification + validator; margin baseline MUST precede it (Stage C ordering already does). Escalated to the owner 2026-08-16 | 3 |
+| N25 | 5.22/17.31/18.23 | **WRONG DATA (found staging N15, 2026-08-16): the road network in terrain.json fragments into 29 disconnected components** — `_road_graph` from the exit hexes reaches ≤27 of 174 road hexes, never col ≥ 25, so `csa_loc_road_clear` is False in every reachable game and the 17.31-gated CSA exit VP (V.3/EX.8) is dead code; units overpay at every under-captured road junction (5.22); the Train's network is pocketed (18.23). Verified against the 1975 scan: solid printed roads run through the fragment gaps (e.g. 0417, 0217/0218, 0715) — the build_terrain.py solid-line discriminator (≥0.78 coverage) under-captured. Fix = recalibrate + per-side scan verification + validator; margin baseline MUST precede it (Stage C ordering already does). Escalated 2026-08-16 | 3 |
 
 Related but NOT new: the three registered `source_defects` (exit-hex 0110→0111; ford+trail
 composition; CSA exit-VP asymmetry) are enforced as registered and cited in their rows (M.13,
@@ -372,11 +372,11 @@ col ≥ 25; the three registered `source_defects` IDs confirmed); ten-spot code�
 clean (every legality door in `propose`/`_propose_*` maps to a row). N1–N20 unchanged.
 
 Blocking rows: N2 (V.9), N5 (D.4), N10 (B.7), N11 (B.17). Three are class-1 silent incorrectness — the class this instrument exists
-to surface. Demotion of a shipped game is the expected outcome the owner predicted 2026-08-08 ("the
+to surface. Demotion of a shipped game is the expected outcome predicted 2026-08-08 ("the
 audit can DEMOTE shipped games"): Chickamauga shipped at earned Tier 3 under the tier ladder the
 coverage matrix has since replaced; under spec #13 as amended it is BUILD IN PROGRESS until the
 N-list closes (Bite 4 ships each closure with a validator; the two register candidates and the
-two the owner-flagged items route per spec #21).
+two flagged items route per spec #21).
 
 Suite state at this writing: `python run_all.py` 38/38 green (no code changed in this bite — the
 matrix is the change). `rules_scope.umpired` still sits in the scenario file untouched, by design

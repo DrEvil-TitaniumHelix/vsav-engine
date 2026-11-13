@@ -290,7 +290,7 @@
       "scope": "Towns AND Woods/Road hexes, as a single row sharing one Effect-on-Combat cell. The chart prints two symbol hexes for this row - a town hex and a woods hex crossed by a road - and one combat effect covering both."
     },
     "what_this_bite_settles": "What the CHART itself prints. It reads 'Towns &  Woods/Roads' as a single row and applies the defender-doubles effect to that whole row, exactly as PREP-1 reported. The chart is not misread, not a redraw artefact, and not a module error: the folio and Oliver's independent scan agree word for word.",
-    "what_this_bite_does_not_settle": "Which printed component wins. PREP-1 recorded that this is the owner's call, and nothing read in this bite changes that. Both components are printed parts of the same 1971 edition; neither carries an errata marker or a precedence statement.",
+    "what_this_bite_does_not_settle": "Which printed component wins. PREP-1 recorded that this is an owner call, and nothing read in this bite changes that. Both components are printed parts of the same 1971 edition; neither carries an errata marker or a precedence statement.",
     "extra_evidence_for_the_call": {
       "chart_is_the_more_specific_statement": "The TEC row explicitly distinguishes defence from attack ('Combat Strength remains at normal value when units attack from such terrain'). The page-1 case says only '(on defense)'.",
       "chart_is_the_point_of_use_reference": "The TEC is printed on the map sheet at the player's elbow; the rules text is on a separate folio sheet.",

@@ -6,7 +6,7 @@
 <style>
   html,body { margin:0; height:100%; overflow:hidden; background:#1a1c20; font-family:Segoe UI,sans-serif; }
   /* Two FIXED rows, no wrapping: every control has a permanent pixel position
-     (the owner's rule — you must always know where each button is). Turn-state
+     (rule: you must always know where each button is). Turn-state
      controls hide via visibility (frame.js .holdspace) so their slot never
      collapses; variable text sits in fixed-width .fixw cells. */
   #topbar { position:fixed; top:0; left:0; right:0; background:#23262c; color:#ddd;
@@ -48,7 +48,7 @@
   .counter { position:absolute; cursor:pointer;
              user-select:none; -webkit-user-drag:none; border-radius:4px; }
   .counter.done { filter:grayscale(.9) brightness(.65); }
-  /* selection must be UNMISSABLE (the owner 2026-07-17): fat ring + glow,
+  /* selection must be UNMISSABLE: fat ring + glow,
      and every selected counter is also listed in #selbox bottom-right */
   .counter.sel { outline:4px solid #ffd75e; outline-offset:2px; z-index:30!important;
                  box-shadow:0 0 0 7px rgba(255,215,94,.35), 0 0 22px 8px rgba(255,215,94,.8); }
@@ -489,8 +489,8 @@ function pauseAI() {
 // Every state says what to do next; when only ONE button can advance the
 // game, FRAME.soleNext gives it the red border (engine rule).
 function cmdStepper() {
-  // "where am I in the turn" strip for command-flow games (the owner
-  // 2026-07-17: phase navigation help — no more going in circles)
+  // "where am I in the turn" strip for command-flow games
+  // (phase navigation help — no more going in circles)
   const C3 = FLOW && FLOW.command;
   if (!C3) return '';
   const steps = [
@@ -563,7 +563,7 @@ function renderGuide() {
   // "not your turn": pendings can arise mid-MOVEMENT and belong to the
   // NON-moving seat (Westwall bridge demolition [12.1], AK Rommel
   // placement [22.4]) — a tester was left with "Your move" while the
-  // gate refused everything (the owner 2026-07-18). One check, all phases.
+  // gate refused everything. One check, all phases.
   if (C && C.pending_rommel) {
     FRAME.setGuide(`<b>Place Rommel</b> — pick one of the hexes offered in the right panel [22.4].`);
     FRAME.soleNext(null);
@@ -1558,7 +1558,7 @@ function submitExchange(winner) {
 function render() {
   document.querySelectorAll('.counter,.badge').forEach(n => n.remove());
   // engine-level "who may act" highlight: the same set unit ▶ steps
-  // through gets a visible ring on the map (the owner's guidance rule)
+  // through gets a visible ring on the map (guidance rule)
   const ACTABLE = new Set(myActableUnits().map(u => u.id));
   const byhex = {};
   // Region: group by real VASSAL stack (stack_id / exact XY), not snapped loc —
@@ -1625,7 +1625,7 @@ function render() {
 }
 
 // ---------- selected-counters box + click-to-focus (engine rules,
-// the owner 2026-07-17: selection must be visible even off-screen; unit
+// selection must be visible even off-screen; unit
 // names in panels are links that fly the camera to the counter) ----------
 function focusUnit(id) {
   const u = unitById(String(id));

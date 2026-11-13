@@ -17,8 +17,8 @@ policy - doctrine.md there tells the story). genome() returns None for it
 and every caller falls back to the shipped policy, which the playbook
 itself certifies as the strongest known strategy. The honesty rule follows:
 "Advanced AI" appears only where genome() finds a real champion; a
-baseline-equilibrium playbook shows "Advanced AI pending" instead (the owner
-2026-07-19) - the button plays the same shipped policy the training runs
+baseline-equilibrium playbook shows "Advanced AI pending" instead
+(2026-07-19) - the button plays the same shipped policy the training runs
 failed to beat, and the upgrade is honestly still open.
 
 Napoleonic-family champions would be doctrine thetas, not turn plans
@@ -99,7 +99,7 @@ def _manifest(game_dir):
 
 def generalship(game_dir):
     """The 1-10 generalship rung of the game's shipped AI, computed from the
-    training record and nothing else (the owner 2026-08-18: the data is whether
+    training record and nothing else (2026-08-18: the data is whether
     the genome graduated correctly and what streaks it ran). Returns
     {rung, general, meaning, evidence} or None when the game ships no
     playbook (a scripted policy alone is not rated). Every rung above 4

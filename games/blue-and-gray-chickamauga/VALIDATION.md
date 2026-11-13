@@ -1,6 +1,6 @@
 # Blue & Gray: Chickamauga — validation evidence chain
 
-Encoded overnight 2026-07-10→11 (the owner's directive: Chickamauga, original SPI
+Encoded overnight 2026-07-10→11 (directive: Chickamauga, original SPI
 rules, Tier 3 target). Everything below ran green before the tier claim.
 
 ## Sources (all local, gitignored under literature/blue-and-gray/)
@@ -13,7 +13,7 @@ rules, Tier 3 target). Everything below ran green before the tier claim.
    1975 printing treated as errata evidence.
 3. **The VASSAL module** (`Blue and Gray Complete.vmod` 1.0): map art,
    counters, grids, per-battle setup saves.
-4. **Stafford 2018 revised rules** (the owner's Scribd source): a fan REVISION
+4. **Stafford 2018 revised rules** (Scribd source): a fan REVISION
    (leaders, disruption, 2d6 CRT) — used only as a tie-break clarification
    aid, never as the encoded ruleset. Community evidence (DG's own reprint
    intent, the module's counter mix, the revision's ~111 views) says the

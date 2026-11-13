@@ -10,10 +10,10 @@
  },
  "edition": {
   "printed": "SPI Napoleon at Waterloo, Second Edition, copyright 1971 (folio: rules sheet, Examples of Attacks, counter set, map sheet with both CRT copies, TEC, Time Record, Demoralization Scale)",
-  "not_this_game": "The 1979 Third Edition is a different-sized battlefield (380 hexes vs 594), opposite hex-column parity, four reversed rules (E17/E21/E23/E28) - encoded as its own game, never as a flag here (the owner 2026-08-13). Christian Holm Christensen's 2024 fan revamp (rules.pdf, CC BY-SA) is neither edition and is never cited.",
+  "not_this_game": "The 1979 Third Edition is a different-sized battlefield (380 hexes vs 594), opposite hex-column parity, four reversed rules (E17/E21/E23/E28) - encoded as its own game, never as a flag here (2026-08-13). Christian Holm Christensen's 2024 fan revamp (rules.pdf, CC BY-SA) is neither edition and is never cited.",
   "work_order": "DECODE_PLAN.md; rule ids cited below are rows of ingest/rules_2nd_ed.json (127 verbatim rows with obligation + citation); charts in ingest/crt_2nd_ed.json and ingest/combat_charts.json; map graph ingest/hexgraph_2nd_ed.json; roster ingest/oob_2nd_ed.json"
  },
- "status": "ENCODED (2026-08-18): all seven bites enforced by engine/naw.py; COVERAGE_MATRIX.md 109/111 ENFORCED + 1 UNREACHABLE + 1 OPEN (M.13 = platform UNDO policy NAW2-OR-3, the owner). Validators: validate_data / movement / combat / battle / victory. Not on the menu until the seat-model refactor + the owner's go.",
+ "status": "ENCODED (2026-08-18): all seven bites enforced by engine/naw.py; COVERAGE_MATRIX.md 109/111 ENFORCED + 1 UNREACHABLE + 1 OPEN (M.13 = platform UNDO policy NAW2-OR-3). Validators: validate_data / movement / combat / battle / victory. Not on the menu until the seat-model refactor + the owner's go.",
  "map_name": "Main Map",
  "board_name": "Main Map",
  "save_key": "4e",
@@ -748,13 +748,13 @@
     "woods_road"
    ],
    "attacker_from_such_terrain": "normal value",
-   "cite": "TEC row 2 'Towns &  Woods/Roads - Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain' + CBT-18 (Towns); ruling NAW2-D4 (the owner 2026-08-14) follows the chart, independently corroborated by the printed 1979 sheet grouping Building + Woods-Road; printed examples EX-03/EX-04 prove an attacker in a Town gets nothing"
+   "cite": "TEC row 2 'Towns &  Woods/Roads - Defending unit DOUBLES its Combat Strength. Combat Strength remains at normal value when units attack from such terrain' + CBT-18 (Towns); ruling NAW2-D4 (2026-08-14) follows the chart, independently corroborated by the printed 1979 sheet grouping Building + Woods-Road; printed examples EX-03/EX-04 prove an attacker in a Town gets nothing"
   },
   "procedure": {
    "adjacency": "CBT-05 attackers must be adjacent (exception: artillery bombardment)",
    "mandatory": "CBT-06 ALL enemy units adjacent to friendly units MUST be attacked; CBT-07 ALL friendly units adjacent to enemy units MUST participate; CBT-10 no defender attacked more than once, no attacker attacks more than once; CBT-08/CBT-09 the attacker chooses order and pairing; CBT-11 several attackers may combine on one defender (all adjacent); CBT-12 one attacker may attack several adjacent defenders (strengths totalled); CBT-13 diversionary attacks at poor odds are legal; CBT-17 a unit's strength is never split",
    "immediate": "CBT-04 each result is applied immediately before the next attack is resolved",
-   "open": "none - C.7 RULED (NAW2-OR-6 A, the owner 2026-08-17: obligations fixed at Combat Phase start, resolved live, lapse on lost contact); OR-5 closed by proof (star partition of the fixed contact graph; the gate's forward check keeps every reachable position completable)",
+   "open": "none - C.7 RULED (NAW2-OR-6 A, 2026-08-17: obligations fixed at Combat Phase start, resolved live, lapse on lost contact); OR-5 closed by proof (star partition of the fixed contact graph; the gate's forward check keeps every reachable position completable)",
    "adjacency_reading": "several-on-several (EX-14) legal only when every non-bombarding attacker is adjacent to every defender - satisfies CBT-11 and CBT-12 together",
    "results": "AE adjacent attackers eliminated (bombarding artillery immune); Ar adjacent attackers retreat one hex, direction chosen by the victorious DEFENDER (E21), bombarding artillery may voluntarily retreat (owner); EX defenders eliminated + attacker pays whole adjacent units >= PRINTED defender strength (attacker chooses; all adjacent when short; free when all bombarded); Dr defenders retreat one hex, attacker chooses; DE defenders eliminated. Retreat bars: enemy ZOC, off map, non-Road Woods, enemy hex; Woods/Road along the road; disruption of an uninvolved friend only when no empty safe hex, chain to completion or the retreater dies; advance optional, immediate, one hex, one unit per vacated hex, attackers after Dr/DE/EX (not bombarding), defenders after Ar/AE"
   },
@@ -776,7 +776,7 @@
    "disruption": "if the only safe hex holds an uninvolved friendly unit, that unit is displaced (moved back by the victorious player as if retreating) and the retreating unit takes its hex; the displaced unit may not be forced into enemy units, Zones of Control or woods; if that would be its only path the uninvolved unit is NOT disrupted and the retreating unit is eliminated instead; chains are legal; disrupted artillery may not fire in that Combat Phase",
    "advance": "optional, immediate, one hex into the vacated hex after Dr/DE/EX (never compulsory; legal even in enemy ZOC, CBT-15); advancing units may not participate in another attack or defence in that Combat Phase (X2); no MP cost (CBT-16); bombarding artillery may not advance (ART-18)",
    "cite": "folio p.5 RETREAT AND ADVANCE AS A RESULT OF COMBAT + DISRUPTION + OPTIONAL ADVANCE (British/Prussian half only - NAW2-SD-2), EXPLANATION OF RESULTS (both halves), ingest/combat_charts.json verbatim; CBT-14/CBT-15/CBT-16",
-   "open": "NAW2-SD-3 - may a DISRUPTED unit be pushed into a Woods/Road hex (retreat bar says 'non-Road Woods', disruption bar says bare 'woods')? OPEN for the owner"
+   "open": "NAW2-SD-3 - may a DISRUPTED unit be pushed into a Woods/Road hex (retreat bar says 'non-Road Woods', disruption bar says bare 'woods')? OPEN"
   }
  },
  "reinforcements": {
@@ -846,12 +846,12 @@
    "contributors": "project co-owner cholmcc (Christian Holm Christensen); the module's map is a colour restoration of the printed sheet and its CRT/TEC images are scans of the printed charts (they independently confirmed our transcription in all 60 CRT cells and every TEC row); its at-start save corrected three of our own map misreads (PREP-4)",
    "library": "https://vassalengine.org/library/projects/napoleon_at_waterloo_2nd_ed_stephen_oliver",
    "source": "vassalengine.org /api/gls/v1/projects/napoleon_at_waterloo_2nd_ed_stephen_oliver (read 2026-08-17: file 'Napoleon at Waterloo 2nd Ed Vers 2.2.vmod', 12,439,999 bytes, sha256 d745118...8498) + moduledata",
-   "note": "Module observations for the author's worksheet live in literature/napoleon-at-waterloo/AUTHOR_QUESTIONS.md (internal register; nothing sent - the owner's per-item go). The module's DM markers and VP boxes are the module's own conveniences (the punched set has exactly one marker, the turn marker); the engine keeps the loss ledger itself."
+   "note": "Module observations for the author's worksheet live in literature/napoleon-at-waterloo/AUTHOR_QUESTIONS.md (internal register; nothing sent - per-item go required). The module's DM markers and VP boxes are the module's own conveniences (the punched set has exactly one marker, the turn marker); the engine keeps the loss ledger itself."
   },
   "note": "This engine enforces the printed game's rules against the module's own materials. All game content remains the property of its publisher; module art remains the work of the module authors. Bring-your-own-module: users download the module from the VASSAL module library."
  },
  "source_defects": {
-  "note": "Defects in the ORIGINAL PUBLISHED GAME (SPI 1971 folio) found during decode-prep and encoding - spec #21. Authority ladder (as amended 2026-08-09): official errata > publisher/tournament clarification or the game/module creator's answer > proven outcome-equivalence. SPI no longer exists and no errata for the 1971 folio has been found: for this game the only remaining rung is a declared ruling by the owner (DECODE_PLAN.md section 4 - direction call surfaced). An OPEN entry blocks the cells it touches; the gate is not written past it.",
+  "note": "Defects in the ORIGINAL PUBLISHED GAME (SPI 1971 folio) found during decode-prep and encoding - spec #21. Authority ladder (as amended 2026-08-09): official errata > publisher/tournament clarification or the game/module creator's answer > proven outcome-equivalence. SPI no longer exists and no errata for the 1971 folio has been found: for this game the only remaining rung is a declared ruling (DECODE_PLAN.md section 4 - direction call surfaced). An OPEN entry blocks the cells it touches; the gate is not written past it.",
   "list": [
    {
     "id": "NAW2-D4-town-woodsroad-doubling",
@@ -862,7 +862,7 @@
     ],
     "defect": "The rules sheet says 'Units defending in Towns DOUBLE their strength (on defense)' and never mentions Woods/Roads; the Terrain Effects Chart on the same folio prints 'Towns &  Woods/Roads' as ONE row with one shared effect cell 'Defending unit DOUBLES its Combat Strength'. Both are primary components of the same edition; the 27 printed examples never place a defender in a Woods/Road hex.",
     "resolution": "FOLLOW THE CHART: a defender in a Town OR a Woods/Road hex doubles; attacking from either confers nothing. Blast radius five hexes (the woods_road class).",
-    "authority": "DECLARED RULING - the owner, 2026-08-14 (judgement between printed equals). Independently corroborated the same evening by the printed 1979 sheet, whose key groups Building + Woods-Road with 'Defender in hex is doubled'.",
+    "authority": "DECLARED RULING - 2026-08-14 (judgement between printed equals). Independently corroborated the same evening by the printed 1979 sheet, whose key groups Building + Woods-Road with 'Defender in hex is doubled'.",
     "enforced": true,
     "lands_in": "engine/naw.py defense_strength (bite 3); validate_combat.py D4 cases"
    },
@@ -916,7 +916,7 @@
     ],
     "defect": "Results apply immediately (CBT-04) and attacks resolve one at a time, so the set of 'adjacent enemy units' changes during the Combat Phase; the sheet does not say whether the mandatory-attack obligations (every adjacent enemy attacked, every adjacent friendly participating, nobody twice) are fixed at phase start or re-evaluated after each result - two defensible readings with different legal move sets. It also gives no relief clause for a position where no complete assignment exists.",
     "resolution": "RULED: obligations (every adjacent enemy attacked, every adjacent friendly attacks, nobody twice) are FIXED at the start of the Combat Phase; each attack resolves on the live board; an obligation lapses when its contact no longer exists (the enemy retreated/was eliminated, or the friendly advanced - an advanced unit leaves the list). With the list fixed a complete assignment always exists (a unit may attack every enemy it touches, so any uncovered enemy folds into a neighbour's attack) - to be PROVED by validator, closing NAW2-OR-5 without a ruling.",
-    "authority": "DECLARED RULING - the owner, 2026-08-17 (table practice; the printed Examples of Attacks show one board with two complete partitions; the only referee-enforceable reading). SPI 1979 [5.1]/[6.1] repeat the same words and do not decide it. Christian Holm Christensen asked the same evening; may overturn.",
+    "authority": "DECLARED RULING - 2026-08-17 (table practice; the printed Examples of Attacks show one board with two complete partitions; the only referee-enforceable reading). SPI 1979 [5.1]/[6.1] repeat the same words and do not decide it. Christian Holm Christensen asked the same evening; may overturn.",
     "enforced": true,
     "lands_in": "engine/naw.py _contact_pairs/live_pairs/stranded_by/complete_assignment (bite 4); validate_battle.py obligations + OR-5 proof blocks"
    }

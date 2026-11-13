@@ -1,6 +1,6 @@
 # Westwall: Arnhem — validation evidence chain
 
-Encoded 2026-07-11 (the owner's directive: "do for Westwall what you did for Blue
+Encoded 2026-07-11 (directive: "do for Westwall what you did for Blue
 and Gray" — mastermind's factor→image binding brief of 2026-07-09 consumed).
 Everything below ran green before the tier claim. Earned tier: **3**.
 

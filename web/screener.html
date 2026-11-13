@@ -95,7 +95,7 @@ let DB = null;
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
 
 // The four ingredients of an encoding. Engine mechanics deliberately play no
-// part here (the owner 2026-07-19): encodability = are the ingredients in hand.
+// part here: encodability = are the ingredients in hand.
 // Each entry: [status ok|miss|unk, note]. Order matches ING_NAMES.
 function ingredients(g){
   const out = [];

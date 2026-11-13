@@ -176,7 +176,7 @@ Language knowledge first; the auto-distilled champion genome is appended by
 - **Graduation bar (`grad_bar.py`): [1] 18/20 held-out pairs vs the baseline
   (seeds 960–979), total +3304, mean +165.2; [2] 18/20 pairs vs 20 fresh
   random genomes (seeds 980–999), total +3793 — MET.** The bar's second rung
-  was amended this day by the owner from 5 randoms (≥4) to 20 randoms (≥16): on
+  was amended this day from 5 randoms (≥4) to 20 randoms (≥16): on
   the original 5-random rung the champion scored 3/5 (losses −109 and −8, one
   home-away pair each), and 16/20 on a first 20-random check (the baseline on
   the same 20: 8/20, −60.5) — the 5-pair test was a coin flip once random

@@ -1,12 +1,12 @@
 # NAPOLEON AT WATERLOO (SPI, 2nd Edition 1971) — DECODE PLAN
 
-**STATUS 2026-08-18: all seven bites DONE (engine/naw.py + validate_data/movement/combat/battle/victory). COVERAGE_MATRIX.md 109/111 ENFORCED + 1 UNREACHABLE + 1 OPEN (M.13 = platform UNDO policy NAW2-OR-3, the owner). The plan below is the historical work order.**
+**STATUS 2026-08-18: all seven bites DONE (engine/naw.py + validate_data/movement/combat/battle/victory). COVERAGE_MATRIX.md 109/111 ENFORCED + 1 UNREACHABLE + 1 OPEN (M.13 = platform UNDO policy NAW2-OR-3). The plan below is the historical work order.**
 
 **Written 2026-08-14 at the close of the decode-prep phase (PREP-1 … PREP-7).**
 Audience: Fable, who writes the encoding. Everything here is backed by a committed, machine-readable
 artefact; nothing asks you to re-derive a reading.
 
-**Scope: the 2nd Edition only.** the owner decided 2026-08-13 that NaW ships as **two games sharing one
+**Scope: the 2nd Edition only.** Decided 2026-08-13: NaW ships as **two games sharing one
 engine module**, encoded one at a time, 2nd Edition first. There is no edition flag. See §7 for where
 the 3rd Edition now stands — it moved this evening.
 
@@ -85,7 +85,7 @@ the game or module creator and blocks playability until an authority resolves th
 that route does not exist.** SPI is long gone, and not one of the open rulings is a module question —
 every one is a defect in the 1971 print. Siege of Jerusalem had Rob to lean on; Napoleon has nobody.
 The remaining rungs are official errata (if ever found), proven outcome-equivalence, and **a declared
-ruling by the owner** — the rung he already used for SoJ's R-cells and for D4 this evening. The question
+ruling** — the rung already used for SoJ's R-cells and for D4 this evening. The question
 is not whether that rung is legitimate; it is **how much declared-ruling load a game may carry and
 still be called playable.** Surfaced in `COVERAGE_MATRIX.md` §6 as `spec_conflict_surfaced`.
 
@@ -121,7 +121,7 @@ Per the 2026-08-09 spec amendment, playability is binary and strict: **every one
 either ENFORCED or UNREACHABLE with evidence recorded.** No cell may be closed by assertion — three
 cells in the current matrix that *could* have been claimed unreachable were deliberately left open
 with the argument written down, because an argument is not an encoding and a validator must assert it.
-Nothing is human-umpired; per the owner 2026-08-08 an umpired action is an engine failure point, not a
+Nothing is human-umpired; per 2026-08-08 an umpired action is an engine failure point, not a
 disclosure.
 
 ---
@@ -131,11 +131,11 @@ disclosure.
 The standing blocker was that defence doubling and artillery line-of-sight blocking appear nowhere in
 the printed 1979 rules text and could only live on that edition's terrain chart, which we did not
 hold. **On 2026-08-14 a scan of the printed 1979 map sheet was obtained** (`C:\VassalNaW\sources_1979\`,
-the owner-authorised download) carrying the Terrain Key, both Combat Results Tables, the Game-Turn Record
+authorised download) carrying the Terrain Key, both Combat Results Tables, the Game-Turn Record
 Track, printed four-digit hex numbers, nine exit arrows and the at-start unit pictures. Both blocking
 questions are answered on it, the second with the game's own worked example.
 
-It also **independently corroborates the owner's D4 ruling**: the 1979 key groups **Building and
+It also **independently corroborates the D4 ruling**: the 1979 key groups **Building and
 Woods-Road in one row with "Defender in hex is doubled"** — structurally identical to the 1971 chart's
 "Towns & Woods/Roads". The 1971 grouping was not a typesetting slip.
 
