@@ -88,7 +88,7 @@ def sg_over():
         return SG.flow()["over"]
     return SG.s["over"]
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 
 GAME_OBJ = None   # gamespec.Game
 GAME_SLUG = None  # basename of the loaded game dir (menu key)
